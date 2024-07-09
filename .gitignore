@@ -1,0 +1,46 @@
+# Ignore Python runtime files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+src/main.egg-info/
+.coverage
+
+verita_service.egg-info/
+
+# Ignore virtual environment directories
+venv/
+
+# Ignore temporary and cached files
+*.swp
+*.swo
+*.swn
+*~
+.cache
+/tmp/
+
+# Ignore files created by the operating system
+.DS_Store
+Thumbs.db
+
+# Ignore files created by the code editors
+.vscode/
+.idea/
+*.code-workspace
+
+# Ignore environment file
+.env
+
+# Database files created by the database
+/neo4j/
+/postgres/
+/export/
+
+# Ignore test report files
+unit_report.xml
+integration_report.xml
