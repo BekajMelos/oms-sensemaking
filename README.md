@@ -10,7 +10,7 @@ Prerequisites
 cp .env.template .env
 python -m venv venv/
 source venv/bin/activate
-pip instal -U pip setuptools
+pip install -U pip setuptools
 pip install -r requirements.txt
 pip install -r dev-requirements.txt  # Optional for Development
 ```

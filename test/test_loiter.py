@@ -198,7 +198,6 @@ def test_loiter_success_multiple_in_same_geohash():
     assert loiter1.end_time == p6.timestamp
     
     loiter2 = loiters[1]
-    print(loiter2)
     assert loiter2.geohash_low == 'gcpug'
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
