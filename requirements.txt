@@ -1,3 +1,15 @@
-pygeohash==1.2.0
-python-dotenv==1.0.1
-shapely==2.0.4
+# requirements.txt --- Defines project dependencies.
+
+# NOTE: The runtime dependencies are defined in pyproject.toml file. The `-e .`
+#       in this file informs pip to look in pyproject.toml, so the command
+#       `pip install -r requirements.txt` works as expected.
+#
+#       See <http://stackoverflow.com/a/19081268>
+-e .
+
+
+# -------------------------
+# Development dependencies
+# -------------------------
+build==1.2.1
+pytest==8.2.2
