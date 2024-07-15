@@ -1,4 +1,4 @@
-# Merge Request
+# Pull Request
 
 * Closes #[PROVIDE ISSUE NUMBER HERE]
 
@@ -12,7 +12,6 @@ Add a description of your merge request here.
 Mention if there are new dependencies or resources needed to verify this branch.
 
 
-## General Checklist
-
-- Tests created where appropriate?
-- Is the `README.md` updated needed?
+## Checklist before requesting a review
+- [ ] I have performed a self-review of my code
+- [ ] If it is a core feature, I have added thorough tests.
