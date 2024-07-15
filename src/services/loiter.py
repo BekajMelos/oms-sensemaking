@@ -13,13 +13,7 @@ from src.models.processed_point import ProcessedPoint
 
 load_dotenv()
 
-DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "yes"]
-LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
-
-
-logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s-%(filename)s-%(levelname)s-%(message)s')
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(LOG_LEVEL)
 
 
 # TODO could use pydantic for these settings or a python settings file
@@ -60,9 +54,10 @@ class Loiter:
 
 
 class LoiterService:
+    """Service for detecting loiter events"""
 
-    @staticmethod
-    def detect_loiters(track: Track) -> List[Loiter]:
+    @classmethod
+    def detect_loiters(cls, track: Track) -> List[Loiter]:
         """
         Check for Loiter Events. Collect a list of prospective loiters. Check each of them to make 
         sure they are long enough aka > LOITER_MIN_TIME.
@@ -73,9 +68,9 @@ class LoiterService:
 	    :return: List[Loiter] list of loiter events found
         """
 
-        LOGGER.info('Detecting Loiters')
+        LOGGER.info(f"Detecting Loiters in {track}")
         confirmed_loiters: List[Loiter] = []
-        prospective_loiters: Dict[str, List[PotentialLoiter]] = LoiterService.find_prospective_loiters(track.points)
+        prospective_loiters: Dict[str, List[PotentialLoiter]] = cls.find_prospective_loiters(track.points)
 
         # check for potential lotiers that are long enough (> LOITER_MIN_TIME)
         # TODO could also check for loiters across geohashes that could be combined
