@@ -4,9 +4,9 @@ from datetime import datetime
 
 import shapely
 
-from src.models.processed_point import ProcessedPoint
-from src.models.track import Track
-from src.services.cotravel import CotravelService
+from oms_sensemaking.models.processed_point import ProcessedPoint
+from oms_sensemaking.models.track import Track
+from oms_sensemaking.services.cotravel import CotravelService
 
 
 def test_cotravel_success():

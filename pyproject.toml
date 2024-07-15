@@ -34,6 +34,22 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 
+[tool.setuptools_scm]
+# enable setuptools_scm for dynamic version
+
+
+[tool.pytest.ini_options]
+minversion = '8.2'
+addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
+testpaths = [
+    'tests'
+]
+#log_cli = True
+required_plugins = [
+    'pytest-cov==5.0.0'
+]
+
+
 [tool.coverage.run]
 branch = true
 omit = [
@@ -41,5 +57,19 @@ omit = [
     '*/test*'
 ]
 
-[tool.setuptools_scm]
-# enable setuptools_scm for dynamic version
+
+[tool.coverage.report]
+exclude_also = [
+    # Don't complain if tests don't hit defensive assertion code:
+    'raise AssertionError',
+    'raise NotImplementedError',
+
+    # Don't complain if non-runnable code isn't run:
+    'if __name__ == .__main__.:',
+
+    # Don't complain if __repr__ isn't called explicitly
+    'def __repr__',
+
+    # Don't complain about abstract methods, they aren't run:
+    '@(abc\\.)?abstractmethod'
+]

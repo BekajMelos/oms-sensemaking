@@ -7,10 +7,10 @@ from uuid import UUID
 
 from dotenv import load_dotenv
 
-from src.models.track import Track
-from src.models.track_entry import TrackEntry
-from src.models.processed_point import ProcessedPoint
-from src.services.base_track_service import BaseTrackService
+from oms_sensemaking.models.track import Track
+from oms_sensemaking.models.track_entry import TrackEntry
+from oms_sensemaking.models.processed_point import ProcessedPoint
+from oms_sensemaking.services.base_track_service import BaseTrackService
 
 
 load_dotenv()
