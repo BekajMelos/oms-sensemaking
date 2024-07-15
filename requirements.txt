@@ -1,8 +1,10 @@
 # requirements.txt --- Defines project dependencies.
 
 # NOTE: The runtime dependencies are defined in pyproject.toml file. The `-e .`
-#       in this file informs pip to look in pyproject.toml, so the command
-#       `pip install -r requirements.txt` works as expected.
+#       in this file informs pip to install those runtime dependencies and
+#       install the package in "editable mode". This convention will allow for
+#       `pip install -r requirements.txt` to install all runtime dependencies
+#       followed by whatever test or development dependencies are added below.
 #
 #       See <http://stackoverflow.com/a/19081268>
 -e .
