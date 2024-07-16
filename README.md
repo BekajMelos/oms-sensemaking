@@ -68,7 +68,7 @@ pytest
 To package the project for distribution:
 
 ```
-python -m build
+make build
 ```
 
 This command will build a Python wheel as well as an archive of the source code
