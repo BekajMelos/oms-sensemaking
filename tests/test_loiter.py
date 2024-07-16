@@ -4,9 +4,9 @@ from datetime import datetime
 
 import shapely
 
-from src.models.processed_point import ProcessedPoint
-from src.models.track import Track
-from src.services.loiter import LoiterService
+from oms_sensemaking.models.processed_point import ProcessedPoint
+from oms_sensemaking.models.track import Track
+from oms_sensemaking.services.loiter import LoiterService
 
 
 def get_random_stamford_bridge_point() -> tuple:

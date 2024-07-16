@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from src.models.track_entry import TrackEntry
+from oms_sensemaking.models.track_entry import TrackEntry
 
 from shapely import Point
 

@@ -7,8 +7,8 @@ from uuid import UUID
 from dotenv import load_dotenv
 from shapely import LineString
 
-from src.models.track import Track
-from src.models.processed_point import ProcessedPoint
+from oms_sensemaking.models.track import Track
+from oms_sensemaking.models.processed_point import ProcessedPoint
 
 
 load_dotenv()

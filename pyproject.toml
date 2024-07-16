@@ -1,0 +1,75 @@
+[project]
+name = 'oms-sensemaking'
+authors = [
+  { name='Black Cape, Inc.' }
+]
+description = 'Python module used to perform analytics on OMS data.'
+license = {text = 'Copyright 2024 Black Cape, Inc. All rights reserved.'}
+readme = 'README.md'
+requires-python = '>=3.10'
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: OS Independent',
+    'License :: Other/Proprietary License',
+    'Private :: Do Not Upload'
+]
+dependencies = [
+    'pygeohash==1.2.0',
+    'python-dotenv==1.0.1',
+    'shapely==2.0.4'
+]
+dynamic = ['version']
+
+
+[project.urls]
+Homepage = 'https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking'
+Issues = 'https://tex.gerbil-cloud.ts.net:3000/issues'
+
+
+[build-system]
+requires = [
+    'setuptools >= 70.3',
+    'setuptools_scm >= 8.1'
+]
+build-backend = 'setuptools.build_meta'
+
+
+[tool.setuptools_scm]
+# enable setuptools_scm for dynamic version
+
+
+[tool.pytest.ini_options]
+minversion = '8.2'
+addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
+testpaths = [
+    'tests'
+]
+#log_cli = True
+required_plugins = [
+    'pytest-cov==5.0.0'
+]
+
+
+[tool.coverage.run]
+branch = true
+omit = [
+    '**/__main__.py',
+    '*/test*'
+]
+
+
+[tool.coverage.report]
+exclude_also = [
+    # Don't complain if tests don't hit defensive assertion code:
+    'raise AssertionError',
+    'raise NotImplementedError',
+
+    # Don't complain if non-runnable code isn't run:
+    'if __name__ == .__main__.:',
+
+    # Don't complain if __repr__ isn't called explicitly
+    'def __repr__',
+
+    # Don't complain about abstract methods, they aren't run:
+    '@(abc\\.)?abstractmethod'
+]
