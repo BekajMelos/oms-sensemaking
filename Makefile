@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help test build clean distclean
+.PHONY: help test build clean distclean lint lint-stats
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -15,8 +15,14 @@ test: ## Run integration tests
 build: ## Build the project artifacts (i.e. wheel and tarball)
 	python -m build
 
+lint:  ## Run linter
+	ruff check
+
+lint-stats:
+	ruff check --statistics
+
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
 
-distclean: clean  ## Purge all generated 
+distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info

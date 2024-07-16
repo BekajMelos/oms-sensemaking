@@ -51,9 +51,45 @@ source .venv/bin/activate                  # activate virtual environment
 
 ### Step 3: Configure Local Environment
 
+The module expects certain environment variables to be set. This can be
+accomplished by creating a .env file and setting the environment variables
+there. This file will be detected and read at runtime.
+
 ```
 cp .env.template .env
 ```
+
+### Step 4: Code Linting/Formatting
+
+The *oms-sensemaking* project is configured to use [ruff] for code linting and
+formatting (see the relevant tables in pyproject.toml).
+
+*ruff* can be run directly on the command line and integrated into your editor
+and/or SCM.
+
+To run the linter from the command line:
+
+```
+ruff check
+```
+
+To run the formatter from the command line:
+
+```
+ruff format
+```
+
+To integrate with the project's SCM via [pre-commit] and Git's pre-commit hooks:
+
+```
+pre-commit install
+```
+
+> This will use the configuration in [.pre-commit-config.yaml]
+
+To integrate with Visual Studio Code:
+
+See [Ruff extension for Visual Studio Code]
 
 
 ## Running Unit Tests
@@ -74,10 +110,14 @@ make build
 This command will build a Python wheel as well as an archive of the source code
 and store the results in the *dist* directory.
 
-> ***NOTE***: The project version is determined dynamically based on the project's git repository using [setuptools-scm].
+> ***NOTE***: The project version is determined dynamically based on the
+> project's git repository using [setuptools-scm].
 
 
 [pyenv]: https://github.com/yyuu/pyenv
 [Python]: https://www.python.org
+[.pre-commit-config.yaml]: ./.pre-commit-config.yaml
 [.python-version]: ./.python-version
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
+[ruff]: https://docs.astral.sh/ruff/
+[Ruff extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
