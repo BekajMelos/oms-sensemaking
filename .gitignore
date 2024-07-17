@@ -8,8 +8,11 @@ dist
 htmlcov
 venv
 .venv
-__pycache__
 .coverage
+__pycache__
+.mypy_cache
+.pytest_cache
+.ruff_cache
 pytest.xml
 *.egg-info
 *.eggs

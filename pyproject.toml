@@ -38,6 +38,11 @@ build-backend = 'setuptools.build_meta'
 # enable setuptools_scm for dynamic version
 
 
+[tool.mypy]
+ignore_missing_imports = true
+#follow_imports = 'skip'
+
+
 [tool.pytest.ini_options]
 minversion = '8.2'
 addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
@@ -73,3 +78,40 @@ exclude_also = [
     # Don't complain about abstract methods, they aren't run:
     '@(abc\\.)?abstractmethod'
 ]
+
+
+[tool.ruff]
+line-length = 120
+target-version = 'py310'
+
+
+[tool.ruff.lint]
+select = [
+    'B',      # flake8-bugbear
+    'SIM',    # flake8-simplify
+    'I',      # isort
+    'N',      # pep8-naming
+#    'D',      # pydocstyle
+    'E',      # pycodestyle errors
+    'W',      # pycodestyle warnings
+    'F',      # Pyflakes
+#    'UP',     # pyupgrade
+]
+
+# ingoring some linting rules for compatibility with the ruff formatter
+# see https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+ignore = [
+    'W191',  # tab-indentation
+    'E111',  # indentation-with-invalid-multiple
+    'E114',  # indentation-with-invalid-multiple-comment
+    'E117'   # over-indented
+]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
+
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 50

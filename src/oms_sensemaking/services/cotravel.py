@@ -6,29 +6,33 @@ from typing import List
 from uuid import UUID
 
 from dotenv import load_dotenv
-
+from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.models.track_entry import TrackEntry
-from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.services.base_track_service import BaseTrackService
-
 
 load_dotenv()
 
 LOGGER = logging.getLogger(__name__)
 
 
-VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(
-    seconds=int(os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
+VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=int(os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
 MIN_COTRAVEL_DURATION_SECONDS = timedelta(seconds=int(os.environ["MIN_COTRAVEL_DURATION_SECONDS"]))
 MIN_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=int(os.environ["MIN_LAG_LEAD_DURATION_SECONDS"]))
 MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=int(os.environ["MAX_LAG_LEAD_DURATION_SECONDS"]))
 
 
 class PotentialMatch:
-
-    def __init__(self, track1: UUID, track2: UUID, start_time1: datetime, start_time2: datetime,
-                 last_time1: datetime, last_time2: datetime, true_cotravel: bool):
+    def __init__(
+        self,
+        track1: UUID,
+        track2: UUID,
+        start_time1: datetime,
+        start_time2: datetime,
+        last_time1: datetime,
+        last_time2: datetime,
+        true_cotravel: bool
+    ):
         self.track1 = track1
         self.track2 = track2
         self.start_time1 = start_time1
@@ -51,19 +55,22 @@ class PotentialMatch:
         :param time2:
         :return: boolean indicating if the PotentialMatch was updated
         """
-        if (abs(self.last_time1 - time1) <= VALID_OBSERVED_THRESHOLD_SECONDS and
-            abs(self.last_time2 - time2) <= VALID_OBSERVED_THRESHOLD_SECONDS):
+        if (
+            abs(self.last_time1 - time1) <= VALID_OBSERVED_THRESHOLD_SECONDS
+            and abs(self.last_time2 - time2) <= VALID_OBSERVED_THRESHOLD_SECONDS
+        ):
             self.last_time1 = time1
             self.last_time2 = time2
-            self.true_cotravel = (self.true_cotravel and (abs(time1 - time2)
-                                                           <= MIN_LAG_LEAD_DURATION_SECONDS))
+            self.true_cotravel = self.true_cotravel and (abs(time1 - time2) <= MIN_LAG_LEAD_DURATION_SECONDS)
             return True
         return False
-    
+
     def check_valid(self) -> bool:
         """Checks whether a PotentialMatch has met the duration requirements."""
-        return (self.last_time1 - self.start_time1 >= MIN_COTRAVEL_DURATION_SECONDS and
-                self.last_time2 - self.start_time2 >= MIN_COTRAVEL_DURATION_SECONDS)
+        return (
+            self.last_time1 - self.start_time1 >= MIN_COTRAVEL_DURATION_SECONDS
+            and self.last_time2 - self.start_time2 >= MIN_COTRAVEL_DURATION_SECONDS
+        )
 
 
 class Colocation:
@@ -89,9 +96,9 @@ class CotravelService:
     def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
         """
         Takes a single track, queries for colocated observations
-        
-	    :param Track object: Track object to detect cotravels on
-	    :return: List[PotentialMatch] list of CotravelEvents events found
+
+        :param Track object: Track object to detect cotravels on
+        :return: List[PotentialMatch] list of CotravelEvents events found
         """
 
         LOGGER.info(f"Detecting Cotravels in {track}")
@@ -104,15 +111,16 @@ class CotravelService:
             time = point.timestamp
             track_entries: List[TrackEntry] = cls.get_points(
                 point.geohash_low,
-                track.track_node_id, 
-                (time-MAX_LAG_LEAD_DURATION_SECONDS),
-                (time+MAX_LAG_LEAD_DURATION_SECONDS),
-                time)
-            
+                track.track_node_id,
+                (time - MAX_LAG_LEAD_DURATION_SECONDS),
+                (time + MAX_LAG_LEAD_DURATION_SECONDS),
+                time
+            )
+
             # Create colocations from track entries
             match_points: List[Colocation] = [
-                Colocation(track.track_node_id, entry.track_node_id, point, entry)
-                for entry in track_entries]
+                Colocation(track.track_node_id, entry.track_node_id, point, entry) for entry in track_entries
+            ]
 
             if matches:
                 matches.extend(match_points)
@@ -120,7 +128,7 @@ class CotravelService:
                 matches = match_points
 
         if not matches:
-            return []      
+            return []
 
         # group points (TrackEntrys) by track2
         groups = defaultdict(list)
@@ -129,19 +137,18 @@ class CotravelService:
 
         # determine cotravels on each list
         for _, colocations in groups.items():
-            # 
-            sorted_entries = sorted(colocations,
-                                    key=lambda colocation: colocation.track_entry.start_time)
+            #
+            sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
             cotravels.extend(CotravelService.determine_cotravels(sorted_entries))
 
         if cotravels:
             LOGGER.info(f"Found Cotravels: {cotravels}")
         return cotravels
 
-
     @staticmethod
-    def get_points(geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime,
-                   target_time: datetime) -> List[Colocation]:
+    def get_points(
+        geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
+    ) -> List[Colocation]:
         """
         Find points in other tracks that match the geohash of the given point within the time
         intervals
@@ -153,9 +160,7 @@ class CotravelService:
         :param target_time: time to sort the response by
         :return: List of cotravels
         """
-        return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id,
-                                                         min_time, max_time, target_time)
-
+        return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
 
     @staticmethod
     def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
@@ -165,25 +170,27 @@ class CotravelService:
         :param colocations: List of colocations
         :return: List of cotravels
         """
-        
+
         completed: List[PotentialMatch] = []
         to_add_to: PotentialMatch = None
 
         for colocation in colocations:
             if to_add_to:
                 # if we have a potential match already, keep checking
-                if (not to_add_to.tentative_add(colocation.processed_point.timestamp,
-                                                colocation.track_entry.start_time) and
-                    to_add_to.check_valid()):
+                if (
+                    not to_add_to.tentative_add(colocation.processed_point.timestamp, colocation.track_entry.start_time)
+                    and to_add_to.check_valid()
+                ):
                     # the next colocation point doesn't meet the observation threshold but we still
                     # have a valid cotravel. Add the cotravel to the list and start over with a new
                     # potential match
 
                     # TODO this code path needs to be tested
                     completed.append(to_add_to)
-                    true_cotravel = (abs(
-                        colocation.processed_point.timestamp - colocation.track_entry.start_time)
-                          <= MIN_LAG_LEAD_DURATION_SECONDS)
+                    true_cotravel = (
+                        abs(colocation.processed_point.timestamp - colocation.track_entry.start_time)
+                        <= MIN_LAG_LEAD_DURATION_SECONDS
+                    )
                     to_add_to = PotentialMatch(
                         colocation.track1,
                         colocation.track2,
@@ -197,7 +204,8 @@ class CotravelService:
                 # if no potential match already exists, create and start checking
                 true_cotravel = (
                     abs(colocation.processed_point.timestamp - colocation.track_entry.start_time)
-                      <= MIN_LAG_LEAD_DURATION_SECONDS)
+                    <= MIN_LAG_LEAD_DURATION_SECONDS
+                )
 
                 to_add_to = PotentialMatch(
                     colocation.track1,
