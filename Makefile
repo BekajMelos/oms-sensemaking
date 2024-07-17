@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help test build clean distclean lint lint-stats type
+.PHONY: help test build clean distclean lint lint-stats fix format
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -17,12 +17,16 @@ build: ## Build the project artifacts (i.e. wheel and tarball)
 
 lint:  ## Run linter
 	ruff check
+	mypy src
 
 lint-stats:
 	ruff check --statistics
 
-type: ## Run mypy type checker
-	mypy src
+fix:  ## Run linter and apply fixes
+	ruff check --fix
+
+format:  ## Run the formatter
+	ruff format
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip

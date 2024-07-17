@@ -62,10 +62,12 @@ cp .env.template .env
 ### Code Quality
 
 The *oms-sensemaking* project is configured to use [ruff] for code linting and
-formatting (see the relevant tables in pyproject.toml).
+formatting and [mypy] for type checking (see the relevant tables in pyproject.toml).
 
 *ruff* can be run directly on the command line and integrated into your editor
-and/or SCM.
+and/or SCM. There is also a [Makefile] that wraps the code quality and build
+commands into a convienient interface. Run `make help` for more information.
+
 
 #### Code Linting
 
@@ -75,8 +77,11 @@ To run ruff's linter from the command line:
 ruff check
 ```
 
-> ***TIP***: You can also use `ruff check --fix` to automatically fix some, but
-> not all linting issues.
+Alternatively, you can run `make lint` which will run ruff's linter and mypy.
+
+> ***TIP***: You can also use `ruff check --fix` or `make fix` to
+> automatically fix a subset of linting issues that ruff deems "safe".
+
 
 #### Code Formatting
 
@@ -92,7 +97,13 @@ To run the formatter from the command line:
 ruff format
 ```
 
-#### Integrating Ruff With Other Tools
+or
+
+```
+make format
+```
+
+#### Integrating Code Quality Tools
 
 ##### pre-commit
 
@@ -107,6 +118,7 @@ pre-commit install
 ##### Visual Studio Code
 
 To integrate with Visual Studio Code, use the [Ruff extension for Visual Studio Code]
+and/or the [MyPy extension for Visual Studio Code]
 
 ##### PyCharm
 
@@ -139,7 +151,10 @@ and store the results in the *dist* directory.
 [.pre-commit-config.yaml]: ./.pre-commit-config.yaml
 [.python-version]: ./.python-version
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
-[ruff]: https://docs.astral.sh/ruff/
+[ruff]: https://docs.astral.sh/ruff
 [Ruff extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
+[MyPy extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=ms-python.mypy-type-checker
 [PyCharm Ruff plugin]: https://plugins.jetbrains.com/plugin/20574-ruff
 [black]: https://github.com/psf/black
+[mypy]: https://mypy-lang.org
+[Makefile]: ./Makefile
