@@ -21,6 +21,9 @@ lint:  ## Run linter
 lint-stats:
 	ruff check --statistics
 
+type: ## Run mypy type checker
+	mypy src --ignore-missing-imports --follow-imports=skip
+
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
 
