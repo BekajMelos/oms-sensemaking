@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-GEOHASH_LOW=int(os.environ['GEOHASH_LOW'])
-GEOHASH_HIGH=int(os.environ['GEOHASH_HIGH'])
+GEOHASH_LOW = int(os.environ["GEOHASH_LOW"])
+GEOHASH_HIGH = int(os.environ["GEOHASH_HIGH"])
 
 
 class ProcessedPoint:
@@ -22,10 +22,8 @@ class ProcessedPoint:
         self.geohash_low = pgh.encode(self.lat, self.lon, GEOHASH_LOW)
         self.geohash_high = pgh.encode(self.lat, self.lon, GEOHASH_HIGH)
 
-
     def __str__(self):
         return str(self.__dict__)
 
     def __repr__(self):
         return self.__str__()
-    

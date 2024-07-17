@@ -82,15 +82,15 @@ target-version = 'py310'
 
 [tool.ruff.lint]
 select = [
-#    'D',    # pydocstyle
-    'E',    # pycodestyle errors
-    'W',    # pycodestyle warnings
-    'F',    # Pyflakes
-#    'UP',   # pyupgrade
-    'B',    # flake8-bugbear
-    'SIM',  # flake8-simplify
-    'I',    # isort
-    'N'     # pep8-naming
+    'B',      # flake8-bugbear
+    'SIM',    # flake8-simplify
+    'I',      # isort
+    'N',      # pep8-naming
+#    'D',      # pydocstyle
+    'E',      # pycodestyle errors
+    'W',      # pycodestyle warnings
+    'F',      # Pyflakes
+#    'UP',     # pyupgrade
 ]
 
 # ingoring some linting rules for compatibility with the ruff formatter

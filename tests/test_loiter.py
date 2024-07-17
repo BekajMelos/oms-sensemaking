@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime
 
 import shapely
-
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.services.loiter import LoiterService
@@ -55,10 +54,13 @@ def test_loiter_success():
     assert len(loiters) == 1
     loiter = loiters[0]
 
-    assert loiter.geohash_low == 'gcpug'
+    assert loiter.geohash_low == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points, loiter.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points, loiter.processed_points, strict=False)
+    )
     loiter_geometry = shapely.from_wkt(loiter.geometry)
     expected_linestring2 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points])
     assert loiter_geometry.equals_exact(expected_linestring2, 1e-10)
@@ -141,10 +143,13 @@ def test_loiter_fails_valid_observed_threshold_within_geohash():
     assert len(loiters) == 1
     loiter = loiters[0]
 
-    assert loiter.geohash_low == 'gcpug'
+    assert loiter.geohash_low == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points, loiter.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points, loiter.processed_points, strict=False)
+    )
     loiter_geometry = shapely.from_wkt(loiter.geometry)
     expected_linestring2 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points])
     assert loiter_geometry.equals_exact(expected_linestring2, 1e-10)
@@ -176,7 +181,9 @@ def test_loiter_success_multiple_in_same_geohash():
     p9_points = get_random_stamford_bridge_point()
     p9 = ProcessedPoint(p9_points[0], p9_points[1], datetime.fromisoformat("2024-03-20T12:53:00-04:00"), False, False)
     p10_points = get_random_stamford_bridge_point()
-    p10 = ProcessedPoint(p10_points[0], p10_points[1], datetime.fromisoformat("2024-03-20T12:58:00-04:00"), False, False)
+    p10 = ProcessedPoint(
+        p10_points[0], p10_points[1], datetime.fromisoformat("2024-03-20T12:58:00-04:00"), False, False
+    )
     p11_points = get_random_stamford_bridge_point()
     p11 = ProcessedPoint(p11_points[0], p11_points[1], datetime.fromisoformat("2024-03-20T13:03:00-04:00"), False, True)
 
@@ -185,23 +192,29 @@ def test_loiter_success_multiple_in_same_geohash():
 
     loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 2
-    
+
     loiter1 = loiters[0]
-    assert loiter1.geohash_low == 'gcpug'
+    assert loiter1.geohash_low == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points1, loiter1.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points1, loiter1.processed_points, strict=False)
+    )
     loiter1_geometry = shapely.from_wkt(loiter1.geometry)
     expected_linestring1 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points1])
     assert loiter1_geometry.equals_exact(expected_linestring1, 1e-10)
     assert loiter1.start_time == p2.timestamp
     assert loiter1.end_time == p6.timestamp
-    
+
     loiter2 = loiters[1]
-    assert loiter2.geohash_low == 'gcpug'
+    assert loiter2.geohash_low == "gcpug"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points2, loiter2.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points2, loiter2.processed_points, strict=False)
+    )
     loiter2_geometry = shapely.from_wkt(loiter2.geometry)
     expected_linestring2 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points2])
     assert loiter2_geometry.equals_exact(expected_linestring2, 1e-10)
@@ -233,7 +246,9 @@ def test_loiter_success_multiple_in_different_geohash():
     p9_points = get_random_emirates_stadium_point()
     p9 = ProcessedPoint(p9_points[0], p9_points[1], datetime.fromisoformat("2024-03-20T12:53:00-04:00"), False, False)
     p10_points = get_random_emirates_stadium_point()
-    p10 = ProcessedPoint(p10_points[0], p10_points[1], datetime.fromisoformat("2024-03-20T12:58:00-04:00"), False, False)
+    p10 = ProcessedPoint(
+        p10_points[0], p10_points[1], datetime.fromisoformat("2024-03-20T12:58:00-04:00"), False, False
+    )
     p11_points = get_random_emirates_stadium_point()
     p11 = ProcessedPoint(p11_points[0], p11_points[1], datetime.fromisoformat("2024-03-20T13:03:00-04:00"), False, True)
 
@@ -243,24 +258,28 @@ def test_loiter_success_multiple_in_different_geohash():
     loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 2
 
-
     loiter1 = loiters[0]
-    assert loiter1.geohash_low == 'gcpug'
+    assert loiter1.geohash_low == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points1, loiter1.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points1, loiter1.processed_points, strict=False)
+    )
     loiter1_geometry = shapely.from_wkt(loiter1.geometry)
     expected_linestring1 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points1])
     assert loiter1_geometry.equals_exact(expected_linestring1, 1e-10)
     assert loiter1.start_time == p2.timestamp
     assert loiter1.end_time == p6.timestamp
 
-
     loiter2 = loiters[1]
-    assert loiter2.geohash_low == 'gcpvm'
+    assert loiter2.geohash_low == "gcpvm"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
-    assert all(p.lat == point.lat and p.lon == point.lon for p, point in zip(known_loiter_points2, loiter2.processed_points))
+    assert all(
+        p.lat == point.lat and p.lon == point.lon
+        for p, point in zip(known_loiter_points2, loiter2.processed_points, strict=False)
+    )
     loiter2_geometry = shapely.from_wkt(loiter2.geometry)
     expected_linestring2 = shapely.LineString([(p.lon, p.lat) for p in known_loiter_points2])
     assert loiter2_geometry.equals_exact(expected_linestring2, 1e-10)

@@ -1,8 +1,5 @@
-import random
 import uuid
 from datetime import datetime
-
-import shapely
 
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track

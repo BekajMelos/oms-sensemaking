@@ -5,11 +5,9 @@ from typing import Dict, List
 from uuid import UUID
 
 from dotenv import load_dotenv
-from shapely import LineString
-
-from oms_sensemaking.models.track import Track
 from oms_sensemaking.models.processed_point import ProcessedPoint
-
+from oms_sensemaking.models.track import Track
+from shapely import LineString
 
 load_dotenv()
 
@@ -17,13 +15,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 # TODO could use pydantic for these settings or a python settings file
-VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=int(
-    os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
+VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=int(os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
 LOITER_MIN_TIME = timedelta(seconds=int(os.environ["LOITER_MIN_TIME"]))
 
 
 class PotentialLoiter:
-
     def __init__(self, start_time: datetime, latest_time: datetime):
         self.start_time = start_time
         self.latest_time = latest_time
@@ -36,9 +32,15 @@ class PotentialLoiter:
 
 
 class Loiter:
-
-    def __init__(self, track_node_id: UUID, geohash_low: str, start_time: datetime,
-                 end_time: datetime, processed_points: List[ProcessedPoint], geometry: str):
+    def __init__(
+        self,
+        track_node_id: UUID,
+        geohash_low: str,
+        start_time: datetime,
+        end_time: datetime,
+        processed_points: List[ProcessedPoint],
+        geometry: str
+    ):
         self.track_node_id = track_node_id
         self.geohash_low = geohash_low
         self.start_time = start_time
@@ -59,13 +61,12 @@ class LoiterService:
     @classmethod
     def detect_loiters(cls, track: Track) -> List[Loiter]:
         """
-        Check for Loiter Events. Collect a list of prospective loiters. Check each of them to make 
-        sure they are long enough aka > LOITER_MIN_TIME.
-        If not, it wasn't long enough. Ignore.
-	    If so, it's a valid loiter.
-        Create a Loiter Object and add it to the list to be returned
-	    :param Track object:
-	    :return: List[Loiter] list of loiter events found
+        Check for Loiter Events. Collect a list of prospective loiters. Check each of them to make
+        sure they are long enough aka > LOITER_MIN_TIME. If not, it wasn't long enough. Ignore. If
+        so, it's a valid loiter. Create a Loiter Object and add it to the list to be returned.
+
+        :param Track object:
+        :return: List[Loiter] list of loiter events found
         """
 
         LOGGER.info(f"Detecting Loiters in {track}")
@@ -83,36 +84,43 @@ class LoiterService:
                     loiter_points: List[ProcessedPoint] = []
                     for point in track.points:
                         # check for points within the loiter time window
-                        if (point.timestamp >= potential_loiter.start_time and 
-                            point.timestamp <= potential_loiter.latest_time):
+                        if (
+                            point.timestamp >= potential_loiter.start_time
+                            and point.timestamp <= potential_loiter.latest_time
+                        ):
                             loiter_points.append(point)
 
                     geometry = LineString([(point.lon, point.lat) for point in loiter_points]).wkt
-                    loiter = Loiter(track.track_node_id, geohash, loiter_points[0].timestamp,
-                                    loiter_points[-1].timestamp, loiter_points, geometry)
+                    loiter = Loiter(
+                        track.track_node_id,
+                        geohash,
+                        loiter_points[0].timestamp,
+                        loiter_points[-1].timestamp,
+                        loiter_points,
+                        geometry
+                    )
                     LOGGER.debug(f"Found Loiter: {loiter}")
                     confirmed_loiters.append(loiter)
 
-        return confirmed_loiters     
-    
+        return confirmed_loiters
 
     @staticmethod
     def find_prospective_loiters(points: List[ProcessedPoint]) -> Dict[str, List[PotentialLoiter]]:
         """
         Find Prospective Loiters
-        Checks through the points and captures all points that are within a single geohash and 
-        within the VALID_OBSERVED_THRESHOLD_SECONDS to build a list of prospective loiters 
-	    (PotentialLoiters). Keep adding points to a prospective loiter if they are within the 
+        Checks through the points and captures all points that are within a single geohash and
+        within the VALID_OBSERVED_THRESHOLD_SECONDS to build a list of prospective loiters
+        (PotentialLoiters). Keep adding points to a prospective loiter if they are within the
         geohash and the time threshold. Avoid accidentally removing valid loiters
 
         :param points: List of track points
-	    :return: Map of geohashes to a list of potential loiters within that geohash
+        :return: Map of geohashes to a list of potential loiters within that geohash
         """
 
         prospective_loiters = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-            if point.geohash_low in prospective_loiters.keys():
+            if point.geohash_low in prospective_loiters:
                 # existing geohash
                 last_loiters: List[PotentialLoiter] = prospective_loiters.get(point.geohash_low)
                 last_loiter = last_loiters[-1]
