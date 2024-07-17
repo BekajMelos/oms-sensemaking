@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help test build clean distclean lint lint-stats
+.PHONY: help test build clean distclean lint lint-stats type
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -22,7 +22,7 @@ lint-stats:
 	ruff check --statistics
 
 type: ## Run mypy type checker
-	mypy src --ignore-missing-imports --follow-imports=skip
+	mypy src
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
