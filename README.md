@@ -108,6 +108,9 @@ pre-commit install
 
 To integrate with Visual Studio Code, use the [Ruff extension for Visual Studio Code]
 
+##### PyCharm
+
+To integrate with PyCharm, use the [PyCharm Ruff plugin].
 
 ## Running Unit Tests
 
@@ -138,4 +141,5 @@ and store the results in the *dist* directory.
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
 [ruff]: https://docs.astral.sh/ruff/
 [Ruff extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
+[PyCharm Ruff plugin]: https://plugins.jetbrains.com/plugin/20574-ruff
 [black]: https://github.com/psf/black
