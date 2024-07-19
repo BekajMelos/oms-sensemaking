@@ -2,16 +2,13 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
-from dotenv import load_dotenv
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.models.track_entry import TrackEntry
 from oms_sensemaking.services.base_track_service import BaseTrackService
-
-load_dotenv()
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +28,7 @@ class PotentialMatch:
         start_time2: datetime,
         last_time1: datetime,
         last_time2: datetime,
-        true_cotravel: bool
+        true_cotravel: bool,
     ):
         self.track1 = track1
         self.track2 = track2
@@ -93,7 +90,7 @@ class CotravelService:
     """Service for detecting cotravel and lag/lead events"""
 
     @classmethod
-    def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
+    async def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
         """
         Takes a single track, queries for colocated observations
 
@@ -109,12 +106,12 @@ class CotravelService:
         # find matching points (colocations) for each point in the track
         for point in track.points:
             time = point.timestamp
-            track_entries: List[TrackEntry] = cls.get_points(
+            track_entries: List[TrackEntry] = await cls.get_points(
                 point.geohash_low,
                 track.track_node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
                 (time + MAX_LAG_LEAD_DURATION_SECONDS),
-                time
+                time,
             )
 
             # Create colocations from track entries
@@ -137,18 +134,17 @@ class CotravelService:
 
         # determine cotravels on each list
         for _, colocations in groups.items():
-            #
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
-            cotravels.extend(CotravelService.determine_cotravels(sorted_entries))
+            cotravels.extend(await CotravelService.determine_cotravels(sorted_entries))
 
         if cotravels:
             LOGGER.info(f"Found Cotravels: {cotravels}")
         return cotravels
 
     @staticmethod
-    def get_points(
+    async def get_points(
         geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
-    ) -> List[Colocation]:
+    ) -> List[TrackEntry]:
         """
         Find points in other tracks that match the geohash of the given point within the time
         intervals
@@ -163,7 +159,7 @@ class CotravelService:
         return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
 
     @staticmethod
-    def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
+    async def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
         """
         Given the list of colocations, that they meet the time requirements
 
@@ -172,7 +168,7 @@ class CotravelService:
         """
 
         completed: List[PotentialMatch] = []
-        to_add_to: PotentialMatch = None
+        to_add_to: Optional[PotentialMatch] = None
 
         for colocation in colocations:
             if to_add_to:
@@ -198,7 +194,7 @@ class CotravelService:
                         colocation.track_entry.start_time,
                         colocation.processed_point.timestamp,
                         colocation.track_entry.start_time,
-                        true_cotravel
+                        true_cotravel,
                     )
             else:
                 # if no potential match already exists, create and start checking
@@ -214,7 +210,7 @@ class CotravelService:
                     colocation.track_entry.start_time,
                     colocation.processed_point.timestamp,
                     colocation.track_entry.start_time,
-                    true_cotravel
+                    true_cotravel,
                 )
 
         # check the last point for a valid cotravel

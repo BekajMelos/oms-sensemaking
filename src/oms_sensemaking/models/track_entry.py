@@ -1,6 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
+from shapely import Point
+
 
 class TrackEntry:
     def __init__(
@@ -8,7 +10,7 @@ class TrackEntry:
         id: UUID,
         track_node_id: UUID,
         source_id: UUID,
-        geometry: str,
+        geometry: Point,
         geohash_low: str,
         geohash_high: str,
         timehash_low: str,

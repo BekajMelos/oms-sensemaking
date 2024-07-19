@@ -1,12 +1,14 @@
 import uuid
 from datetime import datetime
 
+import pytest
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.services.cotravel import CotravelService
 
 
-def test_cotravel_success():
+@pytest.mark.asyncio
+async def test_cotravel_success():
     # Note these points/timestamps are set to match the base_track_service hard coded "DB"
     p1 = ProcessedPoint(51.484423, -0.148931, datetime.fromisoformat("2024-03-20T12:05:00-04:00"), True, False)
     p2 = ProcessedPoint(51.465229, -0.186849, datetime.fromisoformat("2024-03-20T12:15:00-04:00"), False, False)
@@ -15,7 +17,7 @@ def test_cotravel_success():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3])
 
-    cotravels = CotravelService.detect_cotravels(track)
+    cotravels = await CotravelService.detect_cotravels(track)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]

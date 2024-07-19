@@ -2,10 +2,6 @@ import os
 from datetime import datetime
 
 import pygeohash as pgh
-from dotenv import load_dotenv
-
-load_dotenv()
-
 
 GEOHASH_LOW = int(os.environ["GEOHASH_LOW"])
 GEOHASH_HIGH = int(os.environ["GEOHASH_HIGH"])

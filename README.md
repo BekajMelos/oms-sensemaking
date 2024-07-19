@@ -59,6 +59,28 @@ there. This file will be detected and read at runtime.
 cp .env.template .env
 ```
 
+
+#### Environment Settings
+```
+# Geospatial Sensemaking Settings
+DEBUG=True                              # Option to see DEBUG log level
+VALID_OBSERVED_THRESHOLD_SECONDS=900    # Threshold for amount of between Track Point Observations
+CACHE_ENTRY_EXPIRE_SEC=5                # How long to wait for new points before creating a new Track
+GEOHASH_LOW=5                           # Low geohash
+GEOHASH_HIGH=7                          # High geohash
+POLL_PERIOD_SECONDS=10                  # How often to poll for new incoming Attributes
+
+# Loiter Settings
+DETECT_LOITERS=True                     # Toggle on/off Loiter Detection
+LOITER_MIN_TIME=900                     # Minimum amount of time for a valid Loiter Event
+
+# Cotravel Settings
+DETECT_COTRAVELS=True                   # Toggle on/off Cotravel Detection
+MIN_COTRAVEL_DURATION_SECONDS=1200      # Minimum between Objects in a Track for a Cotravel Event
+MIN_LAG_LEAD_DURATION_SECONDS=1200      # Minimum amount between Objects in a Track for a Lag/Lead Event
+MAX_LAG_LEAD_DURATION_SECONDS=2700      # Maximum between Objects in a Track for a Lag/Lead Event
+```
+
 ### Code Quality
 
 The *oms-sensemaking* project is configured to use [ruff] for code linting and
@@ -123,6 +145,11 @@ and/or the [MyPy extension for Visual Studio Code]
 ##### PyCharm
 
 To integrate with PyCharm, use the [PyCharm Ruff plugin].
+
+## Running the Application
+```
+python -m oms_sensemaking produce data/simple_cotravel_example.csv
+```
 
 ## Running Unit Tests
 

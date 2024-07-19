@@ -26,7 +26,7 @@ TRACK_ENTRIES_DB = {
             "abcdefgh",
             True,
             False,
-            datetime.fromisoformat("2024-03-20T12:00:00-04:00")
+            datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         )
     ],
     "gcpug": [
@@ -41,7 +41,7 @@ TRACK_ENTRIES_DB = {
             "abcdefgh",
             False,
             False,
-            datetime.fromisoformat("2024-03-20T12:10:00-04:00")
+            datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
         )
     ],
     "gcpuf": [
@@ -56,7 +56,7 @@ TRACK_ENTRIES_DB = {
             "abcdefgh",
             False,
             True,
-            datetime.fromisoformat("2024-03-20T12:20:00-04:00")
+            datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         )
     ],
     "abcdef": [
@@ -71,9 +71,9 @@ TRACK_ENTRIES_DB = {
             "abcdefgh",
             False,
             False,
-            datetime.fromisoformat("2024-03-20T12:10:00-04:00")
+            datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
         )
-    ]
+    ],
 }
 
 
