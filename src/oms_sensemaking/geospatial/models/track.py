@@ -1,4 +1,5 @@
 """Provides Track model."""
+
 from typing import List
 from uuid import UUID
 

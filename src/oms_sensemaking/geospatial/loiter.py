@@ -70,11 +70,12 @@ class LoiterService:
         :param track: The track to analyze.
         :return: List[Loiter] list of loiter events found
         """
-        LOGGER.info(f"Detecting Loiters in {track}")
+
+        LOGGER.info(f"Detecting Loiters in {track.track_node_id}")
         confirmed_loiters: List[Loiter] = []
         prospective_loiters: Dict[str, List[PotentialLoiter]] = cls.find_prospective_loiters(track.points)
 
-        # check for potential lotiers that are long enough (> LOITER_MIN_TIME)
+        # check for potential loiters that are long enough (> LOITER_MIN_TIME)
         # TODO could also check for loiters across geohashes that could be combined
         for geohash, potential_loiters in prospective_loiters.items():
             LOGGER.debug(f"Prospective Loiter: {geohash}: {potential_loiters}")
@@ -103,7 +104,7 @@ class LoiterService:
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            LOGGER.debug(f"Found Loiters: {confirmed_loiters}")
+            LOGGER.info(f"Found Loiters: {confirmed_loiters}")
         return confirmed_loiters
 
     @staticmethod

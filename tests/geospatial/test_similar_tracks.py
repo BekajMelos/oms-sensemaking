@@ -1,4 +1,5 @@
 """Tests for similar tracks sensemaker."""
+
 import uuid
 from datetime import datetime
 

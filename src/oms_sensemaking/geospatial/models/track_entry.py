@@ -1,4 +1,5 @@
 """Provides TrackEntry model."""
+
 from datetime import datetime
 from uuid import UUID
 

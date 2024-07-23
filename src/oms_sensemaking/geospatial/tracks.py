@@ -1,4 +1,5 @@
 """Provides utilities for working with tracks."""
+
 import asyncio
 import logging
 import uuid
@@ -20,7 +21,7 @@ CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
 LOGGER = logging.getLogger(__name__)
 
-TRACK_CREATED_EVENT: str = 'track_created'
+TRACK_CREATED_EVENT: str = "track_created"
 
 # FAKE DB
 NODE_UUID1 = uuid.uuid4()
@@ -90,9 +91,9 @@ TRACK_ENTRIES_DB = {
 }
 
 
-class Attribute:
-    def __init__(self, identifier: str, lat: float, lon: float, timestamp=None):
-        self.identifier = identifier
+class PointAttribute:
+    def __init__(self, track_node_id: uuid.UUID, lat: float, lon: float, timestamp=None):
+        self.track_node_id = track_node_id
         self.lat = lat
         self.lon = lon
         self.timestamp = timestamp
@@ -193,20 +194,23 @@ class TrackCacheService(PubSub):
     def __init__(self, q: asyncio.Queue):
         super().__init__()
         self.q = q
-        self.cache: Dict[str, List[Tuple[datetime, Attribute]]] = defaultdict(list)
+        self.cache: Dict[uuid.UUID, List[Tuple[datetime, PointAttribute]]] = defaultdict(list)
 
     async def add_point(self, point):
-        self.cache[point.identifier].append((datetime.now(), point))
+        self.cache[point.track_node_id].append((datetime.now(), point))
 
-    async def check_expirations(self):
+    async def check_expirations(self) -> None:
         """Check for Points that have waited past the expiration time and should be processed."""
+
         LOGGER.info("Checking Expirations")
         now = datetime.now()
-        for key in list(self.cache.keys()):
-            if self.cache[key][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
-                points: List[Attribute] = self.cache.pop(key)
+        for track_node_id in list(self.cache.keys()):
+            if self.cache[track_node_id][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
+                points: List[Tuple[datetime, PointAttribute]] = self.cache.pop(track_node_id)
 
-                await self.create_track(points)
+                # TODO need to test why some are less than 2
+                if len(points) > 2:
+                    await self.create_track(track_node_id, points)
 
     async def wait_for_events(self) -> None:
         """Wait for events to enter the queue."""
@@ -227,22 +231,25 @@ class TrackCacheService(PubSub):
         """Handle incoming event."""
         await self.add_point(point)
 
-    async def create_track(self, points) -> Track:
+    async def create_track(self, track_node_id: uuid.UUID, points: List) -> Track:
         """
         Combine the points into a Track object.
 
         :param points: List of Point objects
         :return: The created Track
         """
-        track: Track = Track(uuid.uuid4(), [
-            ProcessedPoint(
-                shapely.Point(point[1].lon, point[1].lat),
-                point[1].timestamp,
-                idx == 0,
-                idx == len(points) - 1,
-            )
-            for idx, point in enumerate(points)
-        ])
+        track: Track = Track(
+            track_node_id,
+            [
+                ProcessedPoint(
+                    shapely.Point(point[1].lon, point[1].lat),
+                    point[1].timestamp,
+                    idx == 0,
+                    idx == len(points) - 1,
+                )
+                for idx, point in enumerate(points)
+            ],
+        )
 
         self.publish(TRACK_CREATED_EVENT, track)
 
@@ -261,6 +268,6 @@ async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:
     df = pd.read_csv(file_name)
     LOGGER.debug(df)
     for _, row in df.iterrows():
-        point = Attribute(identifier=row["r"], lat=row["lat"], lon=row["lon"])
+        point = PointAttribute(row["r"], row["lat"], row["lon"])
         point.timestamp = datetime.fromtimestamp(int(row["now"]), tz=timezone.utc)
         await q.put(point)

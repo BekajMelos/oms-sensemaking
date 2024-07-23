@@ -1,4 +1,5 @@
 """PyTest Configuration."""
+
 from logging.config import dictConfig
 
 from dotenv import load_dotenv

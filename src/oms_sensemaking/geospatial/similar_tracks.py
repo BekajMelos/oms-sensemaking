@@ -1,4 +1,5 @@
 """Provides "similar" sensemaker."""
+
 import logging
 import uuid
 from queue import PriorityQueue
@@ -52,7 +53,7 @@ class MostSimilarTrackService:
         :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
-        LOGGER.info(f"Looking for similar tracks to {track}")
+        LOGGER.info(f"Looking for similar tracks to {track.track_node_id}")
 
         similar_results: TopSimilar = TopSimilar()
 
@@ -68,7 +69,6 @@ class MostSimilarTrackService:
 
         seen_groups = []
         for similar_track_group in similar_track_groups:
-
             # Remove any representations of the track of interest itself
             if similar_track_group.track_node_id == track.track_node_id:
                 continue
