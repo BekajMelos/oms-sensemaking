@@ -87,7 +87,7 @@ class LoiterService:
                         ):
                             loiter_points.append(point)
 
-                    geometry = LineString([(point.lon, point.lat) for point in loiter_points]).wkt
+                    geometry = LineString([point.geometry for point in loiter_points]).wkt
                     loiter = Loiter(
                         track.track_node_id,
                         geohash,

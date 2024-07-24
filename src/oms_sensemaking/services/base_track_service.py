@@ -3,8 +3,11 @@ import uuid
 from datetime import datetime
 from typing import List
 
+import shapely
+from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
+from oms_sensemaking.models.processed_point import ProcessedPoint
+from oms_sensemaking.models.track import Track
 from oms_sensemaking.models.track_entry import TrackEntry
-from shapely import Point
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ TRACK_ENTRIES_DB = {
             uuid.uuid4(),
             NODE_UUID1,
             SOURCE_UUID,
-            Point((-0.165222, 51.482286)),
+            shapely.Point((-0.165222, 51.482286)),
             "gcpuu",
             "gcpugab",
             "abcdef",
@@ -34,7 +37,7 @@ TRACK_ENTRIES_DB = {
             uuid.uuid4(),
             NODE_UUID1,
             SOURCE_UUID,
-            Point((-0.210562, 51.466103)),
+            shapely.Point((-0.210562, 51.466103)),
             "gcpug",
             "gcpugab",
             "abcdef",
@@ -49,7 +52,7 @@ TRACK_ENTRIES_DB = {
             uuid.uuid4(),
             NODE_UUID1,
             SOURCE_UUID,
-            Point((-0.229466, 51.487613)),
+            shapely.Point((-0.229466, 51.487613)),
             "gcpuf",
             "gcpugab",
             "abcdef",
@@ -64,7 +67,7 @@ TRACK_ENTRIES_DB = {
             uuid.uuid4(),
             NODE_UUID2,
             SOURCE_UUID,
-            Point((0, 1)),
+            shapely.Point((0, 1)),
             "abcdef",
             "abcdefgh",
             "abcdef",
@@ -103,3 +106,60 @@ class BaseTrackService:
         """
         # TODO actually hit the database
         return TRACK_ENTRIES_DB.get(geohash_low, [])
+
+    @staticmethod
+    async def query_for_similar_tracks(
+        first: shapely.Point, last: shapely.Point, query_distance: float
+    ) -> List[GroupByTrackNodeIdProjection]:
+        """
+        Primary method to obtain the other tracks that have either the same start or end point provided.
+        The distance is the range from the point to include in the results.
+        The query requires that a track has at least 2 points.
+
+        SELECT track_node_id, ARRAY_AGG(ST_AsGeoJSON(ST_Transform(geometry, 4326), 9, 2)
+            ORDER BY start_time) AS track_bookends
+            FROM tracks
+            WHERE (is_start = true AND ST_DWithin(geometry, ST_Transform(ST_GeomFromGeoJSON(:geoJsonStart)::geometry,
+                4326), :distance)) OR (is_end = true AND ST_DWithin(geometry,
+                ST_Transform(ST_GeomFromGeoJSON(:geoJsonEnd)::geometry, 4326), :distance))
+            GROUP BY track_node_id
+            HAVING COUNT(geometry) >= 2
+
+        :param first: Point of the first point in the track
+        :return: List of GroupByTrackNodeIdProjections
+        """
+        return [GroupByTrackNodeIdProjection(NODE_UUID1, [])]
+
+    @staticmethod
+    async def get_track(track_node_id: uuid.UUID) -> Track:
+        """
+        Get Track by UUID
+
+        :param track_node_id: node id of the Track to retrieve
+        :return: Track object
+        """
+
+        # TODO actually hit a DB
+        return Track(
+            track_node_id,
+            [
+                ProcessedPoint(
+                    TRACK_ENTRIES_DB["gcpuu"][0].geometry,
+                    TRACK_ENTRIES_DB["gcpuu"][0].start_time,
+                    TRACK_ENTRIES_DB["gcpuu"][0].is_start,
+                    TRACK_ENTRIES_DB["gcpuu"][0].is_end,
+                ),
+                ProcessedPoint(
+                    TRACK_ENTRIES_DB["gcpug"][0].geometry,
+                    TRACK_ENTRIES_DB["gcpug"][0].start_time,
+                    TRACK_ENTRIES_DB["gcpug"][0].is_start,
+                    TRACK_ENTRIES_DB["gcpug"][0].is_end,
+                ),
+                ProcessedPoint(
+                    TRACK_ENTRIES_DB["gcpuf"][0].geometry,
+                    TRACK_ENTRIES_DB["gcpuf"][0].start_time,
+                    TRACK_ENTRIES_DB["gcpuf"][0].is_start,
+                    TRACK_ENTRIES_DB["gcpuf"][0].is_end,
+                ),
+            ],
+        )

@@ -5,14 +5,15 @@ import pytest
 import shapely
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.cotravel import CotravelService
+from oms_sensemaking.services.similar_tracks import MostSimilarTrackService
 
 
 @pytest.mark.asyncio
-async def test_cotravel_success():
+async def test_most_similar_tracks_success():
     # Note these points/timestamps are set to match the base_track_service hard coded "DB"
+    # first point is wayyy east of london
     p1 = ProcessedPoint(
-        shapely.Point(-0.148931, 51.484423), datetime.fromisoformat("2024-03-20T12:05:00-04:00"), True, False
+        shapely.Point(0.226432, 51.479597), datetime.fromisoformat("2024-03-20T12:05:00-04:00"), True, False
     )
     p2 = ProcessedPoint(
         shapely.Point(-0.186849, 51.465229), datetime.fromisoformat("2024-03-20T12:15:00-04:00"), False, False
@@ -24,12 +25,7 @@ async def test_cotravel_success():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3])
 
-    cotravels = await CotravelService.detect_cotravels(track)
+    similar_tracks = await MostSimilarTrackService.most_similar_track_node_ids(track)
 
-    assert len(cotravels) == 1
-    cotravel = cotravels[0]
-    assert cotravel.track1 == track.track_node_id
-    assert cotravel.start_time1 == p1.timestamp
-    assert cotravel.start_time2 == datetime.fromisoformat("2024-03-20T12:00:00-04:00")
-    assert cotravel.last_time1 == p3.timestamp
-    assert cotravel.last_time2 == datetime.fromisoformat("2024-03-20T12:20:00-04:00")
+    assert len(similar_tracks.top_similarities.queue) == 1
+    assert similar_tracks.top_similarities.queue[0][0] == 0.75

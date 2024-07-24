@@ -11,6 +11,7 @@ from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.services.cotravel import CotravelService
 from oms_sensemaking.services.loiter import LoiterService
+from oms_sensemaking.services.similar_tracks import MostSimilarTrackService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=int(os.environ["CACHE_ENTRY_EXPIRE_SEC"]))
 DETECT_LOITERS = os.environ["DETECT_LOITERS"].lower() in ["true", "yes", "on"]
 DETECT_COTRAVELS = os.environ["DETECT_COTRAVELS"].lower() in ["true", "yes", "on"]
+SIMILAR_TRACKS = os.environ["SIMILAR_TRACKS"].lower() in ["true", "yes", "on"]
 POLL_PERIOD_SECONDS = int(os.environ["POLL_PERIOD_SECONDS"])
 
 
@@ -83,8 +85,7 @@ class TrackCacheService:
         """
         processed_points = [
             ProcessedPoint(
-                point[1].lat,
-                point[1].lon,
+                shapely.Point(point[1].lon, point[1].lat),
                 point[1].timestamp,
                 idx == 0,
                 idx == len(points) - 1,
@@ -100,7 +101,7 @@ class TrackCacheService:
         :return: None
         """
         LOGGER.info(f"Additional Processing on {track}")
-        LOGGER.debug(shapely.LineString([(point.lon, point.lat) for point in track.points]))
+        LOGGER.debug(shapely.LineString([(point.geometry.x, point.geometry.y) for point in track.points]))
 
         # TODO maybe these shouldn't be hard coded and should be "registered"?
         if DETECT_COTRAVELS:
@@ -108,3 +109,6 @@ class TrackCacheService:
 
         if DETECT_LOITERS:
             _ = await LoiterService.detect_loiters(track)
+
+        if SIMILAR_TRACKS:
+            _ = await MostSimilarTrackService.most_similar_track_node_ids(track)

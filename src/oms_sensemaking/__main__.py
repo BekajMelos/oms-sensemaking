@@ -12,7 +12,7 @@ load_dotenv()
 
 from oms_sensemaking.services.track_cache import Attribute, TrackCacheService  # noqa: E402
 
-DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "yes"]
+DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "yes", "on"]
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s-%(filename)s-%(levelname)s: %(message)s")

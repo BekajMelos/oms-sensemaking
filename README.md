@@ -79,6 +79,11 @@ DETECT_COTRAVELS=True                   # Toggle on/off Cotravel Detection
 MIN_COTRAVEL_DURATION_SECONDS=1200      # Minimum between Objects in a Track for a Cotravel Event
 MIN_LAG_LEAD_DURATION_SECONDS=1200      # Minimum amount between Objects in a Track for a Lag/Lead Event
 MAX_LAG_LEAD_DURATION_SECONDS=2700      # Maximum between Objects in a Track for a Lag/Lead Event
+
+# Similar Track Settings
+SIMILAR_TRACKS=False                    # Toggle on/off Similar Track Calculations
+N_TRACKS=5                              # Number of similar tracks to return
+WITHIN_METERS=3000.0                    # Used to define the search space for potential similar tracks
 ```
 
 ### Code Quality
