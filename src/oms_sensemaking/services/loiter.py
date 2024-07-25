@@ -1,9 +1,9 @@
 import logging
-import os
 from datetime import datetime, timedelta
 from typing import Dict, List
 from uuid import UUID
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from shapely import LineString
@@ -11,9 +11,8 @@ from shapely import LineString
 LOGGER = logging.getLogger(__name__)
 
 
-# TODO could use pydantic for these settings or a python settings file
-VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=int(os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
-LOITER_MIN_TIME = timedelta(seconds=int(os.environ["LOITER_MIN_TIME"]))
+VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=SETTINGS.valid_observed_threshold_seconds)
+LOITER_MIN_TIME = timedelta(seconds=SETTINGS.loiter_min_time)
 
 
 class PotentialLoiter:

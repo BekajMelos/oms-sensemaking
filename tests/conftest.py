@@ -1,14 +1,7 @@
-import logging
-import os
+from logging.config import dictConfig
 
 from dotenv import load_dotenv
+from oms_sensemaking.config import LogConfig
 
 load_dotenv()
-
-DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "yes", "on"]
-LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
-
-
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s-%(filename)s-%(levelname)s: %(message)s")
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(LOG_LEVEL)
+dictConfig(LogConfig().model_dump())  # initialize logging

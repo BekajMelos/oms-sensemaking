@@ -1,23 +1,21 @@
 import argparse
 import asyncio
 import logging
-import os
 import time
 from datetime import datetime, timezone
+from logging.config import dictConfig
 
 import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from oms_sensemaking.services.track_cache import Attribute, TrackCacheService  # noqa: E402
+from oms_sensemaking.config import LogConfig
+from oms_sensemaking.services.track_cache import Attribute, TrackCacheService
 
-DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "yes", "on"]
-LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
-
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s-%(filename)s-%(levelname)s: %(message)s")
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(LOG_LEVEL)
+
+dictConfig(LogConfig().model_dump())  # initialize logging
 
 
 async def produce(q: asyncio.Queue, file_name: str) -> None:
