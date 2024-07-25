@@ -1,19 +1,16 @@
 import logging
-import os
 import uuid
 from queue import PriorityQueue
 from typing import List, Set
 
 from geolib import geohash
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.services.base_track_service import BaseTrackService
 
 LOGGER = logging.getLogger(__name__)
-
-N_TRACKS = int(os.environ["N_TRACKS"])
-WITHIN_METERS = float(os.environ["WITHIN_METERS"])
 
 
 class ComparisonResult:
@@ -30,7 +27,7 @@ class ComparisonResult:
 
 class TopSimilar:
     def __init__(self):
-        self.top_similarities = PriorityQueue(maxsize=N_TRACKS)
+        self.top_similarities = PriorityQueue(maxsize=SETTINGS.n_tracks)
 
     def __str__(self):
         return str((self.top_similarities.maxsize, list(self.top_similarities.queue)))
@@ -64,7 +61,7 @@ class MostSimilarTrackService:
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
         similar_track_groups: List[GroupByTrackNodeIdProjection] = await BaseTrackService.query_for_similar_tracks(
-            first.geometry, last.geometry, WITHIN_METERS
+            first.geometry, last.geometry, SETTINGS.within_meters
         )
 
         seen_groups = []

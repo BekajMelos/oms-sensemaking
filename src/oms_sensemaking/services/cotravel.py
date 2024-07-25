@@ -1,10 +1,10 @@
 import logging
-import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.models.track_entry import TrackEntry
@@ -13,10 +13,10 @@ from oms_sensemaking.services.base_track_service import BaseTrackService
 LOGGER = logging.getLogger(__name__)
 
 
-VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=int(os.environ["VALID_OBSERVED_THRESHOLD_SECONDS"]))
-MIN_COTRAVEL_DURATION_SECONDS = timedelta(seconds=int(os.environ["MIN_COTRAVEL_DURATION_SECONDS"]))
-MIN_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=int(os.environ["MIN_LAG_LEAD_DURATION_SECONDS"]))
-MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=int(os.environ["MAX_LAG_LEAD_DURATION_SECONDS"]))
+VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=SETTINGS.valid_observed_threshold_seconds)
+MIN_COTRAVEL_DURATION_SECONDS = timedelta(seconds=SETTINGS.min_cotravel_duration_seconds)
+MIN_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.min_lag_lead_duration_seconds)
+MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.max_lag_lead_duration_seconds)
 
 
 class PotentialMatch:

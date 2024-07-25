@@ -1,12 +1,12 @@
 import asyncio
 import logging
-import os
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
 import shapely
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.processed_point import ProcessedPoint
 from oms_sensemaking.models.track import Track
 from oms_sensemaking.services.cotravel import CotravelService
@@ -16,11 +16,7 @@ from oms_sensemaking.services.similar_tracks import MostSimilarTrackService
 LOGGER = logging.getLogger(__name__)
 
 
-CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=int(os.environ["CACHE_ENTRY_EXPIRE_SEC"]))
-DETECT_LOITERS = os.environ["DETECT_LOITERS"].lower() in ["true", "yes", "on"]
-DETECT_COTRAVELS = os.environ["DETECT_COTRAVELS"].lower() in ["true", "yes", "on"]
-SIMILAR_TRACKS = os.environ["SIMILAR_TRACKS"].lower() in ["true", "yes", "on"]
-POLL_PERIOD_SECONDS = int(os.environ["POLL_PERIOD_SECONDS"])
+CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
 
 class Attribute:
@@ -71,7 +67,7 @@ class TrackCacheService:
 
             await self.check_expirations()
             # wait 10 seconds
-            await asyncio.sleep(POLL_PERIOD_SECONDS)
+            await asyncio.sleep(SETTINGS.poll_period_seconds)
 
     async def handle_event(self, point) -> None:
         """Handle incoming event"""
@@ -104,11 +100,11 @@ class TrackCacheService:
         LOGGER.debug(shapely.LineString([(point.geometry.x, point.geometry.y) for point in track.points]))
 
         # TODO maybe these shouldn't be hard coded and should be "registered"?
-        if DETECT_COTRAVELS:
+        if SETTINGS.detect_cotravels:
             _ = await CotravelService.detect_cotravels(track)
 
-        if DETECT_LOITERS:
+        if SETTINGS.detect_loiters:
             _ = await LoiterService.detect_loiters(track)
 
-        if SIMILAR_TRACKS:
+        if SETTINGS.similar_tracks:
             _ = await MostSimilarTrackService.most_similar_track_node_ids(track)
