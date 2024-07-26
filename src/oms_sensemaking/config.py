@@ -7,7 +7,6 @@ class LogConfig(BaseSettings):
     """Logging configuration to be set for the server."""
 
     logger_name: str = 'oms_sensemaker'
-
     log_format: str = '{asctime:<20s}{levelname:<8s}{name} {message}'
     log_level: str = 'DEBUG'
 

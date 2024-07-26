@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from oms_sensemaking.config import LogConfig
-from oms_sensemaking.geospatial.producers import produce_attributes_from_csv
 from oms_sensemaking.geospatial.track_cache import TrackCacheService
+from oms_sensemaking.geospatial.tracks import produce_attributes_from_csv
 
 LOGGER = logging.getLogger(__name__)
 

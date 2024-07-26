@@ -6,10 +6,10 @@ from typing import List, Optional
 from uuid import UUID
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.geospatial.base_track_service import BaseTrackService
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
+from oms_sensemaking.geospatial.tracks import BaseTrackService
 
 LOGGER = logging.getLogger(__name__)
 

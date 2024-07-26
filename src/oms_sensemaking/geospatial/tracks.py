@@ -1,14 +1,17 @@
+import asyncio
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
+import pandas as pd
 import shapely
 
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
+from oms_sensemaking.geospatial.track_cache import Attribute
 
 LOGGER = logging.getLogger(__name__)
 
@@ -163,3 +166,20 @@ class BaseTrackService:
                 ),
             ],
         )
+
+
+async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:
+    """
+    Publish CSV data to an asyncio Queue.
+
+    :param q: The Queue to publish data to.
+    :param file_name: The CSV file to parse.
+    """
+    LOGGER.info("Producer: Running")
+
+    df = pd.read_csv(file_name)
+    LOGGER.debug(df)
+    for _, row in df.iterrows():
+        point = Attribute(identifier=row["r"], lat=row["lat"], lon=row["lon"])
+        point.timestamp = datetime.fromtimestamp(int(row["now"]), tz=timezone.utc)
+        await q.put(point)

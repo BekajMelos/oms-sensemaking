@@ -6,10 +6,10 @@ from typing import List, Set
 from geolib import geohash
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.geospatial.base_track_service import BaseTrackService
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.tracks import BaseTrackService
 
 LOGGER = logging.getLogger(__name__)
 
