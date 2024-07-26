@@ -1,3 +1,4 @@
+"""Provides "similar" sensemaker."""
 import logging
 import uuid
 from queue import PriorityQueue
@@ -41,12 +42,12 @@ class TopSimilar:
 
 
 class MostSimilarTrackService:
-    """Service for discovering most similar tracks"""
+    """Service for discovering most similar tracks."""
 
     @classmethod
     async def most_similar_track_node_ids(cls, track: Track) -> TopSimilar:
         """
-        Primary method to obtain N-most similar track objects to the track provided
+        Primary method to obtain N-most similar track objects to the track provided.
 
         :param Track object: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
@@ -104,7 +105,7 @@ class MostSimilarTrackService:
     @staticmethod
     async def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
         """
-        Helper method to obtain object for processing from groupBy query projection results.
+        Obtain object for processing from groupBy query projection results.
 
         :param group_projection: GroupByTrackNodeIdProjection
         :return: Track object
@@ -114,10 +115,15 @@ class MostSimilarTrackService:
     @staticmethod
     async def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
         """
-        Method to obtain a bufferedGeoHash set from the points provided. For each point, a reference geohash with one
-        less character is added to the empty set. The neighbors of the reference hash are added to the set.
-            Note: The lower precision geohash was used initially for test and evaluation purposes. This method should be
-        tested with a more robust set of representative data in order to determine the most appropriate hash levels.
+        Obtain a bufferedGeoHash set from the points provided.
+
+        For each point, a reference geohash with one less character is added to
+        the empty set. The neighbors of the reference hash are added to the set.
+
+            Note: The lower precision geohash was used initially for test and
+            evaluation purposes. This method should be tested with a more
+            robust set of representative data in order to determine the most
+            appropriate hash levels.
 
         :param points: list of track points
         :return: Set of geohashes

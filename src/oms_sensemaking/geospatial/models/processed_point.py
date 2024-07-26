@@ -1,3 +1,4 @@
+"""Provides ProcessedPoint model."""
 from datetime import datetime
 
 import shapely
@@ -7,6 +8,8 @@ from oms_sensemaking.config import SETTINGS
 
 
 class ProcessedPoint:
+    """Represents a processed point."""
+
     def __init__(self, geometry: shapely.Point, timestamp: datetime, is_start: bool, is_end: bool):
         self.geometry = geometry
         # TODO: should require timezone

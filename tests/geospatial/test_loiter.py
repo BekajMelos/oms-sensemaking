@@ -1,3 +1,4 @@
+"""Tests for loiter sensemaker."""
 import random
 import uuid
 from datetime import datetime
@@ -31,7 +32,7 @@ def get_random_emirates_stadium_point() -> shapely.Point:
 
 @pytest.mark.asyncio
 async def test_loiter_success():
-    """Simple success track"""
+    """Simple success track."""
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -75,7 +76,7 @@ async def test_loiter_success():
 
 @pytest.mark.asyncio
 async def test_loiter_invalid_not_long_enough():
-    """Loiter is only 8 minutes vs required 15"""
+    """Loiter is only 8 minutes vs required 15."""
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -100,7 +101,7 @@ async def test_loiter_invalid_not_long_enough():
 
 @pytest.mark.asyncio
 async def test_loiter_fails_valid_observed_threshold():
-    """Failure. Unobserved for too long"""
+    """Failure. Unobserved for too long."""
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -130,7 +131,7 @@ async def test_loiter_fails_valid_observed_threshold():
 
 @pytest.mark.asyncio
 async def test_loiter_fails_valid_observed_threshold_within_geohash():
-    """Don't remove valid loiters even if unobserved for too long"""
+    """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
     # East London
     p1 = ProcessedPoint(
@@ -174,7 +175,7 @@ async def test_loiter_fails_valid_observed_threshold_within_geohash():
 
 @pytest.mark.asyncio
 async def test_loiter_success_multiple_in_same_geohash():
-    """Two separate loiters in the same geohash"""
+    """Two separate loiters in the same geohash."""
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -241,7 +242,7 @@ async def test_loiter_success_multiple_in_same_geohash():
 
 @pytest.mark.asyncio
 async def test_loiter_success_multiple_in_different_geohash():
-    """Two separate loiters in different geohashes"""
+    """Two separate loiters in different geohashes."""
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
