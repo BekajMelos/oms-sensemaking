@@ -31,8 +31,8 @@ Issues = 'https://tex.gerbil-cloud.ts.net:3000/issues'
 
 [build-system]
 requires = [
-    'setuptools >= 70.3',
-    'setuptools_scm >= 8.1'
+    'setuptools==71.1.0',
+    'setuptools_scm==8.1'
 ]
 build-backend = 'setuptools.build_meta'
 

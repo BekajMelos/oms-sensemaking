@@ -13,12 +13,21 @@
 # -------------------------
 # Development dependencies
 # -------------------------
-build==1.2.1
 coverage==7.6.0
 mypy==1.11.0
 pre-commit==3.7.1
-pytest==8.2.2
+pytest==8.3.2
 pytest-cov==5.0.0
-pytest-asyncio==0.23.7
-ruff==0.5.4
+pytest-asyncio==0.23.8
+ruff==0.5.5
 types-shapely==2.0.0.20240714
+
+
+# -------------------------
+# Build dependencies
+# -------------------------
+build==1.2.1
+# The following dependencies are also defined in the pyroject.toml, where
+# they are used to create an isolated environment for buildint the project.
+setuptools==71.1.0
+setuptools_scm==8.1
