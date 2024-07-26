@@ -28,6 +28,6 @@ types-shapely==2.0.0.20240714
 # -------------------------
 build==1.2.1
 # The following dependencies are also defined in the pyroject.toml, where
-# they are used to create an isolated environment for buildint the project.
+# they are used to create an isolated environment for building the project.
 setuptools==71.1.0
 setuptools_scm==8.1
