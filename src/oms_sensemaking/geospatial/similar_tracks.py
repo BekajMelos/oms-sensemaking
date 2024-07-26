@@ -4,11 +4,12 @@ from queue import PriorityQueue
 from typing import List, Set
 
 from geolib import geohash
+
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.base_track_service import BaseTrackService
+from oms_sensemaking.geospatial.base_track_service import BaseTrackService
+from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,7 +122,6 @@ class MostSimilarTrackService:
         :param points: list of track points
         :return: Set of geohashes
         """
-
         buffered_geohash_set: Set[str] = set()
 
         for point in points:

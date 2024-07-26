@@ -2,6 +2,7 @@ from datetime import datetime
 
 import shapely
 from geolib import geohash
+
 from oms_sensemaking.config import SETTINGS
 
 

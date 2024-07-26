@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 from uuid import UUID
 
-from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
 from shapely import LineString
+
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +65,6 @@ class LoiterService:
         :param Track object:
         :return: List[Loiter] list of loiter events found
         """
-
         LOGGER.info(f"Detecting Loiters in {track}")
         confirmed_loiters: List[Loiter] = []
         prospective_loiters: Dict[str, List[PotentialLoiter]] = await cls.find_prospective_loiters(track.points)
@@ -113,7 +113,6 @@ class LoiterService:
         :param points: List of track points
         :return: Map of geohashes to a list of potential loiters within that geohash
         """
-
         prospective_loiters: Dict[str, List[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:

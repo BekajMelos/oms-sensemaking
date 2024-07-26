@@ -3,9 +3,9 @@ from datetime import datetime
 
 import pytest
 import shapely
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.cotravel import CotravelService
+from oms_sensemaking.geospatial.cotravel import CotravelService
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
 
 
 @pytest.mark.asyncio

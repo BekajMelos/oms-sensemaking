@@ -4,9 +4,9 @@ from datetime import datetime
 
 import pytest
 import shapely
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.loiter import LoiterService
+from oms_sensemaking.geospatial.loiter import LoiterService
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
 
 
 def get_random_stamford_bridge_point() -> shapely.Point:
@@ -32,7 +32,6 @@ def get_random_emirates_stadium_point() -> shapely.Point:
 @pytest.mark.asyncio
 async def test_loiter_success():
     """Simple success track"""
-
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -102,7 +101,6 @@ async def test_loiter_invalid_not_long_enough():
 @pytest.mark.asyncio
 async def test_loiter_fails_valid_observed_threshold():
     """Failure. Unobserved for too long"""
-
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -177,7 +175,6 @@ async def test_loiter_fails_valid_observed_threshold_within_geohash():
 @pytest.mark.asyncio
 async def test_loiter_success_multiple_in_same_geohash():
     """Two separate loiters in the same geohash"""
-
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False
@@ -245,7 +242,6 @@ async def test_loiter_success_multiple_in_same_geohash():
 @pytest.mark.asyncio
 async def test_loiter_success_multiple_in_different_geohash():
     """Two separate loiters in different geohashes"""
-
     # East London
     p1 = ProcessedPoint(
         shapely.Point(-0.030890, 51.509420), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), True, False

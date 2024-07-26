@@ -4,10 +4,11 @@ from datetime import datetime
 from typing import List
 
 import shapely
-from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.models.track_entry import TrackEntry
+
+from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.models.track_entry import TrackEntry
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,7 +139,6 @@ class BaseTrackService:
         :param track_node_id: node id of the Track to retrieve
         :return: Track object
         """
-
         # TODO actually hit a DB
         return Track(
             track_node_id,

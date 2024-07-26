@@ -6,12 +6,13 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
 import shapely
+
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.cotravel import CotravelService
-from oms_sensemaking.services.loiter import LoiterService
-from oms_sensemaking.services.similar_tracks import MostSimilarTrackService
+from oms_sensemaking.geospatial.cotravel import CotravelService
+from oms_sensemaking.geospatial.loiter import LoiterService
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.similar_tracks import MostSimilarTrackService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,7 +44,6 @@ class TrackCacheService:
 
     async def check_expirations(self):
         """Check for Points that have waited past the expiration time and should be processed"""
-
         LOGGER.info("Checking Expirations")
         now = datetime.now()
         for key in list(self.cache.keys()):
@@ -55,7 +55,6 @@ class TrackCacheService:
 
     async def wait_for_events(self) -> None:
         """Wait for events to enter the queue"""
-
         while True:
             LOGGER.info("Requesting messages from the queue")
             while not self.q.empty():
