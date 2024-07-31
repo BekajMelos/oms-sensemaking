@@ -1,16 +1,26 @@
+"""Provides utilities for working with tracks."""
+import asyncio
 import logging
 import uuid
-from datetime import datetime
-from typing import List
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Tuple
 
+import pandas as pd
 import shapely
-from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.models.track_entry import TrackEntry
+
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.pubsub import PubSub
+from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.models.track_entry import TrackEntry
+
+CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
 LOGGER = logging.getLogger(__name__)
 
+TRACK_CREATED_EVENT: str = 'track_created'
 
 # FAKE DB
 NODE_UUID1 = uuid.uuid4()
@@ -80,14 +90,28 @@ TRACK_ENTRIES_DB = {
 }
 
 
+class Attribute:
+    def __init__(self, identifier: str, lat: float, lon: float, timestamp=None):
+        self.identifier = identifier
+        self.lat = lat
+        self.lon = lon
+        self.timestamp = timestamp
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class BaseTrackService:
     @staticmethod
     def find_location_by_geohash(
         geohash_low: str, track_node_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> List[TrackEntry]:
         """
-        Find points in other tracks that match the geohash of the given point within the time
-        intervals.
+        Find points in other tracks that match the geohash of the given point within the time intervals.
+
         This query:
 
         SELECT distinct on (track_node_id) track_node_id, source_id, start_time
@@ -108,11 +132,12 @@ class BaseTrackService:
         return TRACK_ENTRIES_DB.get(geohash_low, [])
 
     @staticmethod
-    async def query_for_similar_tracks(
+    def query_for_similar_tracks(
         first: shapely.Point, last: shapely.Point, query_distance: float
     ) -> List[GroupByTrackNodeIdProjection]:
         """
         Primary method to obtain the other tracks that have either the same start or end point provided.
+
         The distance is the range from the point to include in the results.
         The query requires that a track has at least 2 points.
 
@@ -131,14 +156,13 @@ class BaseTrackService:
         return [GroupByTrackNodeIdProjection(NODE_UUID1, [])]
 
     @staticmethod
-    async def get_track(track_node_id: uuid.UUID) -> Track:
+    def get_track(track_node_id: uuid.UUID) -> Track:
         """
-        Get Track by UUID
+        Get Track by UUID.
 
         :param track_node_id: node id of the Track to retrieve
         :return: Track object
         """
-
         # TODO actually hit a DB
         return Track(
             track_node_id,
@@ -163,3 +187,80 @@ class BaseTrackService:
                 ),
             ],
         )
+
+
+class TrackCacheService(PubSub):
+    def __init__(self, q: asyncio.Queue):
+        super().__init__()
+        self.q = q
+        self.cache: Dict[str, List[Tuple[datetime, Attribute]]] = defaultdict(list)
+
+    async def add_point(self, point):
+        self.cache[point.identifier].append((datetime.now(), point))
+
+    async def check_expirations(self):
+        """Check for Points that have waited past the expiration time and should be processed."""
+        LOGGER.info("Checking Expirations")
+        now = datetime.now()
+        for key in list(self.cache.keys()):
+            if self.cache[key][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
+                points: List[Attribute] = self.cache.pop(key)
+
+                await self.create_track(points)
+
+    async def wait_for_events(self) -> None:
+        """Wait for events to enter the queue."""
+        while True:
+            LOGGER.info("Requesting messages from the queue")
+            while not self.q.empty():
+                event = await self.q.get()
+
+                # this could be where we filter events for the points we want
+                await self.handle_event(event)
+                self.q.task_done()
+
+            await self.check_expirations()
+            # wait 10 seconds
+            await asyncio.sleep(SETTINGS.poll_period_seconds)
+
+    async def handle_event(self, point) -> None:
+        """Handle incoming event."""
+        await self.add_point(point)
+
+    async def create_track(self, points) -> Track:
+        """
+        Combine the points into a Track object.
+
+        :param points: List of Point objects
+        :return: The created Track
+        """
+        track: Track = Track(uuid.uuid4(), [
+            ProcessedPoint(
+                shapely.Point(point[1].lon, point[1].lat),
+                point[1].timestamp,
+                idx == 0,
+                idx == len(points) - 1,
+            )
+            for idx, point in enumerate(points)
+        ])
+
+        self.publish(TRACK_CREATED_EVENT, track)
+
+        return track
+
+
+async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:
+    """
+    Publish CSV data to an asyncio Queue.
+
+    :param q: The Queue to publish data to.
+    :param file_name: The CSV file to parse.
+    """
+    LOGGER.info("Producer: Running")
+
+    df = pd.read_csv(file_name)
+    LOGGER.debug(df)
+    for _, row in df.iterrows():
+        point = Attribute(identifier=row["r"], lat=row["lat"], lon=row["lon"])
+        point.timestamp = datetime.fromtimestamp(int(row["now"]), tz=timezone.utc)
+        await q.put(point)

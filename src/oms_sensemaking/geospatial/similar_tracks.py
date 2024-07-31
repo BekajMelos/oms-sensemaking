@@ -1,14 +1,16 @@
+"""Provides "similar" sensemaker."""
 import logging
 import uuid
 from queue import PriorityQueue
 from typing import List, Set
 
 from geolib import geohash
+
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.services.base_track_service import BaseTrackService
+from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.tracks import BaseTrackService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +42,14 @@ class TopSimilar:
 
 
 class MostSimilarTrackService:
-    """Service for discovering most similar tracks"""
+    """Service for discovering most similar tracks."""
 
     @classmethod
-    async def most_similar_track_node_ids(cls, track: Track) -> TopSimilar:
+    def most_similar_track_node_ids(cls, track: Track) -> TopSimilar:
         """
-        Primary method to obtain N-most similar track objects to the track provided
+        Primary method to obtain N-most similar track objects to the track provided.
 
-        :param Track object: Track object to detect cotravels on
+        :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.info(f"Looking for similar tracks to {track}")
@@ -56,11 +58,11 @@ class MostSimilarTrackService:
 
         first: ProcessedPoint = track.points[0]
         last: ProcessedPoint = track.points[-1]
-        ref_track_geohash_set: Set[str] = await cls.get_buffered_geohash_set(track.points)
+        ref_track_geohash_set: Set[str] = cls.get_buffered_geohash_set(track.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
-        similar_track_groups: List[GroupByTrackNodeIdProjection] = await BaseTrackService.query_for_similar_tracks(
+        similar_track_groups: List[GroupByTrackNodeIdProjection] = BaseTrackService.query_for_similar_tracks(
             first.geometry, last.geometry, SETTINGS.within_meters
         )
 
@@ -76,11 +78,11 @@ class MostSimilarTrackService:
                 continue
             seen_groups.append(similar_track_group.track_node_id)
 
-            similar_track: Track = await cls.get_track_from_group_projection(similar_track_group)
+            similar_track: Track = cls.get_track_from_group_projection(similar_track_group)
             # obtain buffered hashSet for prospective similar track
-            eval_track_geohash_set = await cls.get_buffered_geohash_set(similar_track.points)
+            eval_track_geohash_set = cls.get_buffered_geohash_set(similar_track.points)
             # calculate similarity by Jaccard measure of bufferedHashSets
-            comparison_result: ComparisonResult = await cls.determine_jaccard_similarity(
+            comparison_result: ComparisonResult = cls.determine_jaccard_similarity(
                 ref_track_geohash_set, eval_track_geohash_set, similar_track.track_node_id
             )
 
@@ -89,7 +91,7 @@ class MostSimilarTrackService:
         return similar_results
 
     @staticmethod
-    async def determine_jaccard_similarity(
+    def determine_jaccard_similarity(
         ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], eval_track_node_id: uuid.UUID
     ) -> ComparisonResult:
         # intersection of two sets
@@ -101,27 +103,31 @@ class MostSimilarTrackService:
         return ComparisonResult(eval_track_node_id, score)
 
     @staticmethod
-    async def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
+    def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
         """
-        Helper method to obtain object for processing from groupBy query projection results.
+        Obtain object for processing from groupBy query projection results.
 
         :param group_projection: GroupByTrackNodeIdProjection
         :return: Track object
         """
-        return await BaseTrackService.get_track(group_projection.track_node_id)
+        return BaseTrackService.get_track(group_projection.track_node_id)
 
     @staticmethod
-    async def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
+    def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
         """
-        Method to obtain a bufferedGeoHash set from the points provided. For each point, a reference geohash with one
-        less character is added to the empty set. The neighbors of the reference hash are added to the set.
-            Note: The lower precision geohash was used initially for test and evaluation purposes. This method should be
-        tested with a more robust set of representative data in order to determine the most appropriate hash levels.
+        Obtain a bufferedGeoHash set from the points provided.
+
+        For each point, a reference geohash with one less character is added to
+        the empty set. The neighbors of the reference hash are added to the set.
+
+            Note: The lower precision geohash was used initially for test and
+            evaluation purposes. This method should be tested with a more
+            robust set of representative data in order to determine the most
+            appropriate hash levels.
 
         :param points: list of track points
         :return: Set of geohashes
         """
-
         buffered_geohash_set: Set[str] = set()
 
         for point in points:

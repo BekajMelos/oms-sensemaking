@@ -153,7 +153,7 @@ To integrate with PyCharm, use the [PyCharm Ruff plugin].
 
 ## Running the Application
 ```
-python -m oms_sensemaking produce data/simple_cotravel_example.csv
+python -m oms_sensemaking geo data/simple_cotravel_example.csv
 ```
 
 ## Running Unit Tests

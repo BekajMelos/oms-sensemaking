@@ -1,10 +1,11 @@
 """Application configuration."""
-from pydantic import Field
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class LogConfig(BaseSettings):
-    """Logging configuration to be set for the server"""
+    """Logging configuration to be set for the server."""
+
     logger_name: str = 'oms_sensemaker'
     log_format: str = '{asctime:<20s}{levelname:<8s}{name} {message}'
     log_level: str = 'DEBUG'
@@ -20,7 +21,6 @@ class LogConfig(BaseSettings):
             'format': "[%(asctime)s - %(name)s - %(levelname)s - %(funcName)20s() ] %(message)s",
             'datefmt': "%Y-%m-%d %H:%M:%S"
         }
-
     }
     handlers: dict[str, dict] = {
         'default': {
@@ -29,24 +29,31 @@ class LogConfig(BaseSettings):
             'stream': 'ext://sys.stderr'
         }
     }
-    loggers: dict[str, dict] = {
-        '': {  # root logger
-            'handlers': ['default'],
-            'level': log_level,
-            'propagate': False
-        },
-        logger_name: {
-            'handlers': ['default'],
-            'level': log_level
-        },
-        'omsb_common_util_python': {
-            'level': 'DEBUG'
+
+    @computed_field
+    @property
+    def loggers(self) -> dict[str, dict]:
+        """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
+        return {
+            '': {  # root logger
+                'handlers': ['default'],
+                'level': self.log_level,
+                'propagate': False
+            },
+            self.logger_name: {
+                'handlers': ['default'],
+                'level': self.log_level,
+                'propagate': True
+            },
+            'omsb_common_util_python': {
+                'level': 'DEBUG'
+            }
         }
-    }
 
 
 class Settings(BaseSettings):
     """Settings class."""
+
     model_config = SettingsConfigDict()
 
     # Geospatial Sensemaking Settings

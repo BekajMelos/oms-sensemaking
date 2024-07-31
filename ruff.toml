@@ -1,0 +1,41 @@
+# ruff.toml --- ruff configuration.
+line-length = 120
+target-version = 'py310'
+
+
+[lint]
+select = [
+    'B',      # flake8-bugbear
+    'SIM',    # flake8-simplify
+    'I',      # isort
+    'N',      # pep8-naming
+#    'D',      # pydocstyle
+    'E',      # pycodestyle errors
+    'W',      # pycodestyle warnings
+    'F',      # Pyflakes
+#    'UP',     # pyupgrade
+]
+
+# ingoring some linting rules for compatibility with the ruff formatter
+# see https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+ignore = [
+    'W191',  # tab-indentation
+    'E111',  # indentation-with-invalid-multiple
+    'E114',  # indentation-with-invalid-multiple-comment
+    'E117'   # over-indented
+]
+
+
+[lint.pydocstyle]
+convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
+
+
+[lint.per-file-ignores]
+# Ignore `E402` (import violations) where dotenv is being used
+'__main__.py' = ['E402']
+'conftest.py' = ['E402']
+
+
+[format]
+docstring-code-format = true
+docstring-code-line-length = 50

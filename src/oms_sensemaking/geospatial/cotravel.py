@@ -1,3 +1,4 @@
+"""Provides co-travel Sensemaker."""
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -5,10 +6,10 @@ from typing import List, Optional
 from uuid import UUID
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.processed_point import ProcessedPoint
-from oms_sensemaking.models.track import Track
-from oms_sensemaking.models.track_entry import TrackEntry
-from oms_sensemaking.services.base_track_service import BaseTrackService
+from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
+from oms_sensemaking.geospatial.models.track import Track
+from oms_sensemaking.geospatial.models.track_entry import TrackEntry
+from oms_sensemaking.geospatial.tracks import BaseTrackService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class PotentialMatch:
 
     def tentative_add(self, time1: datetime, time2: datetime) -> bool:
         """
-        Checks if a new colocation can fit into a cotravel that is being created and adds it if so.
+        Check if a new colocation can fit into a cotravel that is being created and adds it if so.
 
         :param time1:
         :param time2:
@@ -63,7 +64,7 @@ class PotentialMatch:
         return False
 
     def check_valid(self) -> bool:
-        """Checks whether a PotentialMatch has met the duration requirements."""
+        """Check whether a PotentialMatch has met the duration requirements."""
         return (
             self.last_time1 - self.start_time1 >= MIN_COTRAVEL_DURATION_SECONDS
             and self.last_time2 - self.start_time2 >= MIN_COTRAVEL_DURATION_SECONDS
@@ -71,7 +72,7 @@ class PotentialMatch:
 
 
 class Colocation:
-    """For CotravelService use, a Colocation stores the data for two tracks' intersection"""
+    """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
     def __init__(self, track1: UUID, track2: UUID, processed_point: ProcessedPoint, track_entry):
         self.track1 = track1
@@ -87,17 +88,16 @@ class Colocation:
 
 
 class CotravelService:
-    """Service for detecting cotravel and lag/lead events"""
+    """Service for detecting cotravel and lag/lead events."""
 
     @classmethod
-    async def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
+    def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
         """
-        Takes a single track, queries for colocated observations
+        Take a single track and queries for colocated observations.
 
-        :param Track object: Track object to detect cotravels on
+        :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of CotravelEvents events found
         """
-
         LOGGER.info(f"Detecting Cotravels in {track}")
 
         cotravels: List[PotentialMatch] = []
@@ -106,7 +106,7 @@ class CotravelService:
         # find matching points (colocations) for each point in the track
         for point in track.points:
             time = point.timestamp
-            track_entries: List[TrackEntry] = await cls.get_points(
+            track_entries: List[TrackEntry] = cls.get_points(
                 point.geohash_low,
                 track.track_node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
@@ -135,19 +135,19 @@ class CotravelService:
         # determine cotravels on each list
         for _, colocations in groups.items():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
-            cotravels.extend(await CotravelService.determine_cotravels(sorted_entries))
+            cotravels.extend(cls.determine_cotravels(sorted_entries))
 
         if cotravels:
             LOGGER.info(f"Found Cotravels: {cotravels}")
+
         return cotravels
 
     @staticmethod
-    async def get_points(
+    def get_points(
         geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> List[TrackEntry]:
         """
-        Find points in other tracks that match the geohash of the given point within the time
-        intervals
+        Find points in other tracks that match the geohash of the given point within the time intervals.
 
         :param geohash_low: Geohash to match in the DB
         :param track_node_id: Track node to ignore
@@ -159,14 +159,13 @@ class CotravelService:
         return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
 
     @staticmethod
-    async def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
+    def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
         """
-        Given the list of colocations, that they meet the time requirements
+        Given the list of colocations, that they meet the time requirements.
 
         :param colocations: List of colocations
         :return: List of cotravels
         """
-
         completed: List[PotentialMatch] = []
         to_add_to: Optional[PotentialMatch] = None
 

@@ -1,3 +1,4 @@
+"""Provides TrackEntry model."""
 from datetime import datetime
 from uuid import UUID
 
@@ -5,6 +6,8 @@ from shapely import Point
 
 
 class TrackEntry:
+    """Represents a track entry."""
+
     def __init__(
         self,
         id: UUID,

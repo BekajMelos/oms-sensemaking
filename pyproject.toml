@@ -31,8 +31,8 @@ Issues = 'https://tex.gerbil-cloud.ts.net:3000/issues'
 
 [build-system]
 requires = [
-    'setuptools >= 70.3',
-    'setuptools_scm >= 8.1'
+    'setuptools==71.1.0',
+    'setuptools_scm==8.1'
 ]
 build-backend = 'setuptools.build_meta'
 
@@ -68,6 +68,8 @@ omit = [
 
 
 [tool.coverage.report]
+#skip_empty = true
+
 exclude_also = [
     # Don't complain if tests don't hit defensive assertion code:
     'raise AssertionError',
@@ -82,46 +84,3 @@ exclude_also = [
     # Don't complain about abstract methods, they aren't run:
     '@(abc\\.)?abstractmethod'
 ]
-
-
-[tool.ruff]
-line-length = 120
-target-version = 'py310'
-
-
-[tool.ruff.lint]
-select = [
-    'B',      # flake8-bugbear
-    'SIM',    # flake8-simplify
-    'I',      # isort
-    'N',      # pep8-naming
-#    'D',      # pydocstyle
-    'E',      # pycodestyle errors
-    'W',      # pycodestyle warnings
-    'F',      # Pyflakes
-#    'UP',     # pyupgrade
-]
-
-# ingoring some linting rules for compatibility with the ruff formatter
-# see https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
-ignore = [
-    'W191',  # tab-indentation
-    'E111',  # indentation-with-invalid-multiple
-    'E114',  # indentation-with-invalid-multiple-comment
-    'E117'   # over-indented
-]
-
-
-[tool.ruff.lint.pydocstyle]
-convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
-
-
-[tool.ruff.lint.per-file-ignores]
-# Ignore `E402` (import violations) where dotenv is being used
-'__main__.py' = ['E402']
-'conftest.py' = ['E402']
-
-
-[tool.ruff.format]
-docstring-code-format = true
-docstring-code-line-length = 50
