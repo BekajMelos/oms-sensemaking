@@ -93,7 +93,7 @@ def get_cli_parser() -> ArgumentParser:
 
 
 def main() -> None:
-    """Entry point to running the heatmapper CLI."""
+    """Entry point to running the oms_sensemaking CLI."""
     args: Namespace = get_cli_parser().parse_args()
 
     if args.verbose == 1:
