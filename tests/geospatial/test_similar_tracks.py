@@ -2,7 +2,6 @@
 import uuid
 from datetime import datetime
 
-import pytest
 import shapely
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
