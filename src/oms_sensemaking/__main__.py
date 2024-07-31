@@ -69,6 +69,8 @@ def get_cli_parser() -> ArgumentParser:
     parser: ArgumentParser = ArgumentParser(
         description='A utility for analysing OMS data.',
         prog='oms_sensemaking')
+    parser.add_argument("-V", "--verbose", action='count', default=0, help="A flag to enable verbose logging.")
+
     subparsers = parser.add_subparsers(
         dest='command',
         title='commands',
@@ -78,7 +80,6 @@ def get_cli_parser() -> ArgumentParser:
     # geospatial subcommand
     geo_parser: ArgumentParser = subparsers.add_parser("geo", help="Run geospatial analytics.")
     geo_parser.add_argument("filename", type=str, help="File to run on.")
-    geo_parser.add_argument("-V", "--verbose", action='count', default=0, help="A flag to enable verbose logging.")
     geo_parser.set_defaults(
         func=lambda args: asyncio.run(run_geospatial(args.filename, verbose=args.verbose))
     )
