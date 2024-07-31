@@ -9,8 +9,7 @@ from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.similar_tracks import MostSimilarTrackService
 
 
-@pytest.mark.asyncio
-async def test_most_similar_tracks_success():
+def test_most_similar_tracks_success():
     # Note these points/timestamps are set to match the base_track_service hard coded "DB"
     # first point is wayyy east of london
     p1 = ProcessedPoint(
@@ -26,7 +25,7 @@ async def test_most_similar_tracks_success():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3])
 
-    similar_tracks = await MostSimilarTrackService.most_similar_track_node_ids(track)
+    similar_tracks = MostSimilarTrackService.most_similar_track_node_ids(track)
 
     assert len(similar_tracks.top_similarities.queue) == 1
     assert similar_tracks.top_similarities.queue[0][0] == 0.75

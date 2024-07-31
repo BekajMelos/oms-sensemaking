@@ -45,11 +45,11 @@ class MostSimilarTrackService:
     """Service for discovering most similar tracks."""
 
     @classmethod
-    async def most_similar_track_node_ids(cls, track: Track) -> TopSimilar:
+    def most_similar_track_node_ids(cls, track: Track) -> TopSimilar:
         """
         Primary method to obtain N-most similar track objects to the track provided.
 
-        :param Track object: Track object to detect cotravels on
+        :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.info(f"Looking for similar tracks to {track}")
@@ -58,11 +58,11 @@ class MostSimilarTrackService:
 
         first: ProcessedPoint = track.points[0]
         last: ProcessedPoint = track.points[-1]
-        ref_track_geohash_set: Set[str] = await cls.get_buffered_geohash_set(track.points)
+        ref_track_geohash_set: Set[str] = cls.get_buffered_geohash_set(track.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
-        similar_track_groups: List[GroupByTrackNodeIdProjection] = await BaseTrackService.query_for_similar_tracks(
+        similar_track_groups: List[GroupByTrackNodeIdProjection] = BaseTrackService.query_for_similar_tracks(
             first.geometry, last.geometry, SETTINGS.within_meters
         )
 
@@ -78,11 +78,11 @@ class MostSimilarTrackService:
                 continue
             seen_groups.append(similar_track_group.track_node_id)
 
-            similar_track: Track = await cls.get_track_from_group_projection(similar_track_group)
+            similar_track: Track = cls.get_track_from_group_projection(similar_track_group)
             # obtain buffered hashSet for prospective similar track
-            eval_track_geohash_set = await cls.get_buffered_geohash_set(similar_track.points)
+            eval_track_geohash_set = cls.get_buffered_geohash_set(similar_track.points)
             # calculate similarity by Jaccard measure of bufferedHashSets
-            comparison_result: ComparisonResult = await cls.determine_jaccard_similarity(
+            comparison_result: ComparisonResult = cls.determine_jaccard_similarity(
                 ref_track_geohash_set, eval_track_geohash_set, similar_track.track_node_id
             )
 
@@ -91,7 +91,7 @@ class MostSimilarTrackService:
         return similar_results
 
     @staticmethod
-    async def determine_jaccard_similarity(
+    def determine_jaccard_similarity(
         ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], eval_track_node_id: uuid.UUID
     ) -> ComparisonResult:
         # intersection of two sets
@@ -103,17 +103,17 @@ class MostSimilarTrackService:
         return ComparisonResult(eval_track_node_id, score)
 
     @staticmethod
-    async def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
+    def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
         """
         Obtain object for processing from groupBy query projection results.
 
         :param group_projection: GroupByTrackNodeIdProjection
         :return: Track object
         """
-        return await BaseTrackService.get_track(group_projection.track_node_id)
+        return BaseTrackService.get_track(group_projection.track_node_id)
 
     @staticmethod
-    async def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
+    def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
         """
         Obtain a bufferedGeoHash set from the points provided.
 

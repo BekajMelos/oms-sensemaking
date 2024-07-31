@@ -1,4 +1,5 @@
 """Provides "loiter" sensemaker."""
+
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List
@@ -57,7 +58,7 @@ class LoiterService:
     """Service for detecting loiter events."""
 
     @classmethod
-    async def detect_loiters(cls, track: Track) -> List[Loiter]:
+    def detect_loiters(cls, track: Track) -> List[Loiter]:
         """
         Check for Loiter Events.
 
@@ -66,12 +67,12 @@ class LoiterService:
         enough. Ignore. If so, it's a valid loiter. Create a Loiter Object and
         add it to the list to be returned.
 
-        :param Track object:
+        :param track: The track to analyze.
         :return: List[Loiter] list of loiter events found
         """
         LOGGER.info(f"Detecting Loiters in {track}")
         confirmed_loiters: List[Loiter] = []
-        prospective_loiters: Dict[str, List[PotentialLoiter]] = await cls.find_prospective_loiters(track.points)
+        prospective_loiters: Dict[str, List[PotentialLoiter]] = cls.find_prospective_loiters(track.points)
 
         # check for potential lotiers that are long enough (> LOITER_MIN_TIME)
         # TODO could also check for loiters across geohashes that could be combined
@@ -106,7 +107,7 @@ class LoiterService:
         return confirmed_loiters
 
     @staticmethod
-    async def find_prospective_loiters(points: List[ProcessedPoint]) -> Dict[str, List[PotentialLoiter]]:
+    def find_prospective_loiters(points: List[ProcessedPoint]) -> Dict[str, List[PotentialLoiter]]:
         """
         Find Prospective Loiters.
 

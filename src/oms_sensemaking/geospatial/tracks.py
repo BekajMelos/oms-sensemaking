@@ -10,18 +10,17 @@ import pandas as pd
 import shapely
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.geospatial.cotravel import CotravelService
-from oms_sensemaking.geospatial.loiter import LoiterService
+from oms_sensemaking.core.pubsub import PubSub
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
-from oms_sensemaking.geospatial.similar_tracks import MostSimilarTrackService
 
 CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
 LOGGER = logging.getLogger(__name__)
 
+TRACK_CREATED_EVENT: str = 'track_created'
 
 # FAKE DB
 NODE_UUID1 = uuid.uuid4()
@@ -133,7 +132,7 @@ class BaseTrackService:
         return TRACK_ENTRIES_DB.get(geohash_low, [])
 
     @staticmethod
-    async def query_for_similar_tracks(
+    def query_for_similar_tracks(
         first: shapely.Point, last: shapely.Point, query_distance: float
     ) -> List[GroupByTrackNodeIdProjection]:
         """
@@ -157,7 +156,7 @@ class BaseTrackService:
         return [GroupByTrackNodeIdProjection(NODE_UUID1, [])]
 
     @staticmethod
-    async def get_track(track_node_id: uuid.UUID) -> Track:
+    def get_track(track_node_id: uuid.UUID) -> Track:
         """
         Get Track by UUID.
 
@@ -190,8 +189,9 @@ class BaseTrackService:
         )
 
 
-class TrackCacheService:
+class TrackCacheService(PubSub):
     def __init__(self, q: asyncio.Queue):
+        super().__init__()
         self.q = q
         self.cache: Dict[str, List[Tuple[datetime, Attribute]]] = defaultdict(list)
 
@@ -206,8 +206,7 @@ class TrackCacheService:
             if self.cache[key][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
                 points: List[Attribute] = self.cache.pop(key)
 
-                track = await self.create_track(points)
-                await self.further_processing(track)
+                await self.create_track(points)
 
     async def wait_for_events(self) -> None:
         """Wait for events to enter the queue."""
@@ -235,7 +234,7 @@ class TrackCacheService:
         :param points: List of Point objects
         :return: The created Track
         """
-        processed_points = [
+        track: Track = Track(uuid.uuid4(), [
             ProcessedPoint(
                 shapely.Point(point[1].lon, point[1].lat),
                 point[1].timestamp,
@@ -243,27 +242,11 @@ class TrackCacheService:
                 idx == len(points) - 1,
             )
             for idx, point in enumerate(points)
-        ]
-        return Track(uuid.uuid4(), processed_points)
+        ])
 
-    async def further_processing(self, track: Track) -> None:
-        """
-        Initiate Analytics.
+        self.publish(TRACK_CREATED_EVENT, track)
 
-        :param track: Track to perform detections on.
-        """
-        LOGGER.info(f"Additional Processing on {track}")
-        LOGGER.debug(shapely.LineString([(point.geometry.x, point.geometry.y) for point in track.points]))
-
-        # TODO maybe these shouldn't be hard coded and should be "registered"?
-        if SETTINGS.detect_cotravels:
-            _ = await CotravelService.detect_cotravels(track)
-
-        if SETTINGS.detect_loiters:
-            _ = await LoiterService.detect_loiters(track)
-
-        if SETTINGS.similar_tracks:
-            _ = await MostSimilarTrackService.most_similar_track_node_ids(track)
+        return track
 
 
 async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:

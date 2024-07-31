@@ -3,7 +3,6 @@ import random
 import uuid
 from datetime import datetime
 
-import pytest
 import shapely
 from oms_sensemaking.geospatial.loiter import LoiterService
 from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
@@ -30,8 +29,7 @@ def get_random_emirates_stadium_point() -> shapely.Point:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max))
 
 
-@pytest.mark.asyncio
-async def test_loiter_success():
+def test_loiter_success():
     """Simple success track."""
     # East London
     p1 = ProcessedPoint(
@@ -56,7 +54,7 @@ async def test_loiter_success():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5, p6, p7])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -74,8 +72,7 @@ async def test_loiter_success():
     assert loiter.end_time == p6.timestamp
 
 
-@pytest.mark.asyncio
-async def test_loiter_invalid_not_long_enough():
+def test_loiter_invalid_not_long_enough():
     """Loiter is only 8 minutes vs required 15."""
     # East London
     p1 = ProcessedPoint(
@@ -95,12 +92,11 @@ async def test_loiter_invalid_not_long_enough():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 0
 
 
-@pytest.mark.asyncio
-async def test_loiter_fails_valid_observed_threshold():
+def test_loiter_fails_valid_observed_threshold():
     """Failure. Unobserved for too long."""
     # East London
     p1 = ProcessedPoint(
@@ -125,12 +121,11 @@ async def test_loiter_fails_valid_observed_threshold():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5, p6, p7])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 0
 
 
-@pytest.mark.asyncio
-async def test_loiter_fails_valid_observed_threshold_within_geohash():
+def test_loiter_fails_valid_observed_threshold_within_geohash():
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
     # East London
@@ -155,7 +150,7 @@ async def test_loiter_fails_valid_observed_threshold_within_geohash():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5, p6, p7])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -173,8 +168,7 @@ async def test_loiter_fails_valid_observed_threshold_within_geohash():
     assert loiter.end_time == p6.timestamp
 
 
-@pytest.mark.asyncio
-async def test_loiter_success_multiple_in_same_geohash():
+def test_loiter_success_multiple_in_same_geohash():
     """Two separate loiters in the same geohash."""
     # East London
     p1 = ProcessedPoint(
@@ -208,7 +202,7 @@ async def test_loiter_success_multiple_in_same_geohash():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
@@ -240,8 +234,7 @@ async def test_loiter_success_multiple_in_same_geohash():
     assert loiter2.end_time == p11.timestamp
 
 
-@pytest.mark.asyncio
-async def test_loiter_success_multiple_in_different_geohash():
+def test_loiter_success_multiple_in_different_geohash():
     """Two separate loiters in different geohashes."""
     # East London
     p1 = ProcessedPoint(
@@ -275,7 +268,7 @@ async def test_loiter_success_multiple_in_different_geohash():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11])
 
-    loiters = await LoiterService.detect_loiters(track)
+    loiters = LoiterService.detect_loiters(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]

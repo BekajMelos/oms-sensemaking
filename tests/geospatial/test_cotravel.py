@@ -9,8 +9,7 @@ from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
 from oms_sensemaking.geospatial.models.track import Track
 
 
-@pytest.mark.asyncio
-async def test_cotravel_success():
+def test_cotravel_success():
     # Note these points/timestamps are set to match the base_track_service hard coded "DB"
     p1 = ProcessedPoint(
         shapely.Point(-0.148931, 51.484423), datetime.fromisoformat("2024-03-20T12:05:00-04:00"), True, False
@@ -25,7 +24,7 @@ async def test_cotravel_success():
     # Create Track Object
     track = Track(uuid.uuid4(), [p1, p2, p3])
 
-    cotravels = await CotravelService.detect_cotravels(track)
+    cotravels = CotravelService.detect_cotravels(track)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]

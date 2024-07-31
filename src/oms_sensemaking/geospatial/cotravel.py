@@ -91,11 +91,11 @@ class CotravelService:
     """Service for detecting cotravel and lag/lead events."""
 
     @classmethod
-    async def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
+    def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
         """
         Take a single track and queries for colocated observations.
 
-        :param Track object: Track object to detect cotravels on
+        :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of CotravelEvents events found
         """
         LOGGER.info(f"Detecting Cotravels in {track}")
@@ -106,7 +106,7 @@ class CotravelService:
         # find matching points (colocations) for each point in the track
         for point in track.points:
             time = point.timestamp
-            track_entries: List[TrackEntry] = await cls.get_points(
+            track_entries: List[TrackEntry] = cls.get_points(
                 point.geohash_low,
                 track.track_node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
@@ -135,14 +135,15 @@ class CotravelService:
         # determine cotravels on each list
         for _, colocations in groups.items():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
-            cotravels.extend(await CotravelService.determine_cotravels(sorted_entries))
+            cotravels.extend(cls.determine_cotravels(sorted_entries))
 
         if cotravels:
             LOGGER.info(f"Found Cotravels: {cotravels}")
+
         return cotravels
 
     @staticmethod
-    async def get_points(
+    def get_points(
         geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> List[TrackEntry]:
         """
@@ -158,7 +159,7 @@ class CotravelService:
         return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
 
     @staticmethod
-    async def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
+    def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
         """
         Given the list of colocations, that they meet the time requirements.
 
