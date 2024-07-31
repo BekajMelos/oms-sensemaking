@@ -1,4 +1,3 @@
-import asyncio
 from oms_sensemaking.core.pubsub import PubSub
 
 
