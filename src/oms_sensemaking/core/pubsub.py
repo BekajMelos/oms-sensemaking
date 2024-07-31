@@ -96,7 +96,7 @@ class PubSub:
 
                 self.__event_queue.task_done()
 
-            self.__event_queue.task_done() # acknowledge the shutdown event
+            self.__event_queue.task_done()  # acknowledge the shutdown event
             executor.shutdown()  # shutdown executor after event loop exists
 
     def stop(self) -> None:
