@@ -29,7 +29,7 @@ class GeoSQSListener(SQSListener):
     """Class for listening to Geo objects on an SQS Queue"""
 
     async def handle_sqs_event(self, event: Dict) -> None:
-        """Checks that the event is valid, creates an attribute object and puts it on the queue
+        """Checks that the event is valid, creates an attribute object and puts it on the queue.
 
         :param event: SQS Message Body
         :return: None
@@ -60,7 +60,7 @@ class GeoSQSListener(SQSListener):
 
     async def get_oms_attribute(self, attribute_id: uuid.UUID) -> Optional[AttributeAttribute]:
         """
-        Given an OMS Attribute ID, get the OMS Attribute
+        Given an OMS Attribute ID, get the OMS Attribute.
 
         :param attribute_id: ID of the attribute
         :return: None if no attribute exists, or the OMS Attribute
@@ -74,14 +74,17 @@ class GeoSQSListener(SQSListener):
         if not oms_attr or oms_attr.nodeId is None:
             return None
         # Only process if this is a spatiotemporal attribute with a Point
-        if oms_attr.attributeType.lower() != SPATIOTEMPORAL_ATTR_TYPE or oms_attr.geo.geoJson.get("type") != "Point":
+        if (
+            oms_attr.attributeType.lower() != SPATIOTEMPORAL_ATTR_TYPE
+            or oms_attr.geo.geoJson.get("type").lower() != "point"
+        ):
             return None
 
         return oms_attr
 
     async def get_track_node_id(self, oms_attr: AttributeAttribute) -> Optional[uuid.UUID]:
         """
-        Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID
+        Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID.
 
         :param attribute_id: Attribute object
         :return: None if no relationship exists, or the Track Node id

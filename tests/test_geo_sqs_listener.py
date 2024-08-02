@@ -2,7 +2,7 @@ import asyncio
 import logging
 import uuid
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from oms_sdk.generated.generated_graphql_client.attribute import (
@@ -38,13 +38,35 @@ async def test_handle_sqs_event():
     await sqs_listener.handle_sqs_event(event)
     assert q.empty
 
-    # invalid eventType shouldn't be put in the queue
-    event = {
-        "objectType": ATTRIBUTE_OBJECT_TYPE,
-        "eventType": CREATE_EVENT_TYPE,
-    }
+    # invalid objectId must be included
+    event = {"objectType": ATTRIBUTE_OBJECT_TYPE, "eventType": CREATE_EVENT_TYPE}
     await sqs_listener.handle_sqs_event(event)
     assert q.empty
+
+    # valid
+    object_id = uuid.uuid4()
+    event = {"objectType": ATTRIBUTE_OBJECT_TYPE, "eventType": CREATE_EVENT_TYPE, "objectId": object_id}
+
+    # mock API calls
+    sqs_listener.get_oms_attribute = AsyncMock()
+    sqs_listener.get_track_node_id = AsyncMock()
+    start_time = datetime.now().isoformat()
+    track_node_id = uuid.uuid4()
+    sqs_listener.get_oms_attribute.return_value = AttributeAttribute.model_construct(
+        id=object_id,
+        nodeId=uuid.uuid4(),
+        attributeType=SPATIOTEMPORAL_ATTR_TYPE,
+        geo=AttributeAttributeGeo(
+            geoJson={"type": "POINT", "coordinates": [0, 0]}, mgrs="dummy", startTime=start_time, endTime=start_time
+        ),
+    )
+    sqs_listener.get_track_node_id.return_value = track_node_id
+
+    # test
+    await sqs_listener.handle_sqs_event(event)
+    point_attribute = await q.get()
+    assert point_attribute.track_node_id == track_node_id
+    assert point_attribute.timestamp.isoformat() == start_time
 
 
 @pytest.mark.asyncio

@@ -40,7 +40,7 @@ class SQSListener:
         )
 
     async def listen(self) -> None:
-        """Listen for messages on the SQS Queue
+        """Listen for messages on the SQS Queue and calls `handle_sqs_event`.
 
         :return: None
         """
@@ -71,7 +71,7 @@ class SQSListener:
             await asyncio.sleep(5)
 
     async def handle_sqs_event(self, event: Dict) -> None:
-        """Checks that the event is valid and puts it in the queue to be processed
+        """Checks that the event is valid and puts it in the queue to be processed.
 
         Should be overriden but sub classes
 
