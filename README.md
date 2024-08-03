@@ -59,6 +59,17 @@ there. This file will be detected and read at runtime.
 cp .env.template .env
 ```
 
+#### Step 4: Configure git authentication
+
+Create a `.netrc` file in your home directory:
+
+```
+# ~/.netrc
+
+machine tex.gerbil-cloud.ts.net
+login your-login-here
+password "your password here"
+```
 
 #### Environment Settings
 ```

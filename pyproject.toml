@@ -17,9 +17,10 @@ dependencies = [
     'geolib==1.0.7',
     'pandas==2.2.2',
     'pydantic==2.8.2',
-    'pydantic-settings==2.3.4',
+    'pydantic-settings==2.4.0',
     'python-dotenv==1.0.1',
-    'shapely==2.0.4'
+    'shapely==2.0.4',
+    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.0.0'
 ]
 dynamic = ['version']
 
