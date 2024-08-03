@@ -43,11 +43,13 @@ source .venv/bin/activate                  # activate virtual environment
     pip install --upgrade pip wheel
     ```
 
-2. Install Development and Runtime Dependencies
+2. Install *Development*, *Run Time*, and *Built Time* Dependencies
 
     ```sh
-    pip install -r requirements.txt
+    pip install -e ".[dev,test,build]"
     ```
+
+> ***NOTE***: *oms_sensemaking* has at least two "extra" sets of dependencies defined: "dev" and "test". see the `project.optional-dependencies` declaration in [pytproject.toml].
 
 #### Step 3: Configure Local Environment Variables
 
@@ -190,3 +192,4 @@ and store the results in the *dist* directory.
 [black]: https://github.com/psf/black
 [mypy]: https://mypy-lang.org
 [Makefile]: ./Makefile
+[pyproject.toml]: ./pyproject.toml

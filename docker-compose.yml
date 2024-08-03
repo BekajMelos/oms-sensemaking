@@ -1,0 +1,19 @@
+services:
+  oms_sensemaking:
+    build:
+      context: .
+      secrets:
+        - source: mynetrc
+          target: /.netrc
+    volumes:
+      - .:/app
+    ports:
+      - 5001:80
+    # environment:
+    #   FASTAPI_LOG_LEVEL: DEBUG
+    entrypoint: /start-reload.sh
+    restart: on-failure
+
+secrets:
+  mynetrc:
+    file: ${HOME}/.netrc
