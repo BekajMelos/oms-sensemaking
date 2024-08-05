@@ -30,8 +30,8 @@ class LogConfig(BaseSettings):
         }
     }
 
-    @computed_field
     @property
+    @computed_field
     def loggers(self) -> dict[str, dict]:
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
         return {
@@ -53,8 +53,9 @@ class LogConfig(BaseSettings):
 
 class Settings(BaseSettings):
     """Settings class."""
-
     model_config = SettingsConfigDict()
+
+    gzip_minimum_size: int = 1000
 
     # Geospatial Sensemaking Settings
     valid_observed_threshold_seconds: int = Field(

@@ -13,15 +13,33 @@ classifiers = [
     'License :: Other/Proprietary License',
     'Private :: Do Not Upload'
 ]
+dynamic = ['version']
 dependencies = [
     'geolib==1.0.7',
+    'fastapi[standard]==0.112.0',
+    'fastapi-offline==1.7.2',
     'pandas==2.2.2',
     'pydantic==2.8.2',
-    'pydantic-settings==2.3.4',
+    # 'pydantic-extra-types==2.9.0',
+    'pydantic-settings==2.4.0',
     'python-dotenv==1.0.1',
     'shapely==2.0.4'
 ]
-dynamic = ['version']
+
+[project.optional-dependencies]
+dev = [
+    'coverage==7.6.0',
+    'mypy==1.11.1',
+    'pre-commit==3.7.1',
+    'ruff==0.5.6',
+    'types-shapely==2.0.0.20240714'
+]
+test = [
+    'pytest==8.3.2',
+    'pytest-cov==5.0.0',
+    'pytest-asyncio==0.23.8'
+]
+build = ['build==1.2.1']
 
 
 [project.urls]

@@ -1,0 +1,51 @@
+# .dockerignore --- Configures files to ignore from the Docker.
+
+# --------------------
+# Generated Files
+# --------------------
+build
+data
+dist
+htmlcov
+venv
+.venv
+.coverage
+__pycache__
+.mypy_cache
+.pytest_cache
+.ruff_cache
+pytest.xml
+*.egg-info
+*.eggs
+*.log
+*.pyc
+*.pyd
+*.pyo
+
+
+
+# --------------------
+# IDE Cruft
+# --------------------
+.idea
+.vscode
+.dir-locals.el
+*.code-workspace
+*.iml
+*.swp
+*.swo
+*.swn
+
+
+# --------------------
+# Local Configuration
+# --------------------
+.env
+
+
+# --------------------
+# Misc.
+# --------------------
+Thumbs.db
+.DS_Store
+*~
