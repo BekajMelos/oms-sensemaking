@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help test build clean distclean lint lint-stats fix format
+.PHONY: help test build clean distclean lint lint-stats fix format build-docker up down
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -22,11 +22,23 @@ lint:  ## Run linter
 lint-stats:
 	ruff check --statistics
 
+local: ## Start oms-sensemaking locally
+	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
+
 fix:  ## Run linter and apply fixes
 	ruff check --fix
 
 format:  ## Run the formatter
 	ruff format
+
+build-docker:  ## Build docker image
+	docker build --no-cache -t oms_sensemaking:latest --secret id=mynetrc,src=$${HOME}/.netrc .
+
+up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make dockstart
+	docker compose up -d ${DOCKER_FLAGS}
+
+down: ## Stop oms-sensemaking docker environment
+	docker compose down
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip

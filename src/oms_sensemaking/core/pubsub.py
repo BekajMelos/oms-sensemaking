@@ -108,4 +108,4 @@ class PubSub:
     @property
     def is_running(self) -> bool:
         """Indicates if the pub/sub dispatcher is currently running."""
-        return self.__dispatcher and self.__dispatcher.is_alive()
+        return self.__dispatcher is not None and self.__dispatcher.is_alive()
