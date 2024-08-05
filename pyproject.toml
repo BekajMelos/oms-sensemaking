@@ -20,10 +20,11 @@ dependencies = [
     'fastapi-offline==1.7.2',
     'pandas==2.2.2',
     'pydantic==2.8.2',
-    # 'pydantic-extra-types==2.9.0',
     'pydantic-settings==2.4.0',
+    # 'pydantic-extra-types==2.9.0',
     'python-dotenv==1.0.1',
-    'shapely==2.0.4'
+    'shapely==2.0.4',
+    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.0.0'
 ]
 
 [project.optional-dependencies]
