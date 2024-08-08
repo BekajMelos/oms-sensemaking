@@ -4,7 +4,7 @@ services:
       context: .
       secrets:
         - source: mynetrc
-          target: /.netrc
+          target: /root/.netrc
     volumes:
       - .:/app
     ports:

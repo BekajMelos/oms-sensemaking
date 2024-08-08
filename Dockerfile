@@ -18,10 +18,9 @@ WORKDIR /app
 
 COPY . /app
 
-RUN --mount=type=secret,id=mynetrc,dst=/.netrc
-RUN $PIP_INSTALL --upgrade pip wheel
-RUN apt-get update && \
+RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc apt-get update && \
     apt-get install -y --no-install-recommends apt-utils ca-certificates git gzip tar && \
+    $PIP_INSTALL --upgrade pip wheel && \
     pip install . && \
     apt-get purge -y apt-utils git && \
     apt-get clean -y && \
