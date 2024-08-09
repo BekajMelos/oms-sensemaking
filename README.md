@@ -18,7 +18,7 @@ using matches the version defined in [.python-version].
 
 #### Step 1: Create a Virtual Environment
 
-Use the built-in venv module to create a virtual environment for the new
+Use the built-in [venv] module to create a virtual environment for the new
 project. This virtual environment will be used to isolate the projects
 dependencies.
 
@@ -35,7 +35,24 @@ python -m venv --prompt sensemaking .venv  # create virtual environment
 source .venv/bin/activate                  # activate virtual environment
 ```
 
-#### Step 2: Install Project Dependencies
+#### Step 2: Configure git authentication
+
+*oms-sensemaking* includes a dependency on the [oms-sdk] that is defined using a
+[PEP 508] compatible URL to the oms-sdk project's Git repository, which will
+require authentication. You can configure your local system to authenticate
+automatically using a local [.netrc] file.
+
+Create a `.netrc` file in your home directory:
+
+```
+# ~/.netrc
+
+machine tex.gerbil-cloud.ts.net
+login your-login-here
+password "your password here"
+```
+
+#### Step 3: Install Project Dependencies
 
 1. Upgrade *pip* and *wheel*
 
@@ -51,7 +68,7 @@ source .venv/bin/activate                  # activate virtual environment
 
 > ***NOTE***: *oms_sensemaking* has at least two "extra" sets of dependencies defined: "dev" and "test". see the `project.optional-dependencies` declaration in [pytproject.toml].
 
-#### Step 3: Configure Local Environment Variables
+#### Step 4: Configure Local Environment Variables
 
 The module expects certain environment variables to be set. This can be
 accomplished by creating a .env file and setting the environment variables
@@ -61,19 +78,8 @@ there. This file will be detected and read at runtime.
 cp .env.template .env
 ```
 
-#### Step 4: Configure git authentication
+##### Environment Settings
 
-Create a `.netrc` file in your home directory:
-
-```
-# ~/.netrc
-
-machine tex.gerbil-cloud.ts.net
-login your-login-here
-password "your password here"
-```
-
-#### Environment Settings
 ```
 # Geospatial Sensemaking Settings
 DEBUG=True                              # Option to see DEBUG log level
@@ -191,10 +197,12 @@ and store the results in the *dist* directory.
 > project's git repository using [setuptools-scm].
 
 
-[pyenv]: https://github.com/yyuu/pyenv
-[Python]: https://www.python.org
+[Makefile]: ./Makefile
+[pyproject.toml]: ./pyproject.toml
 [.pre-commit-config.yaml]: ./.pre-commit-config.yaml
 [.python-version]: ./.python-version
+[pyenv]: https://github.com/yyuu/pyenv
+[Python]: https://www.python.org
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
 [ruff]: https://docs.astral.sh/ruff
 [Ruff extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
@@ -202,5 +210,8 @@ and store the results in the *dist* directory.
 [PyCharm Ruff plugin]: https://plugins.jetbrains.com/plugin/20574-ruff
 [black]: https://github.com/psf/black
 [mypy]: https://mypy-lang.org
-[Makefile]: ./Makefile
-[pyproject.toml]: ./pyproject.toml
+[venv]: https://docs.python.org/3/library/venv.html
+[.netrc]: https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html
+[oms-sdk]: https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python
+[PEP 508]: https://peps.python.org/pep-0508/
+
