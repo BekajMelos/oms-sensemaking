@@ -49,7 +49,7 @@ Create a `.netrc` file in your home directory:
 
 machine tex.gerbil-cloud.ts.net
 login your-login-here
-password your-password
+password "your password"
 ```
 
 #### Step 3: Install Project Dependencies
