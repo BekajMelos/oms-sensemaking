@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     valid_observed_threshold_seconds: int = Field(
         900, description="Threshold for amount of between Track Point Observations"
     )
-    cache_entry_expire_sec: int = Field(5, description="How long to wait for new points before creating a new Track")
+    cache_entry_expire_sec: int = Field(30, description="How long to wait for new points before creating a new Track")
     geohash_low: int = Field(5, description="Low geohash")
     geohash_high: int = Field(7, description="High geohash")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")

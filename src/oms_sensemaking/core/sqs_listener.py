@@ -7,7 +7,6 @@ from typing import Dict
 
 import boto3
 from oms_sdk import get_generated_graphql_client
-from oms_sdk.generated.generated_graphql_client import Client as GeneratedClient
 
 from oms_sensemaking.config import SETTINGS
 
@@ -35,7 +34,7 @@ class SQSListener:
         )
 
         # OMS Connection
-        self.graphql_client: GeneratedClient = get_generated_graphql_client(
+        self.graphql_client: get_generated_graphql_client.GeneratedClient = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
 
