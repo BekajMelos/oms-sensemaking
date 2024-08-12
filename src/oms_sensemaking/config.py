@@ -14,14 +14,21 @@ class LogConfig(BaseSettings):
     version: int = 1
     disable_existing_loggers: bool = False
     formatters: dict[str, dict] = {
-        "simple": {"format": "[%(asctime)s %(levelname)-7s] %(message)s", "datefmt": "%Y-%m-%d %H:%M:%S"},
+        "simple": {
+            "format": "[%(asctime)s %(levelname)-7s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        },
         "standard": {
             "format": "[%(asctime)s - %(name)s - %(levelname)s - %(funcName)20s() ] %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     }
     handlers: dict[str, dict] = {
-        "default": {"formatter": "simple", "class": "logging.StreamHandler", "stream": "ext://sys.stderr"}
+        "default": {
+            "formatter": "simple",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stderr"
+        }
     }
 
     @computed_field
@@ -34,8 +41,26 @@ class LogConfig(BaseSettings):
                 "level": self.log_level,
                 "propagate": False,
             },
-            self.logger_name: {"handlers": ["default"], "level": self.log_level, "propagate": True},
-            "oms_sdk": {"level": "DEBUG"},
+            self.logger_name: {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": True
+            },
+            "oms_sdk": {
+                "level": "DEBUG"
+            },
+            "boto3": {
+                "level": "INFO"
+            },
+            "botocore": {
+                "level": "INFO"
+            },
+            "urllib3": {
+                "level": "INFO"
+            },
+            "httpcore": {
+                "level": "INFO"
+            }
         }
 
 
@@ -94,6 +119,7 @@ class Settings(BaseSettings):
         description="Number of times to look for SQS messages. This number * 10 is how many "
         "messages can be received per poll",
     )
+    sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
     omsb_url: str = Field("https://localhost:8443/graphql", description="URL for OMSB")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field("./pki/test10.pem", description="Path to User PEM")

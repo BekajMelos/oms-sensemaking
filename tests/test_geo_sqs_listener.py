@@ -9,14 +9,12 @@ from oms_sdk.generated.generated_graphql_client.attribute import (
     AttributeAttribute,
     AttributeAttributeGeo,
 )
+from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType, ObjectType
 from oms_sdk.generated.generated_graphql_client.relationships import (
     RelationshipsRelationships,
     RelationshipsRelationshipsData,
 )
 from oms_sensemaking.geospatial.geo_sqs_listener import (
-    ATTRIBUTE_OBJECT_TYPE,
-    CREATE_EVENT_TYPE,
-    SPATIOTEMPORAL_ATTR_TYPE,
     GeoSQSListener,
 )
 
@@ -34,18 +32,18 @@ async def test_handle_sqs_event():
     assert q.empty
 
     # invalid eventType shouldn't be put in the queue
-    event = {"objectType": ATTRIBUTE_OBJECT_TYPE, "eventType": "invalid type"}
+    event = {"objectType": ObjectType.ATTRIBUTE.value, "eventType": "invalid type"}
     await sqs_listener.handle_sqs_event(event)
     assert q.empty
 
     # invalid objectId must be included
-    event = {"objectType": ATTRIBUTE_OBJECT_TYPE, "eventType": CREATE_EVENT_TYPE}
+    event = {"objectType": ObjectType.ATTRIBUTE.value, "eventType": Action.CREATE}
     await sqs_listener.handle_sqs_event(event)
     assert q.empty
 
     # valid
     object_id = uuid.uuid4()
-    event = {"objectType": ATTRIBUTE_OBJECT_TYPE, "eventType": CREATE_EVENT_TYPE, "objectId": object_id}
+    event = {"objectType": ObjectType.ATTRIBUTE.value, "eventType": Action.CREATE, "objectId": object_id}
 
     # mock API calls
     sqs_listener.get_oms_attribute = AsyncMock()
@@ -55,7 +53,7 @@ async def test_handle_sqs_event():
     sqs_listener.get_oms_attribute.return_value = AttributeAttribute.model_construct(
         id=object_id,
         nodeId=uuid.uuid4(),
-        attributeType=SPATIOTEMPORAL_ATTR_TYPE,
+        attributeType=AttributeType.SPATIOTEMPORAL.value,
         geo=AttributeAttributeGeo(
             geoJson={"type": "POINT", "coordinates": [0, 0]}, mgrs="dummy", startTime=start_time, endTime=start_time
         ),
@@ -97,7 +95,7 @@ async def test_get_oms_attribute():
         mock_get_attribute.return_value = AttributeAttribute.model_construct(
             id=uuid.uuid4(),
             nodeId=None,
-            attributeType=SPATIOTEMPORAL_ATTR_TYPE.upper(),
+            attributeType=AttributeType.SPATIOTEMPORAL.value,
             geo=AttributeAttributeGeo(
                 geoJson={"type": "LINESTRING"}, mgrs="dummy", startTime=datetime.now(), endTime=datetime.now()
             ),
@@ -109,7 +107,7 @@ async def test_get_oms_attribute():
         mock_get_attribute.return_value = AttributeAttribute.model_construct(
             id=uuid.uuid4(),
             nodeId=uuid.uuid4(),
-            attributeType=SPATIOTEMPORAL_ATTR_TYPE.upper(),
+            attributeType=AttributeType.SPATIOTEMPORAL.value,
             geo=AttributeAttributeGeo(
                 geoJson={"type": "Point"}, mgrs="dummy", startTime=datetime.now(), endTime=datetime.now()
             ),
@@ -129,7 +127,7 @@ async def test_get_track_node_id():
         attr_attr = AttributeAttribute.model_construct(
             id=uuid.uuid4(),
             nodeId=uuid.uuid4(),
-            attributeType=SPATIOTEMPORAL_ATTR_TYPE.upper(),
+            attributeType=AttributeType.SPATIOTEMPORAL.value,
             geo=AttributeAttributeGeo(
                 geoJson={"type": "Point"}, mgrs="dummy", startTime=datetime.now(), endTime=datetime.now()
             ),

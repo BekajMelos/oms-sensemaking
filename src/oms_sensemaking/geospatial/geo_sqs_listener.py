@@ -1,5 +1,6 @@
 """Module for listening on an SQS Queue and handling geo attributes"""
 
+import asyncio
 import logging
 import uuid
 from typing import Dict, Optional
@@ -7,6 +8,7 @@ from typing import Dict, Optional
 import dateutil
 import dateutil.parser
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType, ObjectType
 from oms_sdk.generated.generated_graphql_client.input_types import (
     IdQuery,
     RelationshipNodeQuery,
@@ -20,13 +22,12 @@ from oms_sensemaking.geospatial.tracks import PointAttribute
 LOGGER = logging.getLogger(__name__)
 
 
-ATTRIBUTE_OBJECT_TYPE = "ATTRIBUTE"
-CREATE_EVENT_TYPE = "CREATE"
-SPATIOTEMPORAL_ATTR_TYPE = "spatiotemporal"
-
-
 class GeoSQSListener(SQSListener):
     """Class for listening to Geo objects on an SQS Queue"""
+
+    def __init__(self, track_cache_queue: asyncio.Queue):
+        super().__init__()
+        self.track_cache_queue: asyncio.Queue = track_cache_queue
 
     async def handle_sqs_event(self, event: Dict) -> None:
         """Checks that the event is valid, creates an attribute object and puts it on the queue.
@@ -36,7 +37,7 @@ class GeoSQSListener(SQSListener):
         """
 
         # ignore if not the right type of event
-        if event["objectType"] != ATTRIBUTE_OBJECT_TYPE or event["eventType"] != CREATE_EVENT_TYPE:
+        if event["objectType"] != ObjectType.ATTRIBUTE.value or event["eventType"] != Action.CREATE.value:
             return
 
         try:
@@ -56,7 +57,7 @@ class GeoSQSListener(SQSListener):
                 )
 
                 # Place on the Queue for the Track Cache to receive
-                await self.q.put(attribute)
+                await self.track_cache_queue.put(attribute)
 
     async def get_oms_attribute(self, attribute_id: uuid.UUID) -> Optional[AttributeAttribute]:
         """
@@ -75,7 +76,7 @@ class GeoSQSListener(SQSListener):
             return None
         # Only process if this is a spatiotemporal attribute with a Point
         if (
-            oms_attr.attributeType.lower() != SPATIOTEMPORAL_ATTR_TYPE
+            oms_attr.attributeType != AttributeType.SPATIOTEMPORAL.value
             or oms_attr.geo.geoJson.get("type").lower() != "point"
         ):
             return None

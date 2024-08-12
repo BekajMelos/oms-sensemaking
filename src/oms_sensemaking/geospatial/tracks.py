@@ -191,9 +191,9 @@ class BaseTrackService:
 
 
 class TrackCacheService(PubSub):
-    def __init__(self, q: asyncio.Queue):
+    def __init__(self, point_ingest_queue: asyncio.Queue):
         super().__init__()
-        self.q = q
+        self.point_ingest_queue = point_ingest_queue
         self.cache: Dict[uuid.UUID, List[Tuple[datetime, PointAttribute]]] = defaultdict(list)
 
     async def add_point(self, point):
@@ -208,20 +208,22 @@ class TrackCacheService(PubSub):
             if self.cache[track_node_id][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
                 points: List[Tuple[datetime, PointAttribute]] = self.cache.pop(track_node_id)
 
-                # TODO need to test why some are less than 2
                 if len(points) > 2:
                     await self.create_track(track_node_id, points)
+                else:
+                    # TODO need to test why some are less than 2
+                    LOGGER.warn(f"Track with fewer than two points found: {track_node_id} - ({points})")
 
     async def wait_for_events(self) -> None:
         """Wait for events to enter the queue."""
         while True:
             LOGGER.info("Requesting messages from the queue")
-            while not self.q.empty():
-                event = await self.q.get()
+            while not self.point_ingest_queue.empty():
+                event = await self.point_ingest_queue.get()
 
                 # this could be where we filter events for the points we want
                 await self.handle_event(event)
-                self.q.task_done()
+                self.point_ingest_queue.task_done()
 
             await self.check_expirations()
             # wait 10 seconds

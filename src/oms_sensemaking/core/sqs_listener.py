@@ -13,16 +13,10 @@ from oms_sensemaking.config import SETTINGS
 LOGGER = logging.getLogger(__name__)
 
 
-ATTRIBUTE_OBJECT_TYPE = "ATTRIBUTE"
-CREATE_EVENT_TYPE = "CREATE"
-SPATIOTEMPORAL_ATTR_TYPE = "spatiotemporal"
-
-
 class SQSListener:
     """Class for listening on an SQS Queue"""
 
-    def __init__(self, q: asyncio.Queue):
-        self.q = q
+    def __init__(self):
         self.sqs = boto3.client(
             "sqs",
             region_name=SETTINGS.aws_region_name,
@@ -62,12 +56,12 @@ class SQSListener:
                     continue
 
                 for message in response["Messages"]:
+                    await self.handle_sqs_event(json.loads(message["Body"]))
+
                     # Delete received message from queue - required so you don't get the same message
                     self.sqs.delete_message(QueueUrl=SETTINGS.sqs_queue_url, ReceiptHandle=message["ReceiptHandle"])
 
-                    await self.handle_sqs_event(json.loads(message["Body"]))
-
-            await asyncio.sleep(5)
+            await asyncio.sleep(SETTINGS.sqs_read_wait_seconds)
 
     async def handle_sqs_event(self, event: Dict) -> None:
         """Checks that the event is valid and puts it in the queue to be processed.
