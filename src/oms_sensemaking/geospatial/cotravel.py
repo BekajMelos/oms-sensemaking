@@ -1,4 +1,5 @@
 """Provides co-travel Sensemaker."""
+
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -98,7 +99,8 @@ class CotravelService:
         :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of CotravelEvents events found
         """
-        LOGGER.info(f"Detecting Cotravels in {track}")
+
+        LOGGER.info(f"Detecting Cotravels in {track.track_node_id}")
 
         cotravels: List[PotentialMatch] = []
         matches: List[Colocation] = []

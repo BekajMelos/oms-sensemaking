@@ -1,4 +1,5 @@
 """Tests for loiter sensemaker."""
+
 import random
 import uuid
 from datetime import datetime

@@ -1,4 +1,5 @@
 """Provides GroupByTrackNodeIdProjection model."""
+
 from typing import List
 from uuid import UUID
 
@@ -13,4 +14,3 @@ class GroupByTrackNodeIdProjection:
 
     def __repr__(self):
         return self.__str__()
-

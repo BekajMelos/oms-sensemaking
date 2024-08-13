@@ -1,4 +1,5 @@
 """Provides ProcessedPoint model."""
+
 from datetime import datetime
 
 import shapely
