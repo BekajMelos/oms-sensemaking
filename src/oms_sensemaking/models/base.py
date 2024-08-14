@@ -212,3 +212,9 @@ class OmsAttributeMixin(MappedAsDataclass):
         nullable=False,
         comment='The version of the attribute associated with the object.'
     )
+
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        comment='The ID of the source associated with the object.'
+    )

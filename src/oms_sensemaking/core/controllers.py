@@ -13,7 +13,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class SensemakerController(ABC):
     """Abstract base class for sensemaker controllers."""
 
-    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
+    def __init__(self, event_consumer: ObjectEventConsumer, *args, **kwargs) -> None:
         """
         Create a new instance of the SensemakerController.
 

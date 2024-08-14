@@ -4,7 +4,7 @@ import uuid
 from collections import defaultdict
 from datetime import timedelta
 from queue import PriorityQueue
-from typing import List, Set
+from typing import Any, List, Set
 
 from geoalchemy2.types import Geography
 from geolib import geohash
@@ -310,3 +310,8 @@ class SimilarTracksSensemaker(Sensemaker):
                 groups[node_id].append(bookend)
 
         return [GroupByTrackNodeIdProjection(node_id, bookends) for node_id, bookends in groups.items()]
+
+    def save_findings(self, similar_track: Any) -> None:
+        """Save findings to the database."""
+        # Will Implement in a future Ticket
+        pass
