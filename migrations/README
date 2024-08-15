@@ -1,0 +1,14 @@
+# Alembic Migrations
+
+Generic single-database configuration.
+
+## Creating New Migrations
+
+As a best practice, please use a timestamp for the revision id and include a
+short descriptive message when creating new migrations:
+
+For example:
+
+```sh
+alembic revision --autogenerate --rev-id $(date +%Y%m%d%H%M) -m "Added new table."
+```

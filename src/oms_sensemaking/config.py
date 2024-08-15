@@ -1,7 +1,12 @@
 """Application configuration."""
 
-from pydantic import Field, computed_field
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 
 
 class LogConfig(BaseSettings):
@@ -66,9 +71,20 @@ class LogConfig(BaseSettings):
 
 class Settings(BaseSettings):
     """Settings class."""
+
     model_config = SettingsConfigDict()
 
     gzip_minimum_size: int = 1000
+
+    # database settings
+    db_host: str = Field("localhost", description="Database hostname or IP address.")
+    db_port: str = Field("5432", description="Database port.")
+    db_user: str = Field("appuser", description="Database user.")
+    db_password: str = Field("password", description="Database user's password.")
+    db_schema: str = Field("oms_sensemaking", description="Database schema name.")
+    db_uri: Optional[str] = Field(
+        None, description="Database connection URI. This is an alternative to configuring the independent components."
+    )
 
     # Geospatial Sensemaking Settings
     valid_observed_threshold_seconds: int = Field(
@@ -124,6 +140,37 @@ class Settings(BaseSettings):
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field("./pki/test10.pem", description="Path to User PEM")
     key_path: str = Field("./pki/test10.key", description="Path to User Key")
+
+    @field_validator("db_uri", mode="before")
+    @classmethod
+    def db_connection(cls, field_value: Optional[str], info: ValidationInfo) -> str:
+        """
+        Validate database connection.
+        """  # pylint: disable=too-many-function-args, no-self-argument
+        return cls.assemble_db_connection(field_value, info.data, "db_")
+
+    @classmethod
+    def assemble_db_connection(
+        cls, field_value: Optional[str], values: Dict[str, Any], settings_prefix: str = ""
+    ) -> str:
+        """
+        Validate db connection.
+
+        This function builds a PostgreSQL database connection string from a
+        collection of related configuration properties if the target value is
+        not set explicitly.
+        """
+        if isinstance(field_value, str):
+            return field_value
+
+        return PostgresDsn.build(
+            scheme="postgresql+psycopg",
+            username=values.get(f"{settings_prefix}user"),
+            password=values.get(f"{settings_prefix}password") or "",
+            host=values.get(f"{settings_prefix}host") or "localhost",
+            port=int(values.get(f"{settings_prefix}port") or 5432),
+            path=values.get(f"{settings_prefix}schema") or ""
+        ).unicode_string()
 
 
 SETTINGS: Settings = Settings()

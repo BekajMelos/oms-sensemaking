@@ -39,3 +39,7 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 [format]
 docstring-code-format = true
 docstring-code-line-length = 50
+
+exclude = [
+    'config.py'
+]

@@ -4,6 +4,7 @@
 # Generated Files
 # --------------------
 build
+data
 dist
 htmlcov
 venv

@@ -18,11 +18,21 @@ WORKDIR /app
 
 COPY . /app
 
+# - mount .netrc as a Docker secret
+# - install packages to support installing git based Python dependencies (e.g. git)
+# - install packages to support installation of postgresql client libraries
+# - install Python dependencies
+# - clean up
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,mode=0600 apt-get update && \
-    apt-get install -y --no-install-recommends apt-utils ca-certificates git gzip tar && \
+    apt-get install -y --no-install-recommends apt-utils ca-certificates curl git gzip tar && \
+    install -d /usr/share/postgresql-common/pgdg && \
+    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt-get install -y postgresql-client-14 && \
     $PIP_INSTALL --upgrade pip wheel && \
     pip install . && \
-    apt-get purge -y apt-utils git && \
+    apt-get purge -y apt-utils curl git && \
     apt-get clean -y && \
     apt-get autoclean -y && \
     apt-get autoremove -y

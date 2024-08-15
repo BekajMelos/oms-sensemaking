@@ -15,16 +15,21 @@ classifiers = [
 ]
 dynamic = ['version']
 dependencies = [
+    'alembic==1.13.2',
     'boto3==1.34.144',
-    'geolib==1.0.7',
     'fastapi[standard]==0.112.0',
     'fastapi-offline==1.7.2',
+    'geoalchemy2==0.15.2',
+    'geolib==1.0.7',
     'pandas==2.2.2',
+    'psycopg[binary,pool]==3.2.1',
     'pydantic==2.8.2',
     'pydantic-settings==2.4.0',
     # 'pydantic-extra-types==2.9.0',
+    'pygeohash==1.2.0',  # might want to look at pygeohash-fast
     'python-dotenv==1.0.1',
     'shapely==2.0.4',
+    'sqlalchemy==2.0.32',
     'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.0.0'
 ]
 
@@ -33,7 +38,7 @@ dev = [
     'coverage==7.6.0',
     'mypy==1.11.1',
     'pre-commit==3.7.1',
-    'ruff==0.5.6',
+    'ruff==0.5.7',
     'types-shapely==2.0.0.20240714'
 ]
 test = [
