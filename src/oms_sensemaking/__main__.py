@@ -61,7 +61,6 @@ async def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> No
         task = asyncio.create_task(sqs_listener.listen())
 
     try:
-        # producers: list[asyncio.Task] = [asyncio.create_task(produce_attributes_from_csv(q, filename))]
         await track_cache_service.wait_for_events()
         await task
         await q.join()
