@@ -5,7 +5,8 @@ import logging
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Tuple
+from queue import PriorityQueue
+from typing import Dict, List
 
 import pandas as pd
 import shapely
@@ -104,6 +105,9 @@ class PointAttribute:
     def __repr__(self):
         return self.__str__()
 
+    def __lt__(self, other):
+        return self.timestamp < other.timestamp
+
 
 class BaseTrackService:
     @staticmethod
@@ -194,21 +198,36 @@ class TrackCacheService(PubSub):
     def __init__(self, point_ingest_queue: asyncio.Queue):
         super().__init__()
         self.point_ingest_queue = point_ingest_queue
-        self.cache: Dict[uuid.UUID, List[Tuple[datetime, PointAttribute]]] = defaultdict(list)
+        # cache for collecting points into a track
+        self._point_cache: Dict[uuid.UUID, PriorityQueue[PointAttribute]] = defaultdict(PriorityQueue)
+        # cache for tracking the latest observed timestamp per track_node_id. the track_node_id should match the track
+        # being collected in the point cache
+        self._timestamp_cache: Dict[uuid.UUID, datetime] = {}
 
-    async def add_point(self, point):
-        self.cache[point.track_node_id].append((datetime.now(), point))
+    async def add_point(self, point: PointAttribute):
+        """
+        Add a point to the cache. PointAttribute goes to the point_cache and observed timestamp goes to the timestamp
+        cache
+
+        :param point: PointAttribute object to cache and collect into track
+        :return: None
+        """
+        self._point_cache[point.track_node_id].put(point)
+        self._timestamp_cache[point.track_node_id] = datetime.now()
 
     async def check_expirations(self) -> None:
         """Check for Points that have waited past the expiration time and should be processed."""
 
         LOGGER.info("Checking Expirations")
         now = datetime.now()
-        for track_node_id in list(self.cache.keys()):
-            if self.cache[track_node_id][-1][0] + CACHE_ENTRY_EXPIRE_SEC < now:
-                points: List[Tuple[datetime, PointAttribute]] = self.cache.pop(track_node_id)
+        for track_node_id in list(self._timestamp_cache.keys()):
+            if self._timestamp_cache[track_node_id] + CACHE_ENTRY_EXPIRE_SEC < now:
+                points: PriorityQueue[PointAttribute] = self._point_cache.pop(track_node_id)
+                # expire timestamp cache entry which we don't need anymore
+                _ = self._timestamp_cache.pop(track_node_id)
 
-                if len(points) > 2:
+                # TODO need to test why some are less than 2
+                if len(points.queue) > 2:
                     await self.create_track(track_node_id, points)
                 else:
                     # TODO need to test why some are less than 2
@@ -233,25 +252,29 @@ class TrackCacheService(PubSub):
         """Handle incoming event."""
         await self.add_point(point)
 
-    async def create_track(self, track_node_id: uuid.UUID, points: List) -> Track:
+    async def create_track(self, track_node_id: uuid.UUID, points: PriorityQueue) -> Track:
         """
         Combine the points into a Track object.
 
         :param points: List of Point objects
         :return: The created Track
         """
-        track: Track = Track(
-            track_node_id,
-            [
-                ProcessedPoint(
-                    shapely.Point(point[1].lon, point[1].lat),
-                    point[1].timestamp,
-                    idx == 0,
-                    idx == len(points) - 1,
-                )
-                for idx, point in enumerate(points)
-            ],
-        )
+
+        processed_points = []
+        idx = 0
+        queue_len = len(points.queue)
+        while not points.empty():
+            point: PointAttribute = points.get_nowait()
+            processed_point = ProcessedPoint(
+                shapely.Point(point.lon, point.lat),
+                point.timestamp,
+                idx == 0,
+                idx == queue_len - 1,
+            )
+            idx = idx + 1
+            processed_points.append(processed_point)
+
+        track: Track = Track(track_node_id, processed_points)
 
         self.publish(TRACK_CREATED_EVENT, track)
 
