@@ -1,8 +1,9 @@
 # Contributing to oms-sensemaking
 
 Contributions to *oms-sensemaking* are welcome! If you find a bug or have an
-idea for enhancements, please report them through the [ticket tracker]. Changes
-should be submitted as a pull request.
+idea for enhancements, please report them through the [Jira] or reach out to
+oms-sensemaking team to create a ticket on your behalf. Changes should be
+submitted as a pull request.
 
 ## Getting Started
 
@@ -20,9 +21,9 @@ to *oms-sensemaking*.
 All works should be associated with a an issue in the [ticket tracker]. There
 are several templates that can be used depending on the type of issue:
 
-- [New Feature](./.gittea/issue_template/New Feature.md)
-- [Enhancement or Refactor](./.gittea/issue_template/Enhancement or Refactor.md)
-- [Bug](./.gittea/issue_template/Bug.md)
+- [New Feature](./.gitea/issue_template/New Feature.md)
+- [Enhancement or Refactor](./.gitea/issue_template/Enhancement or Refactor.md)
+- [Bug](./.gitea/issue_template/Bug.md)
 
 
 ### Making Changes
@@ -68,7 +69,7 @@ are several templates that can be used depending on the type of issue:
 
 ### Submitting Changes For Review
 
-- Push your topic branch to Gittea
+- Push your topic branch to Gitea
 
 - Submit a Pull Request
 
@@ -80,7 +81,7 @@ are several templates that can be used depending on the type of issue:
 
   + Include test steps for verifying the changes
 
-- Gather feedback through Gittea's [Pull Requests] feature
+- Gather feedback through Gitea's [Pull Requests] feature
 
 
 ### Reviewing Pull Requests
@@ -89,7 +90,7 @@ are several templates that can be used depending on the type of issue:
 
 - Follow the test instructions provided in the pull request
 
-- Use Gittea to comment on the merge request if you have any questions or
+- Use Gitea to comment on the merge request if you have any questions or
   concerns
 
 - Use your best judgement before approving merge requests
@@ -103,7 +104,7 @@ are several templates that can be used depending on the type of issue:
 The author of the Pull Request should be responsible for merging, once there is
 an approval.
 
-If Gittea can handle the merge automatically, you will be presented with options
+If Gitea can handle the merge automatically, you will be presented with options
 for what type of merge commit you would like to create. In addition to selecting
 the type of merge commit to use, you may also be presented with the option to
 delete the the branch once merged, which is recommended.
