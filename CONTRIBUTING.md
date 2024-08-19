@@ -21,8 +21,8 @@ to *oms-sensemaking*.
 All works should be associated with a an issue in the [ticket tracker]. There
 are several templates that can be used depending on the type of issue:
 
-- [New Feature](./.gitea/issue_template/New Feature.md)
-- [Enhancement or Refactor](./.gitea/issue_template/Enhancement or Refactor.md)
+- [New Feature](<./.gitea/issue_template/New Feature.md>)
+- [Enhancement or Refactor](<./.gitea/issue_template/Enhancement or Refactor.md>)
 - [Bug](./.gitea/issue_template/Bug.md)
 
 
