@@ -15,16 +15,19 @@ To generate a migration for a new model or other ORM updates:
 
     alembic revision --autogenerate --rev-id $(date +%Y%m%d%H%M) -m "short description of the change."
 """
+import json
+import uuid
+from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from sqlalchemy import DateTime, Dialect, MetaData, TypeDecorator, select
-from sqlalchemy.orm import ColumnProperty, DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy import DateTime, Dialect, Integer, MetaData, TypeDecorator, select
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, Session, mapped_column
 from sqlalchemy.sql.expression import ClauseElement
-from sqlalchemy.sql.schema import Column
 
 
-class Base(DeclarativeBase):
+class BaseORM(MappedAsDataclass, DeclarativeBase):
     """Base class for all ORM models."""
     metadata = MetaData(
         # handle index naming conventions
@@ -36,27 +39,6 @@ class Base(DeclarativeBase):
             'pk': 'pk_%(table_name)s'
         }
     )
-
-
-class BaseOrm(Base):
-    """Base model with columns that are common to all ORM objects."""
-
-    __abstract__ = True
-
-    def to_dict(self, include_relationships: bool = True) -> dict:
-        """ORM instance as a dictionary."""
-        fields = set()
-
-        for prop in self.__mapper__.iterate_properties:
-            if isinstance(prop, ColumnProperty):
-                fields.add(prop.columns[0].name)
-
-        if include_relationships:
-            fields.update(self.__mapper__.relationships.keys())  # type: ignore
-
-        return {
-            field_name: getattr(self, field_name) for field_name in fields
-        }
 
     @classmethod
     def get_or_create(cls, session: Session, defaults: Optional[dict] = None, **kwargs):
@@ -90,6 +72,14 @@ class BaseOrm(Base):
             return instance, False
         else:
             return instance, True
+
+    def to_dict(self) -> dict:
+        """Return a dictionary representation of the object."""
+        return asdict(self)
+
+    def to_json(self) -> str:
+        """Return a JSON string representation of the object."""
+        return json.dumps(self.to_dict())
 
 
 class UtcDateTime(TypeDecorator):
@@ -160,22 +150,64 @@ def utcnow_with_timezone() -> datetime:
     return datetime.utcnow().replace(tzinfo=timezone.utc)
 
 
-class AuditMixin:
+class AuditMixin(MappedAsDataclass):
     """Declare audit attributes."""
 
     created_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
         nullable=False,
-        default=utcnow_with_timezone,
-        comment="The time the record was created in the database."
+        insert_default=utcnow_with_timezone,
+        comment="The time the record was created in the database.",
+        init=False
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
         nullable=False,
-        default=utcnow_with_timezone,
+        insert_default=utcnow_with_timezone,
         onupdate=utcnow_with_timezone,
-        comment="The time the record was last updated."
+        comment="The time the record was last updated.",
+        init=False
+    )
+
+
+class SecurityMarkingMixin(MappedAsDataclass):
+    """Declare security marking attributes."""
+
+    acm: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=False,
+        comment='The ACM representing the classification of the data.'
+    )
+
+
+class OmsAttributeMixin(MappedAsDataclass):
+    """Declare OMS Attribute Metdata."""
+
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        comment='The ID of the node associated with the object.'
+    )
+
+    node_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+
+    attribute_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        comment='The ID of the attribute associated with the object.'
+    )
+
+    attribute_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment='The version of the attribute associated with the object.'
     )

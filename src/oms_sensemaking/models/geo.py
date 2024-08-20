@@ -2,50 +2,20 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKBElement
 from geoalchemy2.shape import to_shape
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Column, Float, Integer, String, select
-from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy import Float, String, select
+from sqlalchemy.orm import Mapped, MappedAsDataclass, Session, mapped_column
 
-from .base import AuditMixin, BaseOrm, UtcDateTime
+from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 
 
-class Point(BaseOrm, AuditMixin):
-    """Represents a request to run an algorithm."""
-
-    __tablename__: str = 'points'
-
-    node_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        nullable=False,
-        comment='The ID of the node associated with this point.'
-    )
-
-    node_version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='The version of the node associated with this point.'
-    )
-
-    attribute_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        nullable=False,
-        comment='The ID of the attribute associated with this point.'
-    )
-
-    attribute_version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='The version of the attribute associated with this point.'
-    )
-
+class OmsGeoMixin(MappedAsDataclass):
+    """Declare OMS geospatial metadata."""
     location: Mapped[WKBElement] = mapped_column(
         # NOTE: this could alternatively be represented as a 3D point, which
         # seems to be an undocumented feature in geoalchemy. Using a 2D point
@@ -78,12 +48,6 @@ class Point(BaseOrm, AuditMixin):
         comment='The time the point was detected.'
     )
 
-    acm: Mapped[dict] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment='The ACM representing the classification of the Point.'
-    )
-
     @property
     def coordinates(self) -> list[float]:
         """Returns the longitude, latitude, and optional altitude (in that order).
@@ -107,6 +71,12 @@ class Point(BaseOrm, AuditMixin):
                 "coordinates": self.coordinates
             }
         }
+
+
+class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
+    """Represents a geolocation in OMS."""
+
+    __tablename__: str = 'points'
 
 
 @dataclass

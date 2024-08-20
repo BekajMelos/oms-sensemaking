@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from oms_sensemaking.config import SETTINGS
 
 # do not delete the following imports
-from oms_sensemaking.models.base import BaseOrm
+from oms_sensemaking.models.base import BaseORM
 from oms_sensemaking.models.geo import *
 
 # this is the Alembic Config object, which provides
@@ -26,7 +26,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = BaseOrm.metadata
+target_metadata = BaseORM.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

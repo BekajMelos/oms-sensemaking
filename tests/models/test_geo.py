@@ -75,7 +75,7 @@ def test_points_2d_and_3d(db: Session):
 
     # check to_dict
     assert point.location == point.to_dict()["location"]
-    assert point.location == point.to_dict(True)["location"]
+    assert point.location == point.to_dict()["location"]
     assert 'coordinates' not in point.to_dict()
 
     point = db.execute(
