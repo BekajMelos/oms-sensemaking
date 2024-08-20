@@ -144,9 +144,7 @@ class Settings(BaseSettings):
     @field_validator("db_uri", mode="before")
     @classmethod
     def db_connection(cls, field_value: Optional[str], info: ValidationInfo) -> str:
-        """
-        Validate database connection.
-        """  # pylint: disable=too-many-function-args, no-self-argument
+        """Validate database connection."""  # pylint: disable=too-many-function-args, no-self-argument
         return cls.assemble_db_connection(field_value, info.data, "db_")
 
     @classmethod

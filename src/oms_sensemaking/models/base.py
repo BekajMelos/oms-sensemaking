@@ -29,6 +29,7 @@ from sqlalchemy.sql.expression import ClauseElement
 
 class BaseORM(MappedAsDataclass, DeclarativeBase):
     """Base class for all ORM models."""
+
     metadata = MetaData(
         # handle index naming conventions
         naming_convention={

@@ -16,6 +16,7 @@ from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, 
 
 class OmsGeoMixin(MappedAsDataclass):
     """Declare OMS geospatial metadata."""
+
     location: Mapped[WKBElement] = mapped_column(
         # NOTE: this could alternatively be represented as a 3D point, which
         # seems to be an undocumented feature in geoalchemy. Using a 2D point
@@ -82,6 +83,7 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
 @dataclass
 class Track:
     """Represents a track."""
+
     points: list[Point]
     node_id: uuid.UUID
     start_time: datetime = field(init=False)
@@ -105,8 +107,8 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
     """
     Get track for a given node id.
 
-    :param db: The database session.
-    :param node_id: The unique identifier for a given node.
+    :param db: A database session.
+    :param node_id: The Node's unique identifier.
     """
     # NOTE: this a naive implementation.
     #
@@ -121,6 +123,13 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
 
 
 def get_track(db: Session, node_id: Union[str, uuid.UUID]) -> Track:
+    """
+    Get track for a given Node.
+
+    :param db: A database session.
+    :param node_id: The Node's unique identifier.
+    :return: A Track.
+    """
     if isinstance(node_id, str):
         node_id = uuid.UUID(node_id)
 
