@@ -29,7 +29,7 @@ RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 apt-get u
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update && \
-    apt-get install -y postgresql-client-14 && \
+    apt-get install -y postgresql-client-16 && \
     $PIP_INSTALL --upgrade pip wheel && \
     pip install . && \
     apt-get purge -y apt-utils curl git && \
