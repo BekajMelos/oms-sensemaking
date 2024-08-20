@@ -8,8 +8,9 @@ Create Date: ${create_date}
 from typing import Sequence, Union
 
 import geoalchemy2
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects import postgresql
 
 import oms_sensemaking
 ${imports if imports else ""}

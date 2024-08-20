@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, scoped_session, sessionmaker
 from .config import SETTINGS
 
 db_engine = create_engine(
-    SETTINGS.db_uri,
+    SETTINGS.db_uri,  # type: ignore
     pool_pre_ping=True,
     connect_args={
         'options': '-c timezone=utc'

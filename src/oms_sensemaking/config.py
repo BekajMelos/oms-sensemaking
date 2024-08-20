@@ -36,7 +36,7 @@ class LogConfig(BaseSettings):
         }
     }
 
-    @computed_field
+    @computed_field  # type: ignore
     @property
     def loggers(self) -> dict[str, dict]:
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""

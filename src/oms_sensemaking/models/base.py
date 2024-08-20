@@ -16,15 +16,17 @@ To generate a migration for a new model or other ORM updates:
     alembic revision --autogenerate --rev-id $(date +%Y%m%d%H%M) -m "short description of the change."
 """
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 
-from sqlalchemy import DateTime, Dialect, MetaData, TypeDecorator
-from sqlalchemy.orm import ColumnProperty, declarative_base
-from sqlalchemy.orm.decl_api import DeclarativeMeta
+from sqlalchemy import DateTime, Dialect, MetaData, TypeDecorator, select
+from sqlalchemy.orm import ColumnProperty, DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy.sql.expression import ClauseElement
 from sqlalchemy.sql.schema import Column
 
-Base: DeclarativeMeta = declarative_base(
-    metadata=MetaData(
+
+class Base(DeclarativeBase):
+    """Base class for all ORM models."""
+    metadata = MetaData(
         # handle index naming conventions
         naming_convention={
             'ix': 'ix_%(column_0_label)s',
@@ -34,7 +36,6 @@ Base: DeclarativeMeta = declarative_base(
             'pk': 'pk_%(table_name)s'
         }
     )
-)
 
 
 class BaseOrm(Base):
@@ -57,11 +58,47 @@ class BaseOrm(Base):
             field_name: getattr(self, field_name) for field_name in fields
         }
 
+    @classmethod
+    def get_or_create(cls, session: Session, defaults: Optional[dict] = None, **kwargs):
+        """
+        Get an instance of the class or create a new one using the provided arguments.
+
+        @see https://stackoverflow.com/a/2587041
+        :param session: A database session.
+        :param defaults: Default values used if a new object is created.
+        :param kwargs: parameters used to query for the object.
+        :return: A tuple containing an instance and a boolean flag indicating if the
+                 instance was created as part of the call to this function.
+        """
+        # 1. find the model, if it exists
+        instance = session.execute(select(cls).filter_by(**kwargs)).scalars().one_or_none()
+
+        if instance:
+            return instance, False
+
+        # 2. it does not exist, so create it
+        params = {key: val for key, val in kwargs.items() if not isinstance(val, ClauseElement)}
+        params.update(defaults or {})
+        instance = cls(**params)
+
+        try:
+            session.add(instance)
+            session.commit()
+        except Exception:
+            session.rollback()
+            instance = session.execute(select(cls).filter_by(**kwargs)).scalars().one()
+            return instance, False
+        else:
+            return instance, True
+
 
 class UtcDateTime(TypeDecorator):
     """
     Represents a Custom DateTime to ensure timestamps are stored as UTC.
 
+    NOTE: This class clashes with mypy.
+
+    @see https://github.com/dropbox/sqlalchemy-stubs/issues/205
     @see https://docs.sqlalchemy.org/en/20/core/custom_types.html#store-timezone-aware-timestamps-as-timezone-naive-utc
     """
 
@@ -73,7 +110,7 @@ class UtcDateTime(TypeDecorator):
         """Returns the Python type."""
         return datetime
 
-    def process_bind_param(self, value: datetime, dialect: Dialect) -> datetime:
+    def process_bind_param(self, value: Optional[Any], dialect: Dialect) -> datetime:
         """
         Convert the value to UTC and strip the timezone information.
 
@@ -91,7 +128,7 @@ class UtcDateTime(TypeDecorator):
 
         return value
 
-    def process_result_value(self, value: datetime, dialect) -> datetime:
+    def process_result_value(self, value: Optional[Any], dialect: Dialect) -> datetime:
         """
         Ensure the return value is timezone aware.
 
@@ -105,7 +142,7 @@ class UtcDateTime(TypeDecorator):
 
         return value
 
-    def process_literal_param(self, value, dialect) -> Optional[str]:
+    def process_literal_param(self, value, dialect) -> Optional[str]:  # type: ignore
         """
         Return the literal datetime value formatted as ISO 8601 timestamp.
 
@@ -126,7 +163,7 @@ def utcnow_with_timezone() -> datetime:
 class AuditMixin:
     """Declare audit attributes."""
 
-    created_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
         nullable=False,
@@ -134,7 +171,7 @@ class AuditMixin:
         comment="The time the record was created in the database."
     )
 
-    updated_at = Column(
+    updated_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
         nullable=False,
