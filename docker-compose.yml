@@ -3,14 +3,15 @@ services:
     build:
       context: .
       secrets:
-        - source: mynetrc
-          target: /root/.netrc
+        - mynetrc
     volumes:
       - .:/app
     ports:
       - 5001:80
-    # environment:
-    #   FASTAPI_LOG_LEVEL: DEBUG
+    environment:
+      DB_HOST: postgis
+      DB_USER: ${DB_USER:-${PGUSER:-appuser}}
+      DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
     entrypoint: /start-reload.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
@@ -28,8 +29,7 @@ services:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD:
-#      TZ: "America/New_York"
-#      PGTZ: "America/New_York"
+
       # psql variables
       PGUSER: ${PGUSER:-${POSTGRES_USER:-postgres}}
       PGPASSWORD: ${PGPASSWORD:-$POSTGRES_PASSWORD}
