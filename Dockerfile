@@ -23,8 +23,8 @@ COPY . /app
 # - install packages to support installation of postgresql client libraries
 # - install Python dependencies
 # - clean up
-RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,mode=0600 apt-get update && \
-    apt-get install -y --no-install-recommends apt-utils ca-certificates curl git gzip tar && \
+RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 apt-get update && \
+    apt-get install -y --no-install-recommends apt-utils ca-certificates curl git gzip tar lsb-release && \
     install -d /usr/share/postgresql-common/pgdg && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
