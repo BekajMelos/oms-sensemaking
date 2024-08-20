@@ -1,6 +1,8 @@
 """Tests for geo ORM models."""
+import uuid
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
+from typing import Iterator
 
 import pygeohash as pgh
 import pytest
@@ -31,7 +33,8 @@ DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr 
 ]
 
 
-def load_sample_data(db: Session):
+@pytest.fixture
+def tester_db(db: Session) -> Iterator[Session]:
     for row in DATA:
         point: Point = Point(
             node_id=row[4],
@@ -49,11 +52,12 @@ def load_sample_data(db: Session):
 
     db.commit()
 
+    yield db
 
-def test_points_2d_and_3d(db: Session):
-    load_sample_data(db)
 
-    count: int = db.scalar(
+def test_points_2d_and_3d(tester_db: Session):
+
+    count: int = tester_db.scalar(
         select(
             func.count()
         ).select_from(Point)
@@ -63,7 +67,7 @@ def test_points_2d_and_3d(db: Session):
     assert count == len(DATA)
 
     # get the first record from the db
-    point = db.execute(select(Point)).scalars().first()
+    point = tester_db.execute(select(Point)).scalars().first()
     assert point
 
     for coords in [point.coordinates, point.to_geojson()["geometry"]["coordinates"]]:
@@ -78,7 +82,7 @@ def test_points_2d_and_3d(db: Session):
     assert point.location == point.to_dict()["location"]
     assert 'coordinates' not in point.to_dict()
 
-    point = db.execute(
+    point = tester_db.execute(
         select(
             Point
         ).where(
@@ -96,11 +100,9 @@ def test_points_2d_and_3d(db: Session):
     assert point.coordinates[1] == 38.846224
 
 
-def test_get_or_create_existing_record(db: Session):
-    load_sample_data(db)
-
+def test_get_or_create_existing_record(tester_db: Session):
     # get a specific point
-    point: Point = db.execute(
+    point: Point = tester_db.execute(
         select(
             Point
         ).where(
@@ -117,7 +119,7 @@ def test_get_or_create_existing_record(db: Session):
     assert point.coordinates[0] == -77.306373
     assert point.coordinates[1] == 38.846224
 
-    point2, is_new = Point.get_or_create(db, node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
+    point2, is_new = Point.get_or_create(tester_db, node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
     assert point2
     assert not is_new
     assert point == point2
@@ -140,8 +142,8 @@ def test_get_or_create_new_record(db: Session):
     assert is_new
 
 
-def test_point_updated_at_no_timezone(db: Session):
-    point, is_new = Point.get_or_create(db, defaults=dict(
+def test_point_updated_at_no_timezone(tester_db: Session):
+    point, is_new = Point.get_or_create(tester_db, defaults=dict(
         node_id=NODE_ID_FFX,
         node_version=1,
         attribute_id=uuid4(),
@@ -153,30 +155,26 @@ def test_point_updated_at_no_timezone(db: Session):
         acm=DEFAULT_ACM
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
 
-    db.add(point)
-    db.commit()
-    db.refresh(point)
+    tester_db.add(point)
+    tester_db.commit()
+    tester_db.refresh(point)
 
     point.updated_at = datetime.now()
-    db.add(point)
+    tester_db.add(point)
 
     with pytest.raises(StatementError):
-        db.commit()
+        tester_db.commit()
 
 
-def test_get_points_track(db: Session):
-    load_sample_data(db)
-
-    points = get_track_points(db, NODE_ID)
+def test_get_points_track(tester_db: Session):
+    points = get_track_points(tester_db, NODE_ID)
 
     assert len(points) == 12
     assert points[0].detection_time < points[-1].detection_time
 
 
-def test_get_track(db: Session):
-    load_sample_data(db)
-
-    track: Track = get_track(db, NODE_ID)
+def test_get_track(tester_db: Session):
+    track: Track = get_track(tester_db, NODE_ID)
 
     assert track
     assert len(track.points) == 12
@@ -186,10 +184,8 @@ def test_get_track(db: Session):
     assert track.points[0].coordinates[1] == DATA[0][0]
 
 
-def test_get_track_uuid_str(db: Session):
-    load_sample_data(db)
-
-    track: Track = get_track(db, "0c5c85b1-fa89-4b78-a4cd-a5cee6e90ec8")
+def test_get_track_uuid_str(tester_db: Session):
+    track: Track = get_track(tester_db, "0c5c85b1-fa89-4b78-a4cd-a5cee6e90ec8")
 
     assert track
     assert len(track.points) == 12
