@@ -3,7 +3,7 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10
 
 ARG PIP_INSTALL='pip install --no-cache-dir'
 
-ENV MODULE_NAME=src.oms_sensemaking.service
+ENV MODULE_NAME=oms_sensemaking.service
 
 # dump the Python traceback for segfaults and other signals
 ENV PYTHONFAULTHANDLER=1
@@ -11,8 +11,11 @@ ENV PYTHONFAULTHANDLER=1
 # disable bytecode generation
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Force stdout & stderr streams to be unbuffered
+# force stdout & stderr streams to be unbuffered
 ENV PYTHONUNBUFFERED=1
+
+# account for src layout
+ENV PYTHONPATH=/app/src
 
 WORKDIR /app
 
