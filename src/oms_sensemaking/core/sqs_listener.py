@@ -6,6 +6,7 @@ import logging
 from typing import Dict
 
 import boto3
+import botocore
 from oms_sdk import get_generated_graphql_client
 
 from oms_sensemaking.config import SETTINGS
@@ -43,14 +44,18 @@ class SQSListener:
 
             for _ in range(0, SETTINGS.sqs_read_loops):
                 # Receive message from SQS queue
-                response = self.sqs.receive_message(
-                    QueueUrl=SETTINGS.sqs_queue_url,
-                    AttributeNames=["SentTimestamp"],
-                    MaxNumberOfMessages=10,
-                    MessageAttributeNames=["All"],
-                    VisibilityTimeout=0,
-                    WaitTimeSeconds=0,
-                )
+                try:
+                    response = self.sqs.receive_message(
+                        QueueUrl=SETTINGS.sqs_queue_url,
+                        AttributeNames=["SentTimestamp"],
+                        MaxNumberOfMessages=10,
+                        MessageAttributeNames=["All"],
+                        VisibilityTimeout=0,
+                        WaitTimeSeconds=0,
+                    )
+                except botocore.exceptions.BotoCoreError as e:
+                    LOGGER.error(f"Unable to connect to SQS: {e}. Trying again...")
+                    break
 
                 if "Messages" not in response:
                     continue
