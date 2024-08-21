@@ -1,12 +1,12 @@
 """Tests for geo ORM models."""
-import uuid
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from typing import Iterator
 
-import pygeohash as pgh
 import pytest
+from geolib import geohash
 from oms_sdk import DEFAULT_ACM
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.geo import Point, Track, get_track_points, get_track
 from sqlalchemy import func, select
 from sqlalchemy.exc import StatementError
@@ -43,7 +43,7 @@ def tester_db(db: Session) -> Iterator[Session]:
             attribute_version=1,
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
-            geohash=pgh.encode(row[0], row[1]),
+            geohash=geohash.encode(row[0], row[1], SETTINGS.geohash_high),
             detection_time=datetime.now(tz=timezone.utc),
             acm=DEFAULT_ACM
         )
@@ -133,7 +133,7 @@ def test_get_or_create_new_record(db: Session):
         attribute_version=1,
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
-        geohash=pgh.encode(-77.306373, 38.846224),
+        geohash=geohash.encode(-77.306373, 38.846224, SETTINGS.geohash_high),
         detection_time=datetime.now(timezone.utc),
         acm=DEFAULT_ACM
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
@@ -150,7 +150,7 @@ def test_point_updated_at_no_timezone(tester_db: Session):
         attribute_version=1,
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
-        geohash=pgh.encode(-77.306373, 38.846224),
+        geohash=geohash.encode(-77.306373, 38.846224, SETTINGS.geohash_high),
         detection_time=datetime.now(tz=timezone.utc),
         acm=DEFAULT_ACM
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)

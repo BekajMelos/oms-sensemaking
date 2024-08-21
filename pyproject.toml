@@ -26,7 +26,6 @@ dependencies = [
     'pydantic==2.8.2',
     'pydantic-settings==2.4.0',
     # 'pydantic-extra-types==2.9.0',
-    'pygeohash==1.2.0',  # might want to look at pygeohash-fast
     'python-dotenv==1.0.1',
     'shapely==2.0.4',
     'sqlalchemy==2.0.32',
