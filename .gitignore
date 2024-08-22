@@ -4,7 +4,7 @@
 # Generated Files
 # --------------------
 build
-data
+data/*.json
 dist
 htmlcov
 venv
