@@ -1,16 +1,16 @@
 """Tests for geo ORM models."""
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
 from typing import Iterator
+from uuid import UUID, uuid4
 
 import pytest
 from geolib import geohash
 from oms_sdk import DEFAULT_ACM
-from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.models.geo import Point, Track, get_track_points, get_track
 from sqlalchemy import func, select
 from sqlalchemy.exc import StatementError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, with_expression
+
+from oms_sensemaking.models.geo import Point, Track, get_track, get_track_points
 
 ATTR_ID_FFX: UUID = UUID("f604f7d3-b78d-49af-a2cf-75eae08cec52")
 NODE_ID_FFX: UUID = UUID("6796b293-e0b2-4ba3-a361-c59c6e07248b")
@@ -43,7 +43,6 @@ def tester_db(db: Session) -> Iterator[Session]:
             attribute_version=1,
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
-            geohash=geohash.encode(row[0], row[1], SETTINGS.geohash_high),
             detection_time=datetime.now(tz=timezone.utc),
             acm=DEFAULT_ACM
         )
@@ -133,7 +132,6 @@ def test_get_or_create_new_record(db: Session):
         attribute_version=1,
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
-        geohash=geohash.encode(-77.306373, 38.846224, SETTINGS.geohash_high),
         detection_time=datetime.now(timezone.utc),
         acm=DEFAULT_ACM
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
@@ -150,7 +148,6 @@ def test_point_updated_at_no_timezone(tester_db: Session):
         attribute_version=1,
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
-        geohash=geohash.encode(-77.306373, 38.846224, SETTINGS.geohash_high),
         detection_time=datetime.now(tz=timezone.utc),
         acm=DEFAULT_ACM
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
@@ -166,11 +163,81 @@ def test_point_updated_at_no_timezone(tester_db: Session):
         tester_db.commit()
 
 
+def test_geohash(tester_db: Session):
+    point = tester_db.execute(  # fairfax query
+        select(
+            Point
+        ).where(
+            Point.altitude.is_(None)
+        ).where(
+            Point.node_id == NODE_ID_FFX,
+            Point.attribute_id == ATTR_ID_FFX
+        ).options(
+            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+        )
+    ).scalars().one()
+
+    assert point
+    assert point.geohash == geohash.encode(38.846224, -77.306373, 20)
+
+
+def test_geohash_nearby_query(db: Session):
+    point1_node_id: UUID = uuid4()
+    point1_attr_id: UUID = uuid4()
+    point1, is_new = Point.get_or_create(db, defaults=dict(
+        node_id=point1_node_id,
+        node_version=1,
+        attribute_id=point1_attr_id,
+        attribute_version=1,
+        location="POINT(-73.8456 40.7246)",
+        altitude=None,
+        detection_time=datetime.now(timezone.utc),
+        acm=DEFAULT_ACM
+    ), node_id=point1_node_id, attribute_id=point1_attr_id)
+    point2_node_id: UUID = uuid4()
+    point2_attr_id: UUID = uuid4()
+    point2, is_new = Point.get_or_create(db, defaults=dict(
+        node_id=point2_node_id,
+        node_version=1,
+        attribute_id=point2_attr_id,
+        attribute_version=1,
+        location="POINT(-73.8456 40.7246)",
+        altitude=None,
+        detection_time=datetime.now(timezone.utc),
+        acm=DEFAULT_ACM
+    ), node_id=point2_node_id, attribute_id=point2_attr_id)
+    point3, is_new = Point.get_or_create(db, defaults=dict(
+        node_id=NODE_ID_FFX,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        location="POINT(-77.306373 38.846224)",  # lng lat
+        altitude=None,
+        detection_time=datetime.now(tz=timezone.utc),
+        acm=DEFAULT_ACM
+    ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
+
+    nearby_points = db.execute(
+        select(
+            Point
+        ).filter(
+            Point.location.ST_Geohash().like("dr5rxtembz9t%")  # full value should be dr5rxtembz9tw6b30s9w
+        ).order_by(
+            Point.detection_time.asc()
+        ).options(
+            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+        )
+    ).scalars().all()
+
+    assert len(nearby_points) == 2
+
+
 def test_get_points_track(tester_db: Session):
     points = get_track_points(tester_db, NODE_ID)
 
     assert len(points) == 12
     assert points[0].detection_time < points[-1].detection_time
+    assert points[0].geohash is not None
 
 
 def test_get_track(tester_db: Session):

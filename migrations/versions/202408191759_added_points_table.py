@@ -53,7 +53,6 @@ def upgrade() -> None:
             comment="The 2D location of the point.",
         ),
         sa.Column("altitude", sa.Float(), nullable=True, comment="The altitude of the point."),
-        sa.Column("geohash", sa.String(), nullable=False, comment="A geocoded representation of the location."),
         sa.Column(
             "detection_time",
             oms_sensemaking.models.base.UtcDateTime(),

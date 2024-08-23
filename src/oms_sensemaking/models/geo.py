@@ -8,8 +8,16 @@ from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKBElement
 from geoalchemy2.shape import to_shape
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Float, String, select
-from sqlalchemy.orm import Mapped, MappedAsDataclass, Session, mapped_column
+from sqlalchemy import Float, func, select
+from sqlalchemy.orm import (
+    Mapped,
+    MappedAsDataclass,
+    Session,
+    declared_attr,
+    mapped_column,
+    query_expression,
+    with_expression,
+)
 
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 
@@ -36,11 +44,11 @@ class OmsGeoMixin(MappedAsDataclass):
         comment='The altitude of the point.'
     )
 
-    geohash: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='A geocoded representation of the location.'
-    )
+    @declared_attr
+    def geohash(self) -> Mapped[str]:
+        return query_expression(
+            doc="A geocoded representation of the location."
+        )
 
     detection_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
@@ -75,7 +83,21 @@ class OmsGeoMixin(MappedAsDataclass):
 
 
 class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
-    """Represents a geolocation in OMS."""
+    """
+    Represents a geolocation in OMS.
+
+    This model is also a dataclass. The order of the positional parameters in
+    the generated ``__init__()`` method are:
+
+    - acm
+    - location
+    - altitude
+    - detection_time
+    - node_id
+    - node_version
+    - attribute_id
+    - attribute_version
+    """
 
     __tablename__: str = 'points'
 
@@ -118,7 +140,11 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
             Point
         ).where(
             Point.node_id == node_id
-        ).order_by(Point.detection_time.asc())
+        ).order_by(
+            Point.detection_time.asc()
+        ).options(
+            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+        )
     ).scalars().all())
 
 
