@@ -35,7 +35,14 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 '__main__.py' = ['E402']
 'conftest.py' = ['E402']
 
+# Ignore `F403` (undefined-local-with-import-star) in Alembic environment config
+'migrations/env.py' = ['F403']
+
 
 [format]
 docstring-code-format = true
 docstring-code-line-length = 50
+
+exclude = [
+    'config.py'
+]

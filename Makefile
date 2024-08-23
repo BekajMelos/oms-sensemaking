@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help test build clean distclean lint lint-stats fix format build-docker up down
+.PHONY: build build-docker clean distclean down fix format help lint lint-stats nuke pgadmin psql test up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -38,10 +38,20 @@ up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build m
 	docker compose up -d ${DOCKER_FLAGS}
 
 down: ## Stop oms-sensemaking docker environment
-	docker compose down
+	docker compose --profile dev down
+
+psql: ## psql into main db
+	docker compose exec postgis psql -h postgis
+
+pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
+	docker compose --profile dev up pgadmin -d
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
 
 distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
+
+nuke: down
+	@docker volume rm -f oms-sensemaking_postgis
+	@docker volume rm -f oms-sensemaking_pgadmin

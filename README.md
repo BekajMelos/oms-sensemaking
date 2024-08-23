@@ -1,6 +1,6 @@
-# OMS Sensemaking Module
+# OMS Sensemaking
 
-Python module used to perform analytics on OMS data.
+Microservice that performs analytics on OMS data.
 
 
 ## Development Environment
@@ -94,33 +94,38 @@ password "your password here"
 
 | Variable  | Example  | Description |
 |:------------- |:---------------:| -------------:|
-| DEBUG  | True | Option to see DEBUG log level |
-| VALID_OBSERVED_THRESHOLD_SECONDS  | 900 | Threshold for amount of between Track Point Observations |
-| CACHE_ENTRY_EXPIRE_SEC  | 30 | How long to wait for new points before creating a new Track |
-| GEOHASH_LOW  | 5 | Low geohash |
-| GEOHASH_HIGH  | 7 | High geohash |
-| POLL_PERIOD_SECONDS  | 10 | How often to poll for new incoming Attributes |
-| OPERATED_BY_IRI  | http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy | IRI for Operated By |
-| DETECT_LOITERS  | True | Toggle on/off Loiter Detection |
-| LOITER_MIN_TIME  | 900 | Minimum amount of time for a valid Loiter Event |
-| DETECT_COTRAVELS  | True | Toggle on/off Cotravel Detection |
-| MIN_COTRAVEL_DURATION_SECONDS  | 1200 | Minimum between Objects in a Track for a Cotravel Event |
-| MIN_LAG_LEAD_DURATION_SECONDS  | 1200 | Minimum amount between Objects in a Track for a Lag/Lead Event |
-| MAX_LAG_LEAD_DURATION_SECONDS  | 2700 | Maximum between Objects in a Track for a Lag/Lead Event |
-| SIMILAR_TRACKS  | True | Toggle on/off Similar Track Calculations |
-| N_TRACKS  | 5 | Number of similar tracks to return |
-| WITHIN_METERS  | 3000.0 | Used to define the search space for potential similar tracks |
-| QUEUE_URL  | http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger | SQS Queue URL |
-| AWS_ENDPOINT_URL  | http://localhost:4566 | SQS Endpoint |
-| AWS_ACCESS_KEY_ID  | FAKE | AWS Access Key |
-| AWS_SECRET_ACCESS_KEY  | FAKE | AWS Secret Key |
-| AWS_REGION_NAME  | us-east-1 | AWS Region |
-| AWS_USE_SSL  | False | Boolean to use SSL for SQS Connection |
-| AWS_VERIFY  | False | Boolean to use SSL verifiation for SQS Connection |
-| OMSB_URL  | https://localhost:8443/graphql | URL for OMSB |
-| USER_DN  | cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us | User DN |
-| CERT_PATH  | ./pki/test10.pem | Path to User PEM |
-| KEY_PATH  | ./pki/test10.key | Path to User Key |
+| `LOG_LEVEL`  | DEBUG | Option to set log level |
+| `POSTGRES_USER` | postgres | The default PostgreSQL/PostGIS admin user |
+| `POSTGRES_PASSWORD` || The password for the default PostgreSQL/PostGIS admmin user |
+| `PGUSER` | appuser | [psql] The *regular* PostgreSQL/PostGIS user |
+| `PGPASSWORD` | password | [psql] The password for the *regular* PostgreSQL/PostGIS |
+| `PGDATABASE` | oms_sensemaking | [psql] The database to connect to |
+| `VALID_OBSERVED_THRESHOLD_SECONDS`  | 900 | Threshold for amount of between Track Point Observations |
+| `CACHE_ENTRY_EXPIRE_SEC`  | 30 | How long to wait for new points before creating a new Track |
+| `GEOHASH_LOW`  | 5 | Low geohash |
+| `GEOHASH_HIGH`  | 7 | High geohash |
+| `POLL_PERIOD_SECONDS`  | 10 | How often to poll for new incoming Attributes |
+| `OPERATED_BY_IRI`  | http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy | IRI for Operated By |
+| `DETECT_LOITERS`  | True | Toggle on/off Loiter Detection |
+| `LOITER_MIN_TIME`  | 900 | Minimum amount of time for a valid Loiter Event |
+| `DETECT_COTRAVELS`  | True | Toggle on/off Cotravel Detection |
+| `MIN_COTRAVEL_DURATION_SECONDS`  | 1200 | Minimum between Objects in a Track for a Cotravel Event |
+| `MIN_LAG_LEAD_DURATION_SECONDS`  | 1200 | Minimum amount between Objects in a Track for a Lag/Lead Event |
+| `MAX_LAG_LEAD_DURATION_SECONDS`  | 2700 | Maximum between Objects in a Track for a Lag/Lead Event |
+| `SIMILAR_TRACKS`  | True | Toggle on/off Similar Track Calculations |
+| `N_TRACKS`  | 5 | Number of similar tracks to return |
+| `WITHIN_METERS`  | 3000.0 | Used to define the search space for potential similar tracks |
+| `QUEUE_URL`  | http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger | SQS Queue URL |
+| `AWS_ENDPOINT_URL`  | http://localhost:4566 | SQS Endpoint |
+| `AWS_ACCESS_KEY_ID`  | FAKE | AWS Access Key |
+| `AWS_SECRET_ACCESS_KEY`  | FAKE | AWS Secret Key |
+| `AWS_REGION_NAME`  | us-east-1 | AWS Region |
+| `AWS_USE_SSL`  | False | Boolean to use SSL for SQS Connection |
+| `AWS_VERIFY`  | False | Boolean to use SSL verifiation for SQS Connection |
+| `OMSB_URL`  | https://localhost:8443/graphql | URL for OMSB |
+| `USER_DN`  | cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us | User DN |
+| `CERT_PATH`  | ./pki/test10.pem | Path to User PEM |
+| `KEY_PATH`  | ./pki/test10.key | Path to User Key |
 
 
 ### Code Quality

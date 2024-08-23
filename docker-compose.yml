@@ -3,16 +3,59 @@ services:
     build:
       context: .
       secrets:
-        - source: mynetrc
-          target: /root/.netrc
+        - mynetrc
     volumes:
       - .:/app
     ports:
       - 5001:80
-    # environment:
-    #   FASTAPI_LOG_LEVEL: DEBUG
+    environment:
+      DB_HOST: postgis
+      DB_USER: ${DB_USER:-${PGUSER:-appuser}}
+      DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
     entrypoint: /start-reload.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: on-failure
+
+  postgis:
+    image: postgis/postgis:16-3.4-alpine
+    platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
+    ports:
+      - 5432:5432
+    environment:
+      # PostgreSQL/PostGIS variables
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD:
+
+      # psql variables
+      PGUSER: ${PGUSER:-${POSTGRES_USER:-postgres}}
+      PGPASSWORD: ${PGPASSWORD:-$POSTGRES_PASSWORD}
+      PGDATABASE: ${PGDATABASE:-oms_sensemaking}
+    volumes:
+      - postgis:/var/lib/postgresql/data
+      - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
+
+  pgadmin:
+    profiles:
+      - dev
+    image: dpage/pgadmin4:8
+    volumes:
+      - ./docker/postgis/servers.json:/pgadmin4/servers.json
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-dev@blackcape.io}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-$POSTGRES_PASSWORD}
+      PGADMIN_CONFIG_LOGIN_BANNER: "${PGADMIN_CONFIG_LOGIN_BANNER:-'<h4>Development Database</h4>'}"
+    ports:
+      - 5050:80
+    depends_on:
+      - postgis
+
+volumes:
+  postgis:
+  pgadmin:
 
 secrets:
   mynetrc:
