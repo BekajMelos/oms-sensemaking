@@ -25,6 +25,9 @@ lint-stats:
 local: ## Start oms-sensemaking locally
 	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
 
+local-env: ##start oms-sensemaking with supporting oms env containers
+	docker compose --profile local up -d
+
 fix:  ## Run linter and apply fixes
 	ruff check --fix
 
@@ -41,7 +44,7 @@ up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build m
 	docker compose up -d ${DOCKER_FLAGS}
 
 down: ## Stop oms-sensemaking docker environment
-	docker compose --profile dev down
+	docker compose --profile dev --profile local down
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis

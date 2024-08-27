@@ -93,7 +93,7 @@ class Settings(BaseSettings):
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
-    db_port: str = Field("5432", description="Database port.")
+    db_port: str = Field("5433", description="Database port.")
     db_user: str = Field("appuser", description="Database user.")
     db_password: str = Field("password", description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
