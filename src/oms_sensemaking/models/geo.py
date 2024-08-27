@@ -46,9 +46,13 @@ class OmsGeoMixin(MappedAsDataclass):
 
     @declared_attr
     def geohash(self) -> Mapped[str]:
-        return query_expression(
-            doc="A geocoded representation of the location."
-        )
+        """
+        Return a geocoded representation of the location.
+
+        This value is calculated when the data is queried and may be
+        null if the query was not configured to populate it.
+        """
+        return query_expression(doc="A geocoded representation of the location.")
 
     detection_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
@@ -59,7 +63,8 @@ class OmsGeoMixin(MappedAsDataclass):
 
     @property
     def coordinates(self) -> list[float]:
-        """Returns the longitude, latitude, and optional altitude (in that order).
+        """
+        Return the longitude, latitude, and optional altitude (in that order).
 
         If altitude is provided the result will be a three element list, otherwise a 2 element list.
         """
