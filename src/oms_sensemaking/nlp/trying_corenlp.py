@@ -47,44 +47,53 @@ russia_ukraine_text = (
     "working near Pokrovsk. “We have to wait for a tank to come to a stop before we can try to hit "
     "it."
 )
-with CoreNLPClient(properties=CUSTOM_PROPS, timeout=60000, memory="16G") as client:
-    # submit the request to the server
-    ann = client.annotate(russia_ukraine_text)  # Returns document type
-    sentence = ann.sentence[0]
-    # print(type(sentence.relation[0]))
-    # print(type(sentence.mentions[0]))
 
-    for sentence in ann.sentence:
-        for mention in sentence.mentions:
-            print(mention)
-        for relation in sentence.relation:
-            print(relation.type)
-            if relation.type != "_NR":
-                print(sentence.relation)
+my_client = CoreNLPClient(properties=CUSTOM_PROPS, timeout=60000, memory="16G")
 
-    # get the first sentence
-    # sentence = ann.sentence[0]
-    # print("Relations:")
-    # print(sentence.relation)  # This works
-    # print("Mentions:")
-    # print(sentence.mentions)
+with my_client:
+    annotation = my_client.annotate(text)
+    s = annotation.sentence
+    for sen in s:
+        print(sen)
 
-    # mentions = sentence.mentions
+# with CoreNLPClient(properties=CUSTOM_PROPS, timeout=60000, memory="16G") as client:
+#     # submit the request to the server
+#     ann = client.annotate(russia_ukraine_text)  # Returns document type
+#     sentence = ann.sentence[0]
+#     # print(type(sentence.relation[0]))
+#     # print(type(sentence.mentions[0]))
+#
+#     for sentence in ann.sentence:
+#         for mention in sentence.mentions:
+#             print(mention)
+#         for relation in sentence.relation:
+#             print(relation.type)
+#             if relation.type != "_NR":
+#                 print(sentence.relation)
 
-    # print(type(sentence))
-    # print(type(mentions))
-    # print(mentions)
+# get the first sentence
+# sentence = ann.sentence[0]
+# print("Relations:")
+# print(sentence.relation)  # This works
+# print("Mentions:")
+# print(sentence.mentions)
 
-    # get the dependency parse of the first sentence
-    # print('---')
-    # print('dependency parse of first sentence')
-    # dependency_parse = sentence.basicDependencies
-    # print(dependency_parse)
+# mentions = sentence.mentions
 
-    # #get the tokens of the first sentence
-    # #note that 1 token is 1 node in the parse tree, nodes start at 1
-    # print('---')
-    # print('Tokens of first sentence')
-    # for token in sentence.token :
-    #     print(token)
-    # print(token.value, token.pos, token.ner)
+# print(type(sentence))
+# print(type(mentions))
+# print(mentions)
+
+# get the dependency parse of the first sentence
+# print('---')
+# print('dependency parse of first sentence')
+# dependency_parse = sentence.basicDependencies
+# print(dependency_parse)
+
+# #get the tokens of the first sentence
+# #note that 1 token is 1 node in the parse tree, nodes start at 1
+# print('---')
+# print('Tokens of first sentence')
+# for token in sentence.token :
+#     print(token)
+# print(token.value, token.pos, token.ner)
