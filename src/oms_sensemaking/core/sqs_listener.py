@@ -17,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 class SQSListener:
     """Class for listening on an SQS Queue"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.sqs = boto3.client(
             "sqs",
             region_name=SETTINGS.aws_region_name,
