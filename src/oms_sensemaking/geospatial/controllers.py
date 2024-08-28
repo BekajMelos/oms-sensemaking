@@ -3,6 +3,7 @@
 import csv
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Event, Timer
@@ -21,7 +22,7 @@ from oms_sensemaking.core.events import (
     ObjectEvent,
     ObjectEventConsumer,
     ObjectType,
-    SqsObjectEventConsumer,
+    SQSListener,
 )
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
@@ -29,7 +30,7 @@ from oms_sensemaking.models.geo import Point, Track, get_track
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class FileObjectEventConsumer(ObjectEventConsumer):
+class CSVFileParser(ObjectEventConsumer):
     """An ObjectEventConsumer based on a file as the data source."""
 
     def __init__(
@@ -39,7 +40,7 @@ class FileObjectEventConsumer(ObjectEventConsumer):
             default_user_dn: str,
             handle_event: Optional[EVENT_HANDLER] = None):
         """
-        Create a new instance of FileObjectEventConsumer.
+        Create a new instance of CSVFileParser.
 
         :param filename: The CSV file to process.
         :param default_acm: The ACM to apply to all records in the CSV file.
@@ -102,7 +103,7 @@ class FileObjectEventConsumer(ObjectEventConsumer):
                         LOGGER.warning("File-based attribute event [index=%s] was no processed.", row[""])
 
 
-class GeoSqsObjectEventConsumer(SqsObjectEventConsumer):
+class GeoSQSListener(SQSListener):
     """An SQS ObjectEventConsumer that consumes geo-temporal OMS events."""
 
     def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
@@ -162,11 +163,6 @@ class GeospatialSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer)
 
-        # register sensemakers
-        self.register("cotravel", CotravelSensemaker())
-        self.register("loiter", LoiterSensemaker())
-        self.register("similar_tracks", SimilarTracksSensemaker())
-
         # initialize buffer
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
@@ -174,6 +170,15 @@ class GeospatialSensemakerController(SensemakerController):
 
     def start(self) -> None:
         """Start the controller."""
+        if SETTINGS.detect_cotravels:
+            self.register("cotravel", CotravelSensemaker())
+
+        if SETTINGS.detect_loiters:
+            self.register("loiter", LoiterSensemaker())
+
+        if SETTINGS.similar_tracks:
+            self.register("similar_tracks", SimilarTracksSensemaker())
+
         self.autoflush_enabled.set()
         self.buffer_autoflush.start()
         super().start()
@@ -182,7 +187,7 @@ class GeospatialSensemakerController(SensemakerController):
         """
         Stop the controller.
 
-        This method handles stopping the buffer authflush in addition to
+        This method handles stopping the buffer autoflush in addition to
         stopping the controller itself.
         """
         LOGGER.debug("Stopping track buffer autoflush.")
@@ -203,13 +208,13 @@ class GeospatialSensemakerController(SensemakerController):
         now: datetime = datetime.now(tz=timezone.utc)
         point: Optional[Point] = None
 
-        if isinstance(self.event_consumer, FileObjectEventConsumer):
+        if isinstance(self.event_consumer, CSVFileParser):
             with db_session() as db:
                 point: Point = db.execute(
                     select(Point).where(Point.attribute_id == event.object_id)
                 ).scalars().one_or_none()
             pass
-        elif isinstance(self.event_consumer, GeoSqsObjectEventConsumer):
+        elif isinstance(self.event_consumer, GeoSQSListener):
             # TODO: extract info from OMS via API calls
             # TODO: convert OMS data to Point and persist in db
             # point = Point.get_or_create(...)
@@ -240,7 +245,16 @@ class GeospatialSensemakerController(SensemakerController):
                     LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
                     with db_session() as db:
                         track: Track = get_track(db, node_id)
-                        # TODO: send to track to all geo sensemakers
+
+                    try:
+                        with ThreadPoolExecutor() as executor:
+                            for sensemaker in self._registry.values():
+                                executor.submit(sensemaker.execute, track)
+
+                            executor.shutdown(wait=True)
+                    except Exception:
+                        LOGGER.exception("Error encountered while processing %s from buffer", node_id)
+                    finally:
                         self.buffer[node_id] = None  # mark for removal
                 else:
                     LOGGER.debug("node_id%s is still active in the buffer", node_id)

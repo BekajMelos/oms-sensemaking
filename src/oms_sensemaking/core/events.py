@@ -122,11 +122,11 @@ class ObjectEventConsumer(ABC):
         raise NotImplementedError()
 
 
-class SqsObjectEventConsumer(ObjectEventConsumer):
+class SQSListener(ObjectEventConsumer):
     """An abstract base class for SQS object event consumers."""
 
     def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
-        """Create a new instance of SqsObjectEvent."""
+        """Create a new instance of SQSListener."""
         super().__init__(handle_event)
 
         #: SQS client.

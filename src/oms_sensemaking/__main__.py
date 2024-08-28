@@ -16,9 +16,9 @@ from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import DummyObjectEventConsumer
 from oms_sensemaking.geospatial.controllers import (
-    FileObjectEventConsumer,
+    CSVFileParser,
     GeospatialSensemakerController,
-    GeoSqsObjectEventConsumer,
+    GeoSQSListener,
 )
 from oms_sensemaking.nlp.controllers import NlpSensemakerController
 from oms_sensemaking.semantic.controllers import SemanticSensemakerController
@@ -57,7 +57,7 @@ def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
     :param verbose: A number to indicate how verbose logging should be.
     """
     geo: GeospatialSensemakerController = GeospatialSensemakerController(
-        GeoSqsObjectEventConsumer() if filename is None else FileObjectEventConsumer(
+        GeoSQSListener() if filename is None else CSVFileParser(
             filename,
             DEFAULT_ACM,
             SETTINGS.user_dn

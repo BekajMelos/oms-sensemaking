@@ -22,8 +22,7 @@ class SensemakerController(ABC):
 
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
-        self.__registry: dict[str, Sensemaker] = {}
-        # self.__data_consumer: Optional[Thread] = None
+        self._registry: dict[str, Sensemaker] = {}
 
         if self.event_consumer.handle_event is None:
             # register this controller's handle_event as a callback on the event consumer
@@ -37,12 +36,13 @@ class SensemakerController(ABC):
         :param sensemaker: The sensemaker (i.e. an instance of ``Sensemaker``).
         :return: True if the sensemaker was registered as a result of the function, False otherwise.
         """
-        if name in self.__registry:
+        if name in self._registry:
             LOGGER.warning("A sensemaker named %s is already registered, skipping")
             return False
 
         with self.lock:
-            self.__registry[name] = sensemaker
+            LOGGER.debug("Registering '%s' %s", name, sensemaker.__class__)
+            self._registry[name] = sensemaker
 
         return True
 
@@ -53,7 +53,7 @@ class SensemakerController(ABC):
         :param sensemaker: The sensemaker (i.e. an instance of ``Sensemaker``).
         """
         with self.lock:
-            return self.__registry.pop(name, None) or True
+            return self._registry.pop(name, None) or True
 
     def start(self) -> None:
         """Start the controller."""
