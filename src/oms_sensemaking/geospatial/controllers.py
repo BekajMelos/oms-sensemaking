@@ -245,6 +245,7 @@ class GeospatialSensemakerController(SensemakerController):
                     LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
                     with db_session() as db:
                         track: Track = get_track(db, node_id)
+                        LOGGER.debug(track.to_linestring())
 
                     try:
                         with ThreadPoolExecutor() as executor:

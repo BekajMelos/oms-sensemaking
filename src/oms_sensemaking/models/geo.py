@@ -7,6 +7,7 @@ from typing import Union
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKBElement
 from geoalchemy2.shape import to_shape
+from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Float, func, select
 from sqlalchemy.orm import (
@@ -128,6 +129,10 @@ class Track:
         if point_count > 0:
             self.start_time = self.points[0].detection_time
             self.end_time = self.points[-1].detection_time
+
+    def to_linestring(self) -> LineString:
+        """Return a linestring representation of the track."""
+        return LineString([point.coordinates for point in self.points])
 
 
 def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]:

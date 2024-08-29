@@ -65,56 +65,6 @@ def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
     )
 
     start_controller_and_wait(geo)
-    # if verbose > 0:
-    #     # TODO: enable verbose logging
-    #     # LOGGER.debug("Registering verbose LineString logger")
-    #     pass
-
-# TODO: move the logic in this bloc elsewhere
-# async def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
-#     """
-#     Run the geospatial algorithms.
-#
-#     :param filename: The path to a CSV input file.
-#     :param verbose: A number to indicate how verbose logging should be.
-#     """
-#     q: asyncio.Queue = asyncio.Queue()
-#     track_cache_service: TrackCacheService = TrackCacheService(q)
-#
-#     if verbose > 0:
-#         LOGGER.debug("Registering verbose LineString logger")
-#         track_cache_service.subscribe(
-#             TRACK_CREATED_EVENT,
-#             lambda track: LOGGER.debug(
-#                 shapely.LineString([(point.geometry.x, point.geometry.y) for point in track.points])
-#             ),
-#         )
-#
-#     if SETTINGS.detect_cotravels:
-#         LOGGER.debug('Registering "co-travel" sensemaker')
-#         track_cache_service.subscribe(TRACK_CREATED_EVENT, CotravelService.detect_cotravels)
-#
-#     if SETTINGS.detect_loiters:
-#         LOGGER.debug('Registering "loiter" sensemaker')
-#         track_cache_service.subscribe(TRACK_CREATED_EVENT, LoiterService.detect_loiters)
-#
-#     if SETTINGS.similar_tracks:
-#         LOGGER.debug('Registering "similar tracks" sensemaker')
-#         track_cache_service.subscribe(TRACK_CREATED_EVENT, MostSimilarTrackService.most_similar_track_node_ids)
-#
-#     if filename:
-#         task = asyncio.create_task(produce_attributes_from_csv(q, filename))
-#     else:
-#         sqs_listener = GeoSQSListener(q)
-#         task = asyncio.create_task(sqs_listener.listen())
-#
-#     try:
-#         await track_cache_service.wait_for_events()
-#         await task
-#         await q.join()
-#     finally:
-#         LOGGER.warning("shutting down pub/sub")
-#         track_cache_service.stop()
 
 
 def run_nlp() -> None:
