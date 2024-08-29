@@ -168,3 +168,15 @@ class DummyObjectEventConsumer(ObjectEventConsumer):
             event: ObjectEvent = ObjectEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, EventType.CREATE)
             self.handle_event(event)
             count = count + 1
+
+
+class NoOpEventConsumer(ObjectEventConsumer):
+    """A simple object event consumer intended as a placeholder."""
+
+    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
+        """Create a new instance ofr NoOpEventConsumer."""
+        super().__init__(handle_event)
+
+    def process_object_events(self) -> None:
+        """No-Op."""
+        pass

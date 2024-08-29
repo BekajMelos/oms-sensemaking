@@ -15,7 +15,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import about
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
-from oms_sensemaking.core.events import DummyObjectEventConsumer
+from oms_sensemaking.core.events import NoOpEventConsumer
 from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
 from oms_sensemaking.nlp.controllers import NlpSensemakerController
 from oms_sensemaking.semantic.controllers import SemanticSensemakerController
@@ -30,8 +30,8 @@ def get_controllers() -> list[SensemakerController]:
     controllers: list[SensemakerController] = [
         # TODO: set queue names independently
         GeospatialSensemakerController(GeoSQSListener()),
-        NlpSensemakerController(DummyObjectEventConsumer()),
-        SemanticSensemakerController(DummyObjectEventConsumer())
+        NlpSensemakerController(NoOpEventConsumer()),
+        SemanticSensemakerController(NoOpEventConsumer())
     ]
 
     return controllers
