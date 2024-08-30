@@ -38,7 +38,7 @@ async def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> No
         track_cache_service.subscribe(
             TRACK_CREATED_EVENT,
             lambda track: LOGGER.debug(
-                shapely.LineString([(point.geometry.x, point.geometry.y) for point in track.points])
+                shapely.LineString([point.coordinates for point in track.points])
             ),
         )
 

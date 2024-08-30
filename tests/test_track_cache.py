@@ -1,9 +1,14 @@
 import asyncio
+import uuid
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
-from oms_sensemaking.geospatial.tracks import PointAttribute, TrackCacheService
+import shapely
+from oms_sdk import DEFAULT_ACM
+
+from oms_sensemaking.geospatial.tracks import TrackCacheService
+from oms_sensemaking.models.geo import Point
 
 
 @pytest.mark.asyncio
@@ -11,13 +16,22 @@ async def test_track_cache_add_point():
     q = asyncio.Queue()
     tc = TrackCacheService(q)
 
-    point_identifier = "test_identifier"
-    point_identifier2 = "test_identifier2"
+    point_identifier = uuid.uuid4()
+    point_identifier2 = uuid.uuid4()
 
     # assertion errors shoudn't prevent cleanly exiting track cache
     try:
         # new point
-        point1 = PointAttribute(point_identifier, 1, 2, datetime.fromisoformat("2024-03-20T12:00:00-04:00"))
+        point1 = Point(
+                    acm=DEFAULT_ACM,
+                    location=shapely.Point(1, 2).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                    node_id=point_identifier,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                )
         await tc.add_point(point1)
         assert len(tc._point_cache.items()) == 1
         assert len(tc._timestamp_cache.items()) == 1
@@ -26,7 +40,16 @@ async def test_track_cache_add_point():
         assert (datetime.now() - tc._timestamp_cache[point_identifier]).total_seconds() < 1
 
         # new point in same identifier
-        point2 = PointAttribute(point_identifier, 2, 3, datetime.fromisoformat("2024-03-20T12:10:00-04:00"))
+        point2 = Point(
+                    acm=DEFAULT_ACM,
+                    location=shapely.Point(2, 3).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                    node_id=point_identifier,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                )
         await tc.add_point(point2)
         assert len(tc._point_cache.items()) == 1
         assert len(tc._timestamp_cache.items()) == 1
@@ -36,7 +59,16 @@ async def test_track_cache_add_point():
         assert (datetime.now() - tc._timestamp_cache[point_identifier]).total_seconds() < 1
 
         # new point in with new identifier
-        point3 = PointAttribute(point_identifier2, 3, 4, datetime.fromisoformat("2024-03-20T12:20:00-04:00"))
+        point3 = Point(
+                    acm=DEFAULT_ACM,
+                    location=shapely.Point(3, 4).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                    node_id=point_identifier2,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                )
         await tc.add_point(point3)
         assert len(tc._point_cache.items()) == 2
         assert len(tc._timestamp_cache.items()) == 2
@@ -58,18 +90,56 @@ async def test_track_cache_expiration():
     q = asyncio.Queue()
     tc = TrackCacheService(q)
 
-    point_identifier = "test_identifier"
-    other_identifier = "other_identifier"
-    another_identifer = "another_identifier"
+    point_identifier = uuid.uuid4()
+    other_identifier = uuid.uuid4()
+    another_identifier = uuid.uuid4()
 
-    point1 = PointAttribute(point_identifier, 1, 2, datetime.fromisoformat("2024-03-20T12:00:00-04:00"))
-    point2 = PointAttribute(point_identifier, 2, 3, datetime.fromisoformat("2024-03-20T12:10:00-04:00"))
-    point3 = PointAttribute(point_identifier, 3, 4, datetime.fromisoformat("2024-03-20T12:20:00-04:00"))
+    point1 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(1, 2).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+    point2 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(2, 3).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+    point3 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(3, 4).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
 
     # assertion errors shoudn't prevent cleanly exiting track cache
     try:
         # random point
-        await tc.add_point(PointAttribute(other_identifier, 3, 4, datetime.fromisoformat("2024-03-20T12:00:00-04:00")))
+        await tc.add_point(
+            Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(3, 4).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                node_id=other_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+        )
 
         # points we care about
         await tc.add_point(point1)
@@ -79,8 +149,30 @@ async def test_track_cache_expiration():
         tc._timestamp_cache[point_identifier] = datetime.now() - timedelta(minutes=1)
 
         # more random points
-        await tc.add_point(PointAttribute(other_identifier, 3, 4, datetime.fromisoformat("2024-03-20T12:10:00-04:00")))
-        await tc.add_point(PointAttribute(another_identifer, 3, 4, datetime.fromisoformat("2024-03-20T12:20:00-04:00")))
+        await tc.add_point(
+            Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(3, 4).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                node_id=other_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+        )
+        await tc.add_point(
+            Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(3, 4).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                node_id=another_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+        )
 
         tc.create_track = AsyncMock()
         await tc.check_expirations()
@@ -100,11 +192,37 @@ async def test_track_cache_create_track():
 
     point_identifier = "test_identifier"
 
-    point1 = PointAttribute(point_identifier, 1, 4, datetime.fromisoformat("2024-03-20T12:00:00-04:00"))
-    point2 = PointAttribute(point_identifier, 2, 5, datetime.fromisoformat("2024-03-20T12:10:00-04:00"))
-    point3 = PointAttribute(point_identifier, 3, 6, datetime.fromisoformat("2024-03-20T12:20:00-04:00"))
-
-    # assertion errors shoudn't prevent cleanly exiting track cache
+    point1 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(1, 2).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+    point2 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(2, 3).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+    point3 = Point(
+                acm=DEFAULT_ACM,
+                location=shapely.Point(3, 4).wkt,
+                altitude=None,
+                detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                node_id=point_identifier,
+                node_version=1,
+                attribute_id=uuid.uuid4(),
+                attribute_version=1
+            )
+    # assertion errors shouldn't prevent cleanly exiting track cache
     try:
         # points in order
         await tc.add_point(point1)
@@ -112,16 +230,12 @@ async def test_track_cache_create_track():
         await tc.add_point(point3)
 
         track = await tc.create_track(point_identifier, tc._point_cache[point_identifier])
-        assert track.track_node_id == point_identifier
+        assert track.node_id == point_identifier
         assert len(track.points) == 3
-        assert track.points[0].geometry.x == point1.lon
-        assert track.points[0].geometry.y == point1.lat
-        assert track.points[0].is_start
-        assert not track.points[0].is_end
-        assert track.points[2].geometry.x == point3.lon
-        assert track.points[2].geometry.y == point3.lat
-        assert not track.points[2].is_start
-        assert track.points[2].is_end
+        assert track.points[0].coordinates[0] == point1.coordinates[0]
+        assert track.points[0].coordinates[1] == point1.coordinates[1]
+        assert track.points[2].coordinates[0] == point3.coordinates[0]
+        assert track.points[2].coordinates[1] == point3.coordinates[1]
 
         tc._point_cache.pop(point_identifier)
         tc._timestamp_cache.pop(point_identifier)
@@ -135,16 +249,16 @@ async def test_track_cache_create_track():
         # we might not need to do this if we switch to a different caching mechanism but it's good to have a unit
         # test that we can keep for even if we change that caching mechanism
         track = await tc.create_track(point_identifier, tc._point_cache[point_identifier])
-        assert track.track_node_id == point_identifier
+        assert track.node_id == point_identifier
         assert len(track.points) == 3
-        assert track.points[0].geometry.x == point1.lon
-        assert track.points[0].geometry.y == point1.lat
-        assert track.points[0].is_start
-        assert not track.points[0].is_end
-        assert track.points[2].geometry.x == point3.lon
-        assert track.points[2].geometry.y == point3.lat
-        assert not track.points[2].is_start
-        assert track.points[2].is_end
+        assert track.points[0].coordinates[0] == point1.coordinates[0]
+        assert track.points[0].coordinates[1] == point1.coordinates[1]
+        # assert track.points[0].is_start
+        # assert not track.points[0].is_end
+        assert track.points[2].coordinates[0] == point3.coordinates[0]
+        assert track.points[2].coordinates[1] == point3.coordinates[1]
+        # assert not track.points[2].is_start
+        # assert track.points[2].is_end
         tc._point_cache.pop(point_identifier)
         tc._timestamp_cache.pop(point_identifier)
         assert tc.point_ingest_queue.empty()
