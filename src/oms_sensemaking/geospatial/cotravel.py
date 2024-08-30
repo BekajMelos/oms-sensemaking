@@ -6,11 +6,12 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID
 
+from geolib import geohash
+
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
-from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
 from oms_sensemaking.geospatial.tracks import BaseTrackService
+from oms_sensemaking.models.geo import Point, Track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,10 +76,10 @@ class PotentialMatch:
 class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
-    def __init__(self, track1: UUID, track2: UUID, processed_point: ProcessedPoint, track_entry):
+    def __init__(self, track1: UUID, track2: UUID, point: Point, track_entry: TrackEntry):
         self.track1 = track1
         self.track2 = track2
-        self.processed_point = processed_point
+        self.point = point
         self.track_entry = track_entry
 
     def __str__(self):
@@ -100,17 +101,24 @@ class CotravelService:
         :return: List[PotentialMatch] list of CotravelEvents events found
         """
 
-        LOGGER.info(f"Detecting Cotravels in {track.track_node_id}")
+        LOGGER.info(f"Detecting Cotravels in {track.node_id}")
 
         cotravels: List[PotentialMatch] = []
         matches: List[Colocation] = []
 
         # find matching points (colocations) for each point in the track
         for point in track.points:
-            time = point.timestamp
+            time = point.detection_time
+
+            point_geohash_low = geohash.encode(
+                lat=point.coordinates[1],
+                lon=point.coordinates[0],
+                precision=SETTINGS.geohash_low
+            )
+
             track_entries: List[TrackEntry] = cls.get_points(
-                point.geohash_low,
-                track.track_node_id,
+                point_geohash_low,
+                track.node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
                 (time + MAX_LAG_LEAD_DURATION_SECONDS),
                 time,
@@ -118,7 +126,7 @@ class CotravelService:
 
             # Create colocations from track entries
             match_points: List[Colocation] = [
-                Colocation(track.track_node_id, entry.track_node_id, point, entry) for entry in track_entries
+                Colocation(track.node_id, entry.track_node_id, point, entry) for entry in track_entries
             ]
 
             if matches:
@@ -175,7 +183,7 @@ class CotravelService:
             if to_add_to:
                 # if we have a potential match already, keep checking
                 if (
-                    not to_add_to.tentative_add(colocation.processed_point.timestamp, colocation.track_entry.start_time)
+                    not to_add_to.tentative_add(colocation.point.detection_time, colocation.track_entry.start_time)
                     and to_add_to.check_valid()
                 ):
                     # the next colocation point doesn't meet the observation threshold but we still
@@ -185,31 +193,31 @@ class CotravelService:
                     # TODO this code path needs to be tested
                     completed.append(to_add_to)
                     true_cotravel = (
-                        abs(colocation.processed_point.timestamp - colocation.track_entry.start_time)
+                        abs(colocation.point.detection_time - colocation.track_entry.start_time)
                         <= MIN_LAG_LEAD_DURATION_SECONDS
                     )
                     to_add_to = PotentialMatch(
                         colocation.track1,
                         colocation.track2,
-                        colocation.processed_point.timestamp,
+                        colocation.point.detection_time,
                         colocation.track_entry.start_time,
-                        colocation.processed_point.timestamp,
+                        colocation.point.detection_time,
                         colocation.track_entry.start_time,
                         true_cotravel,
                     )
             else:
                 # if no potential match already exists, create and start checking
                 true_cotravel = (
-                    abs(colocation.processed_point.timestamp - colocation.track_entry.start_time)
+                    abs(colocation.point.detection_time - colocation.track_entry.start_time)
                     <= MIN_LAG_LEAD_DURATION_SECONDS
                 )
 
                 to_add_to = PotentialMatch(
                     colocation.track1,
                     colocation.track2,
-                    colocation.processed_point.timestamp,
+                    colocation.point.detection_time,
                     colocation.track_entry.start_time,
-                    colocation.processed_point.timestamp,
+                    colocation.point.detection_time,
                     colocation.track_entry.start_time,
                     true_cotravel,
                 )

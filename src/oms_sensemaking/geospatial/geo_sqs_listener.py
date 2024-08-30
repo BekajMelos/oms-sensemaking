@@ -3,10 +3,10 @@
 import asyncio
 import logging
 import uuid
+from datetime import timezone
 from typing import Dict, Optional
 
-import dateutil
-import dateutil.parser
+from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType, ObjectType
 from oms_sdk.generated.generated_graphql_client.input_types import (
@@ -14,10 +14,12 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     RelationshipNodeQuery,
     RelationshipQuery,
 )
+from oms_sdk.generated.generated_graphql_client.node import NodeNode
 
+from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sqs_listener import SQSListener
-from oms_sensemaking.geospatial.tracks import PointAttribute
+from oms_sensemaking.models.geo import Point
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,18 +48,28 @@ class GeoSQSListener(SQSListener):
             return
 
         if oms_attr:
-            track_node_id = await self.get_track_node_id(oms_attr)
-            if track_node_id:
-                # TODO use the oms_common_utils_python Attribute object? or TrackEntry? or Processed Point
-                attribute = PointAttribute(
-                    track_node_id,
-                    oms_attr.geo.geoJson["coordinates"][1],
-                    oms_attr.geo.geoJson["coordinates"][0],
-                    dateutil.parser.isoparse(oms_attr.geo.startTime),
+            track_node = await self.get_track_node(oms_attr)
+            if track_node:
+                point = Point(
+                    acm=oms_attr.acm,
+                    location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
+                              f'{oms_attr.geo.geoJson["coordinates"][1]})'),
+                    altitude=None,  # TODO include this
+                    detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
+                    node_id=track_node.id,
+                    node_version=track_node.version,
+                    attribute_id=oms_attr.id,
+                    attribute_version=oms_attr.version
                 )
 
+                with db_session() as db:
+                    # we're still using the point object for detections, so don't expire it
+                    db.expire_on_commit = False
+                    db.add(point)
+                    db.commit()
+
                 # Place on the Queue for the Track Cache to receive
-                await self.track_cache_queue.put(attribute)
+                await self.track_cache_queue.put(point)
 
     async def get_oms_attribute(self, attribute_id: uuid.UUID) -> Optional[AttributeAttribute]:
         """
@@ -83,7 +95,7 @@ class GeoSQSListener(SQSListener):
 
         return oms_attr
 
-    async def get_track_node_id(self, oms_attr: AttributeAttribute) -> Optional[uuid.UUID]:
+    async def get_track_node(self, oms_attr: AttributeAttribute) -> Optional[NodeNode]:
         """
         Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID.
 
@@ -104,4 +116,11 @@ class GeoSQSListener(SQSListener):
             return None
 
         # ADSB Flight Activity Node. AKA Track Node ID
-        return rel.data[0].startNodeId
+        track_node_id = rel.data[0].startNodeId
+
+        node = self.graphql_client.node(query=IdQuery(id=track_node_id))
+
+        if not node:
+            return None
+
+        return node

@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from oms_sdk import DEFAULT_ACM
-
 from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import DummyObjectEventConsumer

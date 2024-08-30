@@ -1,28 +1,29 @@
 import asyncio
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from oms_sdk.generated.generated_graphql_client.attribute import (
-    AttributeAttribute,
-    AttributeAttributeGeo,
-)
+from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute, AttributeAttributeGeo
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType, ObjectType
+from oms_sdk.generated.generated_graphql_client.node import NodeNode
 from oms_sdk.generated.generated_graphql_client.relationships import (
     RelationshipsRelationships,
     RelationshipsRelationshipsData,
 )
-from oms_sensemaking.geospatial.geo_sqs_listener import (
-    GeoSQSListener,
-)
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from oms_sensemaking.geospatial.geo_sqs_listener import GeoSQSListener
+from oms_sensemaking.models.geo import Point
 
 LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_handle_sqs_event():
+async def test_handle_sqs_event(db: Session):
     q = asyncio.Queue()
     sqs_listener = GeoSQSListener(q)
 
@@ -47,24 +48,49 @@ async def test_handle_sqs_event():
 
     # mock API calls
     sqs_listener.get_oms_attribute = AsyncMock()
-    sqs_listener.get_track_node_id = AsyncMock()
-    start_time = datetime.now().isoformat()
+    sqs_listener.get_track_node = AsyncMock()
+    start_time = datetime.now(tz=timezone.utc).isoformat()
     track_node_id = uuid.uuid4()
     sqs_listener.get_oms_attribute.return_value = AttributeAttribute.model_construct(
         id=object_id,
         nodeId=uuid.uuid4(),
         attributeType=AttributeType.SPATIOTEMPORAL.value,
+        acm=DEFAULT_ACM,
         geo=AttributeAttributeGeo(
             geoJson={"type": "POINT", "coordinates": [0, 0]}, mgrs="dummy", startTime=start_time, endTime=start_time
         ),
+        version=1,
     )
-    sqs_listener.get_track_node_id.return_value = track_node_id
+    sqs_listener.get_track_node.return_value = NodeNode.model_construct(id=track_node_id, version=1)
 
     # test
     await sqs_listener.handle_sqs_event(event)
-    point_attribute = await q.get()
-    assert point_attribute.track_node_id == track_node_id
-    assert point_attribute.timestamp.isoformat() == start_time
+    point: Point = await q.get()
+
+    point_db = db.execute(
+        select(
+            Point
+        ).where(
+            Point.node_id == point.node_id,
+            Point.attribute_id == point.attribute_id
+        )
+    ).scalars().one()
+
+    # Test that the right object was put on the queue
+    assert point.node_id == track_node_id
+    assert point.detection_time.isoformat() == start_time
+    assert point.node_version == 1
+    assert point.attribute_version == 1
+    assert point.node_id == track_node_id
+    assert point.attribute_id == object_id
+
+    # Test that the right object was put in the DB
+    assert point_db.node_id == track_node_id
+    assert point_db.detection_time.isoformat() == start_time
+    assert point_db.node_version == 1
+    assert point_db.attribute_version == 1
+    assert point_db.node_id == track_node_id
+    assert point_db.attribute_id == object_id
 
 
 @pytest.mark.asyncio
@@ -117,13 +143,13 @@ async def test_get_oms_attribute():
 
 
 @pytest.mark.asyncio
-async def test_get_track_node_id():
+async def test_get_track_node():
     q = asyncio.Queue()
     sqs_listener = GeoSQSListener(q)
 
-    with patch(
-        "oms_sdk.generated.generated_graphql_client.client.Client.relationships"
-    ) as mock_get_relationships:
+    with (patch("oms_sdk.generated.generated_graphql_client.client.Client.relationships") as mock_get_relationships,
+          patch("oms_sdk.generated.generated_graphql_client.client.Client.node") as mock_get_node):
+
         attr_attr = AttributeAttribute.model_construct(
             id=uuid.uuid4(),
             nodeId=uuid.uuid4(),
@@ -135,13 +161,15 @@ async def test_get_track_node_id():
 
         # Test when there is no relationship for that attribute
         mock_get_relationships.return_value = RelationshipsRelationships(totalSize=0, rollupAcm={}, data=[])
-        track_node_id = await sqs_listener.get_track_node_id(attr_attr)
+        track_node_id = await sqs_listener.get_track_node(attr_attr)
         assert track_node_id is None
 
         # Test valid return value
-        valid_relationship = RelationshipsRelationshipsData.model_construct(startNodeId=uuid.uuid4())
+        node_id = uuid.uuid4()
+        valid_relationship = RelationshipsRelationshipsData.model_construct(startNodeId=node_id)
+        mock_get_node.return_value = NodeNode.model_construct(id=node_id)
         mock_get_relationships.return_value = RelationshipsRelationships(
             totalSize=1, rollupAcm={}, data=[valid_relationship]
         )
-        track_node_id = await sqs_listener.get_track_node_id(attr_attr)
-        assert track_node_id == valid_relationship.startNodeId
+        track_node = await sqs_listener.get_track_node(attr_attr)
+        assert track_node.id == node_id

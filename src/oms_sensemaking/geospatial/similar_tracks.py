@@ -9,9 +9,8 @@ from geolib import geohash
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
-from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.tracks import BaseTrackService
+from oms_sensemaking.models.geo import Point, Track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,24 +52,24 @@ class MostSimilarTrackService:
         :param track: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
-        LOGGER.info(f"Looking for similar tracks to {track.track_node_id}")
+        LOGGER.info(f"Looking for similar tracks to {track.node_id}")
 
         similar_results: TopSimilar = TopSimilar()
 
-        first: ProcessedPoint = track.points[0]
-        last: ProcessedPoint = track.points[-1]
+        first: Point = track.points[0]
+        last: Point = track.points[-1]
         ref_track_geohash_set: Set[str] = cls.get_buffered_geohash_set(track.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
         similar_track_groups: List[GroupByTrackNodeIdProjection] = BaseTrackService.query_for_similar_tracks(
-            first.geometry, last.geometry, SETTINGS.within_meters
+            first.coordinates, last.coordinates, SETTINGS.within_meters
         )
 
         seen_groups = []
         for similar_track_group in similar_track_groups:
             # Remove any representations of the track of interest itself
-            if similar_track_group.track_node_id == track.track_node_id:
+            if similar_track_group.track_node_id == track.node_id:
                 continue
 
             #
@@ -83,7 +82,7 @@ class MostSimilarTrackService:
             eval_track_geohash_set = cls.get_buffered_geohash_set(similar_track.points)
             # calculate similarity by Jaccard measure of bufferedHashSets
             comparison_result: ComparisonResult = cls.determine_jaccard_similarity(
-                ref_track_geohash_set, eval_track_geohash_set, similar_track.track_node_id
+                ref_track_geohash_set, eval_track_geohash_set, similar_track.node_id
             )
 
             similar_results.add_comparison_result(comparison_result)
@@ -113,7 +112,7 @@ class MostSimilarTrackService:
         return BaseTrackService.get_track(group_projection.track_node_id)
 
     @staticmethod
-    def get_buffered_geohash_set(points: List[ProcessedPoint]) -> Set[str]:
+    def get_buffered_geohash_set(points: List[Point]) -> Set[str]:
         """
         Obtain a bufferedGeoHash set from the points provided.
 
@@ -132,7 +131,12 @@ class MostSimilarTrackService:
 
         for point in points:
             # reduce precision of the geohash by one to generate set for comparison to expand range for 'similar' tracks
-            base_geohash = point.geohash_low[0:-1]
+            point_geohash_low = geohash.encode(
+                lat=point.coordinates[1],
+                lon=point.coordinates[0],
+                precision=SETTINGS.geohash_low
+            )
+            base_geohash = point_geohash_low[0:-1]
             buffered_geohash_set.add(base_geohash)
 
             neighbors = geohash.neighbours(base_geohash)
