@@ -4,7 +4,6 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from enum import Enum
 from threading import Event, Thread
 from time import sleep
 from typing import Optional
@@ -12,62 +11,58 @@ from uuid import UUID, uuid4
 
 import boto3
 from botocore.client import BaseClient
+from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
 from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class ObjectType(Enum):
-    """Enumeration of OMS object types."""
-
-    # alternatively -> from oms_sdk.generated.generated_graphql_client.enums import ObjectType
-    SOURCE = 0
-    ATTRIBUTE = 1
-    ORIGINATOR = 2
-    PROVIDER = 3
-    ACM = 4
-    GEO = 5
-    RELATIONSHIP = 6
-    NODE = 7
-    NODE_LINK = 8
-    RESOLVED_OBJECT_CONFIG = 9
-    NODE_IDENTIFIER = 10
-    COMMENT = 11
-    ALERT = 12
-    OBJECT_COLLECTION = 13
-    USER_PREFERENCES = 14
-
-
-class EventType(Enum):
-    """Enumeration of OMS event types."""
-
-    # alternatively -> from oms_sdk.generated.generated_graphql_client.enums import Action?
-    CREATE = 0
-    UPDATE = 1
-    DELETE = 2
-
-
 class ObjectEvent:
     """Represents an object event from OMS."""
 
-    def __init__(self, user_dn: str, object_id: UUID, object_type: ObjectType, event_type: EventType):
+    def __init__(self, userDn: str, objectId: UUID, objectType: ObjectType, eventType: Action):
         """
         Create a new instance of ObjectEvent.
 
-        :param user_dn: The distinguished name (DN) of the user that triggered the event.
-        :param object_id: The unique if of the object in OMS.
-        :param object_type: The type of object that the event was triggered on.
-        :param event_type: They type of event (e.g. create, update, or delete).
+        :param userDn: The distinguished name (DN) of the user that triggered the event.
+        :param objectId: The unique if of the object in OMS.
+        :param objectType: The type of object that the event was triggered on.
+        :param eventType: They type of event (e.g. create, update, or delete).
         """
-        self.user_dn: str = user_dn
-        self.object_id: UUID = object_id
-        self.object_type: ObjectType = object_type
-        self.event_type: EventType = event_type
+        self.userDn: str = userDn
+        self.objectId: UUID = objectId
+        self.objectType: ObjectType = objectType
+        self.eventType: Action = eventType
 
     def to_json(self) -> str:
         """Return a JSON representation of the event."""
         return json.dumps(self.__dict__)
+
+    @staticmethod
+    def from_dict(data: dict):
+        """
+        Create a new instance of ObjectEvent from a dictionary.
+
+        This function will set the ``objectType`` to ``ATTRIBUTE`` by default,
+        if ``objectType`` is not set or returns None.
+        """
+        return ObjectEvent(
+            data.get("userDn"),
+            UUID(data.get("objectId", "")),
+            ObjectType(data.get("objectType", "ATTRIBUTE")),
+            Action(data.get("eventType", ""))
+        )
+
+    @classmethod
+    def from_json(cls, json_data: str):
+        """
+        Create a new instance of ObjectEvent from a JSON string.
+
+        This function will set the ``objectType`` to ``ATTRIBUTE`` by default,
+        if ``objectType`` is not set or returns None.
+        """
+        return cls.from_dict(json.loads(json_data))
 
 
 EVENT_HANDLER = Callable[[ObjectEvent], bool]
@@ -165,7 +160,7 @@ class DummyObjectEventConsumer(ObjectEventConsumer):
 
         while not self.is_stopped:
             sleep(5)
-            event: ObjectEvent = ObjectEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, EventType.CREATE)
+            event: ObjectEvent = ObjectEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, Action.CREATE)
             self.handle_event(event)
             count = count + 1
 

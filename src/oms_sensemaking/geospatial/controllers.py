@@ -1,16 +1,23 @@
 """Geospatial sensemaker controller."""
 
 import csv
-import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Event, Timer
+from time import sleep
 from typing import Optional
 from uuid import UUID, uuid4
 
 from botocore.exceptions import BotoCoreError
+from dateutil.parser import isoparse
+from oms_sdk import get_generated_graphql_client
+from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client.client import Client
+from oms_sdk.generated.generated_graphql_client.enums import Action
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
+from oms_sdk.generated.generated_graphql_client.node import NodeNode
 from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
@@ -18,7 +25,6 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import (
     EVENT_HANDLER,
-    EventType,
     ObjectEvent,
     ObjectEventConsumer,
     ObjectType,
@@ -93,7 +99,7 @@ class CSVFileParser(ObjectEventConsumer):
                             self.default_user_dn,
                             point.attribute_id,
                             ObjectType.ATTRIBUTE,
-                            EventType.CREATE if is_new else EventType.UPDATE
+                            Action.CREATE if is_new else Action.UPDATE
                         )
                     )
 
@@ -132,24 +138,25 @@ class GeoSQSListener(SQSListener):
 
                 if "Messages" not in response:
                     LOGGER.debug("No Messages in response.")
+                    sleep(SETTINGS.sqs_read_wait_seconds)
                     continue
 
                 for message in response["Messages"]:
-                    object_event: dict = json.loads(message["Body"])  # TODO: convert to ObjectEvent
+                    object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
-                    # TODO: convert dict to ObjectEvent
+                    # ignore if not the right type of event
+                    if ((object_event.objectType != ObjectType.ATTRIBUTE.value)
+                            and (object_event.eventType != Action.CREATE.value)):
+                        continue
+
                     if self.handle_event(object_event):
-                        # Delete received message from queue - required so you don't get the same message
+                        # Delete received message from queue - required, so you don't get the same message
                         self.sqs.delete_message(
                             QueueUrl=SETTINGS.sqs_queue_url,
                             ReceiptHandle=message["ReceiptHandle"]
                         )
                     else:
-                        # TODO: deal with failed object events
                         LOGGER.warning("object event was not processed successfully.")
-
-            # TODO: sleep?
-            # await asyncio.sleep(SETTINGS.sqs_read_wait_seconds)
 
 
 class GeospatialSensemakerController(SensemakerController):
@@ -167,6 +174,11 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
+
+        #: OMS GraphQL client
+        self.oms_client: Client = get_generated_graphql_client(
+            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
+        )
 
     def start(self) -> None:
         """Start the controller."""
@@ -208,27 +220,45 @@ class GeospatialSensemakerController(SensemakerController):
         now: datetime = datetime.now(tz=timezone.utc)
         point: Optional[Point] = None
 
+        LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
+
         if isinstance(self.event_consumer, CSVFileParser):
+            # TODO: revisit this. Should the point be persisted here?
             with db_session() as db:
                 point: Point = db.execute(
-                    select(Point).where(Point.attribute_id == event.object_id)
+                    select(Point).where(Point.attribute_id == event.objectId)
                 ).scalars().one_or_none()
             pass
         elif isinstance(self.event_consumer, GeoSQSListener):
-            # TODO: extract info from OMS via API calls
-            # TODO: convert OMS data to Point and persist in db
-            # point = Point.get_or_create(...)
-            pass
-        else:
-            return False
+            # extract info from OMS via API calls
+            oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
 
+            if oms_attr:
+                track_node: Optional[NodeNode] = self.get_track_node(oms_attr)
+
+                if track_node:
+                    with db_session() as db:
+                        # we're still using the point object for detections, so don't expire it
+                        db.expire_on_commit = False
+                        point, is_new = Point.get_or_create(db, defaults=dict(
+                            acm=oms_attr.acm,
+                            location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
+                                      f'{oms_attr.geo.geoJson["coordinates"][1]})'),
+                            altitude=None,  # TODO include this
+                            detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
+                            node_version=int(oms_attr.node.version),
+                            attribute_version=int(oms_attr.version)
+                        ), node_id=oms_attr.nodeId, attribute_id=oms_attr.id)
+
+                    if not is_new:
+                        LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
         if point:
-            # this is the buffer/cache
             with self.lock:
                 self.buffer[point.node_id] = now
 
-        LOGGER.warning("GEO %s", event.object_id)
-        return True
+            return True
+
+        return False
 
     def flush_buffer(self):
         """Check the buffer cache for data that can be flushed from it."""
@@ -263,3 +293,51 @@ class GeospatialSensemakerController(SensemakerController):
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
+
+    def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
+        """
+        Given an OMS Attribute ID, get the OMS Attribute.
+
+        :param attribute_id: ID of the attribute
+        :return: None if no attribute exists, or the OMS Attribute
+        """
+
+        # get attribute
+        oms_attr: AttributeAttribute = self.oms_client.attribute(IdQuery(id=attribute_id))
+
+        # Filter Attributes
+        # Only process if there is a node ID
+        if not oms_attr or oms_attr.nodeId is None:
+            return None
+
+        return oms_attr
+
+    def get_track_node(self, oms_attr: AttributeAttribute) -> Optional[NodeNode]:
+        """
+        Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID.
+
+        :param oms_attr: Attribute object
+        :return: None if no relationship exists, or the Track Node id
+        """
+
+        # get relationship
+        observation_node_id = oms_attr.nodeId
+        rel = self.oms_client.relationships(
+            query=RelationshipQuery(
+                nodes=RelationshipNodeQuery(endNodeIds=[observation_node_id]),
+                objectPropertyIris=[SETTINGS.operated_by_iri],
+            )
+        )
+
+        if not len(rel.data) > 0:
+            return None
+
+        # ADSB Flight Activity Node. AKA Track Node ID
+        track_node_id = rel.data[0].startNodeId
+
+        node = self.oms_client.node(query=IdQuery(id=track_node_id))
+
+        if not node:
+            return None
+
+        return node

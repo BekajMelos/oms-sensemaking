@@ -26,5 +26,5 @@ class NlpSensemakerController(SensemakerController):
         :param event: The event to process.
         :return: True if the object event was successfully processed, False otherwise.
         """
-        LOGGER.warning("NLP %s", event.object_id)
+        LOGGER.warning("NLP %s", event.objectId)
         return True

@@ -38,6 +38,9 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 # Ignore `F403` (undefined-local-with-import-star) in Alembic environment config
 'migrations/env.py' = ['F403']
 
+# Ingore `N803` (invalid-argument-name) in OMS object events
+'**//core/events.py' = ['N803']
+
 
 [format]
 docstring-code-format = true
