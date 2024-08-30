@@ -93,31 +93,6 @@ TRACK_ENTRIES_DB = {
 
 
 class BaseTrackService:
-    @staticmethod
-    def find_location_by_geohash(
-        geohash_low: str, track_node_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
-    ) -> List[TrackEntry]:
-        """
-        Find points in other tracks that match the geohash of the given point within the time intervals.
-
-        This query:
-
-        SELECT distinct on (track_node_id) track_node_id, source_id, start_time
-                FROM tracks
-                WHERE geohash_low = :geohash and track_node_id != :trackNodeId and start_time > :minimumTime
-        and start_time < :maximumTime
-                ORDER BY track_node_id, abs(extract(epoch from(start_time - :targetTime)))
-
-        :param geohash_low: Geohash to match in the DB
-        :param track_node_id: Track node to ignore
-        :param min_time: Min allowed time to lag by
-        :param max_time: Max allowed time to lag by
-        :param target_time: time to sort the response by
-        :return: List of cotravels
-
-        """
-        # TODO actually hit the database
-        return TRACK_ENTRIES_DB.get(geohash_low, [])
 
     @staticmethod
     def query_for_similar_tracks(

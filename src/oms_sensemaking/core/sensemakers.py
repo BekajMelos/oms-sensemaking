@@ -8,6 +8,7 @@ from typing import TypeVar
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+SENSEMAKER_RESULT_TYPE = TypeVar("SENSEMAKER_RESULT_TYPE")
 
 
 class Sensemaker(ABC):
@@ -36,7 +37,7 @@ class Sensemaker(ABC):
         """
         LOGGER.debug("Cleaning up after %s", self.__class__)
 
-    def execute(self, data: T):
+    def execute(self, data: T) -> SENSEMAKER_RESULT_TYPE:
         """
         Execute the Sensemaker.
 
@@ -49,12 +50,14 @@ class Sensemaker(ABC):
         try:
             self.setup()
             with self.lock:
-                self.process_data(data)
+                results: SENSEMAKER_RESULT_TYPE = self.process_data(data)
         finally:
             self.teardown()
 
+        return results
+
     @abstractmethod
-    def process_data(self, data: T) -> T:
+    def process_data(self, data: T) -> SENSEMAKER_RESULT_TYPE:
         """
         Process data.
 
