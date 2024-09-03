@@ -42,6 +42,9 @@ def create_app(config: Settings) -> FastAPI:
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
+    
+    #fastapi for semantic stuff
+    #application.add_whatever
 
     return application
 
