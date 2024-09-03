@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import Optional, Union
 
 from geoalchemy2 import Geometry
-from geoalchemy2.elements import WKTElement
+from geoalchemy2.elements import WKBElement
 from geoalchemy2.shape import to_shape
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
@@ -23,18 +23,20 @@ from sqlalchemy.orm import (
 
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 
+SRID: int = 4326
+
 
 class OmsGeoMixin(MappedAsDataclass):
     """Declare OMS geospatial metadata."""
 
-    location: Mapped[WKTElement] = mapped_column(
+    location: Mapped[WKBElement] = mapped_column(
         # NOTE: this could alternatively be represented as a 3D point, which
         # seems to be an undocumented feature in geoalchemy. Using a 2D point
         # now, because the source data does not seem to enforce the presence
         # of an altitude/elevation field.
         #
         # https://github.com/geoalchemy/geoalchemy2/issues/157
-        Geometry('POINT', dimension=2, srid=4326, spatial_index=False),
+        Geometry('POINT', dimension=2, srid=SRID, spatial_index=False),
         nullable=False,
         unique=False,
         comment='The 2D location of the point.'
@@ -70,13 +72,7 @@ class OmsGeoMixin(MappedAsDataclass):
 
         If altitude is provided the result will be a three element list, otherwise a 2 element list.
         """
-
-        # DB sometimes returns string and sometimes WKBElement so need this check to make this property consistent
-        try:
-            point_shape: ShapelyPoint = to_shape(self.location)
-        except AssertionError:
-            point_shape: ShapelyPoint = to_shape(WKTElement(self.location))  # type: ignore[no-redef]
-
+        point_shape: ShapelyPoint = to_shape(self.location)
         coordinates: list[float] = [point_shape.x, point_shape.y]
 
         if self.altitude is not None:
@@ -114,6 +110,15 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
 
     __tablename__: str = 'points'
 
+    def __post_init__(self):
+        """
+        Post initialization.
+
+        This function is responsible for formatting the location field in the
+        event that it is set as a string, rather than a specific GeoAlchemy type.
+        """
+        if isinstance(self.location, str):
+            self.location = WKBElement(self.location, srid=SRID)
 
     def __lt__(self, other: "Point"):
         return self.detection_time < other.detection_time

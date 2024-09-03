@@ -10,13 +10,14 @@ from typing import Dict, List
 
 import pandas as pd
 import shapely
+from geoalchemy2.elements import WKBElement
 from oms_sdk import DEFAULT_ACM
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.pubsub import PubSub
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
-from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.geo import SRID, Point, Track
 
 CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
@@ -130,7 +131,7 @@ class BaseTrackService:
             [
                 Point(
                     DEFAULT_ACM,
-                    shapely.Point((-0.165222, 51.482286)).wkt,
+                    WKBElement(shapely.Point((-0.165222, 51.482286)).wkt, srid=SRID),
                     altitude=None,
                     detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
                     node_id=track_node_id,
@@ -140,7 +141,7 @@ class BaseTrackService:
                 ),
                 Point(
                     DEFAULT_ACM,
-                    shapely.Point((-0.210562, 51.466103)).wkt,
+                    WKBElement(shapely.Point((-0.210562, 51.466103)).wkt, srid=SRID),
                     altitude=None,
                     detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
                     node_id=track_node_id,
@@ -150,7 +151,7 @@ class BaseTrackService:
                 ),
                 Point(
                     DEFAULT_ACM,
-                    shapely.Point((-0.229466, 51.487613)).wkt,
+                    WKBElement(shapely.Point((-0.229466, 51.487613)).wkt, srid=SRID),
                     altitude=None,
                     detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
                     node_id=track_node_id,
@@ -257,7 +258,7 @@ async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:
     for _, row in df.iterrows():
         point = Point(
             acm=DEFAULT_ACM,
-            location=shapely.Point(row["lon"], row["lat"]).wkt,
+            location=WKBElement(shapely.Point(row["lon"], row["lat"]).wkt, srid=SRID),
             altitude=None,
             detection_time=datetime.fromtimestamp(int(row["now"]), tz=timezone.utc),
             node_id=row["r"],

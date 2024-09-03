@@ -48,7 +48,7 @@ class ObjectEvent:
         if ``objectType`` is not set or returns None.
         """
         return ObjectEvent(
-            data.get("userDn"),
+            str(data.get("userDn")),
             UUID(data.get("objectId", "")),
             ObjectType(data.get("objectType", "ATTRIBUTE")),
             Action(data.get("eventType", ""))
@@ -81,13 +81,11 @@ class ObjectEventConsumer(ABC):
         """
         #: An event handler callable that accepts a reference to this consumer and the event.
         self.handle_event: Optional[EVENT_HANDLER] = handle_event
-        self.__data_consumer: Optional[Thread] = None
-        self.__stop: Event = Event()
 
-    @property
-    def is_stopped(self) -> bool:
-        """Indicates if the consumer is running (False) or stopped (True)."""
-        return self.__stop.is_set()
+        #: Indicates if the consumer is running (i.e. cleared) or stopped (i.e. set).
+        self.stopped: Event = Event()
+
+        self.__data_consumer: Optional[Thread] = None
 
     def start(self) -> None:
         """
@@ -97,13 +95,15 @@ class ObjectEventConsumer(ABC):
         """
         if self.__data_consumer is None:
             self.__data_consumer = Thread(target=self.process_object_events)
-            self.__stop.clear()
+            self.stopped.clear()
             self.__data_consumer.start()
 
     def stop(self) -> None:
         """Stop consuming events."""
-        self.__stop.set()
+        self.stopped.set()  # this signals to the data consumer that it should stop processing and exit.
+
         if self.__data_consumer is not None:
+            LOGGER.debug("Stopping data consumer thread.")
             self.__data_consumer.join()
 
     @abstractmethod
@@ -153,16 +153,18 @@ class DummyObjectEventConsumer(ObjectEventConsumer):
         """Create a new instance of DummyObjectEventConsumer."""
         super().__init__(handle_event)
 
-    def process_object_events(self):
+    def process_object_events(self) -> None:
         """Mimics event processing."""
         count: int = 0
         LOGGER.info('subscribing to SQS events')
 
-        while not self.is_stopped:
+        while not self.stopped.is_set():
             sleep(5)
             event: ObjectEvent = ObjectEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, Action.CREATE)
-            self.handle_event(event)
-            count = count + 1
+
+            if callable(self.handle_event):
+                self.handle_event(event)
+                count = count + 1
 
 
 class NoOpEventConsumer(ObjectEventConsumer):

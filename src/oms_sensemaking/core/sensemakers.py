@@ -3,12 +3,9 @@
 import logging
 from abc import ABC, abstractmethod
 from threading import Lock
-from typing import TypeVar
+from typing import Any
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
-SENSEMAKER_RESULT_TYPE = TypeVar("SENSEMAKER_RESULT_TYPE")
 
 
 class Sensemaker(ABC):
@@ -37,7 +34,7 @@ class Sensemaker(ABC):
         """
         LOGGER.debug("Cleaning up after %s", self.__class__)
 
-    def execute(self, data: T) -> SENSEMAKER_RESULT_TYPE:
+    def execute(self, data: Any) -> Any:
         """
         Execute the Sensemaker.
 
@@ -50,14 +47,14 @@ class Sensemaker(ABC):
         try:
             self.setup()
             with self.lock:
-                results: SENSEMAKER_RESULT_TYPE = self.process_data(data)
+                results: Any = self.process_data(data)
         finally:
             self.teardown()
 
         return results
 
     @abstractmethod
-    def process_data(self, data: T) -> SENSEMAKER_RESULT_TYPE:
+    def process_data(self, data: Any) -> Any:
         """
         Process data.
 

@@ -39,7 +39,7 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 'migrations/env.py' = ['F403']
 
 # Ingore `N803` (invalid-argument-name) in OMS object events
-'**//core/events.py' = ['N803']
+'**/core/events.py' = ['N803']
 
 
 [format]

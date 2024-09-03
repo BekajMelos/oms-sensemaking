@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from oms_sdk import DEFAULT_ACM
+
 from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import DummyObjectEventConsumer
@@ -40,7 +41,7 @@ def start_controller_and_wait(controller: SensemakerController) -> None:
         controller_thread.start()
         controller_thread.join()
     except KeyboardInterrupt:
-        LOGGER.warning("actually handling the keyboard stop")
+        LOGGER.debug("Preparing to exit after KeyboardInterrupt")
         controller.stop()
 
         if controller_thread.is_alive():

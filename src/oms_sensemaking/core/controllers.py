@@ -14,15 +14,36 @@ class SensemakerController(ABC):
     """Abstract base class for sensemaker controllers."""
 
     def __init__(self, event_consumer: ObjectEventConsumer) -> None:
-        """Create a new instance of the sensemaker."""
+        """
+        Create a new instance of the SensemakerController.
+
+        The controller uses an ``Event`` to indicate if it is running. Other
+        threads can wait on ``Sensemaker.stopped`` until it is set. For example::
+
+            class SomeController(SensemakerController):
+                def handle_event(self, event: ObjectEvent) -> bool:
+                    print(f"Received {event.eventType} for {event.objectType}(id={event.objectId})")
+                    return True
+
+            controller: SensemakerController = SomeController(DummyObjectEventConsumer)
+            controller.start()
+            controller.stopped.wait()  # block until controller has been stopped
+
+        This function will create a new instance of the controller in the
+        "stopped" state. To start the controller, call
+        ``SensemakerContorller.start()``, which will ensure that appropriate
+        conditions have been met to run the controller and will also clear the
+        ``SensemakerController.stopped`` Event.
+        """
         if event_consumer is None:
             raise TypeError("event_consumer must have a value")
 
+        self._registry: dict[str, Sensemaker] = {}
         self.event_consumer: ObjectEventConsumer = event_consumer
-
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
-        self._registry: dict[str, Sensemaker] = {}
+
+        self.stopped.set()  # start off in the "stopped" state
 
         if self.event_consumer.handle_event is None:
             # register this controller's handle_event as a callback on the event consumer
@@ -51,9 +72,10 @@ class SensemakerController(ABC):
         Unregister a sensemaker.
 
         :param sensemaker: The sensemaker (i.e. an instance of ``Sensemaker``).
+        :return: True if the Sensemaker was unregistered and False otherwise.
         """
         with self.lock:
-            return self._registry.pop(name, None) or True
+            return self._registry.pop(name, None) is not None
 
     def start(self) -> None:
         """Start the controller."""
@@ -70,8 +92,14 @@ class SensemakerController(ABC):
     def stop(self):
         """Stop the controller."""
         with self.lock:
+            LOGGER.debug("Stopping controller.")
             self.event_consumer.stop()
             self.stopped.set()
+
+    @property
+    def is_running(self) -> bool:
+        """Indicate if the controller is running."""
+        return not self.stopped.is_set()
 
     @abstractmethod
     def handle_event(self, event: ObjectEvent) -> bool:
@@ -92,17 +120,16 @@ def run_controller(controller: SensemakerController) -> None:
     Run the given controller.
 
     This function will block the current thread until the controller's
-    "running" event is cleared or an exception occurs.
+    "stopped" event is set or an exception occurs.
 
     :param controller: The controller to run.
     """
     try:
-        LOGGER.info("Starting thread %s", controller.__class__.__name__)
+        LOGGER.info("Starting thread fo %s", controller.__class__.__name__)
         controller.start()
         controller.stopped.wait()
         LOGGER.info("Done waiting for %s", controller.__class__.__name__)
-    except KeyboardInterrupt:
-        LOGGER.warning("telling the controller to stop.")
-        controller.stop()
     finally:
-        LOGGER.info("Already stopped thread %s", controller.__class__.__name__)
+        if controller.is_running:
+            LOGGER.warning("A controller was left running. Stopping it now.")
+            controller.stop()

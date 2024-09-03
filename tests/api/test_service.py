@@ -13,9 +13,18 @@ from oms_sensemaking.service import create_app
 router: APIRouter = APIRouter()
 
 
+class DummyError(Exception):
+    """
+    A dummy error.
+
+    This class can be used to test unexpected server exceptions.
+    """
+    pass
+
+
 @router.get('/boom')
 def raise_exception():
-    raise Exception('boom!')
+    raise DummyError('boom!')
 
 
 def test_app_with_exception():
@@ -24,7 +33,7 @@ def test_app_with_exception():
     app.include_router(router)
     client: TestClient = TestClient(app)
 
-    with pytest.raises(Exception):
+    with pytest.raises(DummyError):
         response: Response = client.get('/boom')
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

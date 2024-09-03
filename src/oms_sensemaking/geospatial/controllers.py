@@ -63,6 +63,9 @@ class CSVFileParser(ObjectEventConsumer):
         input_file: Path = Path(self.filename)
         node_ids: dict[str, UUID] = {}
 
+        if not callable(self.handle_event):
+            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
+
         if not input_file.is_file():
             raise ValueError("%s does not exist", input_file)
 
@@ -77,7 +80,7 @@ class CSVFileParser(ObjectEventConsumer):
                     try:
                         node_id: UUID = UUID(row["r"])
                     except ValueError:
-                        node_id: UUID = node_ids.setdefault(row["r"], uuid4())
+                        node_id = node_ids.setdefault(row["r"], uuid4())
 
                     # 2. convert data from data source into a point in the db
                     #  - this is mimicking extracting the data from OMS and persisting the results
@@ -118,10 +121,17 @@ class GeoSQSListener(SQSListener):
 
     def process_object_events(self) -> None:
         """Process geo-temporal object events from OMS."""
-        while True:
+        if not callable(self.handle_event):
+            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
+
+        while not self.stopped.is_set():
             LOGGER.info("Waiting for events in SQS")
 
             for _ in range(0, SETTINGS.sqs_read_loops):
+                if self.stopped.is_set():
+                    LOGGER.debug("Shutting down GeoSQSListener")
+                    break
+
                 # Receive message from SQS queue
                 try:
                     response = self.sqs.receive_message(
@@ -225,7 +235,7 @@ class GeospatialSensemakerController(SensemakerController):
         if isinstance(self.event_consumer, CSVFileParser):
             # TODO: revisit this. Should the point be persisted here?
             with db_session() as db:
-                point: Point = db.execute(
+                point = db.execute(
                     select(Point).where(Point.attribute_id == event.objectId)
                 ).scalars().one_or_none()
             pass
@@ -251,7 +261,10 @@ class GeospatialSensemakerController(SensemakerController):
                         ), node_id=oms_attr.nodeId, attribute_id=oms_attr.id)
 
                     if not is_new:
-                        LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
+                        if point:
+                            LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
+                        else:
+                            LOGGER.warning("Unable to process point.")
         if point:
             with self.lock:
                 self.buffer[point.node_id] = now
@@ -260,7 +273,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         return False
 
-    def flush_buffer(self):
+    def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
         LOGGER.debug("Checking buffer expirations")
         now: datetime = datetime.now(tz=timezone.utc)
@@ -270,6 +283,10 @@ class GeospatialSensemakerController(SensemakerController):
             self.buffer = {key: val for key, val in self.buffer.items() if val is not None}
 
             for node_id, last_updated_at in self.buffer.items():
+                if last_updated_at is None:
+                    LOGGER.warning("Skipping Node(id=%s)", node_id)
+                    continue
+
                 LOGGER.debug("Checking buffer for %s", node_id)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
@@ -301,7 +318,6 @@ class GeospatialSensemakerController(SensemakerController):
         :param attribute_id: ID of the attribute
         :return: None if no attribute exists, or the OMS Attribute
         """
-
         # get attribute
         oms_attr: AttributeAttribute = self.oms_client.attribute(IdQuery(id=attribute_id))
 
@@ -319,7 +335,6 @@ class GeospatialSensemakerController(SensemakerController):
         :param oms_attr: Attribute object
         :return: None if no relationship exists, or the Track Node id
         """
-
         # get relationship
         observation_node_id = oms_attr.nodeId
         rel = self.oms_client.relationships(

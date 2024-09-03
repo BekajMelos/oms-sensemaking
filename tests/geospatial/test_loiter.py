@@ -7,8 +7,8 @@ from datetime import datetime
 import shapely
 from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.geospatial.sensemakers import LoiterSensemaker
+from oms_sensemaking.models.geo import Point, Track
 
 
 def get_random_stamford_bridge_point() -> str:
