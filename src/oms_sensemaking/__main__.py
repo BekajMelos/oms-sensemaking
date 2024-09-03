@@ -1,4 +1,66 @@
-"""Provides a CLI for oms-sensemaking."""
+"""
+Provides a CLI for oms-sensemaking.
+
+```
+$python -m oms_sensemaking -h
+usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
+
+A utility for analysing OMS data.
+
+options:
+  -h, --help          show this help message and exit
+  -V, --verbose       A flag to enable verbose logging.
+
+commands:
+  Run 'python -m oms_sensemaking COMMAND -h' for more information.
+
+  {geo,nlp,semantic}
+    geo               Run geospatial analytics.
+    nlp               Run NLP analytics.
+    semantic          Run semantic workflow.
+```
+
+Geospatial CLI
+==============
+
+Run the geospatial algorithms.
+
+```
+$ python -m oms_sensemaking geo -h
+usage: oms_sensemaking geo [-h] [-f FILENAME]
+
+options:
+  -h, --help            show this help message and exit
+  -f FILENAME, --filename FILENAME
+                        File to run on.
+```
+
+Natural Language Processing CLI
+===============================
+
+| **WARNING**: Not fully implemented
+
+```
+$python -m oms_sensemaking nlp -h
+usage: oms_sensemaking nlp [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+
+Semantic CLI
+============
+
+| **WARNING**: Not fully implemented
+
+```
+$python -m oms_sensemaking semantic -h
+usage: oms_sensemaking semantic [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+"""
 import logging
 import time
 from argparse import ArgumentParser, Namespace
