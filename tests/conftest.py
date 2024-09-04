@@ -7,8 +7,9 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from sqlalchemy.orm.session import Session
+
+from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging

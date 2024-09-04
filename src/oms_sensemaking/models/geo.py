@@ -2,10 +2,11 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Union
+from functools import cached_property
+from typing import Optional, Union
 
 from geoalchemy2 import Geometry
-from geoalchemy2.elements import WKBElement
+from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Float, func, select
@@ -25,7 +26,7 @@ from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, 
 class OmsGeoMixin(MappedAsDataclass):
     """Declare OMS geospatial metadata."""
 
-    location: Mapped[WKBElement] = mapped_column(
+    location: Mapped[WKTElement] = mapped_column(
         # NOTE: this could alternatively be represented as a 3D point, which
         # seems to be an undocumented feature in geoalchemy. Using a 2D point
         # now, because the source data does not seem to enforce the presence
@@ -38,7 +39,7 @@ class OmsGeoMixin(MappedAsDataclass):
         comment='The 2D location of the point.'
     )
 
-    altitude: Mapped[float] = mapped_column(
+    altitude: Mapped[Optional[float]] = mapped_column(
         Float,
         nullable=True,
         comment='The altitude of the point.'
@@ -57,13 +58,19 @@ class OmsGeoMixin(MappedAsDataclass):
         comment='The time the point was detected.'
     )
 
-    @property
+    @cached_property
     def coordinates(self) -> list[float]:
         """Returns the longitude, latitude, and optional altitude (in that order).
 
         If altitude is provided the result will be a three element list, otherwise a 2 element list.
         """
-        point_shape: ShapelyPoint = to_shape(self.location)
+
+        # DB sometimes returns string and sometimes WKBElement so need this check to make this property consistent
+        try:
+            point_shape: ShapelyPoint = to_shape(self.location)
+        except AssertionError:
+            point_shape: ShapelyPoint = to_shape(WKTElement(self.location))  # type: ignore[no-redef]
+
         coordinates: list[float] = [point_shape.x, point_shape.y]
 
         if self.altitude is not None:
@@ -102,6 +109,10 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
     __tablename__: str = 'points'
 
 
+    def __lt__(self, other: "Point"):
+        return self.detection_time < other.detection_time
+
+
 @dataclass
 class Track:
     """Represents a track."""
@@ -119,6 +130,10 @@ class Track:
         based on the ``points`` attribute (i.e. the track).
         """
         point_count: int = len(self.points)
+
+        if point_count < 2:
+            # TODO maybe just log this and move on
+            raise ValueError("A Track must consist of at least 3 points.")
 
         if point_count > 0:
             self.start_time = self.points[0].detection_time

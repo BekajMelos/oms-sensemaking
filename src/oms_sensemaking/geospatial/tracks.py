@@ -10,13 +10,13 @@ from typing import Dict, List
 
 import pandas as pd
 import shapely
+from oms_sdk import DEFAULT_ACM
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.pubsub import PubSub
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.geospatial.models.processed_point import ProcessedPoint
-from oms_sensemaking.geospatial.models.track import Track
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
+from oms_sensemaking.models.geo import Point, Track
 
 CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
@@ -92,23 +92,6 @@ TRACK_ENTRIES_DB = {
 }
 
 
-class PointAttribute:
-    def __init__(self, track_node_id: uuid.UUID, lat: float, lon: float, timestamp=None):
-        self.track_node_id = track_node_id
-        self.lat = lat
-        self.lon = lon
-        self.timestamp = timestamp
-
-    def __str__(self):
-        return str(self.__dict__)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __lt__(self, other):
-        return self.timestamp < other.timestamp
-
-
 class BaseTrackService:
     @staticmethod
     def find_location_by_geohash(
@@ -138,7 +121,7 @@ class BaseTrackService:
 
     @staticmethod
     def query_for_similar_tracks(
-        first: shapely.Point, last: shapely.Point, query_distance: float
+        first: List[float], last: List[float], query_distance: float
     ) -> List[GroupByTrackNodeIdProjection]:
         """
         Primary method to obtain the other tracks that have either the same start or end point provided.
@@ -168,29 +151,41 @@ class BaseTrackService:
         :param track_node_id: node id of the Track to retrieve
         :return: Track object
         """
-        # TODO actually hit a DB
         return Track(
-            track_node_id,
             [
-                ProcessedPoint(
-                    TRACK_ENTRIES_DB["gcpuu"][0].geometry,
-                    TRACK_ENTRIES_DB["gcpuu"][0].start_time,
-                    TRACK_ENTRIES_DB["gcpuu"][0].is_start,
-                    TRACK_ENTRIES_DB["gcpuu"][0].is_end,
+                Point(
+                    DEFAULT_ACM,
+                    shapely.Point((-0.165222, 51.482286)).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
                 ),
-                ProcessedPoint(
-                    TRACK_ENTRIES_DB["gcpug"][0].geometry,
-                    TRACK_ENTRIES_DB["gcpug"][0].start_time,
-                    TRACK_ENTRIES_DB["gcpug"][0].is_start,
-                    TRACK_ENTRIES_DB["gcpug"][0].is_end,
+                Point(
+                    DEFAULT_ACM,
+                    shapely.Point((-0.210562, 51.466103)).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
                 ),
-                ProcessedPoint(
-                    TRACK_ENTRIES_DB["gcpuf"][0].geometry,
-                    TRACK_ENTRIES_DB["gcpuf"][0].start_time,
-                    TRACK_ENTRIES_DB["gcpuf"][0].is_start,
-                    TRACK_ENTRIES_DB["gcpuf"][0].is_end,
+                Point(
+                    DEFAULT_ACM,
+                    shapely.Point((-0.229466, 51.487613)).wkt,
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
                 ),
-            ],
+            ]
+            ,
+            track_node_id
         )
 
 
@@ -199,21 +194,21 @@ class TrackCacheService(PubSub):
         super().__init__()
         self.point_ingest_queue = point_ingest_queue
         # cache for collecting points into a track
-        self._point_cache: Dict[uuid.UUID, PriorityQueue[PointAttribute]] = defaultdict(PriorityQueue)
+        self._point_cache: Dict[uuid.UUID, PriorityQueue[Point]] = defaultdict(PriorityQueue)
         # cache for tracking the latest observed timestamp per track_node_id. the track_node_id should match the track
         # being collected in the point cache
         self._timestamp_cache: Dict[uuid.UUID, datetime] = {}
 
-    async def add_point(self, point: PointAttribute):
+    async def add_point(self, point: Point):
         """
-        Add a point to the cache. PointAttribute goes to the point_cache and observed timestamp goes to the timestamp
+        Add a point to the cache. Point goes to the point_cache and observed timestamp goes to the timestamp
         cache
 
-        :param point: PointAttribute object to cache and collect into track
+        :param point: Point object to cache and collect into track
         :return: None
         """
-        self._point_cache[point.track_node_id].put(point)
-        self._timestamp_cache[point.track_node_id] = datetime.now()
+        self._point_cache[point.node_id].put(point)
+        self._timestamp_cache[point.node_id] = datetime.now()
 
     async def check_expirations(self) -> None:
         """Check for Points that have waited past the expiration time and should be processed."""
@@ -222,7 +217,7 @@ class TrackCacheService(PubSub):
         now = datetime.now()
         for track_node_id in list(self._timestamp_cache.keys()):
             if self._timestamp_cache[track_node_id] + CACHE_ENTRY_EXPIRE_SEC < now:
-                points: PriorityQueue[PointAttribute] = self._point_cache.pop(track_node_id)
+                points: PriorityQueue[Point] = self._point_cache.pop(track_node_id)
                 # expire timestamp cache entry which we don't need anymore
                 _ = self._timestamp_cache.pop(track_node_id)
 
@@ -230,7 +225,6 @@ class TrackCacheService(PubSub):
                 if len(points.queue) > 2:
                     await self.create_track(track_node_id, points)
                 else:
-                    # TODO need to test why some are less than 2
                     LOGGER.warn(f"Track with fewer than two points found: {track_node_id} - ({points})")
 
     async def wait_for_events(self) -> None:
@@ -260,21 +254,14 @@ class TrackCacheService(PubSub):
         :return: The created Track
         """
 
-        processed_points = []
-        idx = 0
-        queue_len = len(points.queue)
-        while not points.empty():
-            point: PointAttribute = points.get_nowait()
-            processed_point = ProcessedPoint(
-                shapely.Point(point.lon, point.lat),
-                point.timestamp,
-                idx == 0,
-                idx == queue_len - 1,
-            )
-            idx = idx + 1
-            processed_points.append(processed_point)
+        track_points = []
 
-        track: Track = Track(track_node_id, processed_points)
+        # get points in order
+        while not points.empty():
+            point: Point = points.get_nowait()
+            track_points.append(point)
+
+        track: Track = Track(points=track_points, node_id=track_node_id)
 
         self.publish(TRACK_CREATED_EVENT, track)
 
@@ -293,6 +280,14 @@ async def produce_attributes_from_csv(q: asyncio.Queue, file_name: str) -> None:
     df = pd.read_csv(file_name)
     LOGGER.debug(df)
     for _, row in df.iterrows():
-        point = PointAttribute(row["r"], row["lat"], row["lon"])
-        point.timestamp = datetime.fromtimestamp(int(row["now"]), tz=timezone.utc)
+        point = Point(
+            acm=DEFAULT_ACM,
+            location=shapely.Point(row["lon"], row["lat"]).wkt,
+            altitude=None,
+            detection_time=datetime.fromtimestamp(int(row["now"]), tz=timezone.utc),
+            node_id=row["r"],
+            node_version=1,
+            attribute_id=uuid.uuid4(),
+            attribute_version=1
+        )
         await q.put(point)

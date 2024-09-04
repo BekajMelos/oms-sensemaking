@@ -1,5 +1,6 @@
-import pytest
 from typing import Iterator
+
+import pytest
 from fastapi.testclient import TestClient
 
 from oms_sensemaking.service import app
