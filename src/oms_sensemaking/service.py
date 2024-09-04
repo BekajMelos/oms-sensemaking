@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import about
+from oms_sensemaking.api.routers import about, semantic
 from oms_sensemaking.config import SETTINGS, Settings
 
 
@@ -39,6 +39,9 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure routes
     application.include_router(about.router)
+
+    # configure semantic route
+    application.include_router(semantic.router)
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
