@@ -19,6 +19,7 @@ class DummyError(Exception):
 
     This class can be used to test unexpected server exceptions.
     """
+
     pass
 
 

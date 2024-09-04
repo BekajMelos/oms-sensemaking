@@ -188,7 +188,6 @@ class TrackCacheService(PubSub):
 
     async def check_expirations(self) -> None:
         """Check for Points that have waited past the expiration time and should be processed."""
-
         LOGGER.info("Checking Expirations")
         now = datetime.now()
         for track_node_id in list(self._timestamp_cache.keys()):
@@ -229,7 +228,6 @@ class TrackCacheService(PubSub):
         :param points: List of Point objects
         :return: The created Track
         """
-
         track_points = []
 
         # get points in order
