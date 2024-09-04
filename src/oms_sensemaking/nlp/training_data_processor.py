@@ -12,12 +12,6 @@ from oms_sensemaking.nlp.models.processed_relation import ProcessedRelation
 from oms_sensemaking.nlp.models.processed_result import ProcessedResult
 from oms_sensemaking.nlp.models.token_reference import TokenReference
 
-# TODO: get props from config file
-CUSTOM_PROPS = {
-    "annotators": "tokenize, pos, lemma, depparse",
-}
-corenlp_client = CoreNLPClient(properties=CUSTOM_PROPS, timeout=60000, memory="16G")
-
 logger = logging.getLogger(__name__)
 
 
@@ -26,17 +20,17 @@ class TrainingDataProcessor:
         self.annotated_filepath = annotated_filepath
         self.ner_save_filepath = ner_save_filepath
         self.relation_save_filepath = relation_save_filepath
-        self.properties = ""
+        self.properties = {"annotators": "tokenize, pos, lemma, depparse"}
 
     def run_pipeline(self):
-        # TODO: include logger info while running pipeline
+        """The entire pipeline of functions needed to convert .jsonl to proper .tsv format for CoreNLP model training"""
         doccano_result = self.load_jsonl_file()
         processed_doccano_result = self.process_doccano_result(doccano_result)
         self.write_ner_result(processed_doccano_result, self.ner_save_filepath)
         self.write_relation_result(processed_doccano_result, self.relation_save_filepath)
-        return None
 
     def load_jsonl_file(self) -> DoccanoResult:
+        """Opens the .jsonl Doccano-annotated file and formats the data as a DoccanoResult"""
         with open(self.annotated_filepath, "r") as file:
             file_contents = json.loads(file.read())
         return DoccanoResult(
@@ -49,22 +43,29 @@ class TrainingDataProcessor:
 
     def process_doccano_result(self, doccano_result: DoccanoResult) -> ProcessedResult:
         """
-        This func builds the DoccanoResult data type
+        This function builds the ProcessedResult data type and has three parts:
+        1. Using the CoreNLP client to get tokens from the text
+        2. Going through the DoccanoResult entities and mapping them to tokens
+        3. Going through the DoccanoResult relations and mapping Relations between tokens
         """
+
         # Tokenize the entities and relations
         text = doccano_result.text
         processed_result = ProcessedResult(doccano_result.id)
 
-        # Go through text, annotate with client, and get sentences
+        # [Part 1]
+        # Go through text, annotate with CoreNLP client, and get sentences
+        corenlp_client = CoreNLPClient(properties=self.properties, timeout=60000, memory="16G")
         with corenlp_client:  # The client is used here only for annotation purposes, no NER or relation extraction yet
             annotation = corenlp_client.annotate(text)
         sentences = annotation.sentence  # grab the sentences from the annotation
 
-        # Loop through sentences and make tokens for doccano token map
+        # Loop through sentences of the annotation and grab tokens for doccano token map
         global_token_index = 0
-        doc_token_range_map = RangeMap()  # maps ranges of char offsets to TokenReferences
+        doc_token_range_map = RangeMap()  # Imported data type, maps ranges of char offsets to TokenReferences
         for sentence in sentences:
             for token in sentence.token:
+                # Building the TokenReference with the token parts taken from the sentence
                 start_offset = token.beginChar
                 end_offset = token.endChar
                 pos_tag = token.pos
@@ -77,26 +78,22 @@ class TrainingDataProcessor:
                 doc_token_range_map.set(token_reference, start_offset, end_offset)
         processed_result.doc_token_map = doc_token_range_map
 
+        # [Part 2]
         # Build the map of entity ID to token
         entity_token_map = {}
         for doccano_entity in doccano_result.entities:
-            # print(doccano_entity)
             # Get list of tokens in the offset range
             # From Java implementation: '-2' was required on the end to prevent the inclusion of trailing punctuation
-            # TODO: Figure out how to properly index into RangeMap
-            sub_map = doc_token_range_map.get_range(doccano_entity.start_offset, doccano_entity.end_offset - 2)
-            token_list = []
-            for key in sub_map:
-                print(sub_map[key])
-                token_list.append(sub_map[key])
-            # token_list = [doc_token_range_map.get(doccano_entity.start_offset, doccano_entity.end_offset - 2)]
-            # When there are multiple entities per label, need the result of the following:
+            tokens_in_range = doc_token_range_map.get_range(doccano_entity.start_offset, doccano_entity.end_offset - 2)
+            token_list = [tokens_in_range[key] for key in tokens_in_range]  # Token list derived from RangeMap
+
+            # When there are multiple entities/tokens per label, need the result of the following:
             token_count = len(token_list)
             for i in range(token_count):
                 current_token = token_list[i]
-                token_key = current_token.start_offset, current_token.end_offset
                 current_label = doccano_entity.label
-                # TODO: make sure this part is working properly b/c none are appearing in document
+
+                # Setting the label prefix based on what number token of a multi-token label the current token is
                 if i == 0:
                     label_prefix = "B-"
                 elif i == token_count - 1:
@@ -104,19 +101,20 @@ class TrainingDataProcessor:
                 else:
                     label_prefix = "I-"
 
-                # Updating the label if there are multiple tokens for this label
+                # Updating the label for the entity ONLY if there are multiple tokens for this label
                 updated_label = current_label if token_count == 1 else label_prefix + current_label
 
                 # Adding the token with the updated label back to the RangeMap
                 current_token.label = updated_label
-                doc_token_range_map.delete(token_key[0], token_key[1])
-                doc_token_range_map.set(current_token, token_key[0], token_key[1])
+                doc_token_range_map.delete(current_token.start_offset, current_token.end_offset)
+                doc_token_range_map.set(current_token, current_token.start_offset, current_token.end_offset)
 
                 # Update the dict of tokens by id
                 entity_token_map[doccano_entity.id] = current_token
 
         processed_result.entity_token_ref = entity_token_map
 
+        # [Part 3]
         # Go through relations and grab necessary info to add to processed result
         processed_relation_set = set({})
         for doccano_relation in doccano_result.relations:
@@ -137,26 +135,29 @@ class TrainingDataProcessor:
         return processed_result
 
     def write_ner_result(self, processed_result: ProcessedResult, ner_filepath: str):
+        """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
         try:
             with open(ner_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
 
                 # Writing the NER label information for each entity to the file
                 for ref in token_refs.values():
+                    # Formatting the data to write to the file and then writing
                     write_string = "%s\t%s\n" % (ref.token, ref.label)
                     file.write(write_string)
 
-        except OSError:  # TODO: find the best error to raise
-            logger.error("Unable to open or create NER file.")
-        return None
+        except OSError:
+            logger.error("Unable to open or create NER .tsv file.")
 
     def write_relation_result(self, processed_result: ProcessedResult, relation_filepath: str):
+        """Formats and saves the Relation info from ProcessedResult to the specified Relation .tsv file"""
         try:
             with open(relation_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
 
                 # writing the relation details for each token
                 for ref in token_refs.values():
+                    # Formatting the data to write to the file and then writing
                     write_string = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
                         str(processed_result.doc_id),
                         ref.label,
@@ -170,7 +171,7 @@ class TrainingDataProcessor:
                     )
                     file.write(write_string)
 
-                file.write("\n")
+                file.write("\n")  # Adding an extra line between the above and below parts
 
                 # writing summary of existing relations at the bottom of the file
                 for processed_relation in processed_result.processed_relation_set:
@@ -180,8 +181,8 @@ class TrainingDataProcessor:
                         processed_relation.relation_type,
                     )
                     file.write(write_string)
-        except OSError:  # TODO: find the best error to raise
-            logger.error("Unable to open or create Relations file.")
+        except OSError:
+            logger.error("Unable to open or create Relations .tsv file.")
 
 
 if __name__ == "__main__":
@@ -190,25 +191,27 @@ if __name__ == "__main__":
         "--annotated-filepath",
         help="Path to .jsonl file of annotations.",
         type=str,
-        default="./training/russiaukraine_test.jsonl",
+        default="",
     )
     parser.add_argument(
         "--ner-save-filepath",
         help="Location to save the ner .tsv file",
         type=str,
-        default="src/oms_sensemaking/nlp/training/ner_test.tsv",
+        default="src/oms_sensemaking/nlp/training/ner_training.tsv",
     )
     parser.add_argument(
         "--relation-save-filepath",
         help="Location to save the relations .tsv file",
         type=str,
-        default="src/oms_sensemaking/nlp/training/relations_test.tsv",
+        default="src/oms_sensemaking/nlp/training/relations_training.tsv",
     )
 
+    # Grabbing the arguments and saving as variables
     args = parser.parse_args()
     annotated_jsonl = args.annotated_filepath
     ner_file = args.ner_save_filepath
     relations_file = args.relation_save_filepath
 
+    # Creating the TDP with args and running its pipeline
     processor = TrainingDataProcessor(annotated_jsonl, ner_file, relations_file)
     processor.run_pipeline()
