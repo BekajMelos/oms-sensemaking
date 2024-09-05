@@ -70,8 +70,10 @@ class TrainingDataProcessor:
         return processed_result
 
     def tokenize_text(self, text: str) -> RangeMap:
-        """Part 1. Using the CoreNLP client to get tokens from the text"""
+        """Using the CoreNLP client to get tokens from the text"""
 
+        if not text:
+            text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
         corenlp_client = CoreNlpService(props=self.properties, text=text)
