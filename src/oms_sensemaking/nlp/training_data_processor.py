@@ -3,8 +3,8 @@ import json
 import logging
 
 from collections_extended import RangeMap
-from stanza.server import CoreNLPClient
 
+from oms_sensemaking.nlp.corenlp_service import CoreNlpService
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
@@ -55,9 +55,9 @@ class TrainingDataProcessor:
 
         # [Part 1]
         # Go through text, annotate with CoreNLP client, and get sentences
-        corenlp_client = CoreNLPClient(properties=self.properties, timeout=60000, memory="16G")
-        with corenlp_client:  # The client is used here only for annotation purposes, no NER or relation extraction yet
-            annotation = corenlp_client.annotate(text)
+        # The client is used here only for annotation purposes, no NER or relation extraction yet
+        corenlp_client = CoreNlpService(props=self.properties, text=text)
+        annotation = corenlp_client.annotate_document(text)
         sentences = annotation.sentence  # grab the sentences from the annotation
 
         # Loop through sentences of the annotation and grab tokens for doccano token map

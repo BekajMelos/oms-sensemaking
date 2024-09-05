@@ -1,24 +1,23 @@
-from stanza.models.common.doc import Document
 from stanza.server import CoreNLPClient
 
 
 class CoreNlpService:
     """
     This class is for interacting with the Stanza CoreNLP client
-    TODO: expand documentation and code comments
     """
 
-    def __init__(self, props, text):
-        # TODO: Customization via API? And set custom NER and relation models
-        self.PROPS = {
-            "annotators": "tokenize, pos, lemma, ner, depparse, relation",
-            "relation.trainUsePipelineNER": "true",
-        }
-        # TODO: Change to document intake
-        self.text = "Chris Manning is a nice person. Chris wrote a simple sentence. He also gives oranges to people."
+    def __init__(self, props: dict = None, text: str = None):
+        if not props:
+            self.props = {
+                "annotators": "tokenize, pos, lemma, ner, depparse, relation",
+                "relation.trainUsePipelineNER": "true",
+            }
+        else:
+            self.PROPS = props
+        self.text = text
         self.client = CoreNLPClient(properties=self.PROPS, timeout=60000, memory="16G")
 
-    def annotate_document(self, text: str) -> Document:
+    def annotate_document(self, text: str):
         """
         Uses the client with the props specified above to access CoreNLP and annotate a document
         """
