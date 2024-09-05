@@ -3,11 +3,11 @@ import json
 import logging
 
 from collections_extended import RangeMap
-from models.doccano_result import DoccanoResult
 from stanza.server import CoreNLPClient
 
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
+from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.models.processed_relation import ProcessedRelation
 from oms_sensemaking.nlp.models.processed_result import ProcessedResult
 from oms_sensemaking.nlp.models.token_reference import TokenReference
