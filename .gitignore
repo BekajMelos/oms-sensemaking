@@ -21,7 +21,8 @@ pytest.xml
 *.pyc
 *.pyd
 *.pyo
-
+*.tsv
+*.gz
 
 
 # --------------------
