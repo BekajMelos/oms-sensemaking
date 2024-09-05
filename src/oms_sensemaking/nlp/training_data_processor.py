@@ -54,6 +54,24 @@ class TrainingDataProcessor:
         processed_result = ProcessedResult(doccano_result.id)
 
         # [Part 1]
+        doc_token_range_map = self.tokenize_text(text)
+        processed_result.doc_token_map = doc_token_range_map
+
+        # [Part 2]
+        # Build the map of entity ID to token
+        entity_token_map = self.map_entities_to_tokens(doccano_result, doc_token_range_map)
+        processed_result.entity_token_ref = entity_token_map
+
+        # [Part 3]
+        # Go through relations and grab necessary info to add to processed result
+        processed_relation_set = self.link_relations(doccano_result, entity_token_map)
+        processed_result.processed_relation_set = processed_relation_set
+
+        return processed_result
+
+    def tokenize_text(self, text: str) -> RangeMap:
+        """Part 1. Using the CoreNLP client to get tokens from the text"""
+
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
         corenlp_client = CoreNlpService(props=self.properties, text=text)
@@ -76,10 +94,13 @@ class TrainingDataProcessor:
 
                 # add new token to range map
                 doc_token_range_map.set(token_reference, start_offset, end_offset)
-        processed_result.doc_token_map = doc_token_range_map
 
-        # [Part 2]
-        # Build the map of entity ID to token
+        return doc_token_range_map
+
+    def map_entities_to_tokens(
+        self, doccano_result: DoccanoResult, doc_token_range_map: RangeMap
+    ) -> dict[int, list[TokenReference]]:
+        """Going through the DoccanoResult entities and mapping them to tokens"""
         entity_token_map = {}
         for doccano_entity in doccano_result.entities:
             # Get list of tokens in the offset range
@@ -112,10 +133,12 @@ class TrainingDataProcessor:
                 # Update the dict of tokens by id
                 entity_token_map[doccano_entity.id] = current_token
 
-        processed_result.entity_token_ref = entity_token_map
+        return entity_token_map
 
-        # [Part 3]
-        # Go through relations and grab necessary info to add to processed result
+    def link_relations(
+        self, doccano_result: DoccanoResult, entity_token_map: dict[int, list[TokenReference]]
+    ) -> set[ProcessedRelation]:
+        """Going through the DoccanoResult relations and mapping Relations between tokens"""
         processed_relation_set = set({})
         for doccano_relation in doccano_result.relations:
             # Get each of the features of a doccano relation
@@ -129,10 +152,7 @@ class TrainingDataProcessor:
             # build the processed relation and add to the set of processed relations
             processed_relation = ProcessedRelation(from_token_index, to_token_index, doccano_relation.type)
             processed_relation_set.add(processed_relation)
-
-        processed_result.processed_relation_set = processed_relation_set
-
-        return processed_result
+        return processed_relation_set
 
     def write_ner_result(self, processed_result: ProcessedResult, ner_filepath: str):
         """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
