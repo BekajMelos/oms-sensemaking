@@ -39,6 +39,11 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure routes
     application.include_router(about.router)
+    application.include_router(
+        semantic.router,
+        prefix="/semantic",
+        tags=["semantic"]
+    )
 
     # configure semantic route
     application.include_router(semantic.router)

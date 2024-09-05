@@ -1,4 +1,4 @@
-"""The about module contains endpoints that return information about the service."""
+"""Endpoints that return information about the service."""
 from fastapi import APIRouter
 
 from oms_sensemaking import __description__, __title__, __version__
