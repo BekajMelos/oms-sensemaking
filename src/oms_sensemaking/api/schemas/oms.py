@@ -67,9 +67,22 @@ class Attribute(OmsObject):
 class Node(OmsObject):
     """Represents a Node object in OMS."""
 
+    id: uuid
+    version: str # change to Long type
+    acm: str # change to ACM type
+    tags: list[str]
+    guideID: str
     name: str
-    class_iri: str = Field(..., examples=["http://purl.obolibrary.org/obo/BFO_0000030"])
-    class_name: str = Field(..., examples=["Object"])
+    tier: object
+    classIri: str
+    className: str
+    ifcCodes: list[str]
+    allegiance: str
+    allegianceAor: str
+    currentAor: str
+    isNso: bool
+    #class_iri: str = Field(..., examples=["http://purl.obolibrary.org/obo/BFO_0000030"])
+    #class_name: str = Field(..., examples=["Object"])
 
 
 class Relationship(OmsObject):
