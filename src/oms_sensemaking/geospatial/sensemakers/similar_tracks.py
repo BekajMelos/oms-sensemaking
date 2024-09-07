@@ -1,16 +1,37 @@
 """Similar Tracks Sensemakers."""
 import logging
 import uuid
+from datetime import datetime, timedelta
 from queue import PriorityQueue
 from typing import List, Set
 
+import shapely
+from geoalchemy2.elements import WKTElement
 from geolib import geohash
+from oms_sdk import DEFAULT_ACM
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.geospatial.tracks import BaseTrackService
-from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.geo import SRID, Point, Track
+
+CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
+
+LOGGER = logging.getLogger(__name__)
+
+TRACK_CREATED_EVENT: str = "track_created"
+
+# FAKE DB
+NODE_UUID1 = uuid.uuid4()
+
+NODE_UUID2 = uuid.uuid4()
+
+SOURCE_UUID = uuid.uuid4()
+
+
+
+
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +85,7 @@ class SimilarTracksSensemaker(Sensemaker):
 
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
-        similar_track_groups: List[GroupByTrackNodeIdProjection] = BaseTrackService.query_for_similar_tracks(
+        similar_track_groups: List[GroupByTrackNodeIdProjection] = self.query_for_similar_tracks(
             first.coordinates, last.coordinates, SETTINGS.within_meters
         )
 
@@ -105,15 +126,15 @@ class SimilarTracksSensemaker(Sensemaker):
         LOGGER.debug(f"Overall similarity for {eval_track_geohash_set}, {score}")
         return ComparisonResult(eval_track_node_id, score)
 
-    @staticmethod
-    def get_track_from_group_projection(group_projection: GroupByTrackNodeIdProjection) -> Track:
+    @classmethod
+    def get_track_from_group_projection(cls, group_projection: GroupByTrackNodeIdProjection) -> Track:
         """
         Obtain object for processing from groupBy query projection results.
 
         :param group_projection: GroupByTrackNodeIdProjection
         :return: Track object
         """
-        return BaseTrackService.get_track(group_projection.track_node_id)
+        return cls.get_track(group_projection.track_node_id)
 
     @staticmethod
     def get_buffered_geohash_set(points: List[Point]) -> Set[str]:
@@ -148,3 +169,75 @@ class SimilarTracksSensemaker(Sensemaker):
                 buffered_geohash_set.add(neighbor)
 
         return buffered_geohash_set
+
+    @staticmethod
+    def query_for_similar_tracks(
+            first: List[float],
+            last: List[float],
+            query_distance: float) -> List[GroupByTrackNodeIdProjection]:
+        """
+        Primary method to obtain the other tracks that have either the same start or end point provided.
+
+        The distance is the range from the point to include in the results.
+        The query requires that a track has at least 2 points.
+
+        SELECT track_node_id, ARRAY_AGG(ST_AsGeoJSON(ST_Transform(geometry, 4326), 9, 2)
+            ORDER BY start_time) AS track_bookends
+            FROM tracks
+            WHERE (is_start = true AND ST_DWithin(geometry, ST_Transform(ST_GeomFromGeoJSON(:geoJsonStart)::geometry,
+                4326), :distance)) OR (is_end = true AND ST_DWithin(geometry,
+                ST_Transform(ST_GeomFromGeoJSON(:geoJsonEnd)::geometry, 4326), :distance))
+            GROUP BY track_node_id
+            HAVING COUNT(geometry) >= 2
+
+        :param first: Point of the first point in the track.
+        :param last: Point of the last point in the track.
+        :param query_distance: Threshold .
+        :return: List of GroupByTrackNodeIdProjections
+        """
+        return [GroupByTrackNodeIdProjection(NODE_UUID1, [])]
+
+    @staticmethod
+    def get_track(track_node_id: uuid.UUID) -> Track:
+        """
+        Get Track by UUID.
+
+        :param track_node_id: node id of the Track to retrieve
+        :return: Track object
+        """
+        return Track(
+            [
+                Point(
+                    DEFAULT_ACM,
+                    WKTElement(shapely.Point((-0.165222, 51.482286)).wkt, srid=SRID),
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                ),
+                Point(
+                    DEFAULT_ACM,
+                    WKTElement(shapely.Point((-0.210562, 51.466103)).wkt, srid=SRID),
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                ),
+                Point(
+                    DEFAULT_ACM,
+                    WKTElement(shapely.Point((-0.229466, 51.487613)).wkt, srid=SRID),
+                    altitude=None,
+                    detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+                    node_id=track_node_id,
+                    node_version=1,
+                    attribute_id=uuid.uuid4(),
+                    attribute_version=1
+                ),
+            ]
+            ,
+            track_node_id
+        )
