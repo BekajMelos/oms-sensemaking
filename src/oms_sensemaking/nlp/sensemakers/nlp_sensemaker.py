@@ -46,5 +46,6 @@ if __name__ == "__main__":
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id=1, text=text)
+
+    # This data will be used by the controller and EntityDecorator to push nodes to oms_sdk
     processed_data = nlp_sm.process_data(document_data)
-    # print(processed_data)
