@@ -1,9 +1,18 @@
+from oms_sensemaking.nlp.models.document_as_entity import DocumentAsEntity
+from oms_sensemaking.nlp.models.document_has_relation import DocumentHasRelation
+from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
+from oms_sensemaking.nlp.models.submission_data import SubmissionData
+
+
 class AnnotationProcessor:
-    """"""
+    """
+    This takes the annotated document, gets entities and relationships, and returns them all.
+    It also creates relationships between a document and each of the entities found within it.
+    """
 
     # TODO: make a node to represent the document, and a relationship for each node found back to the document
 
-    def extract_info(self, data, annotation) -> dict[str, list]:
+    def extract_info(self, data: SubmissionData, annotation) -> EntitiesAndRelationships:
         """Takes the result of the CoreNLP annotation and extracts entities and relationships between them"""
         entities = self.find_entities(annotation)
         relationships = self.find_relationships(annotation)
@@ -27,23 +36,25 @@ class AnnotationProcessor:
                     relationships.append(relation)
         return relationships
 
-    def relate_to_document(self, data, entities, relationships):
+    def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
         """Turns the document itself into a node, and creates a relationship to each entity found in the document"""
         # 1. Create entity for document
         # 2. Relate each entity in the document to the document's entity
-        document_entity = {
-            "entityMentionIndex": data["document_id"],
-            "entityType": "DOCUMENT",
-            # "entityMentionText": data["text"]
-        }
+
+        # TODO: Make document relationships/entities the same data type as normal relationships/entities? Maybe no need
+        document_relationships = []
+        # TODO: Might just be able to use DataSubmission type, depends on how things go in next ticket
+        document_entity = DocumentAsEntity(document_id=data.document_id, text=data.text)
         for entity in entities:
-            # TODO: Standardize this addition with a relationship data model
-            # TODO: Do we want the document relationships to point to the entities or vice versa?
-            document_relationship = {
-                "objectID": "DocumentRelation",
-                "type": "Document_Contains",
-                "entities": [document_entity, entity],
-            }
-            relationships.append(document_relationship)
+            document_relationship = DocumentHasRelation(
+                document_id=data.document_id, document_entity=document_entity, ner_entity=entity
+            )
+            # relationships.append(document_relationship)
+            document_relationships.append(document_relationship)
         entities.append(document_entity)
-        return {"entities": entities, "relationships": relationships}
+        return EntitiesAndRelationships(
+            ner_entities=entities,
+            ner_relationships=relationships,
+            document_entity=document_entity,
+            document_relationships=document_relationships,
+        )
