@@ -14,16 +14,22 @@ class NlpSensemaker(Sensemaker):
 
     # TODO: data will probably be a dict with a text field, and other info about the document from Controller/API
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
+        """
+        NlpSensemaker pipeline that first annotates the submitted text,
+        and then processes it for entities and relationships
+        """
         annotation = self.use_corenlp_service(data.text)
         processed_annotation = self.process_annotation(data, annotation)
         return processed_annotation
 
     def use_corenlp_service(self, document: str) -> str:
+        """Accesses the CoreNlpService to annotate the text"""
         corenlp_service = CoreNlpService()
         annotated_doc = corenlp_service.annotate_document(text=document)
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
+        """Uses the AnnotationProcessor to get the nodes and relations from the submitted data"""
         # TODO: check what the node and relationship objects are comprised of for oms_sdk to format them w/ that info
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
         return nodes_and_relations
