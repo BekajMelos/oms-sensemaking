@@ -21,7 +21,7 @@ pytest.xml
 *.pyc
 *.pyd
 *.pyo
-
+src/oms_sensemaking/nlp/training/data/
 
 
 # --------------------
