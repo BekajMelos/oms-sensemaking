@@ -8,6 +8,7 @@ class CoreNlpService:
 
     def __init__(self, props: dict = None, text: str = None):
         if not props:
+            # TODO: Set custom models once trained
             self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation"}
         else:
             self.props = props

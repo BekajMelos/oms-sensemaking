@@ -1,5 +1,4 @@
 import argparse
-from typing import Any
 
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
@@ -14,7 +13,7 @@ class NlpSensemaker(Sensemaker):
     """A sensemaker for analyzing text by extracting entities and the relationships between them"""
 
     # TODO: data will probably be a dict with a text field, and other info about the document from Controller/API
-    def process_data(self, data: SubmissionData) -> Any:
+    def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         annotation = self.use_corenlp_service(data.text)
         processed_annotation = self.process_annotation(data, annotation)
         return processed_annotation
