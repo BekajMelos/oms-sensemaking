@@ -1,4 +1,4 @@
-"""NLP sensemaker controller."""
+"""Semantic sensemaker controller."""
 
 import logging
 
