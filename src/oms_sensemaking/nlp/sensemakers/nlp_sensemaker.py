@@ -55,3 +55,4 @@ if __name__ == "__main__":
 
     # This data will be used by the controller and EntityDecorator to push nodes to oms_sdk
     processed_data = nlp_sm.process_data(document_data)
+    print(processed_data)  # Temporary for testing this MR

@@ -44,12 +44,15 @@ class AnnotationProcessor:
         # TODO: Might just be able to use DataSubmission type, depends on how things go in next ticket
         # Creates an entity for the document
         document_entity = DocumentAsEntity(document_id=data.document_id, text=data.text)
+        doc_rel_index = 1
         for entity in entities:
             # Loop through all the entities and creates a DocumentHasRelationship for each of them
+            doc_rel_obj_id = "DocumentRelation-" + str(doc_rel_index)
             document_relationship = DocumentHasRelation(
-                document_id=data.document_id, document_entity=document_entity, ner_entity=entity
+                object_id=doc_rel_obj_id, document_id=data.document_id, ner_entity=entity
             )
             document_relationships.append(document_relationship)
+            doc_rel_index += 1
         return EntitiesAndRelationships(
             ner_entities=entities,
             ner_relationships=relationships,
