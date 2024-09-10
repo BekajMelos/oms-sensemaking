@@ -7,7 +7,7 @@ from datetime import datetime
 import shapely
 from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.geospatial.loiter import LoiterService
+from oms_sensemaking.geospatial.sensemakers import LoiterSensemaker
 from oms_sensemaking.models.geo import Point, Track
 
 
@@ -67,7 +67,7 @@ def test_loiter_success():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=node_id)
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -114,7 +114,7 @@ def test_loiter_invalid_not_long_enough():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid.uuid4())
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 0
 
 
@@ -154,7 +154,7 @@ def test_loiter_fails_valid_observed_threshold():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid.uuid4())
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 0
 
 
@@ -197,7 +197,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid.uuid4())
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -268,7 +268,7 @@ def test_loiter_success_multiple_in_same_geohash():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid.uuid4())
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
@@ -353,7 +353,7 @@ def test_loiter_success_multiple_in_different_geohash():
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid.uuid4())
 
-    loiters = LoiterService.detect_loiters(track)
+    loiters = LoiterSensemaker().execute(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
