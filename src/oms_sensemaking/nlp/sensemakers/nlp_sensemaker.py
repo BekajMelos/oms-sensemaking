@@ -51,7 +51,7 @@ if __name__ == "__main__":
     nlp_sm = NlpSensemaker()
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
-    document_data = SubmissionData(document_id=1, text=text)
+    document_data = SubmissionData(document_id="MadCow", text=text)
 
     # This data will be used by the controller and EntityDecorator to push nodes to oms_sdk
     processed_data = nlp_sm.process_data(document_data)
