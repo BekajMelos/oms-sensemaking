@@ -3,7 +3,7 @@ class DocumentAsEntity:
     def __init__(self, document_id: int, text: str):
         self.document_id = document_id
         self.text = text
-        self.entityType = "DOCUMENT"
+        self.entity_type = "DOCUMENT"
 
     def __str__(self):
         return str(self.__dict__)
