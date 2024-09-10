@@ -1,4 +1,3 @@
-# TODO: Add attributes as we learn what is needed to submit with oms_sdk as a relation
 class DocumentHasRelation:
     def __init__(self, object_id: str, document_id: str, ner_entity):
         self.object_id = object_id

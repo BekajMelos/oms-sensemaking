@@ -6,13 +6,10 @@ from oms_sensemaking.nlp.corenlp_service import CoreNlpService
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 
-# TODO: Import CoreNlpService once the TDP branch is merged into main, currently had to copy/paste b/c waiting for merge
-
 
 class NlpSensemaker(Sensemaker):
     """A sensemaker for analyzing text by extracting entities and the relationships between them"""
 
-    # TODO: data will probably be a dict with a text field, and other info about the document from Controller/API
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
         NlpSensemaker pipeline that first annotates the submitted text,
@@ -30,13 +27,12 @@ class NlpSensemaker(Sensemaker):
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """Uses the AnnotationProcessor to get the nodes and relations from the submitted data"""
-        # TODO: check what the node and relationship objects are comprised of for oms_sdk to format them w/ that info
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
         return nodes_and_relations
 
 
 if __name__ == "__main__":
-    # TODO: Will no longer need main once the full NLP SM system is implemented
+    # TODO: Later - Will no longer need main once the full NLP SM system is implemented
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--text-filepath",

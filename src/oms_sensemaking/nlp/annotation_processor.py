@@ -39,9 +39,7 @@ class AnnotationProcessor:
         # 1. Create entity for document
         # 2. Relate each entity in the document to the document's entity
 
-        # TODO: Make document relationships/entities the same data type as normal relationships/entities? Maybe no need
         document_relationships = []
-        # TODO: Might just be able to use DataSubmission type, depends on how things go in next ticket
         # Creates an entity for the document
         document_entity = DocumentAsEntity(document_id=data.document_id, text=data.text)
         doc_rel_index = 1
