@@ -6,7 +6,7 @@ from datetime import datetime
 import shapely
 from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.geospatial.similar_tracks import MostSimilarTrackService
+from oms_sensemaking.geospatial.sensemakers import SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track
 
 
@@ -29,7 +29,7 @@ def test_most_similar_tracks_success():
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid.uuid4())
 
-    similar_tracks = MostSimilarTrackService.most_similar_track_node_ids(track)
+    similar_tracks = SimilarTracksSensemaker().execute(track)
 
     assert len(similar_tracks.top_similarities.queue) == 1
     assert similar_tracks.top_similarities.queue[0][0] == 0.75

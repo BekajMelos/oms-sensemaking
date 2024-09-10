@@ -1,20 +1,20 @@
-"""Provides "loiter" sensemaker."""
+"""Loiter Sensemakers."""
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List
 from uuid import UUID
 
 from geolib import geohash
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.models.geo import Point, Track
 
 LOGGER = logging.getLogger(__name__)
 
-
 VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=SETTINGS.valid_observed_threshold_seconds)
+
 LOITER_MIN_TIME = timedelta(seconds=SETTINGS.loiter_min_time)
 
 
@@ -37,7 +37,7 @@ class Loiter:
         geohash_low: str,
         start_time: datetime,
         end_time: datetime,
-        processed_points: List[Point],
+        processed_points: list[Point],
         geometry: str,
     ):
         self.track_node_id = track_node_id
@@ -54,11 +54,13 @@ class Loiter:
         return self.__str__()
 
 
-class LoiterService:
-    """Service for detecting loiter events."""
+class LoiterSensemaker(Sensemaker):
+    """A sensemaker for analyzing tracks for loiters."""
 
-    @classmethod
-    def detect_loiters(cls, track: Track) -> List[Loiter]:
+    def __init__(self) -> None:
+        super().__init__()
+
+    def process_data(self, data: Track) -> list[Loiter]:
         """
         Check for Loiter Events.
 
@@ -67,13 +69,12 @@ class LoiterService:
         enough. Ignore. If so, it's a valid loiter. Create a Loiter Object and
         add it to the list to be returned.
 
-        :param track: The track to analyze.
+        :param data: The track to analyze.
         :return: List[Loiter] list of loiter events found
         """
-
-        LOGGER.info(f"Detecting Loiters in {track.node_id}")
-        confirmed_loiters: List[Loiter] = []
-        prospective_loiters: Dict[str, List[PotentialLoiter]] = cls.find_prospective_loiters(track.points)
+        LOGGER.info(f"Detecting Loiters in {data.node_id}")
+        confirmed_loiters: list[Loiter] = []
+        prospective_loiters: dict[str, list[PotentialLoiter]] = self.find_prospective_loiters(data.points)
 
         # check for potential loiters that are long enough (> LOITER_MIN_TIME)
         # TODO could also check for loiters across geohashes that could be combined
@@ -83,18 +84,17 @@ class LoiterService:
                 time_diff = abs(potential_loiter.latest_time - potential_loiter.start_time)
                 if time_diff >= LOITER_MIN_TIME:
                     # if craft loitered long enough
-                    loiter_points: List[Point] = []
-                    for point in track.points:
+                    loiter_points: list[Point] = []
+                    for point in data.points:
                         # check for points within the loiter time window
-                        if (
-                            point.detection_time >= potential_loiter.start_time
-                            and point.detection_time <= potential_loiter.latest_time
+                        if (point.detection_time >= potential_loiter.start_time
+                                and point.detection_time <= potential_loiter.latest_time
                         ):
                             loiter_points.append(point)
 
                     geometry = LineString([point.coordinates for point in loiter_points]).wkt
                     loiter = Loiter(
-                        track.node_id,
+                        data.node_id,
                         point_geohash,
                         loiter_points[0].detection_time,
                         loiter_points[-1].detection_time,
@@ -108,7 +108,7 @@ class LoiterService:
         return confirmed_loiters
 
     @staticmethod
-    def find_prospective_loiters(points: List[Point]) -> Dict[str, List[PotentialLoiter]]:
+    def find_prospective_loiters(points: list[Point]) -> dict[str, list[PotentialLoiter]]:
         """
         Find Prospective Loiters.
 
@@ -120,7 +120,7 @@ class LoiterService:
         :param points: List of track points
         :return: Map of geohashes to a list of potential loiters within that geohash
         """
-        prospective_loiters: Dict[str, List[PotentialLoiter]] = {}
+        prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
 
@@ -132,7 +132,7 @@ class LoiterService:
 
             if point_geohash_low in prospective_loiters:
                 # existing geohash
-                last_loiters: List[PotentialLoiter] = prospective_loiters[point_geohash_low]
+                last_loiters: list[PotentialLoiter] = prospective_loiters[point_geohash_low]
                 last_loiter = last_loiters[-1]
                 time_diff = abs((last_loiter.latest_time - point.detection_time))
                 if time_diff <= VALID_OBSERVED_THRESHOLD_SECONDS:

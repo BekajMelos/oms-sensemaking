@@ -29,7 +29,7 @@ dependencies = [
     'python-dotenv==1.0.1',
     'shapely==2.0.4',
     'sqlalchemy==2.0.32',
-    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.1.0'
+    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.2.0'
 ]
 
 [project.optional-dependencies]

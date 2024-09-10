@@ -6,7 +6,7 @@ from datetime import datetime
 import shapely
 from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.geospatial.cotravel import CotravelService
+from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.models.geo import Point, Track
 
 
@@ -30,7 +30,7 @@ def test_cotravel_success():
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid.uuid4())
 
-    cotravels = CotravelService.detect_cotravels(track)
+    cotravels = CotravelSensemaker().execute(track)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]

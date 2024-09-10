@@ -1,77 +1,142 @@
-"""Provides a CLI for oms-sensemaking."""
-import asyncio
+"""
+Provides a CLI for oms-sensemaking.
+
+```
+$python -m oms_sensemaking -h
+usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
+
+A utility for analysing OMS data.
+
+options:
+  -h, --help          show this help message and exit
+  -V, --verbose       A flag to enable verbose logging.
+
+commands:
+  Run 'python -m oms_sensemaking COMMAND -h' for more information.
+
+  {geo,nlp,semantic}
+    geo               Run geospatial analytics.
+    nlp               Run NLP analytics.
+    semantic          Run semantic workflow.
+```
+
+Geospatial CLI
+==============
+
+Run the geospatial algorithms.
+
+```
+$ python -m oms_sensemaking geo -h
+usage: oms_sensemaking geo [-h] [-f FILENAME]
+
+options:
+  -h, --help            show this help message and exit
+  -f FILENAME, --filename FILENAME
+                        File to run on.
+```
+
+Natural Language Processing CLI
+===============================
+
+| **WARNING**: Not fully implemented
+
+```
+$python -m oms_sensemaking nlp -h
+usage: oms_sensemaking nlp [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+
+Semantic CLI
+============
+
+| **WARNING**: Not fully implemented
+
+```
+$python -m oms_sensemaking semantic -h
+usage: oms_sensemaking semantic [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+"""
 import logging
 import time
 from argparse import ArgumentParser, Namespace
 from logging.config import dictConfig
+from threading import Thread
 from typing import Optional
 
-import shapely
 from dotenv import load_dotenv
 
 load_dotenv()
 
+from oms_sdk import DEFAULT_ACM
+
 from oms_sensemaking.config import SETTINGS, LogConfig
-from oms_sensemaking.geospatial.cotravel import CotravelService
-from oms_sensemaking.geospatial.geo_sqs_listener import GeoSQSListener
-from oms_sensemaking.geospatial.loiter import LoiterService
-from oms_sensemaking.geospatial.similar_tracks import MostSimilarTrackService
-from oms_sensemaking.geospatial.tracks import TRACK_CREATED_EVENT, TrackCacheService, produce_attributes_from_csv
+from oms_sensemaking.core.controllers import SensemakerController, run_controller
+from oms_sensemaking.core.events import DummyObjectEventConsumer
+from oms_sensemaking.geospatial.controllers import (
+    CSVFileParser,
+    GeospatialSensemakerController,
+    GeoSQSListener,
+)
+from oms_sensemaking.nlp.controllers import NlpSensemakerController
+from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
 LOGGER = logging.getLogger(__name__)
 
 dictConfig(LogConfig().model_dump())  # initialize logging
 
 
-async def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
+def start_controller_and_wait(controller: SensemakerController) -> None:
+    """
+    Start a controller in a thread and waits for it to finish.
+
+    This function blocks the current thread. If a ``KeyboardInterrupt`` is
+    raised, the controller will be stopped.
+    """
+    controller_thread: Thread = Thread(target=run_controller, args=(controller,))
+
+    try:
+        controller_thread.start()
+        controller_thread.join()
+    except KeyboardInterrupt:
+        LOGGER.debug("Preparing to exit after KeyboardInterrupt")
+        controller.stop()
+
+        if controller_thread.is_alive():
+            LOGGER.warning("Thread status: %s", controller_thread.is_alive())
+            controller_thread.join()
+
+
+def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
     """
     Run the geospatial algorithms.
 
     :param filename: The path to a CSV input file.
     :param verbose: A number to indicate how verbose logging should be.
     """
-    q: asyncio.Queue = asyncio.Queue()
-    track_cache_service: TrackCacheService = TrackCacheService(q)
-
-    if verbose > 0:
-        LOGGER.debug("Registering verbose LineString logger")
-        track_cache_service.subscribe(
-            TRACK_CREATED_EVENT,
-            lambda track: LOGGER.debug(
-                shapely.LineString([point.coordinates for point in track.points])
-            ),
+    geo: GeospatialSensemakerController = GeospatialSensemakerController(
+        GeoSQSListener() if filename is None else CSVFileParser(
+            filename,
+            DEFAULT_ACM,
+            SETTINGS.user_dn
         )
+    )
 
-    if SETTINGS.detect_cotravels:
-        LOGGER.debug('Registering "co-travel" sensemaker')
-        track_cache_service.subscribe(TRACK_CREATED_EVENT, CotravelService.detect_cotravels)
-
-    if SETTINGS.detect_loiters:
-        LOGGER.debug('Registering "loiter" sensemaker')
-        track_cache_service.subscribe(TRACK_CREATED_EVENT, LoiterService.detect_loiters)
-
-    if SETTINGS.similar_tracks:
-        LOGGER.debug('Registering "similar tracks" sensemaker')
-        track_cache_service.subscribe(TRACK_CREATED_EVENT, MostSimilarTrackService.most_similar_track_node_ids)
-
-    if filename:
-        task = asyncio.create_task(produce_attributes_from_csv(q, filename))
-    else:
-        sqs_listener = GeoSQSListener(q)
-        task = asyncio.create_task(sqs_listener.listen())
-
-    try:
-        await track_cache_service.wait_for_events()
-        await task
-        await q.join()
-    finally:
-        LOGGER.warning("shutting down pub/sub")
-        track_cache_service.stop()
+    start_controller_and_wait(geo)
 
 
 def run_nlp() -> None:
     """Run the NLP algorithms."""
-    raise NotImplementedError("NLP is not implemented yet")
+    start_controller_and_wait(NlpSensemakerController(DummyObjectEventConsumer()))
+
+
+def run_semantic() -> None:
+    """Run the semantic algorithms."""
+    start_controller_and_wait(SemanticSensemakerController(DummyObjectEventConsumer()))
 
 
 def get_cli_parser() -> ArgumentParser:
@@ -87,11 +152,14 @@ def get_cli_parser() -> ArgumentParser:
     # geospatial subcommand
     geo_parser: ArgumentParser = subparsers.add_parser("geo", help="Run geospatial analytics.")
     geo_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
-    geo_parser.set_defaults(func=lambda args: asyncio.run(run_geospatial(args.filename, verbose=args.verbose)))
+    geo_parser.set_defaults(func=lambda args: run_geospatial(args.filename, verbose=args.verbose))
 
     # natural language processing subcommand
     nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
     nlp_parser.set_defaults(func=lambda args: run_nlp())
+
+    semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
+    semantic_parser.set_defaults(func=lambda args: run_semantic())
 
     return parser
 
@@ -124,4 +192,5 @@ def main() -> None:
     LOGGER.info(f"Program completed in {elapsed:0.5f} seconds.")
 
 
-main()
+if __name__ == "__main__":
+    main()

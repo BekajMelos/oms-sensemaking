@@ -1,24 +1,26 @@
-"""Provides co-travel Sensemaker."""
-
+"""Cotravel Sensemakers."""
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from geolib import geohash
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.track_entry import TrackEntry
-from oms_sensemaking.geospatial.tracks import BaseTrackService
+from oms_sensemaking.geospatial.tracks import TRACK_ENTRIES_DB
 from oms_sensemaking.models.geo import Point, Track
 
 LOGGER = logging.getLogger(__name__)
 
-
 VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=SETTINGS.valid_observed_threshold_seconds)
+
 MIN_COTRAVEL_DURATION_SECONDS = timedelta(seconds=SETTINGS.min_cotravel_duration_seconds)
+
 MIN_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.min_lag_lead_duration_seconds)
+
 MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.max_lag_lead_duration_seconds)
 
 
@@ -89,25 +91,20 @@ class Colocation:
         return self.__str__()
 
 
-class CotravelService:
-    """Service for detecting cotravel and lag/lead events."""
+class CotravelSensemaker(Sensemaker):
+    """A sensemaker for analyzing tracks for cotravelers."""
 
-    @classmethod
-    def detect_cotravels(cls, track: Track) -> List[PotentialMatch]:
-        """
-        Take a single track and queries for colocated observations.
+    def __init__(self) -> None:
+        super().__init__()
 
-        :param track: Track object to detect cotravels on
-        :return: List[PotentialMatch] list of CotravelEvents events found
-        """
+    def process_data(self, data: Track) -> list[PotentialMatch]:
+        LOGGER.info(f"Detecting Cotravels in {data.node_id}")
 
-        LOGGER.info(f"Detecting Cotravels in {track.node_id}")
-
-        cotravels: List[PotentialMatch] = []
-        matches: List[Colocation] = []
+        cotravels: list[PotentialMatch] = []
+        matches: list[Colocation] = []
 
         # find matching points (colocations) for each point in the track
-        for point in track.points:
+        for point in data.points:
             time = point.detection_time
 
             point_geohash_low = geohash.encode(
@@ -116,17 +113,17 @@ class CotravelService:
                 precision=SETTINGS.geohash_low
             )
 
-            track_entries: List[TrackEntry] = cls.get_points(
+            track_entries: list[TrackEntry] = self.get_points(
                 point_geohash_low,
-                track.node_id,
+                data.node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
                 (time + MAX_LAG_LEAD_DURATION_SECONDS),
                 time,
             )
 
             # Create colocations from track entries
-            match_points: List[Colocation] = [
-                Colocation(track.node_id, entry.track_node_id, point, entry) for entry in track_entries
+            match_points: list[Colocation] = [
+                Colocation(data.node_id, entry.track_node_id, point, entry) for entry in track_entries
             ]
 
             if matches:
@@ -145,17 +142,17 @@ class CotravelService:
         # determine cotravels on each list
         for _, colocations in groups.items():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
-            cotravels.extend(cls.determine_cotravels(sorted_entries))
+            cotravels.extend(self.determine_cotravels(sorted_entries))
 
         if cotravels:
             LOGGER.info(f"Found Cotravels: {cotravels}")
 
         return cotravels
 
-    @staticmethod
+    @classmethod
     def get_points(
-        geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
-    ) -> List[TrackEntry]:
+        cls, geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
+    ) -> list[TrackEntry]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
 
@@ -166,17 +163,43 @@ class CotravelService:
         :param target_time: time to sort the response by
         :return: List of cotravels
         """
-        return BaseTrackService.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
+        return cls.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
+
+    @classmethod
+    def find_location_by_geohash(
+        cls, geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
+    ) -> list[TrackEntry]:
+        """
+        Find points in other tracks that match the geohash of the given point within the time intervals.
+
+        This query:
+
+        SELECT distinct on (track_node_id) track_node_id, source_id, start_time
+                FROM tracks
+                WHERE geohash_low = :geohash and track_node_id != :trackNodeId and start_time > :minimumTime
+        and start_time < :maximumTime
+                ORDER BY track_node_id, abs(extract(epoch from(start_time - :targetTime)))
+
+        :param geohash_low: Geohash to match in the DB
+        :param track_node_id: Track node to ignore
+        :param min_time: Min allowed time to lag by
+        :param max_time: Max allowed time to lag by
+        :param target_time: time to sort the response by
+        :return: List of cotravels
+
+        """
+        # TODO actually hit the database
+        return TRACK_ENTRIES_DB.get(geohash_low, [])
 
     @staticmethod
-    def determine_cotravels(colocations: List[Colocation]) -> List[PotentialMatch]:
+    def determine_cotravels(colocations: list[Colocation]) -> list[PotentialMatch]:
         """
         Given the list of colocations, that they meet the time requirements.
 
         :param colocations: List of colocations
         :return: List of cotravels
         """
-        completed: List[PotentialMatch] = []
+        completed: list[PotentialMatch] = []
         to_add_to: Optional[PotentialMatch] = None
 
         for colocation in colocations:

@@ -8,6 +8,7 @@ from typing import Optional, Union
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
+from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Float, func, select
 from sqlalchemy.orm import (
@@ -22,6 +23,8 @@ from sqlalchemy.orm import (
 
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 
+SRID: int = 4326
+
 
 class OmsGeoMixin(MappedAsDataclass):
     """Declare OMS geospatial metadata."""
@@ -33,7 +36,7 @@ class OmsGeoMixin(MappedAsDataclass):
         # of an altitude/elevation field.
         #
         # https://github.com/geoalchemy/geoalchemy2/issues/157
-        Geometry('POINT', dimension=2, srid=4326, spatial_index=False),
+        Geometry('POINT', dimension=2, srid=SRID, spatial_index=False),
         nullable=False,
         unique=False,
         comment='The 2D location of the point.'
@@ -47,9 +50,13 @@ class OmsGeoMixin(MappedAsDataclass):
 
     @declared_attr
     def geohash(self) -> Mapped[str]:
-        return query_expression(
-            doc="A geocoded representation of the location."
-        )
+        """
+        Return a geocoded representation of the location.
+
+        This value is calculated when the data is queried and may be
+        null if the query was not configured to populate it.
+        """
+        return query_expression(doc="A geocoded representation of the location.")
 
     detection_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
@@ -60,17 +67,12 @@ class OmsGeoMixin(MappedAsDataclass):
 
     @cached_property
     def coordinates(self) -> list[float]:
-        """Returns the longitude, latitude, and optional altitude (in that order).
+        """
+        Return the longitude, latitude, and optional altitude (in that order).
 
         If altitude is provided the result will be a three element list, otherwise a 2 element list.
         """
-
-        # DB sometimes returns string and sometimes WKBElement so need this check to make this property consistent
-        try:
-            point_shape: ShapelyPoint = to_shape(self.location)
-        except AssertionError:
-            point_shape: ShapelyPoint = to_shape(WKTElement(self.location))  # type: ignore[no-redef]
-
+        point_shape: ShapelyPoint = to_shape(self.location)
         coordinates: list[float] = [point_shape.x, point_shape.y]
 
         if self.altitude is not None:
@@ -108,6 +110,15 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
 
     __tablename__: str = 'points'
 
+    def __post_init__(self):
+        """
+        Post initialization.
+
+        This function is responsible for formatting the location field in the
+        event that it is set as a string, rather than a specific GeoAlchemy type.
+        """
+        if isinstance(self.location, str):
+            self.location = WKTElement(self.location, srid=SRID)
 
     def __lt__(self, other: "Point"):
         return self.detection_time < other.detection_time
@@ -138,6 +149,10 @@ class Track:
         if point_count > 0:
             self.start_time = self.points[0].detection_time
             self.end_time = self.points[-1].detection_time
+
+    def to_linestring(self) -> LineString:
+        """Return a linestring representation of the track."""
+        return LineString([point.coordinates for point in self.points])
 
 
 def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]:
