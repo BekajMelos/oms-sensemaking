@@ -219,13 +219,13 @@ if __name__ == "__main__":
         "--ner-save-filepath",
         help="Location to save the ner .tsv file",
         type=str,
-        default="src/oms_sensemaking/nlp/training/data/ner_training.tsv",
+        default="src/oms_sensemaking/nlp/training/ner_training.tsv",
     )
     parser.add_argument(
         "--relation-save-filepath",
         help="Location to save the relations .tsv file",
         type=str,
-        default="src/oms_sensemaking/nlp/training/data/relations_training.tsv",
+        default="src/oms_sensemaking/nlp/training/relations_training.tsv",
     )
 
     # Grabbing the arguments and saving as variables
