@@ -67,7 +67,7 @@ class Attribute(OmsObject):
 class Node(OmsObject):
     """Represents a Node object in OMS."""
 
-    id: uuid
+    id: UUID4
     version: str # change to Long type
     acm: str # change to ACM type
     tags: list[str]
