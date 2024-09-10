@@ -7,7 +7,7 @@ from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 def test_process_data_empty_test():
     nlp_sensemaker = NlpSensemaker()
-    doc_id = 1
+    doc_id = "MadCow"
     text = ""
     data = SubmissionData(document_id=doc_id, text=text)
 
@@ -23,7 +23,7 @@ def test_process_data_empty_test():
 
 def test_process_data_normal_text():
     nlp_sensemaker = NlpSensemaker()
-    doc_id = 1
+    doc_id = "MadCow"
     text = (
         "EU rejects German call to boycott British lamb. Peter Blackburn BRUSSELS 1996-08-22 "
         "The European Commission said on Thursday it disagreed with German advice to consumers "
@@ -77,7 +77,7 @@ def test_annotation_processor():
         " said on Wednesday consumers should buy sheepmeat from countries other than Britain until the "
         "scientific advice was clearer."
     )
-    doc_id = 1
+    doc_id = "MadCow"
     data = SubmissionData(doc_id, text)
 
     annotation = nlp_sensemaker.use_corenlp_service(text)

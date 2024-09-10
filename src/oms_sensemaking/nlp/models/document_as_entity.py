@@ -1,6 +1,6 @@
 # TODO: Add attributes as we learn what is needed to submit with oms_sdk as a node
 class DocumentAsEntity:
-    def __init__(self, document_id: int, text: str):
+    def __init__(self, document_id: str, text: str):
         self.document_id = document_id
         self.text = text
         self.entity_type = "DOCUMENT"
