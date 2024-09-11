@@ -33,7 +33,7 @@ def test_process_doccano_result():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", ner_save_filepath="", relation_save_filepath="")
+    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -73,7 +73,7 @@ def test_process_doccano_result_no_relation():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", ner_save_filepath="", relation_save_filepath="")
+    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -98,7 +98,7 @@ def test_process_doccano_result_no_entities_relations():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", ner_save_filepath="", relation_save_filepath="")
+    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -113,7 +113,7 @@ def test_process_doccano_result_no_entities_relations():
 def test_tokenize_text():
     """Tests different cases of text to tokenize"""
 
-    tdp = TrainingDataProcessor(annotated_filepath="", ner_save_filepath="", relation_save_filepath="")
+    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
 
     text1 = "This is some sample text relating Entity1 to Entity2."
     text2 = ""
@@ -160,7 +160,7 @@ def test_map_entities_to_tokens():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", ner_save_filepath="", relation_save_filepath="")
+    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     # test_processed_result = tdp.process_doccano_result(test_doccano_result)
     tokenized_text_map = tdp.tokenize_text(text)
     mapped_entities = tdp.map_entities_to_tokens(test_doccano_result, tokenized_text_map)
