@@ -41,5 +41,5 @@ python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <
 ```
 
 ## Follow these steps to train a custom CoreNLP NER model
-1. To train a custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -prop src/oms_sensemaking/nlp/training/ner.prop`. The file `ner.prop` specifies the path to your training `.tsv` file, and the location to save your custom model to, which you can change if needed.
+1. To train a custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -prop src/oms_sensemaking/nlp/training/ner.prop`. The file `ner.prop` specifies the path to your training `.tsv` files with the `trainFileList` variable, and the location to save your custom model to as `serializeTo`, which you can change if needed. Edit these variables in `ner.prop` to customize the list of `.tsv` training files you want to use.
 2. To test your custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier src/oms_sensemaking/nlp/training/data/ner-model.ser.gz -testFile src/oms_sensemaking/nlp/training/<path-to-test-file>.tsv`. The output should show results that look like [these](https://tex.gerbil-cloud.ts.net:3000/oms/oms-bridge/src/branch/feature/sensemaking-exploration/omsb-sensemaker/docs/train_custom_model_for_corenlp.md#step-4-test-ner-model)
