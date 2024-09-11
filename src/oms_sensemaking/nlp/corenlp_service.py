@@ -6,16 +6,15 @@ class CoreNlpService:
     This class is for interacting with the Stanza CoreNLP client
     """
 
-    def __init__(self, props: dict = None, text: str = None):
+    def __init__(self, props: dict = None):
         if not props:
             self.props = {
                 "annotators": "tokenize, pos, lemma, ner, depparse, relation",
                 "relation.trainUsePipelineNER": "true",
             }
         else:
-            self.PROPS = props
-        self.text = text
-        self.client = CoreNLPClient(properties=self.PROPS, timeout=60000, memory="16G")
+            self.props = props
+        self.client = CoreNLPClient(properties=self.props, timeout=60000, memory="16G")
 
     def annotate_document(self, text: str):
         """

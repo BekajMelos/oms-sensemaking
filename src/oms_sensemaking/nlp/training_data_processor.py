@@ -76,7 +76,7 @@ class TrainingDataProcessor:
             text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
-        corenlp_client = CoreNlpService(props=self.properties, text=text)
+        corenlp_client = CoreNlpService(props=self.properties)
         annotation = corenlp_client.annotate_document(text)
         sentences = annotation.sentence  # grab the sentences from the annotation
 
