@@ -46,7 +46,11 @@ test = [
     'pytest-cov==5.0.0',
     'pytest-asyncio==0.23.8'
 ]
-build = ['build==1.2.1']
+
+build = [  # dependnecies for building the project wheel and docker image
+    'build==1.2.1',
+    'setuptools_scm==8.1'
+]
 
 
 [project.urls]

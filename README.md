@@ -94,7 +94,7 @@ password "your password here"
 
 | Variable  | Example  | Description |
 |:------------- |:---------------:| -------------:|
-| `LOG_LEVEL`  | DEBUG | Option to set log level |
+| `APP_LOG_LEVEL`  | DEBUG | Option to set log level |
 | `POSTGRES_USER` | postgres | The default PostgreSQL/PostGIS admin user |
 | `POSTGRES_PASSWORD` || The password for the default PostgreSQL/PostGIS admmin user |
 | `PGUSER` | appuser | [psql] The *regular* PostgreSQL/PostGIS user |
