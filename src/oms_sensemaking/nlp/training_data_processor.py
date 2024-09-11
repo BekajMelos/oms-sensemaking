@@ -162,7 +162,7 @@ class TrainingDataProcessor:
 
     def write_ner_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
-        save_filepath = save_directory + "ner_train_" + str(processed_result.doc_id) + ".tsv"
+        save_filepath = save_directory + "ner_" + str(processed_result.doc_id) + ".tsv"
         try:
             with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
@@ -178,7 +178,7 @@ class TrainingDataProcessor:
 
     def write_relation_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the Relation info from ProcessedResult to the specified Relation .tsv file"""
-        save_filepath = save_directory + "relation_train_" + str(processed_result.doc_id) + ".tsv"
+        save_filepath = save_directory + "relations_" + str(processed_result.doc_id) + ".tsv"
         try:
             with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
