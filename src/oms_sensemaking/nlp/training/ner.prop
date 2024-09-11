@@ -1,5 +1,6 @@
 #location of the training file
-trainFile = src/oms_sensemaking/nlp/training/ner_training.tsv
+#trainFile = src/oms_sensemaking/nlp/training/ner_training.tsv
+trainFileList = src/oms_sensemaking/nlp/training/data/ner_train_1.tsv,src/oms_sensemaking/nlp/training/data/ner_train_2.tsv
 #location where you would like to save (serialize to) your
 #classifier; adding .gz at the end automatically gzips the file,
 #making it faster and smaller

@@ -1,7 +1,7 @@
 import argparse
-import json
 import logging
 
+import pandas as pd
 from collections_extended import RangeMap
 
 from oms_sensemaking.nlp.corenlp_service import CoreNlpService
@@ -16,30 +16,34 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingDataProcessor:
-    def __init__(self, annotated_filepath: str, ner_save_filepath: str, relation_save_filepath: str):
+    def __init__(self, annotated_filepath: str, save_directory: str):
         self.annotated_filepath = annotated_filepath
-        self.ner_save_filepath = ner_save_filepath
-        self.relation_save_filepath = relation_save_filepath
+        self.save_directory = save_directory
         self.properties = {"annotators": "tokenize, pos, lemma, depparse"}
 
     def run_pipeline(self):
         """The entire pipeline of functions needed to convert .jsonl to proper .tsv format for CoreNLP model training"""
-        doccano_result = self.load_jsonl_file()
-        processed_doccano_result = self.process_doccano_result(doccano_result)
-        self.write_ner_result(processed_doccano_result, self.ner_save_filepath)
-        self.write_relation_result(processed_doccano_result, self.relation_save_filepath)
+        doccano_results = self.load_jsonl_file()
+        for result in doccano_results:
+            processed_doccano_result = self.process_doccano_result(result)
+            self.write_ner_result(processed_doccano_result, self.save_directory)
+            self.write_relation_result(processed_doccano_result, self.save_directory)
 
-    def load_jsonl_file(self) -> DoccanoResult:
-        """Opens the .jsonl Doccano-annotated file and formats the data as a DoccanoResult"""
+    def load_jsonl_file(self) -> list[DoccanoResult]:
+        """Opens the .jsonl Doccano-annotated file and formats the data as a list of DoccanoResults"""
         with open(self.annotated_filepath, "r") as file:
-            file_contents = json.loads(file.read())
-        return DoccanoResult(
-            file_contents["id"],
-            file_contents["text"],
-            {DoccanoEntity(entity) for entity in file_contents["entities"]},
-            {DoccanoRelation(relation) for relation in file_contents["relations"]},
-            file_contents["Comments"],
-        )
+            data = pd.read_json(file, lines=True, chunksize=1)
+            doccano_results = [
+                DoccanoResult(
+                    item["id"].values[0],
+                    item["text"].values[0],
+                    {DoccanoEntity(entity) for entity in item["entities"].values[0]},
+                    {DoccanoRelation(relation) for relation in item["relations"].values[0]},
+                    item["Comments"].values[0],
+                )
+                for item in data
+            ]
+        return doccano_results
 
     def process_doccano_result(self, doccano_result: DoccanoResult) -> ProcessedResult:
         """
@@ -156,10 +160,11 @@ class TrainingDataProcessor:
             processed_relation_set.add(processed_relation)
         return processed_relation_set
 
-    def write_ner_result(self, processed_result: ProcessedResult, ner_filepath: str):
+    def write_ner_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
+        save_filepath = save_directory + "ner_train_" + str(processed_result.doc_id) + ".tsv"
         try:
-            with open(ner_filepath, "w") as file:
+            with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
 
                 # Writing the NER label information for each entity to the file
@@ -171,10 +176,11 @@ class TrainingDataProcessor:
         except OSError:
             logger.error("Unable to open or create NER .tsv file.")
 
-    def write_relation_result(self, processed_result: ProcessedResult, relation_filepath: str):
+    def write_relation_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the Relation info from ProcessedResult to the specified Relation .tsv file"""
+        save_filepath = save_directory + "relation_train_" + str(processed_result.doc_id) + ".tsv"
         try:
-            with open(relation_filepath, "w") as file:
+            with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
 
                 # writing the relation details for each token
@@ -216,24 +222,17 @@ if __name__ == "__main__":
         default="",
     )
     parser.add_argument(
-        "--ner-save-filepath",
+        "--save-directory",
         help="Location to save the ner .tsv file",
         type=str,
-        default="src/oms_sensemaking/nlp/training/ner_training.tsv",
-    )
-    parser.add_argument(
-        "--relation-save-filepath",
-        help="Location to save the relations .tsv file",
-        type=str,
-        default="src/oms_sensemaking/nlp/training/relations_training.tsv",
+        default="src/oms_sensemaking/nlp/training/",
     )
 
     # Grabbing the arguments and saving as variables
     args = parser.parse_args()
     annotated_jsonl = args.annotated_filepath
-    ner_file = args.ner_save_filepath
-    relations_file = args.relation_save_filepath
+    save_directory = args.save_directory
 
     # Creating the TDP with args and running its pipeline
-    processor = TrainingDataProcessor(annotated_jsonl, ner_file, relations_file)
+    processor = TrainingDataProcessor(annotated_jsonl, save_directory)
     processor.run_pipeline()
