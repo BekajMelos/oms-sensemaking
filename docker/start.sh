@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 # start.sh --- Start script for FastAPI applications.
 # Adapted from https://github.com/tiangolo/uvicorn-gunicorn-docker/blob/master/docker-images/start.sh
+# This script will check for a script located at $APP_HOME/prestart.sh, which
+# can be used to perform actions before uvicorn starts the application.
 set -e
 
 if [ -f /app/app/main.py ]; then
@@ -30,6 +32,7 @@ fi
 cat /etc/motd
 
 # Start uvicorn
+VENVS_DIR=/opt/virtualenvs
 source $VENVS_DIR/app/bin/activate
 
 if [ -z "$RELOAD_APP" ]; then

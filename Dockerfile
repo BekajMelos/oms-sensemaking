@@ -45,7 +45,7 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details are not clear yet
 ARG ALPINE_VARIANT="alpine"
 
-ARG ALPINE_VERSION="3.19.3"
+ARG ALPINE_VERSION="3.20.2"
 
 # The docker image prefix. This should end in a forward slash (i.e. /).
 ARG DOCKER_PROXY="docker.io/library"
@@ -59,11 +59,13 @@ ARG USER_NAME=appuser
 
 ARG GROUP_NAME=${USER_NAME}
 
+ARG VENVS_DIR=/opt/virtualenvs
+
 ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
 
-ENV VENVS_DIR=/opt/virtualenvs
+LABEL maintainer="OMS Team <oms@blackcape.io>"
 
 WORKDIR ${APP_HOME}
 
@@ -103,9 +105,13 @@ FROM python-base AS app
 
 ARG APP_VERSION="0.0.0"
 
-#ARG PYTHON_VERSION="3.12.2"
+# disable pip cache
+ARG PIP_NO_CACHE_DIR=1
 
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
+# disable pip's progress bar
+ARG PIP_PROGRESS_BAR=off
+
+ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -141,7 +147,7 @@ apk add --no-cache geos postgresql-client
 # initialize virtual environment
 python3 -m venv --prompt app $VENVS_DIR/app
 source $VENVS_DIR/app/bin/activate
-pip install --upgrade --no-cache-dir --progress-bar off pip wheel
+pip install --upgrade pip wheel
 
 # prepare build dependencies
 apk add --no-cache --virtual .build-deps \
@@ -152,7 +158,7 @@ apk add --no-cache --virtual .build-deps \
   python3-dev
 
 # install app
-pip install --no-cache-dir --progress-bar off .
+pip install .
 
 # configure app
 mv $APP_HOME/docker/start.sh /
@@ -166,7 +172,7 @@ alembic upgrade head --sql > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_N
 # configure extras
 apk add --no-cache --virtual .extra-deps curl figlet
 curl -o /usr/share/figlet/fonts/graffiti.flf http://www.figlet.org/fonts/graffiti.flf
-chmod 644 /usr/share/figlet/graffiti.flf
+chmod 644 /usr/share/figlet/fonts/graffiti.flf
 mv /etc/motd /etc/motd-alpine
 figlet -w 90 -f graffiti "OMS SenseMaking" > /etc/motd
 rm /usr/share/figlet/fonts/graffiti.flf
@@ -177,3 +183,4 @@ rm -rf /var/cache/apk/*
 EOF
 
 CMD ["/start.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
