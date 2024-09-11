@@ -183,4 +183,3 @@ rm -rf /var/cache/apk/*
 EOF
 
 CMD ["/start.sh"]
-ENTRYPOINT ["/entrypoint.sh"]
