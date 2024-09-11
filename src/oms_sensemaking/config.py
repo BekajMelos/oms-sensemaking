@@ -19,7 +19,7 @@ class LogConfig(BaseSettings):
     log_format: str = "{asctime:<20s}{levelname:<8s}{name} {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
-    log_level: str = "WARNING"
+    log_level: str = Field("WARNING", alias='app_log_level')
 
     handlers: dict[str, dict] = {
         "default": {
