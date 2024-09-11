@@ -12,29 +12,44 @@ PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 class LogConfig(BaseSettings):
     """Logging configuration to be set for the server."""
 
-    logger_name: str = "oms_sensemaker"
-    log_format: str = "{asctime:<20s}{levelname:<8s}{name} {message}"
-    log_level: str = "DEBUG"
-
     version: int = 1
     disable_existing_loggers: bool = False
-    formatters: dict[str, dict] = {
-        "simple": {
-            "format": "[%(asctime)s %(levelname)-7s] %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S"
-        },
-        "standard": {
-            "format": "[%(asctime)s - %(name)s - %(levelname)s - %(funcName)20s() ] %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-    }
+    logger_name: str = "oms_sensemaker"
+    log_date_format: str = "%Y-%m-%d %H:%M:%S"
+    log_format: str = "{asctime:<20s}{levelname:<8s}{name} {message}"
+    log_format_class: str = "logging.Formatter"
+    log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
+    log_level: str = "WARNING"
+
     handlers: dict[str, dict] = {
         "default": {
-            "formatter": "simple",
+            "formatter": "custom",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stderr"
         }
     }
+
+    @computed_field  # type: ignore
+    @property
+    def formatters(self) -> dict[str, dict]:
+        """
+        Computed formatters field based on other parameters.
+
+        The default configuration use the "{" style for logging formats.
+
+        Examples:
+            simple:   [{asctime}] {levelname:7s} {message}
+            standard: [{asctime} - {name} - {levelname} - {funcName:20s} ] {message}
+            default:  {asctime:<20s}{levelname:<8s}{name} {message}
+        """
+        return {
+            "custom": {
+                "()": self.log_format_class,
+                "format": self.log_format,
+                "datefmt": self.log_date_format,
+                "style": self.log_format_style
+            }
+        }
 
     @computed_field  # type: ignore
     @property
@@ -52,7 +67,7 @@ class LogConfig(BaseSettings):
                 "propagate": True
             },
             "oms_sdk": {
-                "level": "DEBUG"
+                "level": self.log_level
             },
             "boto3": {
                 "level": "INFO"
