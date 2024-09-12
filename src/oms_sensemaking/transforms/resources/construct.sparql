@@ -1,0 +1,48 @@
+PREFIX src: <https://blackcape.io/source-model/osmb-midb/node#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
+PREFIX dico: <http://schema.dia.mil/DefenseIntelligenceCoreOntology/>
+CONSTRUCT {
+
+    ?object_instance a dico:MilitaryOrganization ;
+        dico:hasAllegianceTo ?cny.
+
+    ?cny a cco:Country; 
+        cco:described_by ?dice_cny_code ; 
+        rdfs:label ?cny_label. 
+    ## Country Code Identifier (FIPS10 code)
+    ?dice_cny_code a dico:CountryCode; cco:has_text_value ?cny_cd.
+}
+WHERE
+{
+    ?r a src:Record; src:_id ?object_id.
+    BIND(URI(CONCAT("http://blackcape.io/ontology/nodes/", ?object_id )) as ?object_instance)
+    ##BIND(CONCAT("http://blackcape.io/ontology/reification/", ?reification ) as ?object_instance)
+    OPTIONAL {
+        ?r src:_source_allegiance_fips10 ?_source_allegiance_fips10 .
+        ?r src:_source_allegiance_gec ?_source_allegiance_gec .
+        ?r src:_source_allegiance_iso2 ?_source_allegiance_iso2 .
+        ?r src:_source_allegiance_iso3 ?_source_allegiance_iso3 .
+        ?r src:_source_allegiance_isoNR ?_source_allegiance_isoNR .
+        ?r src:_source_allegiance_original ?_source_allegiance_original .
+        ?r src:_source_metadata_MIDB_Affiliation ?_source_metadata_MIDB_Affiliation . 
+        ?r src:_source_metadata_MIDB_Affiliation_translated ?_source_metadata_MIDB_Affiliation_translated .            
+        ?r src:_source_hierarchy_category ?_source_hierarchy_category .
+        ?r src:_source_attributes_domain ?_source_attributes_domain .
+    }
+    OPTIONAL {
+        ?r src:_source_allegiance_fullName ?_source_allegiance_fullName .
+        bind (URI(concat("http://blackcape.io/ontology/country/",?_source_allegiance_fullName)) as ?cny)
+        bind (STRDT(concat("Country of ",?_source_allegiance_fullName), xsd:string) as ?cny_label)
+
+    }
+    OPTIONAL {
+        ?r src:_source_allegiance_fips10 ?_source_allegiance_fips10 .
+        bind(strdt(?_source_allegiance_fips10 , xsd:string) as ?cny_cd)
+        bind (URI(concat("http://blackcape.io/ontology/non_name_id_country/",?cny_cd)) as ?dice_cny_code)            
+        bind (URI(concat("http://blackcape.io/ontology/country/",?_source_allegiance_fullName)) as ?cny)
+    }      
+    OPTIONAL {
+        ?r src:_source_metadata_MIDB_OperStatus ?_source_metadata_MIDB_OperStatus.
+    }
+}
