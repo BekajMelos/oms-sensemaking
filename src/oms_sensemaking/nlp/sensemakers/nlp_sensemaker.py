@@ -21,7 +21,7 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> str:
         """Accesses the CoreNlpService to annotate the text"""
-        corenlp_service = CoreNlpService()
+        corenlp_service = CoreNlpService(props={})
         annotated_doc = corenlp_service.annotate_document(text=document)
         return annotated_doc
 
