@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 
 import pandas as pd
 from collections_extended import RangeMap
@@ -116,14 +117,13 @@ class TrainingDataProcessor:
 
             # When there are multiple entities/tokens per label, need the result of the following:
             token_count = len(token_list)
-            for i in range(token_count):
-                current_token = token_list[i]
+            for token_idx, token in enumerate(token_list):
                 current_label = doccano_entity.label
 
                 # Setting the label prefix based on what number token of a multi-token label the current token is
-                if i == 0:
+                if token_idx == 0:
                     label_prefix = "B-"
-                elif i == token_count - 1:
+                elif token_idx == token_count - 1:
                     label_prefix = "E-"
                 else:
                     label_prefix = "I-"
@@ -132,12 +132,12 @@ class TrainingDataProcessor:
                 updated_label = current_label if token_count == 1 else label_prefix + current_label
 
                 # Adding the token with the updated label back to the RangeMap
-                current_token.label = updated_label
-                doc_token_range_map.delete(current_token.start_offset, current_token.end_offset)
-                doc_token_range_map.set(current_token, current_token.start_offset, current_token.end_offset)
+                token.label = updated_label
+                doc_token_range_map.delete(token.start_offset, token.end_offset)
+                doc_token_range_map.set(token, token.start_offset, token.end_offset)
 
                 # Update the dict of tokens by id
-                entity_token_map[doccano_entity.id] = current_token
+                entity_token_map[doccano_entity.id] = token
 
         return entity_token_map
 
@@ -162,7 +162,10 @@ class TrainingDataProcessor:
 
     def write_ner_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
-        save_filepath = save_directory + "ner_" + str(processed_result.doc_id) + ".tsv"
+        ner_save_directory = save_directory + "/ner/"
+        if not os.path.exists(ner_save_directory):
+            os.makedirs(ner_save_directory)
+        save_filepath = ner_save_directory + "ner_" + str(processed_result.doc_id) + ".tsv"
         try:
             with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
@@ -178,7 +181,10 @@ class TrainingDataProcessor:
 
     def write_relation_result(self, processed_result: ProcessedResult, save_directory: str):
         """Formats and saves the Relation info from ProcessedResult to the specified Relation .tsv file"""
-        save_filepath = save_directory + "relations_" + str(processed_result.doc_id) + ".tsv"
+        relation_save_directory = save_directory + "/relation/"
+        if not os.path.exists(relation_save_directory):
+            os.makedirs(relation_save_directory)
+        save_filepath = relation_save_directory + "relations_" + str(processed_result.doc_id) + ".tsv"
         try:
             with open(save_filepath, "w") as file:
                 token_refs = processed_result.doc_token_map
