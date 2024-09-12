@@ -4,24 +4,31 @@
 # Generated Files
 # --------------------
 build
-data
 dist
 htmlcov
-venv
-.venv
-.coverage
-__pycache__
-.mypy_cache
-.pytest_cache
-.ruff_cache
-pytest.xml
-*.egg-info
+**/*.egg-info
 *.eggs
 *.log
 *.pyc
 *.pyd
 *.pyo
+pytest.xml
+__pycache__
 
+
+# --------------------
+# Project files
+# --------------------
+data
+docker*
+!docker/*.sh
+docs
+pki
+scripts
+tests
+venv
+.*
+#!.git
 
 
 # --------------------
@@ -41,6 +48,9 @@ pytest.xml
 # Local Configuration
 # --------------------
 .env
+.netrc
+.pre-commit-config.yaml
+.python-version
 
 
 # --------------------

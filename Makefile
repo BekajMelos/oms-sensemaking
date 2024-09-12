@@ -32,7 +32,10 @@ format:  ## Run the formatter
 	ruff format
 
 build-docker:  ## Build docker image
-	docker build --no-cache -t oms_sensemaking:latest --secret id=mynetrc,src=$${HOME}/.netrc .
+	docker build --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) --no-cache -t oms_sensemaking:latest --secret id=mynetrc,src=$${HOME}/.netrc .
+
+version:  ## Display the project version
+	@echo $(shell source .venv/bin/activate && python -m setuptools_scm)
 
 up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make dockstart
 	docker compose up -d ${DOCKER_FLAGS}
