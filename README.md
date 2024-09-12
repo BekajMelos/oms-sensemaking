@@ -222,6 +222,9 @@ and store the results in the *dist* directory.
 > ***NOTE***: The project version is determined dynamically based on the
 > project's git repository using [setuptools-scm].
 
+## Installing CoreNLP and Stanza, using the TrainingDataProcessor, and Training a CoreNLP Model
+
+To train a custom CoreNLP model, or generate the data needed to train the model, follow the instructions in [train_corenlp_model.md].
 
 [Makefile]: ./Makefile
 [pyproject.toml]: ./pyproject.toml
@@ -240,4 +243,5 @@ and store the results in the *dist* directory.
 [.netrc]: https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html
 [oms-sdk]: https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python
 [PEP 508]: https://peps.python.org/pep-0508/
+[train_corenlp_model.md]: ./src/oms_sensemaking/nlp/docs/train_corenlp_model.md
 
