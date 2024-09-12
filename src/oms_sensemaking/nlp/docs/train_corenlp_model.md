@@ -40,6 +40,10 @@ You can find the official steps on the [Doccano github](https://github.com/docca
 python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <path-to-jsonl-file> --save-directory <path-to-save-directory>
 ```
 
-## Follow these steps to train a custom CoreNLP NER model
-1. To train a custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -prop src/oms_sensemaking/nlp/training/ner.prop`. The file `ner.prop` specifies the path to your training `.tsv` files with the `trainFileList` variable (comma-separated with no spaces), and the location to save your custom model to as `serializeTo`, which you can change if needed to use as few or as many `.tsv` files for training as needed. Edit these variables in `ner.prop` to customize the list of `.tsv` training files you want to use.
-2. To test your custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier src/oms_sensemaking/nlp/training/data/ner-model.ser.gz -testFile src/oms_sensemaking/nlp/training/<path-to-test-file>.tsv`. The output should show results that look like [these](https://tex.gerbil-cloud.ts.net:3000/oms/oms-bridge/src/branch/feature/sensemaking-exploration/omsb-sensemaker/docs/train_custom_model_for_corenlp.md#step-4-test-ner-model)
+## Follow these steps to train and test a custom CoreNLP NER model
+1. To train a custom CoreNLP NER model, after generating `.tsv` files, the first thing you should do is update [ner.prop], which specifies the path to your training `.tsv` files with the `trainFileList` variable (comma-separated with no spaces). You can change it to use as few or as many `.tsv` files for training as needed.
+2. Next, update the location you want to save your custom model to by modifying `serializeTo`.
+3. Finally, run `java edu.stanford.nlp.ie.crf.CRFClassifier -prop src/oms_sensemaking/nlp/training/ner.prop`. This will generate a `.ser.gz` file that contains your trained model at the location specified by `serializeTo`. 
+4. To test your custom CoreNLP NER model, run `java edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier <path-to-model>.ser.gz -testFile <path-to-test-file>.tsv`. The output should show results that look like [these](https://tex.gerbil-cloud.ts.net:3000/oms/oms-bridge/src/branch/feature/sensemaking-exploration/omsb-sensemaker/docs/train_custom_model_for_corenlp.md#step-4-test-ner-model)
+
+[ner.prop]: ../training/ner.prop
