@@ -8,9 +8,9 @@ class ProcessedResult:
     def __init__(
         self,
         doc_id: int,
-        doc_token_map: RangeMap = None,
-        entity_token_ref_map: dict[int, list[TokenReference]] = None,
-        processed_relation_set: set[ProcessedRelation] = None,
+        doc_token_map: RangeMap,
+        entity_token_ref_map: dict[int, TokenReference],
+        processed_relation_set: set[ProcessedRelation],
     ):
         self.doc_id = doc_id
         self.doc_token_map = doc_token_map

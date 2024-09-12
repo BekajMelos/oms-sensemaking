@@ -55,21 +55,21 @@ class TrainingDataProcessor:
 
         # Tokenize the entities and relations
         text = doccano_result.text
-        processed_result = ProcessedResult(doccano_result.id)
 
         # [Part 1]
         doc_token_range_map = self.tokenize_text(text)
-        processed_result.doc_token_map = doc_token_range_map
 
         # [Part 2]
         # Build the map of entity ID to token
         entity_token_map = self.map_entities_to_tokens(doccano_result, doc_token_range_map)
-        processed_result.entity_token_ref = entity_token_map
 
         # [Part 3]
         # Go through relations and grab necessary info to add to processed result
         processed_relation_set = self.link_relations(doccano_result, entity_token_map)
-        processed_result.processed_relation_set = processed_relation_set
+
+        processed_result = ProcessedResult(
+            doccano_result.id, doc_token_range_map, entity_token_map, processed_relation_set
+        )
 
         return processed_result
 
@@ -105,7 +105,7 @@ class TrainingDataProcessor:
 
     def map_entities_to_tokens(
         self, doccano_result: DoccanoResult, doc_token_range_map: RangeMap
-    ) -> dict[int, list[TokenReference]]:
+    ) -> dict[int, TokenReference]:
         """Going through the DoccanoResult entities and mapping them to tokens"""
         entity_token_map = {}
         for doccano_entity in doccano_result.entities:
@@ -142,7 +142,7 @@ class TrainingDataProcessor:
         return entity_token_map
 
     def link_relations(
-        self, doccano_result: DoccanoResult, entity_token_map: dict[int, list[TokenReference]]
+        self, doccano_result: DoccanoResult, entity_token_map: dict[int, TokenReference]
     ) -> set[ProcessedRelation]:
         """Going through the DoccanoResult relations and mapping Relations between tokens"""
         processed_relation_set = set({})
