@@ -14,10 +14,10 @@ sample_text = (
     "scientific advice was clearer."
 )
 sample_doc_id = "MadCow"
+nlp_sensemaker = NlpSensemaker()
 
 
 def test_process_data_empty_test():
-    nlp_sensemaker = NlpSensemaker()
     data = SubmissionData(document_id=sample_doc_id, text=empty_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -31,7 +31,6 @@ def test_process_data_empty_test():
 
 
 def test_process_data_normal_text():
-    nlp_sensemaker = NlpSensemaker()
     data = SubmissionData(document_id=sample_doc_id, text=sample_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -43,23 +42,18 @@ def test_process_data_normal_text():
 
 
 def test_use_service_empty_doc():
-    nlp_sensemaker = NlpSensemaker()
-
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
     assert not annotation.sentence
 
 
 def test_use_service_normal_doc():
-    nlp_sensemaker = NlpSensemaker()
-
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
     assert annotation.sentence
 
 
 def test_annotation_processor():
-    nlp_sensemaker = NlpSensemaker()
     data = SubmissionData(sample_doc_id, sample_text)
 
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
