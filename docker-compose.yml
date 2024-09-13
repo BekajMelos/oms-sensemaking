@@ -4,28 +4,41 @@ services:
       context: .
       secrets:
         - mynetrc
-    volumes:
-      - .:/app
     ports:
       - 5001:80
     environment:
+      # AWS
+      AWS_ENDPOINT_URL: http://localstack:4566
+      #SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+
+      # database config
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
+      PGHOST: postgis
+
+      # misc.
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
-      RELOAD_APP: 1
+      RELOAD_APP: ${RELOAD_APP:-1}
+    volumes:
+      - .:/app
+      - ./etc/pki/test10.key:/opt/common/pki/service.private
+      - ./etc/pki/test10.pem:/opt/common/pki/service.public
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: on-failure
+    depends_on:
+      - localstack
+      - postgis
 
   postgis:
     image: postgis/postgis:16-3.4-alpine
     platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
     ports:
-      - 5433:5432
+      - 5432:5432
     environment:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -54,15 +67,18 @@ services:
     depends_on:
       - postgis
 
-  graphql:
-    image: tex.gerbil-cloud.ts.net:5000/ado/services/oms-bridge/oms-bridge:${OMSB_VERSION}-latest
-    container_name: graphql
-    env_file:
-      - .env
+  # NOTE: The omsb container should not require the "ess" or "guide" services,
+  #       but it may try to resolve the hostnames, which results in a stack
+  #       trace being logged. This can be ignored, since the purpose of this
+  #       configuration is to provide a minimal omsb for development & testing.
+  omsb2:
+    image: tex.gerbil-cloud.ts.net:5000/ado/services/oms-bridge/oms-bridge:${OMSB_VERSION}
     environment:
-      - OMSB_SERVICE=api
-      - OMSB_CORS_ALLOWED_ORIGIN=https://localhost
-      - OMSB_ENABLE_LIQUIBASE=true
+      # PostgreSQL/PostGIS variables
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD:
+    env_file:
+      - ./etc/omsb.env
     volumes:
       - ./etc/pki:/opt/oms-bridge/pki
       - ./etc/whitelist.txt:/opt/oms-bridge/etc/whitelist.txt
@@ -71,13 +87,13 @@ services:
       - "8010:8000"
       - "8020:8443"
     depends_on:
-      - oms_postgres
+      - postgis
       - localstack
     profiles:
       - local
 
   localstack:
-    container_name: localstack
+    hostname: localstack
     image: localstack/localstack:3.4.0
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
@@ -85,24 +101,15 @@ services:
     environment:
       - DEBUG=${DEBUG-}
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./docker/localstack:/etc/localstack/init/ready.d"
 
-  zk:
-    container_name: zk
-    hostname: zk
-    image: zookeeper:3.4.9
-    restart: always
-    ports:
-      - "2181:2181"
-    profiles:
-      - local
-
   aac2:
-    hostname: aac2
-    container_name: aac2
+#    hostname: aac2
+#    container_name: aac2
     image: tex.gerbil-cloud.ts.net:5000/dpaas-internal/aac/ent-aac-service:2.1.15.3
     command: sh -c "./entrypoint.sh"
     volumes:
@@ -121,93 +128,10 @@ services:
     profiles:
       - local
 
-  ess2:
-    container_name: ess2
-    hostname: ess2
-    image: tex.gerbil-cloud.ts.net:5000/ado/services/elasticsearch-security-service:2.1.9-36
-    volumes:
-      - ./etc/pki:/opt/common/pki
-    env_file:
-      - docker/meme/docker.env
-    environment:
-      JAVA_TOOL_OPTIONS: -XX:+UseSerialGC
-      LOG_LEVEL: all
-      DEBUG: "false"
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_TEST_USER_DN: CN=jade.meme.bia-boeing.com | CN=twl-server-generic2, OU=DAE, OU=DIA, OU=twl-server-generic2, O=U.S. Government, C=US
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_TEST_SSL_CLIENT_S_DN: CN=jade.meme.bia-boeing.com | CN=twl-server-generic2, OU=DAE, OU=DIA, OU=twl-server-generic2, O=U.S. Government, C=US
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_AUDIT_AUDITEDACTIONS: "DO_NOT_AUDIT_ACTION"
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_DISCOVERY_ES_PROTOCOL: http
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_AAC_PORT: 3000
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_AAC_HOST: aac2
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_AAC_PROTOCOL: http
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_AAC_PATH: /
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_ELASTICSEARCH_SNIPPETTYPE: elasticsearch5
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_HTTP_CLIENT_MAXRESPONSESIZE: 10
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_MAXREQUESTSIZE: 15
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_ENABLELEGACYADMINCONTROLS: false
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_DISCOVERY_ES_ESHOSTS: elasticsearch7:9200
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_DISCOVERY_ES_ENDPOINT: /
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_DISCOVERY_ES_CHECKCERTIFICATE: false
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_ZK_ZOOKEEPERCONNECTION: zk:2181
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_ZK_ANNOUNCEMENTPOINT: /services/ess/2.1
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_HTTPPORT: :8000
-      GOV_IC_CTE_ELASTICSEARCH_CONFIG_SERVER_HTTPSPORT: :8889
-    ports:
-      - "8888:8000" #HTTP
-      - "7399:8889" #HTTPS
-      - "4000:4000"
-      - "10000:9990"
-    depends_on:
-      - zk
-      - aac2
-      - elasticsearch7
-    profiles:
-      - local
-
-  elasticsearch7:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
-    container_name: elasticsearch7
-    environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    ports:
-      - 9200:9200
-      - 9300:9300
-    restart: always
-    profiles:
-      - local
-
-  es7_config:
-    image: tex.gerbil-cloud.ts.net:5000/ado/services/elasticsearch-security-service:2.1.9-36
-    container_name: es7_config
-    volumes:
-      - ./etc/es/v7/omsb-node-document-index.json:/omsb-node-document-index.json
-    links:
-      - elasticsearch7
-    depends_on:
-      - elasticsearch7
-    command: >
-      bash -c '
-        until curl -sS "http://elasticsearch7:9200/_cat/health?h=status" | grep -q "green\|yellow"; do
-          sleep 1
-        done
-        curl -X PUT "http://elasticsearch7:9200/omsb_node_index" -H "Content-Type: application/json" -d @/omsb-node-document-index.json
-      '
-    profiles:
-      - local
-
 volumes:
-  postgis:
+  localstack:
   pgadmin:
+  postgis:
 
 secrets:
   mynetrc:

@@ -25,7 +25,7 @@ lint-stats:
 local: ## Start oms-sensemaking locally
 	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
 
-local-env: ##start oms-sensemaking with supporting oms env containers
+local-env: ## start oms-sensemaking with supporting oms env containers
 	docker compose --profile local up -d
 
 fix:  ## Run linter and apply fixes
@@ -40,7 +40,7 @@ build-docker:  ## Build docker image
 version:  ## Display the project version
 	@echo $(shell source .venv/bin/activate && python -m setuptools_scm)
 
-up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make dockstart
+up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
 	docker compose up -d ${DOCKER_FLAGS}
 
 down: ## Stop oms-sensemaking docker environment
@@ -59,5 +59,8 @@ distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
 nuke: down
-	@docker volume rm -f oms-sensemaking_postgis
+	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
+	@docker volume rm -f oms-sensemaking_postgis
+	@docker volume rm -f oms-sensemaking_zookeeper_data
+	@docker volume rm -f oms-sensemaking_zookeeper_datalog

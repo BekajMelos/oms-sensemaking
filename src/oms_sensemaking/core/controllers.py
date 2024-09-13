@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from threading import Event, Lock
+from threading import Event, Lock, Thread
 
 from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -133,3 +133,24 @@ def run_controller(controller: SensemakerController) -> None:
         if controller.is_running:
             LOGGER.warning("A controller was left running. Stopping it now.")
             controller.stop()
+
+
+def start_controller_and_wait(controller: SensemakerController) -> None:
+    """
+    Start a controller in a thread and waits for it to finish.
+
+    This function blocks the current thread. If a ``KeyboardInterrupt`` is
+    raised, the controller will be stopped.
+    """
+    controller_thread: Thread = Thread(target=run_controller, args=(controller,))
+
+    try:
+        controller_thread.start()
+        controller_thread.join()
+    except KeyboardInterrupt:
+        LOGGER.debug("Preparing to exit after KeyboardInterrupt")
+        controller.stop()
+
+        if controller_thread.is_alive():
+            LOGGER.warning("Thread status: %s", controller_thread.is_alive())
+            controller_thread.join()
