@@ -77,7 +77,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD:
     env_file:
-      - ./etc/omsb.env
+      - ./docker/omsb/omsb.env
     volumes:
       - ./etc/pki:/opt/oms-bridge/pki
       - ./etc/whitelist.txt:/opt/oms-bridge/etc/whitelist.txt
