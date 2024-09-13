@@ -145,7 +145,7 @@ apk upgrade
 apk add --no-cache geos postgresql-client
 
 # install jq for performing healthchecks
-apk add --no-cache jq
+apk add --no-cache jq curl
 
 # initialize virtual environment
 python3 -m venv --prompt app $VENVS_DIR/app

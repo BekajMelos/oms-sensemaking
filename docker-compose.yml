@@ -31,7 +31,6 @@ services:
       retries: 5
     restart: on-failure
     depends_on:
-      - localstack
       - postgis
 
   postgis:
@@ -106,6 +105,8 @@ services:
       - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./docker/localstack:/etc/localstack/init/ready.d"
+    profiles:
+      - local
 
   aac2:
 #    hostname: aac2
