@@ -61,6 +61,7 @@ options:
   -h, --help  show this help message and exit
 ```
 """
+
 import logging
 import time
 from argparse import ArgumentParser, Namespace
@@ -82,7 +83,7 @@ from oms_sensemaking.geospatial.controllers import (
     GeospatialSensemakerController,
     GeoSQSListener,
 )
-from oms_sensemaking.nlp.controllers import NlpSensemakerController
+from oms_sensemaking.nlp.controllers import NlpSensemakerController, TextFileReader
 from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
 LOGGER = logging.getLogger(__name__)
@@ -119,19 +120,17 @@ def run_geospatial(filename: Optional[str] = None, verbose: int = 0) -> None:
     :param verbose: A number to indicate how verbose logging should be.
     """
     geo: GeospatialSensemakerController = GeospatialSensemakerController(
-        GeoSQSListener() if filename is None else CSVFileParser(
-            filename,
-            DEFAULT_ACM,
-            SETTINGS.user_dn
-        )
+        GeoSQSListener() if filename is None else CSVFileParser(filename, DEFAULT_ACM, SETTINGS.user_dn)
     )
 
     start_controller_and_wait(geo)
 
 
-def run_nlp() -> None:
+def run_nlp(filename: Optional[str] = None) -> None:
     """Run the NLP algorithms."""
-    start_controller_and_wait(NlpSensemakerController(DummyObjectEventConsumer()))
+    # TODO : Add another event consumer or something else for receiving API calls
+    nlp: NlpSensemakerController = NlpSensemakerController(TextFileReader(filename, DEFAULT_ACM, SETTINGS.user_dn))
+    start_controller_and_wait(nlp)
 
 
 def run_semantic() -> None:
@@ -156,7 +155,8 @@ def get_cli_parser() -> ArgumentParser:
 
     # natural language processing subcommand
     nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
-    nlp_parser.set_defaults(func=lambda args: run_nlp())
+    nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
+    nlp_parser.set_defaults(func=lambda args: run_nlp(args.filename))
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
     semantic_parser.set_defaults(func=lambda args: run_semantic())
