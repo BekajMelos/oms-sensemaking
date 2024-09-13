@@ -25,12 +25,12 @@ GRANT ALL PRIVILEGES ON DATABASE oms_sensemaking_test TO appuser;
 GRANT ALL ON SCHEMA public TO appuser;
 
 --------------------
--- OMS Database
+-- OMSB Database
 --------------------
 -- create application database
 CREATE DATABASE omsb_db TEMPLATE template_postgis;
 
 -- grant privileges
-GRANT ALL PRIVILEGES ON DATABASE oms_sensemaking_test TO appuser;
-\c oms_sensemaking_test postgres
+GRANT ALL PRIVILEGES ON DATABASE omsb_db TO appuser;
+\c omsb_db postgres
 GRANT ALL ON SCHEMA public TO appuser;
