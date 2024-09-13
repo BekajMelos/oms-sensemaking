@@ -1,20 +1,15 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, eq=True)
 class DoccanoRelation:
-    def __init__(self, *args):
-        if len(args) > 1:
-            id, from_id, to_id, type = args[0], args[1], args[2], args[3]
-            self.id = id
-            self.from_id = from_id
-            self.to_id = to_id
-            self.type = type
-        elif isinstance(args[0], dict):
-            doccano_relation = args[0]
-            self.id = doccano_relation["id"]
-            self.from_id = doccano_relation["from_id"]
-            self.to_id = doccano_relation["to_id"]
-            self.type = doccano_relation["type"]
+    id: int
+    from_id: int
+    to_id: int
+    type: str
 
-    def __str__(self):
-        return str(self.__dict__)
-
-    def __repr__(self):
-        return self.__str__()
+    def __init__(self, doccano_relation: dict):
+        object.__setattr__(self, "id", doccano_relation["id"])
+        object.__setattr__(self, "from_id", doccano_relation["from_id"])
+        object.__setattr__(self, "to_id", doccano_relation["to_id"])
+        object.__setattr__(self, "type", doccano_relation["type"])
