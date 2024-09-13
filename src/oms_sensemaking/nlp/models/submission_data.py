@@ -1,5 +1,8 @@
+from uuid import UUID
+
+
 class SubmissionData:
-    def __init__(self, document_id: str, text: str):
+    def __init__(self, document_id: str | UUID, text: str):
         self.document_id = document_id
         self.text = text
 
