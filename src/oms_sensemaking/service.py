@@ -58,11 +58,10 @@ async def lifespan(application: FastAPI):
     yield
 
     for controller, controller_thread in controllers:
-        LOGGER.warning("actually handling the keyboard stop")
+        LOGGER.warning("Handling the keyboard interrupt.")
         controller.stop()
 
         if controller_thread.is_alive():
-            LOGGER.warning("Thread status: %s", controller_thread.is_alive())
             controller_thread.join()
 
 
