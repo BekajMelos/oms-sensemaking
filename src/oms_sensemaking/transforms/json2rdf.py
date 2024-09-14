@@ -2,8 +2,14 @@ import json
 import numpy as np
 import re
 from pandas import json_normalize
-from rdflib import * 
+from rdflib import *
 from datetime import datetime
+from hashlib import md5
+
+import warnings
+
+warnings.filterwarnings("error", category=UserWarning)
+
 
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -14,89 +20,136 @@ class NpEncoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NpEncoder, self).default(obj)
-    
+
+
 class DateEncoder():
     def __init__(self):
-        self.datetime_pattern_Z = re.compile('([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}\:[0-9]{2}\:[0-9]{2})(Z)')
-        self.datetime_pattern = re.compile('[0-9]{4}-[0-9]{2}-[0-9]{2}(T| )[0-9]{2}\:[0-9]{2}\:[0-9]{2}')
+        self.datetime_pattern_Z = re.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})Z")
+        self.datetime_pattern = re.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
         self.date_pattern = re.compile('[0-9]{4}-[0-9]{2}-[0-9]{2}')
-        
-    def __call__(self,input_string):
+        self.numeric_date_valid = re.compile('[0-3][\d]{3}[0-1][\d][0-3][\d]')
+
+    def __call__(self, input_string):
+
         if self.datetime_pattern_Z.search(input_string):
             elem = self.datetime_pattern_Z.findall(input_string.strip())
             if len(elem) != 0:
-                elem = elem
-                return "".join([elem[0][0],"T",elem[0][2]]) , XSD.dateTime
-   
+                elem = elem[0]
+                value_fmt = "".join([elem[0], "T", elem[2]])
+                return value_fmt, XSD.dateTime
+
         elif self.datetime_pattern.search(input_string.strip()):
-            return input_string.replace(" ","T").strip() , XSD.dateTime
-            
+            return input_string.replace(" ", "T").strip(), XSD.dateTime
+
         elif self.date_pattern.search(input_string):
             return input_string, XSD.date
-        
+
+        elif self.datetime_pattern.search(input_string.strip()):
+            return input_string.replace(" ", "T").strip(), XSD.dateTime
+
+        elif self.date_pattern.search(input_string):
+            return input_string, XSD.date
+
         else:
             return None, None
-        
-        
+
+
+class AccessControlMarking(object):
+    def __init__(self, namespace=None):
+        self.acm_keys = sorted(
+            ['_source_acm_disponly_to', '_source_acm_f_macs', '_source_acm_fgi_open', '_source_acm_disp_only',
+             '_source_acm_f_sar_id', '_source_acm_sci_ctrls', '_source_acm_banner', '_source_acm_classif',
+             '_source_acm_dissem_countries', '_source_acm_portion', '_source_acm_f_missions',
+             '_source_acm_owner_prod', '_source_acm_dissem_ctrls', '_source_acm_non_ic', '_source_acm_rel_to',
+             '_source_acm_macs', '_source_acm_atom_energy', '_source_acm_f_regions', '_source_acm_f_clearance',
+             '_source_acm_f_share', '_source_acm_f_sci_ctrls', '_source_acm_f_oc_org', '_source_acm_f_atom_energy',
+             '_source_acm_sar_id', '_source_acm_accms', '_source_acm_f_accms', '_source_acm_fgi_protect',
+             '_source_acm_version'
+             ])  # sorted order
+        self.namespace = namespace
+
+    def __call__(self, data):
+        signature = []
+        for k in self.acm_keys:
+
+            attr = data.get(k)
+            # attr is a collection
+            if isinstance(attr, list):
+                if len(attr) > 0:
+                    for a in sorted(attr):  # sorted order
+                        if isinstance(a, str) and len(a.strip()) > 0:
+                            signature.append(a.strip())
+                        else:
+                            signature.append(str(a.strip()))
+            else:  # is a primitive
+                if isinstance(attr, str) and len(attr.strip()) > 0:
+                    signature.append(attr.strip())
+                else:
+                    signature.append(str(attr.strip()))
+
+        return md5("".join(signature).encode('utf-8')).hexdigest()
+
+
 class JSON2RDF():
-    def __init__(self, source_model=None, construct= None, ns_uri = "https://blackcape.io/source-model/osmb-midb/node#"):
+    def __init__(self, source_model=None, construct=None, ns_uri="https://blackcape.io/source-model/osmb-midb/node#"):
         self.types = None
         self.source_data = None
-        self.construct = open(construct,'r').read()
+        self.construct = open(construct, 'r').read()
         self.record_ns = Namespace(ns_uri)
-        qry="SELECT * WHERE {?datatype_property a owl:DatatypeProperty; rdfs:label ?l; rdfs:range ?range}"
-        self.source_model = Graph().parse('source_model.ttl', format = 'ttl')
-        self.source_lookup = {r.get('l').value:{'uri': r.get('datatype_property'), 'datatype': r.get('range') } for r in self.source_model.query(qry)}
+        qry = "SELECT * WHERE {?datatype_property a owl:DatatypeProperty; rdfs:label ?l; rdfs:range ?range}"
+        self.source_model = Graph().parse(source_model, format='ttl')
+        self.source_lookup = {r.get('l').value: {'uri': r.get('datatype_property'), 'datatype': r.get('range')} for r in
+                              self.source_model.query(qry)}
         self.encode_date = DateEncoder()
-        
-        
-    def __get_typed_value(self,value, datatype):
-        if value is None: 
+        self.make_acm = AccessControlMarking()
+
+    def _get_typed_value(self, value, datatype):
+        if value is None:
             return None
-        elif (isinstance(value,str)):
+        elif (isinstance(value, str)):
             if value != "" and len(value) > 0:
-                
                 if datatype in [XSD.date, XSD.dateTime, XSD.dateTimeStamp]:
                     value, datatype = self.encode_date(value)
-                return Literal(value,datatype=datatype) 
+                return Literal(value, datatype=datatype)
             else:
                 return None
-        else :
-            return Literal(value,datatype=datatype) 
-        
-    def __call__(self,jsonobj:dict):
-        g=Graph()
-        df=json_normalize(data = jsonobj) ## ingest flattend object to dataframe
-        #self.types  = { re.sub("\.","_",k):df.dtypes.get(k).__str__() for k in df.dtypes.to_dict() }
-        self.source_data = { re.sub("\.","_",k):df[k][0] for k in df } 
+        else:
+            return Literal(value, datatype=datatype)
+
+    def __call__(self, jsonobj: dict):
+        self.g = Graph()
+        df = json_normalize(data=jsonobj, sep="_", meta_prefix="_")  ## ingest flattend object to dataframe
+        self.types = {k: df.dtypes.get(k).__str__() for k in df.dtypes.to_dict()}
+        self.source_data = {k: df[k][0] for k in df}
         record = BNode()
-        g.add((record, RDF.type, self.record_ns.Record))
+        self.g.add((record, RDF.type, self.record_ns.Record))
+        self.source_data['_derived_acm_guid'] = self.make_acm(self.source_data)
+
         for k in self.source_data:
             if k not in self.source_lookup: continue
-            
+
             value = self.source_data[k]
-            datatype = self.source_lookup.get(k).get('datatype') 
+            datatype = self.source_lookup.get(k).get('datatype')
+            datatype_property = self.source_lookup.get(k).get('uri')
 
-            datatype_property = self.source_lookup.get(k).get('uri') 
-
-            
-            if isinstance(value,list):
+            if isinstance(value, list):
 
                 if len(value) == 0:
                     continue
 
                 for v in value:
-                    typed_value = self.__get_typed_value(v, datatype)
+                    typed_value = self._get_typed_value(v, datatype)
                     if typed_value is not None:
-                        g.add((record, datatype_property ,typed_value ))
+                        self.g.add((record, datatype_property, typed_value))
+
             else:
-                typed_value = self.__get_typed_value(value, datatype)
+                typed_value = self._get_typed_value(value, datatype)
                 if typed_value is not None:
-                    g.add((record, datatype_property ,typed_value ))
-        self.g = g
-        return g.query(self.construct) 
+                    self.g.add((record, datatype_property, typed_value))
+
+        return self.g.query(self.construct)
 
 
-    
-    
+
+
 

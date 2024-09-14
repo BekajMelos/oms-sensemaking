@@ -17,6 +17,11 @@ src:_score a owl:DatatypeProperty ;
     rdfs:label "_score"^^xsd:string ;
     rdfs:range xsd:int .
 
+src:_derived_acm_guid a owl:DatatypeProperty ;
+    rdfs:label "_derived_acm_guid"^^xsd:string ;
+    rdfs:comment "String _derived_acm_guid is created by hashing all acm values aka 'object equals'"^^xsd:string ;
+    rdfs:range xsd:string .
+
 src:_source_acm_accms a owl:DatatypeProperty ;
     rdfs:label "_source_acm_accms"^^xsd:string ;
     rdfs:range xsd:string .
@@ -371,7 +376,7 @@ src:_source_metadata_MIDB_ResProd_translated a owl:DatatypeProperty ;
 
 src:_source_metadata_MIDB_ReviewDate a owl:DatatypeProperty ;
     rdfs:label "_source_metadata_MIDB_ReviewDate"^^xsd:string ;
-    rdfs:range xsd:int .
+    rdfs:range xsd:date .
 
 src:_source_metadata_MIDB_SiteOriginator a owl:DatatypeProperty ;
     rdfs:label "_source_metadata_MIDB_SiteOriginator"^^xsd:string ;
