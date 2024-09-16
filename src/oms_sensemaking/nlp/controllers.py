@@ -23,9 +23,9 @@ class NlpApiReceiver(ObjectEventConsumer):
         self, text: str, default_acm: dict, default_user_dn: str, handle_event: Optional[EVENT_HANDLER] = None
     ):
         """
-        Create a new instance of TextFileReader.
+        Create a new instance of NlpApiReceiver.
 
-        :param filename: The .txt file to process.
+        :param text: The string of text to process.
         :param default_acm: The ACM to apply to all records in the CSV file.
         :param default_user_dn: The user DN to apply to all records in the CSV file.
         :param handle_event: A callback that will receive the processed tracks.
@@ -47,9 +47,9 @@ class NlpApiReceiver(ObjectEventConsumer):
         )
 
         if success:
-            print("Success")
+            LOGGER.info("Successfully analyzed and processed text for NER.")
         else:
-            print("Failure")
+            LOGGER.info("Text was unsuccessfully processed for NER.")
 
 
 class TextFileReader(ObjectEventConsumer):
@@ -83,9 +83,9 @@ class TextFileReader(ObjectEventConsumer):
         )
 
         if success:
-            print("Success")
+            LOGGER.info("Successfully analyzed and processed text file for NER.")
         else:
-            print("Failure")
+            LOGGER.info("Text file was unsuccessfully processed for NER.")
 
 
 class NlpSensemakerController(SensemakerController):
@@ -107,26 +107,38 @@ class NlpSensemakerController(SensemakerController):
         :return: True if the object event was successfully processed, False otherwise.
         """
 
-        # TODO: use the (future) EntityDecorator to submit objects to oms using event data
         nlp_sensemaker = NlpSensemaker()
 
+        # If we are running this from the command line and reading in a file specified by the filepath
         if isinstance(self.event_consumer, TextFileReader):
+            # Gathering the file contents
             text_file = self.event_consumer.filename
             with open(text_file, "r") as file:
                 text = file.read()
+
+            # Running the NLP pipeline to get entities and relationships
             ents_and_rels = nlp_sensemaker.process_data(SubmissionData(document_id=event.objectId, text=text))
             print(ents_and_rels)
+            # TODO: use the (future) EntityDecorator to submit objects to oms using event data
+
+        # If we are using the API to call the NlpSensemaker (also command line for now)
         elif isinstance(self.event_consumer, NlpApiReceiver):
+            # Gathering the text
             text = self.event_consumer.text
+
+            # Running the NLP pipeline to get entities and relationships
             ents_and_rels = nlp_sensemaker.process_data(SubmissionData(document_id=event.objectId, text=text))
             print(ents_and_rels)
+            # TODO: use the (future) EntityDecorator to submit objects to oms using event data
+
+        # Telling the controller to stop once the entities and relations have been returned
+        self.stopped.set()
 
         LOGGER.warning("NLP %s", event.objectId)
         return True
 
 
 def run_nlp_controller(nlp_controller: NlpSensemakerController):
-    print("Hello there")
     try:
         LOGGER.info("Starting thread fo %s", nlp_controller.__class__.__name__)
         nlp_controller.start()
@@ -138,6 +150,7 @@ def run_nlp_controller(nlp_controller: NlpSensemakerController):
             nlp_controller.stop()
 
 
+# TODO: Delete main once the API is up and running. Do the following in the API call
 if __name__ == "__main__":
     text = (
         "EU rejects German call to boycott British lamb. Peter Blackburn BRUSSELS 1996-08-22 "
