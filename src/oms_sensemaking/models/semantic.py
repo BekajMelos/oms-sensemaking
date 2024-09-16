@@ -1,8 +1,6 @@
 """Semantic Sensemaker models."""
 
-
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
-
 
 class Node(BaseORM, OmsAttributeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
     """

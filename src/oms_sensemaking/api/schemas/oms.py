@@ -73,7 +73,7 @@ class Node(OmsObject):
     tags: list[str]
     guideID: str
     name: str
-    tier: object
+    tier: str # change to object type
     classIri: str
     className: str
     ifcCodes: list[str]
