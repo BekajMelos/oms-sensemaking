@@ -1,0 +1,56 @@
+{
+  "UserDN": "cn=oms stratcom manager,ou=dia,ou=dime,o=u.s. government,c=us",
+  "WhitePage": {
+    "FirstName": "OMS STRATCOM",
+    "SurName": "Manager",
+    "Uid": "d2273",
+    "CompanyName": "",
+    "TelephoneNumber": "555-139-9876",
+    "IcEMail": "stratcom.manager@ic.com",
+    "SiprnetEmail": "stratcom.manager@sipr.com",
+    "NiprnetEmail": "stratcom.manager@nipr.com"
+  },
+  "ClearanceInfo": {
+    "Clearance": [
+      "TS"
+    ],
+    "FineAccess": [
+      "SI",
+      "TK",
+      "HCS",
+      "G"
+    ],
+    "Citizenship": [
+      "USA"
+    ]
+  },
+  "AdminOrganization": {
+    "AdminOrganization": ""
+  },
+  "DutyOrganization": {
+    "DutyOrganization": "DIA"
+  },
+  "AllUserGroups": {
+    "Projects": [
+      {
+        "projectName": "OMS",
+        "groupNames": [
+          "oms_stratcom_manager"
+        ]
+      }
+    ]
+  },
+  "Entitlements": {
+    "CommunityType": "",
+    "Attributes": {
+      "Organization": "DIA",
+      "Topic": null,
+      "Region": null,
+      "isAICP": false,
+      "Groups": null
+    }
+  },
+  "OrganizationPath": {
+    "OrganizationPath": ""
+  }
+}

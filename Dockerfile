@@ -144,6 +144,9 @@ apk upgrade
 # install application's system dependencies
 apk add --no-cache geos postgresql-client
 
+# install jq for performing healthchecks
+apk add --no-cache jq curl
+
 # initialize virtual environment
 python3 -m venv --prompt app $VENVS_DIR/app
 source $VENVS_DIR/app/bin/activate
@@ -161,24 +164,21 @@ apk add --no-cache --virtual .build-deps \
 pip install .
 
 # configure app
-mv $APP_HOME/docker/start.sh /
-chmod 755 /start.sh
+mv $APP_HOME/docker/*.sh /
+chmod 755 /start.sh /healthcheck.sh
 
 # contrib
 APP_SHORT_NAME=oms_sensemaking
 mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
-alembic upgrade head --sql > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql
+alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # configure extras
-apk add --no-cache --virtual .extra-deps curl figlet
-curl -o /usr/share/figlet/fonts/graffiti.flf http://www.figlet.org/fonts/graffiti.flf
-chmod 644 /usr/share/figlet/fonts/graffiti.flf
 mv /etc/motd /etc/motd-alpine
-figlet -w 90 -f graffiti "OMS SenseMaking" > /etc/motd
-rm /usr/share/figlet/fonts/graffiti.flf
+mv $APP_HOME/docker/banner.txt /etc/motd
+chmod 644 /etc/motd
 
 # cleanup
-apk del .build-deps .extra-deps
+apk del .build-deps
 rm -rf /var/cache/apk/*
 EOF
 

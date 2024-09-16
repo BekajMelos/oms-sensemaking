@@ -1,0 +1,56 @@
+{
+  "UserDN": "cn=oms nsic editor,ou=dia,ou=dime,o=u.s. government,c=us",
+  "WhitePage": {
+    "FirstName": "OMS NSIC",
+    "SurName": "Editor",
+    "Uid": "d9039",
+    "CompanyName": "",
+    "TelephoneNumber": "555-709-9278",
+    "IcEMail": "nsic.editor@ic.com",
+    "SiprnetEmail": "nsic.editor@sipr.com",
+    "NiprnetEmail": "nsic.editor@nipr.com"
+  },
+  "ClearanceInfo": {
+    "Clearance": [
+      "TS"
+    ],
+    "FineAccess": [
+      "SI",
+      "TK",
+      "HCS",
+      "G"
+    ],
+    "Citizenship": [
+      "USA"
+    ]
+  },
+  "AdminOrganization": {
+    "AdminOrganization": ""
+  },
+  "DutyOrganization": {
+    "DutyOrganization": "DIA"
+  },
+  "AllUserGroups": {
+    "Projects": [
+      {
+        "projectName": "OMS",
+        "groupNames": [
+          "oms_nsic_editor"
+        ]
+      }
+    ]
+  },
+  "Entitlements": {
+    "CommunityType": "",
+    "Attributes": {
+      "Organization": "DIA",
+      "Topic": null,
+      "Region": null,
+      "isAICP": false,
+      "Groups": null
+    }
+  },
+  "OrganizationPath": {
+    "OrganizationPath": ""
+  }
+}

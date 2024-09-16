@@ -1,0 +1,56 @@
+{
+  "UserDN": "cn=oms dri manager,ou=dia,ou=dime,o=u.s. government,c=us",
+  "WhitePage": {
+    "FirstName": "OMS DRI",
+    "SurName": "Manager",
+    "Uid": "d7850",
+    "CompanyName": "",
+    "TelephoneNumber": "555-545-3626",
+    "IcEMail": "dri.manager@ic.com",
+    "SiprnetEmail": "dri.manager@sipr.com",
+    "NiprnetEmail": "dri.manager@nipr.com"
+  },
+  "ClearanceInfo": {
+    "Clearance": [
+      "TS"
+    ],
+    "FineAccess": [
+      "SI",
+      "TK",
+      "HCS",
+      "G"
+    ],
+    "Citizenship": [
+      "USA"
+    ]
+  },
+  "AdminOrganization": {
+    "AdminOrganization": ""
+  },
+  "DutyOrganization": {
+    "DutyOrganization": "DIA"
+  },
+  "AllUserGroups": {
+    "Projects": [
+      {
+        "projectName": "OMS",
+        "groupNames": [
+          "oms_dri_manager"
+        ]
+      }
+    ]
+  },
+  "Entitlements": {
+    "CommunityType": "",
+    "Attributes": {
+      "Organization": "DIA",
+      "Topic": null,
+      "Region": null,
+      "isAICP": false,
+      "Groups": null
+    }
+  },
+  "OrganizationPath": {
+    "OrganizationPath": ""
+  }
+}

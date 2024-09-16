@@ -1,0 +1,56 @@
+{
+  "UserDN": "cn=oms ncmi editor,ou=dia,ou=dime,o=u.s. government,c=us",
+  "WhitePage": {
+    "FirstName": "OMS NCMI",
+    "SurName": "Editor",
+    "Uid": "d8076",
+    "CompanyName": "",
+    "TelephoneNumber": "555-617-3807",
+    "IcEMail": "ncmi.editor@ic.com",
+    "SiprnetEmail": "ncmi.editor@sipr.com",
+    "NiprnetEmail": "ncmi.editor@nipr.com"
+  },
+  "ClearanceInfo": {
+    "Clearance": [
+      "TS"
+    ],
+    "FineAccess": [
+      "SI",
+      "TK",
+      "HCS",
+      "G"
+    ],
+    "Citizenship": [
+      "USA"
+    ]
+  },
+  "AdminOrganization": {
+    "AdminOrganization": ""
+  },
+  "DutyOrganization": {
+    "DutyOrganization": "DIA"
+  },
+  "AllUserGroups": {
+    "Projects": [
+      {
+        "projectName": "OMS",
+        "groupNames": [
+          "oms_ncmi_editor"
+        ]
+      }
+    ]
+  },
+  "Entitlements": {
+    "CommunityType": "",
+    "Attributes": {
+      "Organization": "DIA",
+      "Topic": null,
+      "Region": null,
+      "isAICP": false,
+      "Groups": null
+    }
+  },
+  "OrganizationPath": {
+    "OrganizationPath": ""
+  }
+}

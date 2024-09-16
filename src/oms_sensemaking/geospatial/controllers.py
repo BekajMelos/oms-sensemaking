@@ -134,6 +134,7 @@ class GeoSQSListener(SQSListener):
 
                 # Receive message from SQS queue
                 try:
+                    LOGGER.debug("Listening to %s", SETTINGS.sqs_queue_url)
                     response = self.sqs.receive_message(
                         QueueUrl=SETTINGS.sqs_queue_url,
                         AttributeNames=["SentTimestamp"],
@@ -142,8 +143,8 @@ class GeoSQSListener(SQSListener):
                         VisibilityTimeout=0,
                         WaitTimeSeconds=0,
                     )
-                except BotoCoreError as e:
-                    LOGGER.error(f"Unable to connect to SQS: {e}. Trying again...")
+                except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
+                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
                     break
 
                 if "Messages" not in response:
