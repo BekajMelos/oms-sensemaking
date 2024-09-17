@@ -134,7 +134,7 @@ class Settings(BaseSettings):
     )
 
     # Similar Track Settings
-    similar_tracks: bool = Field(False, description="Toggle on/off Similar Track Calculations")
+    similar_tracks: bool = Field(True, description="Toggle on/off Similar Track Calculations")
     n_tracks: int = Field(5, description="Number of similar tracks to return")
     within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")
 
