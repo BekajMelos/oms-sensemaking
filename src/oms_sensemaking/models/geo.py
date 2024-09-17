@@ -21,9 +21,9 @@ from sqlalchemy.orm import (
     with_expression,
 )
 
-from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
+from oms_sensemaking.config import SETTINGS
 
-SRID: int = 4326
+from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -36,7 +36,7 @@ class OmsGeoMixin(MappedAsDataclass):
         # of an altitude/elevation field.
         #
         # https://github.com/geoalchemy/geoalchemy2/issues/157
-        Geometry('POINT', dimension=2, srid=SRID, spatial_index=False),
+        Geometry('POINT', dimension=2, srid=SETTINGS.srid, spatial_index=False),
         nullable=False,
         unique=False,
         comment='The 2D location of the point.'
@@ -118,7 +118,7 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
         event that it is set as a string, rather than a specific GeoAlchemy type.
         """
         if isinstance(self.location, str):
-            self.location = WKTElement(self.location, srid=SRID)
+            self.location = WKTElement(self.location, srid=SETTINGS.srid)
 
     def __lt__(self, other: "Point"):
         return self.detection_time < other.detection_time

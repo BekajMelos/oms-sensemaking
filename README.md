@@ -158,6 +158,7 @@ password "your password here"
 
 | Variable Name                      | Example                                                            | Description                                                    | Docker Compose |
 |:-----------------------------------|:-------------------------------------------------------------------|:---------------------------------------------------------------|:--------------:|
+| `SRID`                             | `4326`                                                             | Spatial Reference Identifier for storing Points       | No             |
 | `VALID_OBSERVED_THRESHOLD_SECONDS` | `900`                                                              | Threshold for amount of between Track Point Observations       | No             |
 | `CACHE_ENTRY_EXPIRE_SEC`           | `30 `                                                              | How long to wait for new points before creating a new Track    | No             |
 | `GEOHASH_LOW`                      | `5`                                                                | Low geohash                                                    | No             |

@@ -26,6 +26,8 @@ CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
 TRACK_CREATED_EVENT: str = "track_created"
 
+ST_TRANSFORM_MAX_DECIMAL_DIGITS: int = 9  # maxdecimaldigits parameter in Postgis ST_TRANSFORM
+ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS: int = 2  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
 
 
 class ComparisonResult:
@@ -201,23 +203,33 @@ class SimilarTracksSensemaker(Sensemaker):
         """
 
         def generate_query(order_col, geojson):
+
+            # sub-subquery to label the rows in the Point table after ordering by order_col
             sub_subquery = select(
                 Point,
                 func.ROW_NUMBER().over(partition_by=Point.node_id, order_by=order_col).label('row_number')
             ).subquery()
 
+            # use the row number to find the first value. This subquery gives us either the set of starting track
+            # points or the set of ending track points depending on the order_col order (desc or not)
             subquery = select(
                 sub_subquery.c.node_id, sub_subquery.c.attribute_id, sub_subquery.c.detection_time
             ).where(sub_subquery.c.row_number == 1).subquery()
 
+            # This query will join the original Point table with the sorted start or end table in order to look at the
+            # entire set of starting (or ending) points. Then look for points that are within the query_distance.
+            # The points are casted to the Geography type to allow the query_distance to be in meters.
+            # Overall, this query will find tracks that have starting points that are within the query_distance of the
+            # given track. Then with the end query, it will find tracks that end within the query distance of the given
+            # track.
             query = select(
                     Point.node_id,
-                    func.array_agg(
+                    func.array_agg(  # the array_agg will return the point as a geojson
                         aggregate_order_by(
                             func.ST_asGeoJSON(
-                                func.ST_Transform(Point.location, 4326),
-                                9,  # maxdecimaldigits
-                                2  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
+                                func.ST_Transform(Point.location, SETTINGS.srid),
+                                ST_TRANSFORM_MAX_DECIMAL_DIGITS,  # maxdecimaldigits
+                                ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
                             ),
                             Point.detection_time
                         )
@@ -227,7 +239,8 @@ class SimilarTracksSensemaker(Sensemaker):
                 ).where(
                     func.ST_DWithin(
                         cast(Point.location, Geography(srid=-1)),
-                        cast(func.ST_Transform(func.ST_GeomFromGeoJSON(str(geojson)), 4326), Geography(srid=-1)),
+                        cast(func.ST_Transform(
+                                func.ST_GeomFromGeoJSON(str(geojson)), SETTINGS.srid), Geography(srid=-1)),
                              query_distance)
                 ).group_by(Point.node_id)
 

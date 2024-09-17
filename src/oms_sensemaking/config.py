@@ -105,6 +105,7 @@ class Settings(BaseSettings):
     )
 
     # Geospatial Sensemaking Settings
+    srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
     valid_observed_threshold_seconds: int = Field(
         900, description="Threshold for amount of between Track Point Observations"
     )
