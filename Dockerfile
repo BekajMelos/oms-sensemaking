@@ -20,6 +20,9 @@
 # virtual envrionment needs to activated either by the CMD or by an ENTRYPOINT
 # that wraps a CMD.
 #
+# NOTE: The "--allow-untrusted" in the `apk add` commands is to accommodate the
+#       missing public repository CA certificate in the AIDE artifactory.
+#
 # OMS Sensemaking
 # ===============
 # The oms-sensemaking service is configured with a startup script in
@@ -41,16 +44,21 @@
 #
 # Known Issues
 # ============
-# - Swap base image with one of the DPaaS images
-# - oms_sdk dependency is handled differently in Tex vs AIDE, but the details are not clear yet
+# - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
+#   for how to handle this difference are not clear.
+
+# The name of the Alpine Linux image variant.
 ARG ALPINE_VARIANT="alpine"
 
-ARG ALPINE_VERSION="3.20.2"
+# The version of Alpline Linux.
+# TIP: Bump to 3.20.2 when shapley bumps to >= 2.1
+ARG ALPINE_VERSION="3.19.4"
 
-# The docker image prefix. This should end in a forward slash (i.e. /).
+# The docker image prefix.
 ARG DOCKER_PROXY="docker.io/library"
 
-FROM ${DOCKER_PROXY}/${ALPINE_VARIANT}:${ALPINE_VERSION} AS python-base
+# The paramterized base image.
+FROM ${DOCKER_PROXY:-}/${ALPINE_VARIANT}:${ALPINE_VERSION} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
@@ -70,6 +78,8 @@ LABEL maintainer="OMS Team <oms@blackcape.io>"
 WORKDIR ${APP_HOME}
 
 RUN <<EOF
+set -e
+
 # create user and group
 addgroup $GROUP_NAME
 adduser \
@@ -81,11 +91,22 @@ adduser \
   $USER_NAME
 
 # configure package manager
+
+# AIDE compatible configuration
+# TIP: enable when shapley bumps to >= 2.1
+#gzip /etc/apk/repositories
+#cat > /etc/apk/repositories <<APK_EOF
+## /etc/apk/repositories --- APK repository configuration
+#
+## use "edge" repos (see Brown Bag from 6/25/2024)
+#https://dl-cdn.alpinelinux.org/alpine/edge/main
+#https://dl-cdn.alpinelinux.org/alpine/edge/community
+#
+#APK_EOF
 apk update
-apk upgrade
 
 # install core system dependencies
-apk add --no-cache \
+apk add -u --no-cache --allow-untrusted \
   bash \
   python3 \
   py3-pip \
@@ -137,23 +158,28 @@ COPY . ${APP_HOME}
 #       project. This exists because there is no infrastructure for hosting
 #       custom dependencies in the development environment.
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
+set -e
+
 # configure package manager
 apk update
-apk upgrade
 
 # install application's system dependencies
-apk add --no-cache geos postgresql-client
+apk add -u --no-cache --allow-untrusted \
+  geos \
+  postgresql-client
 
 # install jq for performing healthchecks
-apk add --no-cache jq curl
+apk add -u --no-cache --allow-untrusted \
+  curl \
+  jq
 
 # initialize virtual environment
 python3 -m venv --prompt app $VENVS_DIR/app
 source $VENVS_DIR/app/bin/activate
-pip install --upgrade pip wheel
+pip install --upgrade pip setuptools wheel
 
 # prepare build dependencies
-apk add --no-cache --virtual .build-deps \
+apk add -u --no-cache --allow-untrusted --virtual .build-deps \
   gcc \
   geos-dev \
   git \
