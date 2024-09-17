@@ -259,7 +259,7 @@ class GeospatialSensemakerController(SensemakerController):
                             detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
                             node_version=int(oms_attr.node.version),
                             attribute_version=int(oms_attr.version)
-                        ), node_id=oms_attr.nodeId, attribute_id=oms_attr.id)
+                        ), node_id=track_node.id, attribute_id=oms_attr.id)
 
                     if not is_new:
                         if point:
@@ -292,7 +292,13 @@ class GeospatialSensemakerController(SensemakerController):
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
                     with db_session() as db:
-                        track: Track = get_track(db, node_id)
+                        try:
+                            track: Track = get_track(db, node_id)
+                        except ValueError as e:
+                            # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
+                            LOGGER.warn(e)
+                            self.buffer[node_id] = None
+                            continue
                         LOGGER.debug(track.to_linestring())
 
                     try:
@@ -306,7 +312,7 @@ class GeospatialSensemakerController(SensemakerController):
                     finally:
                         self.buffer[node_id] = None  # mark for removal
                 else:
-                    LOGGER.debug("node_id%s is still active in the buffer", node_id)
+                    LOGGER.debug("node_id %s is still active in the buffer", node_id)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
