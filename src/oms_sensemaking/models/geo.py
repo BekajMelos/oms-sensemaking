@@ -144,7 +144,7 @@ class Track:
 
         if point_count < 2:
             # TODO maybe just log this and move on
-            raise ValueError("A Track must consist of at least 3 points.")
+            raise ValueError("A Track must consist of at least 2 points.")
 
         if point_count > 0:
             self.start_time = self.points[0].detection_time

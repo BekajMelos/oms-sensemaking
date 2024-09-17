@@ -146,8 +146,10 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
                         help="The path to the user's certificate. Defaults to ./etc/pki/test10.cert")
     parser.add_argument("-k", "--key", default="./etc/pki/test10.key",
                         help="The path to the user's private key. Defaults to ./etc/pki/test10.key")
-    parser.add_argument("-d", "--user-dn", default=os.getenv("USER_DN"),
-                        help="The user's distinguished name. Defaults to value of the USER_DN env variable.")
+    parser.add_argument("-d", "--user-dn", default=os.getenv("USER_DN",
+                                                             "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"),
+                        help="The user's distinguished name. Defaults to value of the USER_DN env variable, if set, "
+                             "otherwise cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us")
     # parser.add_argument("--pkcs12", default=os.getenv("PKCS12_FILE"),
     #                     help="The path to the user's PKCS12 file. Mutually exclusive from the --cert/--key options.")
     # parser.add_argument("--pkcs12-password", action=PasswordAction, nargs='?', default=os.getenv("PKCS12_PASSWORD"),
