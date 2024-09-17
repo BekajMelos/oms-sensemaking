@@ -1,4 +1,4 @@
-from stanza.server import CoreNLPClient
+# from stanza.server import CoreNLPClient
 
 
 class CoreNlpService:
@@ -14,13 +14,14 @@ class CoreNlpService:
             }
         else:
             self.props = props
-        self.client = CoreNLPClient(properties=self.props, timeout=60000, memory="16G")
+        # self.client = CoreNLPClient(properties=self.props, timeout=60000, memory="16G")
 
     def annotate_document(self, text: str):
         """
         Uses the client with the props specified above to access CoreNLP and annotate a document
         """
-        with self.client:
-            annotated_doc = self.client.annotate(text)
-
-        return annotated_doc
+        raise NotImplementedError()
+        # with self.client:
+        #     annotated_doc = self.client.annotate(text)
+        #
+        # return annotated_doc
