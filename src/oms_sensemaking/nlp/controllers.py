@@ -34,15 +34,20 @@ class NlpApiReceiver(ObjectEventConsumer):
         self.default_acm: dict = default_acm
         self.default_user_dn: str = default_user_dn
         self.text = text  # This could also be a file, depending on how it is submitted by the API
-        # TODO: Add other attributes
+        # TODO: Add other attributes? Title, primary and secondary topics, though only if needed
 
     def process_object_events(self) -> None:
+        """
+        Calls the handle_event function of the NlpSensemakerController, passing it an ObjectEvent with the
+        user_dn, a UUID for the text/document, a SOURCE ObjectType, and a CREATE Action. Returns bool based on
+        result of calling handle_event.
+        """
         success: bool = self.handle_event(
             ObjectEvent(
                 self.default_user_dn,
                 uuid4(),
                 ObjectType.SOURCE,
-                Action.CREATE,  # TODO: Or update
+                Action.CREATE,
             )
         )
 
@@ -72,13 +77,12 @@ class TextFileReader(ObjectEventConsumer):
         self.default_user_dn: str = default_user_dn
 
     def process_object_events(self) -> None:
-        # TODO: Keep track of uuids
         success: bool = self.handle_event(
             ObjectEvent(
                 self.default_user_dn,
                 uuid4(),
                 ObjectType.SOURCE,
-                Action.CREATE,  # TODO: Or update
+                Action.CREATE,
             )
         )
 
@@ -121,7 +125,7 @@ class NlpSensemakerController(SensemakerController):
             print(ents_and_rels)
             # TODO: use the (future) EntityDecorator to submit objects to oms using event data
 
-        # If we are using the API to call the NlpSensemaker (also command line for now)
+        # If we are using the API to call the NlpSensemaker (through the command line for now)
         elif isinstance(self.event_consumer, NlpApiReceiver):
             # Gathering the text
             text = self.event_consumer.text
