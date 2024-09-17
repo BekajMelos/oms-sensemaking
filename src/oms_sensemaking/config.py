@@ -105,6 +105,7 @@ class Settings(BaseSettings):
     )
 
     # Geospatial Sensemaking Settings
+    srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
     valid_observed_threshold_seconds: int = Field(
         900, description="Threshold for amount of between Track Point Observations"
     )
@@ -133,7 +134,7 @@ class Settings(BaseSettings):
     )
 
     # Similar Track Settings
-    similar_tracks: bool = Field(False, description="Toggle on/off Similar Track Calculations")
+    similar_tracks: bool = Field(True, description="Toggle on/off Similar Track Calculations")
     n_tracks: int = Field(5, description="Number of similar tracks to return")
     within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")
 
