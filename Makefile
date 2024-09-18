@@ -62,6 +62,8 @@ distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
 nuke: down
+	@docker volume rm -f oms-sensemaking_doccano-db
 	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
+
