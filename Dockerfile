@@ -101,9 +101,9 @@ apt-get update
 apt-get install -y --no-install-recommends postgresql-client-16
 
 # prepare file system
-mkdir -p $APP_HOME # $VENVS_DIR
-chown $USER_NAME:$GROUP_NAME $APP_HOME # $VENVS_DIR
-chmod 774 $APP_HOME # $VENVS_DIR
+mkdir -p $APP_HOME
+chown $USER_NAME:$GROUP_NAME $APP_HOME
+chmod 774 $APP_HOME
 
 # clean up os packages
 apt-get purge -y curl
@@ -124,6 +124,8 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
+
+ENV CORENLP_HOME="/opt/stanza_corenlp"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -169,6 +171,11 @@ apt-get install -y --no-install-recommends $BUILD_DEPS
 
 # install app
 pip install .
+
+# install CoreNLP
+mkdir -p $CORENLP_HOME
+chown $USER_NAME:$GROUP_NAME $CORENLP_HOME
+python3 -c 'import stanza; stanza.install_corenlp()'
 
 # configure app
 mv $APP_HOME/docker/*.sh /
