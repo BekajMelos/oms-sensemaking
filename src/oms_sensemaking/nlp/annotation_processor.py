@@ -49,7 +49,7 @@ class AnnotationProcessor:
             document_relationship = DocumentHasRelation(
                 object_id=doc_rel_obj_id,
                 document_id=data.document_id,
-                ner_entity="EntityMention-" + str(entity.entityMentionIndex),
+                ner_entity=entity.entityMentionIndex,
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
