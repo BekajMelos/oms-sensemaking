@@ -1,3 +1,13 @@
+"""
+Natural Language Processing (NLP) Sensemaker.
+
+Algorithm ChangeLog
+===================
+
+[1.0.0]
+- Initial NLP algorithm implementation.
+
+"""
 import argparse
 
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -10,23 +20,29 @@ from oms_sensemaking.nlp.models.submission_data import SubmissionData
 class NlpSensemaker(Sensemaker):
     """A sensemaker for analyzing text by extracting entities and the relationships between them"""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.version = (1, 0, 0)
+
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
-        NlpSensemaker pipeline that first annotates the submitted text,
-        and then processes it for entities and relationships
+        Run the data through an NLP pipeline.
+
+        The NLP pipeline will first annotate the submitted text, and then
+        process it for entities and relationships.
         """
         annotation = self.use_corenlp_service(data.text)
         processed_annotation = self.process_annotation(data, annotation)
         return processed_annotation
 
     def use_corenlp_service(self, document: str) -> str:
-        """Accesses the CoreNlpService to annotate the text"""
+        """Access the CoreNlpService to annotate text."""
         corenlp_service = CoreNlpService(props={})
         annotated_doc = corenlp_service.annotate_document(text=document)
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
-        """Uses the AnnotationProcessor to get the nodes and relations from the submitted data"""
+        """Use the AnnotationProcessor to get the nodes and relations from the submitted data."""
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
         return nodes_and_relations
 

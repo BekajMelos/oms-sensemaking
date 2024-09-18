@@ -148,7 +148,7 @@ class UtcDateTime(TypeDecorator):
 
 def utcnow_with_timezone() -> datetime:
     """Return a timezone aware UTC datetime for the current time."""
-    return datetime.utcnow().replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc)
 
 
 class AuditMixin(MappedAsDataclass):

@@ -1,4 +1,13 @@
-"""Cotravel Sensemakers."""
+"""
+Cotravel Sensemakers.
+
+Algorithm ChangeLog
+===================
+
+[1.0.0]
+- Initial "co-travel" algorithm implementation.
+
+"""
 import logging
 import uuid
 from collections import defaultdict
@@ -112,6 +121,7 @@ class CotravelSensemaker(Sensemaker):
 
     def __init__(self) -> None:
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> list[PotentialMatch]:
         LOGGER.info(f"Detecting Cotravels in {data.node_id}")
@@ -197,7 +207,6 @@ class CotravelSensemaker(Sensemaker):
         :return: List of cotravels
 
         """
-
         with db_session() as db:
             query = db.execute(
                 select(
