@@ -66,6 +66,12 @@ password "your password"
     pip install -e ".[dev,test,build]"
     ```
 
+3. Install CoreNLP
+
+   ```sh
+   python -c 'import stanza; stanza.install_corenlp()'
+   ```
+
 > ***NOTE***: *oms_sensemaking* has at least two "extra" sets of dependencies defined: "dev" and "test". see the `project.optional-dependencies` declaration in [pytproject.toml].
 
 #### Step 4: Configure Local Environment Variables
