@@ -47,7 +47,9 @@ class AnnotationProcessor:
             # Loop through all the entities and creates a DocumentHasRelationship for each of them
             doc_rel_obj_id = "DocumentRelation-" + str(doc_rel_index)
             document_relationship = DocumentHasRelation(
-                object_id=doc_rel_obj_id, document_id=data.document_id, ner_entity=entity
+                object_id=doc_rel_obj_id,
+                document_id=data.document_id,
+                ner_entity="EntityMention-" + str(entity.entityMentionIndex),
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
