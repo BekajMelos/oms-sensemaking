@@ -75,10 +75,13 @@ class LogConfig(BaseSettings):
             "botocore": {
                 "level": "INFO"
             },
-            "urllib3": {
+            "httpcore": {
                 "level": "INFO"
             },
-            "httpcore": {
+            "httpx": {
+                "level": "INFO"
+            },
+            "urllib3": {
                 "level": "INFO"
             }
         }
@@ -102,6 +105,7 @@ class Settings(BaseSettings):
     )
 
     # Geospatial Sensemaking Settings
+    srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
     valid_observed_threshold_seconds: int = Field(
         900, description="Threshold for amount of between Track Point Observations"
     )
@@ -130,31 +134,43 @@ class Settings(BaseSettings):
     )
 
     # Similar Track Settings
-    similar_tracks: bool = Field(False, description="Toggle on/off Similar Track Calculations")
+    similar_tracks: bool = Field(True, description="Toggle on/off Similar Track Calculations")
     n_tracks: int = Field(5, description="Number of similar tracks to return")
     within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")
 
     # AWS SQS Settings
-    sqs_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger",
-        description="SQS Queue URL",
-    )
     aws_endpoint_url: str = Field("http://localhost:4566", description="SQS Endpoint")
     aws_access_key_id: str = Field("FAKE", description="AWS Access Key")
     aws_secret_access_key: str = Field("FAKE", description="AWS Secret Key")
     aws_region_name: str = Field("us-east-1", description="AWS Region")
     aws_use_ssl: bool = Field(False, description="Boolean to use SSL for SQS Connection")
-    aws_verify: bool = Field(False, description="Boolean to use SSL verifiation for SQS Connection")
+    aws_verify: bool = Field(False, description="Boolean to use SSL verification for SQS Connection")
+
     sqs_read_loops: int = Field(
         20,
         description="Number of times to look for SQS messages. This number * 10 is how many "
         "messages can be received per poll",
     )
     sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
-    omsb_url: str = Field("https://localhost:8443/graphql", description="URL for OMSB")
+    sqs_geo_sensemaker_queue: str = Field("getSensemakerTrigger", description="The geo sensemaker queue.")
+    sqs_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
+        description="the SQS Geo Sensemaker Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
+    )
+
+    omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
-    cert_path: str = Field("./pki/test10.pem", description="Path to User PEM")
-    key_path: str = Field("./pki/test10.key", description="Path to User Key")
+    cert_path: str = Field(
+        "/opt/common/pki/service.public",
+        description="Path to service user cert",
+        examples=["/opt/common/pki/sensemaking.pem"]
+    )
+    key_path: str = Field(
+        "/opt/common/pki/service.private",
+        description="Path to service user key",
+        examples=["/opt/common/pki/sensemaking.key"]
+    )
 
     @field_validator("db_uri", mode="before")
     @classmethod

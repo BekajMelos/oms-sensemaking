@@ -1,19 +1,18 @@
 # syntax=docker/dockerfile:1
 #
-# This Dockerfile provides a multi-stage build for an Alpine based image with
-# Python 3. The first build stage sets up Alpine and Python 3, while the second
+# This Dockerfile provides a multi-stage build for a Debian based image with
+# Python 3. The first build stage sets up Debian and Python 3, while the second
 # build stage installs the application and it's dependencies.
 #
 # The base image can be configured through the following build arguments:
 #
-#   ALPLINE_VARIANT: The image name for the alpine variant to use. Defaults to
-#                    "alpine".
+#   IMAGE_NAME:      The image name of the base image. Defaults to "python".
 #
-#   ALPINE_VERSION:  The version of alpine to use. Defaults to 3.19.3
+#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.6".
 #
 #   DOCKER_PROXY:    The prefix for the docker repository where the base image is
 #                    hosted. This should end in a forward slash. Defaults to
-#                    docker.io/library
+#                    "docker.io/library".
 #
 # The application is installed in $APP_HOME, which defaults to /app. A virtual
 # environment will be created for the application in /opt/virtualenvs/app. This
@@ -41,23 +40,27 @@
 #
 # Known Issues
 # ============
-# - Swap base image with one of the DPaaS images
-# - oms_sdk dependency is handled differently in Tex vs AIDE, but the details are not clear yet
-ARG ALPINE_VARIANT="alpine"
+# - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
+#   for how to handle this difference are not clear.
 
-ARG ALPINE_VERSION="3.20.2"
+# The name of the Docker image.
+ARG IMAGE_NAME="python"
 
-# The docker image prefix. This should end in a forward slash (i.e. /).
+# The version of Python to use.
+ARG PYTHON_VERSION="3.12.6"
+
+# The docker image prefix.
 ARG DOCKER_PROXY="docker.io/library"
 
-FROM ${DOCKER_PROXY}/${ALPINE_VARIANT}:${ALPINE_VERSION} AS python-base
+# The paramterized base image.
+FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
 #       could possibly not be known ahead of running the image.
 ARG USER_NAME=appuser
 
-ARG GROUP_NAME=${USER_NAME}
+ARG GROUP_NAME=${GROUP_NAME:-USER_NAME}
 
 ARG VENVS_DIR=/opt/virtualenvs
 
@@ -70,34 +73,43 @@ LABEL maintainer="OMS Team <oms@blackcape.io>"
 WORKDIR ${APP_HOME}
 
 RUN <<EOF
-# create user and group
-addgroup $GROUP_NAME
-adduser \
-  --disabled-password \
-  --gecos "Application user" \
-  --home "$APP_HOME" \
-  --no-create-home \
-  --ingroup "$GROUP_NAME" \
+set -e
+
+# create group and unprivileged user
+groupadd $GROUP_NAME
+
+useradd \
+  --create-home \
+  --shell /bin/bash \
+  --gid $GROUP_NAME \
   $USER_NAME
 
-# configure package manager
-apk update
-apk upgrade
+# install core dependencies
+apt-get update
+apt-get install -y --no-install-recommends \
+  ca-certificates \
+  curl \
+  gzip \
+  tar \
+  lsb-release
 
-# install core system dependencies
-apk add --no-cache \
-  bash \
-  python3 \
-  py3-pip \
-  py3-wheel
+install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+apt-get update
+apt-get install -y --no-install-recommends postgresql-client-16
 
 # prepare file system
-mkdir -p $APP_HOME $VENVS_DIR
-chown $USER_NAME:$GROUP_NAME $APP_HOME $VENVS_DIR
-chmod 774 $APP_HOME $VENVS_DIR
+mkdir -p $APP_HOME
+chown $USER_NAME:$GROUP_NAME $APP_HOME
+chmod 774 $APP_HOME
 
-# clean up
-rm -rf /var/cache/apk/*
+# clean up os packages
+apt-get purge -y curl
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
 
@@ -112,6 +124,8 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
+
+ENV CORENLP_HOME="/opt/stanza_corenlp"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -137,49 +151,52 @@ COPY . ${APP_HOME}
 #       project. This exists because there is no infrastructure for hosting
 #       custom dependencies in the development environment.
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
+set -e
+
 # configure package manager
-apk update
-apk upgrade
+apt-get update
+
+# update core Python packaging tools
+python3 -m pip install --upgrade --no-cache pip wheel
 
 # install application's system dependencies
-apk add --no-cache geos postgresql-client
-
-# initialize virtual environment
-python3 -m venv --prompt app $VENVS_DIR/app
-source $VENVS_DIR/app/bin/activate
-pip install --upgrade pip wheel
+apt-get install -y --no-install-recommends \
+  curl \
+  git \
+  jq
 
 # prepare build dependencies
-apk add --no-cache --virtual .build-deps \
-  gcc \
-  geos-dev \
-  git \
-  musl-dev \
-  python3-dev
+BUILD_DEPS="gcc libgeos-dev python3-dev"
+apt-get install -y --no-install-recommends $BUILD_DEPS
 
 # install app
 pip install .
 
+# install CoreNLP
+mkdir -p $CORENLP_HOME
+chown $USER_NAME:$GROUP_NAME $CORENLP_HOME
+python3 -c 'import stanza; stanza.install_corenlp()'
+
 # configure app
-mv $APP_HOME/docker/start.sh /
-chmod 755 /start.sh
+mv $APP_HOME/docker/*.sh /
+chmod 755 /start.sh /healthcheck.sh
 
 # contrib
 APP_SHORT_NAME=oms_sensemaking
 mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
-alembic upgrade head --sql > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql
+alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # configure extras
-apk add --no-cache --virtual .extra-deps curl figlet
-curl -o /usr/share/figlet/fonts/graffiti.flf http://www.figlet.org/fonts/graffiti.flf
-chmod 644 /usr/share/figlet/fonts/graffiti.flf
 mv /etc/motd /etc/motd-alpine
-figlet -w 90 -f graffiti "OMS SenseMaking" > /etc/motd
-rm /usr/share/figlet/fonts/graffiti.flf
+mv $APP_HOME/docker/banner.txt /etc/motd
+chmod 644 /etc/motd
 
-# cleanup
-apk del .build-deps .extra-deps
-rm -rf /var/cache/apk/*
+# clean up os packages
+apt-get purge -y $BUILD_DEPS
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
+USER ${USER_NAME}
 CMD ["/start.sh"]

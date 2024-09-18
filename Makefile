@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: build build-docker clean distclean down fix format help lint lint-stats nuke pgadmin psql test up
+.PHONY: build build-docker clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -25,6 +25,9 @@ lint-stats:
 local: ## Start oms-sensemaking locally
 	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
 
+no-oms: ## start oms-sensemaking without supporting oms env containers
+	docker compose up -d
+
 fix:  ## Run linter and apply fixes
 	ruff check --fix
 
@@ -37,11 +40,14 @@ build-docker:  ## Build docker image
 version:  ## Display the project version
 	@echo $(shell source .venv/bin/activate && python -m setuptools_scm)
 
-up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make dockstart
-	docker compose up -d ${DOCKER_FLAGS}
+up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
+	docker compose --profile local up -d ${DOCKER_FLAGS}
 
 down: ## Stop oms-sensemaking docker environment
-	docker compose --profile dev down
+	docker compose --profile dev --profile local down
+
+shell: ## Open a shell inside the oms_sensemaking container
+	@docker compose exec oms_sensemaking /bin/bash
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
@@ -56,5 +62,8 @@ distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
 nuke: down
-	@docker volume rm -f oms-sensemaking_postgis
+	@docker volume rm -f oms-sensemaking_doccano-db
+	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
+	@docker volume rm -f oms-sensemaking_postgis
+

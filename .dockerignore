@@ -20,15 +20,15 @@ __pycache__
 # Project files
 # --------------------
 data
+etc
 docker*
 !docker/*.sh
+!docker/*.txt
 docs
-pki
 scripts
 tests
 venv
 .*
-#!.git
 
 
 # --------------------

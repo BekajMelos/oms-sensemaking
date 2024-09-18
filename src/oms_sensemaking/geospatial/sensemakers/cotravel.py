@@ -1,17 +1,20 @@
 """Cotravel Sensemakers."""
 import logging
+import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from geolib import geohash
+from shapely import LineString, MultiLineString
+from sqlalchemy import func, select
+from sqlalchemy.orm import with_expression
 
+from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.geospatial.models.track_entry import TrackEntry
-from oms_sensemaking.geospatial.tracks import TRACK_ENTRIES_DB
-from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.geo import Point, Track, get_track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,15 +77,28 @@ class PotentialMatch:
             and self.last_time2 - self.start_time2 >= MIN_COTRAVEL_DURATION_SECONDS
         )
 
+    def calculate_and_set_geometry(self, track1: Track, track2: Track) -> None:
+       """Set the geometry for the cotravel
+
+       :param track1: First track
+       :param track2: Second track
+       :return: None
+       """
+       start_time = min(self.start_time1, self.start_time2)
+       end_time = max(self.last_time1, self.last_time2)
+       ls1 = LineString(CotravelSensemaker.extract_coordinate_track(track1, start_time, end_time))
+       ls2 = LineString(CotravelSensemaker.extract_coordinate_track(track2, start_time, end_time))
+       self.geometry = MultiLineString([ls1, ls2])
+
 
 class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
-    def __init__(self, track1: UUID, track2: UUID, point: Point, track_entry: TrackEntry):
+    def __init__(self, track1: UUID, track2: UUID, point: Point, db_point: Point):
         self.track1 = track1
         self.track2 = track2
         self.point = point
-        self.track_entry = track_entry
+        self.db_point = db_point
 
     def __str__(self):
         return str(self.__dict__)
@@ -113,7 +129,7 @@ class CotravelSensemaker(Sensemaker):
                 precision=SETTINGS.geohash_low
             )
 
-            track_entries: list[TrackEntry] = self.get_points(
+            db_points: List[Point] = self.get_points(
                 point_geohash_low,
                 data.node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
@@ -122,8 +138,8 @@ class CotravelSensemaker(Sensemaker):
             )
 
             # Create colocations from track entries
-            match_points: list[Colocation] = [
-                Colocation(data.node_id, entry.track_node_id, point, entry) for entry in track_entries
+            match_points: List[Colocation] = [
+                Colocation(data.node_id, db_point.node_id, point, db_point) for db_point in db_points
             ]
 
             if matches:
@@ -134,51 +150,44 @@ class CotravelSensemaker(Sensemaker):
         if not matches:
             return []
 
-        # group points (TrackEntrys) by track2
+        # group points by track2
         groups = defaultdict(list)
         for entry in matches:
             groups[entry.track2].append(entry)
 
         # determine cotravels on each list
         for _, colocations in groups.items():
-            sorted_entries = sorted(colocations, key=lambda colocation: colocation.track_entry.start_time)
+            sorted_entries = sorted(colocations, key=lambda colocation: colocation.db_point.detection_time)
             cotravels.extend(self.determine_cotravels(sorted_entries))
 
-        if cotravels:
-            LOGGER.info(f"Found Cotravels: {cotravels}")
+        for idx, cotravel in enumerate(cotravels):
+            with db_session() as db:
+                track2: Track = get_track(db, cotravel.track2)
+
+                cotravel.calculate_and_set_geometry(data, track2)
+                LOGGER.info(f"Found Cotravel {idx+1}/{len(cotravels)}: {cotravel}")
+                LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
 
         return cotravels
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
-    ) -> list[TrackEntry]:
-        """
-        Find points in other tracks that match the geohash of the given point within the time intervals.
-
-        :param geohash_low: Geohash to match in the DB
-        :param track_node_id: Track node to ignore
-        :param min_time: Min allowed time to lag by
-        :param max_time: Max allowed time to lag by
-        :param target_time: time to sort the response by
-        :return: List of cotravels
-        """
-        return cls.find_location_by_geohash(geohash_low, track_node_id, min_time, max_time, target_time)
-
-    @classmethod
-    def find_location_by_geohash(
-        cls, geohash_low: str, track_node_id: UUID, min_time: datetime, max_time: datetime, target_time: datetime
-    ) -> list[TrackEntry]:
+        cls, geohash_low: str, track_node_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
+    ) -> List[Point]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
 
         This query:
 
-        SELECT distinct on (track_node_id) track_node_id, source_id, start_time
-                FROM tracks
-                WHERE geohash_low = :geohash and track_node_id != :trackNodeId and start_time > :minimumTime
-        and start_time < :maximumTime
-                ORDER BY track_node_id, abs(extract(epoch from(start_time - :targetTime)))
+        SELECT DISTINCT ST_GeoHash(points.location) AS "ST_GeoHash_1", points.node_id, points.node_version,
+            points.attribute_id, points.attribute_version, ST_AsEWKB(points.location) AS location,
+            points.altitude, points.detection_time, points.acm, points.created_at, points.updated_at
+        FROM points
+        WHERE ST_GeoHash(points.location) LIKE :ST_GeoHash_2
+            AND points.node_id != :node_id_1
+            AND points.detection_time > :detection_time_1
+            AND points.detection_time < :detection_time_2
+        ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - :detection_time_3))
 
         :param geohash_low: Geohash to match in the DB
         :param track_node_id: Track node to ignore
@@ -188,8 +197,25 @@ class CotravelSensemaker(Sensemaker):
         :return: List of cotravels
 
         """
-        # TODO actually hit the database
-        return TRACK_ENTRIES_DB.get(geohash_low, [])
+
+        with db_session() as db:
+            query = db.execute(
+                select(
+                    Point
+                ).filter(
+                    Point.location.ST_Geohash().like(f"{geohash_low}%")
+                ).where(
+                    Point.node_id != track_node_id,
+                    Point.detection_time > min_time,
+                    Point.detection_time < max_time
+                ).order_by(
+                    Point.node_id, func.abs(func.extract('epoch', Point.detection_time - target_time))
+                ).options(
+                    with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+                ).distinct(Point.node_id)
+            )
+
+            return list(query.scalars().all())
 
     @staticmethod
     def determine_cotravels(colocations: list[Colocation]) -> list[PotentialMatch]:
@@ -206,32 +232,31 @@ class CotravelSensemaker(Sensemaker):
             if to_add_to:
                 # if we have a potential match already, keep checking
                 if (
-                    not to_add_to.tentative_add(colocation.point.detection_time, colocation.track_entry.start_time)
+                    not to_add_to.tentative_add(colocation.point.detection_time, colocation.db_point.detection_time)
                     and to_add_to.check_valid()
                 ):
                     # the next colocation point doesn't meet the observation threshold but we still
                     # have a valid cotravel. Add the cotravel to the list and start over with a new
                     # potential match
 
-                    # TODO this code path needs to be tested
                     completed.append(to_add_to)
                     true_cotravel = (
-                        abs(colocation.point.detection_time - colocation.track_entry.start_time)
+                        abs(colocation.point.detection_time - colocation.db_point.detection_time)
                         <= MIN_LAG_LEAD_DURATION_SECONDS
                     )
                     to_add_to = PotentialMatch(
                         colocation.track1,
                         colocation.track2,
                         colocation.point.detection_time,
-                        colocation.track_entry.start_time,
+                        colocation.db_point.detection_time,
                         colocation.point.detection_time,
-                        colocation.track_entry.start_time,
+                        colocation.db_point.detection_time,
                         true_cotravel,
                     )
             else:
                 # if no potential match already exists, create and start checking
                 true_cotravel = (
-                    abs(colocation.point.detection_time - colocation.track_entry.start_time)
+                    abs(colocation.point.detection_time - colocation.db_point.detection_time)
                     <= MIN_LAG_LEAD_DURATION_SECONDS
                 )
 
@@ -239,9 +264,9 @@ class CotravelSensemaker(Sensemaker):
                     colocation.track1,
                     colocation.track2,
                     colocation.point.detection_time,
-                    colocation.track_entry.start_time,
+                    colocation.db_point.detection_time,
                     colocation.point.detection_time,
-                    colocation.track_entry.start_time,
+                    colocation.db_point.detection_time,
                     true_cotravel,
                 )
 
@@ -250,3 +275,19 @@ class CotravelSensemaker(Sensemaker):
             completed.append(to_add_to)
 
         return completed
+
+    # TODO maybe move to utility
+    @staticmethod
+    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> List[List[float]]:
+        """Return points within provided time bounds
+
+        :param track: Track to extract points from
+        :param start_time: earliest point timestamp
+        :param end_time: latest point timestamp
+        :return: List of valid points
+        """
+        points = []
+        for point in track.points:
+            if point.detection_time >= start_time and point.detection_time <= end_time:
+                points.append(point.coordinates)
+        return points
