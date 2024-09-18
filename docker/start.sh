@@ -32,9 +32,6 @@ fi
 cat /etc/motd
 
 # Start uvicorn
-VENVS_DIR=/opt/virtualenvs
-source $VENVS_DIR/app/bin/activate
-
 if [ -z "$RELOAD_APP" ]; then
   exec uvicorn --host $HOST --port $PORT --log-level $LOG_LEVEL $APP_MODULE
 else

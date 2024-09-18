@@ -1,27 +1,23 @@
 # syntax=docker/dockerfile:1
 #
-# This Dockerfile provides a multi-stage build for an Alpine based image with
-# Python 3. The first build stage sets up Alpine and Python 3, while the second
+# This Dockerfile provides a multi-stage build for a Debian based image with
+# Python 3. The first build stage sets up Debian and Python 3, while the second
 # build stage installs the application and it's dependencies.
 #
 # The base image can be configured through the following build arguments:
 #
-#   ALPLINE_VARIANT: The image name for the alpine variant to use. Defaults to
-#                    "alpine".
+#   IMAGE_NAME:      The image name of the base image. Defaults to "python".
 #
-#   ALPINE_VERSION:  The version of alpine to use. Defaults to 3.19.3
+#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.6".
 #
 #   DOCKER_PROXY:    The prefix for the docker repository where the base image is
 #                    hosted. This should end in a forward slash. Defaults to
-#                    docker.io/library
+#                    "docker.io/library".
 #
 # The application is installed in $APP_HOME, which defaults to /app. A virtual
 # environment will be created for the application in /opt/virtualenvs/app. This
 # virtual envrionment needs to activated either by the CMD or by an ENTRYPOINT
 # that wraps a CMD.
-#
-# NOTE: The "--allow-untrusted" in the `apk add` commands is to accommodate the
-#       missing public repository CA certificate in the AIDE artifactory.
 #
 # OMS Sensemaking
 # ===============
@@ -47,25 +43,24 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-# The name of the Alpine Linux image variant.
-ARG ALPINE_VARIANT="alpine"
+# The name of the Docker image.
+ARG IMAGE_NAME="python"
 
-# The version of Alpline Linux.
-# TIP: Bump to 3.20.2 when shapley bumps to >= 2.1
-ARG ALPINE_VERSION="3.19.4"
+# The version of Python to use.
+ARG PYTHON_VERSION="3.12.6"
 
 # The docker image prefix.
 ARG DOCKER_PROXY="docker.io/library"
 
 # The paramterized base image.
-FROM ${DOCKER_PROXY:-}/${ALPINE_VARIANT}:${ALPINE_VERSION} AS python-base
+FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
 #       could possibly not be known ahead of running the image.
 ARG USER_NAME=appuser
 
-ARG GROUP_NAME=${USER_NAME}
+ARG GROUP_NAME=${GROUP_NAME:-USER_NAME}
 
 ARG VENVS_DIR=/opt/virtualenvs
 
@@ -80,45 +75,41 @@ WORKDIR ${APP_HOME}
 RUN <<EOF
 set -e
 
-# create user and group
-addgroup $GROUP_NAME
-adduser \
-  --disabled-password \
-  --gecos "Application user" \
-  --home "$APP_HOME" \
-  --no-create-home \
-  --ingroup "$GROUP_NAME" \
+# create group and unprivileged user
+groupadd $GROUP_NAME
+
+useradd \
+  --create-home \
+  --shell /bin/bash \
+  --gid $GROUP_NAME \
   $USER_NAME
 
-# configure package manager
+# install core dependencies
+apt-get update
+apt-get install -y --no-install-recommends \
+  ca-certificates \
+  curl \
+  gzip \
+  tar \
+  lsb-release
 
-# AIDE compatible configuration
-# TIP: enable when shapley bumps to >= 2.1
-#gzip /etc/apk/repositories
-#cat > /etc/apk/repositories <<APK_EOF
-## /etc/apk/repositories --- APK repository configuration
-#
-## use "edge" repos (see Brown Bag from 6/25/2024)
-#https://dl-cdn.alpinelinux.org/alpine/edge/main
-#https://dl-cdn.alpinelinux.org/alpine/edge/community
-#
-#APK_EOF
-apk update
+install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-# install core system dependencies
-apk add -u --no-cache --allow-untrusted \
-  bash \
-  python3 \
-  py3-pip \
-  py3-wheel
+apt-get update
+apt-get install -y --no-install-recommends postgresql-client-16
 
 # prepare file system
-mkdir -p $APP_HOME $VENVS_DIR
-chown $USER_NAME:$GROUP_NAME $APP_HOME $VENVS_DIR
-chmod 774 $APP_HOME $VENVS_DIR
+mkdir -p $APP_HOME # $VENVS_DIR
+chown $USER_NAME:$GROUP_NAME $APP_HOME # $VENVS_DIR
+chmod 774 $APP_HOME # $VENVS_DIR
 
-# clean up
-rm -rf /var/cache/apk/*
+# clean up os packages
+apt-get purge -y curl
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
 
@@ -161,30 +152,20 @@ RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
 set -e
 
 # configure package manager
-apk update
+apt-get update
+
+# update core Python packaging tools
+python3 -m pip install --upgrade --no-cache pip wheel
 
 # install application's system dependencies
-apk add -u --no-cache --allow-untrusted \
-  geos \
-  postgresql-client
-
-# install jq for performing healthchecks
-apk add -u --no-cache --allow-untrusted \
+apt-get install -y --no-install-recommends \
   curl \
+  git \
   jq
 
-# initialize virtual environment
-python3 -m venv --prompt app $VENVS_DIR/app
-source $VENVS_DIR/app/bin/activate
-pip install --upgrade pip setuptools wheel
-
 # prepare build dependencies
-apk add -u --no-cache --allow-untrusted --virtual .build-deps \
-  gcc \
-  geos-dev \
-  git \
-  musl-dev \
-  python3-dev
+BUILD_DEPS="gcc libgeos-dev python3-dev"
+apt-get install -y --no-install-recommends $BUILD_DEPS
 
 # install app
 pip install .
@@ -203,9 +184,12 @@ mv /etc/motd /etc/motd-alpine
 mv $APP_HOME/docker/banner.txt /etc/motd
 chmod 644 /etc/motd
 
-# cleanup
-apk del .build-deps
-rm -rf /var/cache/apk/*
+# clean up os packages
+apt-get purge -y $BUILD_DEPS
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
+USER ${USER_NAME}
 CMD ["/start.sh"]
