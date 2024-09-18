@@ -36,7 +36,7 @@ class NlpApiReceiver(ObjectEventConsumer):
         self.text = text  # This could also be a file, depending on how it is submitted by the API
         # TODO: Add other attributes? Title, primary and secondary topics, though only if needed
 
-    def process_object_events(self) -> None:
+    def process_object_events(self):
         """
         Calls the handle_event function of the NlpSensemakerController, passing it an ObjectEvent with the
         user_dn, a UUID for the text/document, a SOURCE ObjectType, and a CREATE Action. Returns bool based on
@@ -76,7 +76,7 @@ class TextFileReader(ObjectEventConsumer):
         self.default_acm: dict = default_acm
         self.default_user_dn: str = default_user_dn
 
-    def process_object_events(self) -> None:
+    def process_object_events(self):
         success: bool = self.handle_event(
             ObjectEvent(
                 self.default_user_dn,
