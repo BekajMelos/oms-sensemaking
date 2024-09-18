@@ -4,12 +4,6 @@ DB_MAX_CONNECTION_ATTEMPTS=10
 DB_CONNECTION_ATTEMPT_INTERVAL=5
 
 echo "Initializing database."
-if [ -f /opt/virtualenvs/app/bin/activate ]; then
-  source /opt/virtualenvs/app/bin/activate
-else
-  echo "Virtual environment not found!" >&2
-  exit 1
-fi
 
 count=0
 alembic_output=''
