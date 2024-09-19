@@ -1,13 +1,4 @@
-"""
-Cotravel Sensemakers.
-
-Algorithm ChangeLog
-===================
-
-[1.0.0]
-- Initial "co-travel" algorithm implementation.
-
-"""
+"""Cotravel Sensemakers."""
 import logging
 import uuid
 from collections import defaultdict
@@ -117,7 +108,16 @@ class Colocation:
 
 
 class CotravelSensemaker(Sensemaker):
-    """A sensemaker for analyzing tracks for cotravelers."""
+    """
+    A sensemaker for analyzing tracks for cotravelers.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+    - Initial "co-travel" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         super().__init__()

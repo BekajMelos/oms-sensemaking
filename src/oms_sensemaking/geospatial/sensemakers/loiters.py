@@ -1,13 +1,4 @@
-"""
-Loiter Sensemakers.
-
-Algorithm ChangeLog
-===================
-
-[1.0.0]
-- Initial "loiter" algorithm implementation.
-
-"""
+"""Loiter Sensemakers."""
 
 import logging
 from datetime import datetime, timedelta
@@ -64,7 +55,16 @@ class Loiter:
 
 
 class LoiterSensemaker(Sensemaker):
-    """A sensemaker for analyzing tracks for loiters."""
+    """
+    A sensemaker for analyzing tracks for loiters.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+    - Initial "loiter" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         super().__init__()

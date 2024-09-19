@@ -1,13 +1,4 @@
-"""
-Similar Tracks Sensemakers.
-
-Algorithm ChangeLog
-===================
-
-[1.0.0]
-- Initial "similar tracks" algorithm implementation.
-
-"""
+"""Similar Tracks Sensemakers."""
 import logging
 import uuid
 from collections import defaultdict
@@ -66,7 +57,15 @@ class TopSimilar:
 
 
 class SimilarTracksSensemaker(Sensemaker):
-    """A sensemaker for detecting similar tracks."""
+    """
+    A sensemaker for detecting similar tracks.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+    - Initial "similar tracks" algorithm implementation.
+    """
 
     def __init__(self) -> None:
         super().__init__()

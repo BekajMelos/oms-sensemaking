@@ -1,13 +1,4 @@
-"""
-Natural Language Processing (NLP) Sensemaker.
-
-Algorithm ChangeLog
-===================
-
-[1.0.0]
-- Initial NLP algorithm implementation.
-
-"""
+"""Natural Language Processing (NLP) Sensemaker."""
 import argparse
 
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -18,7 +9,16 @@ from oms_sensemaking.nlp.models.submission_data import SubmissionData
 
 
 class NlpSensemaker(Sensemaker):
-    """A sensemaker for analyzing text by extracting entities and the relationships between them"""
+    """
+    A sensemaker for analyzing text by extracting entities and the relationships between them.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+    - Initial NLP algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         super().__init__()
