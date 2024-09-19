@@ -16,6 +16,7 @@ class NlpSensemaker(Sensemaker):
     ===================
 
     [1.0.0]
+
     - Initial NLP algorithm implementation.
 
     """

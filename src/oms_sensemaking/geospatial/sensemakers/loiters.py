@@ -62,6 +62,7 @@ class LoiterSensemaker(Sensemaker):
     ===================
 
     [1.0.0]
+
     - Initial "loiter" algorithm implementation.
 
     """

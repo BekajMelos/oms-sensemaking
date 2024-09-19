@@ -115,6 +115,7 @@ class CotravelSensemaker(Sensemaker):
     ===================
 
     [1.0.0]
+
     - Initial "co-travel" algorithm implementation.
 
     """
