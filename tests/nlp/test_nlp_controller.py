@@ -1,18 +1,44 @@
 """Tests for the NlpSensemakerController"""
 
+from enum import Enum
 from uuid import uuid4
-
-from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Action, ObjectType
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import ObjectEvent
 from oms_sensemaking.nlp.controllers import NlpApiReceiver, NlpSensemakerController, TextFileReader
 
-user_dn = SETTINGS.user_dn
-acm = DEFAULT_ACM
-object_type = ObjectType.SOURCE
+
+class Action(str, Enum):
+    CREATE = "CREATE"
+    READ = "READ"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+    RESTORE = "RESTORE"
+    VERIFY = "VERIFY"
+    MERGE_SOURCE = "MERGE_SOURCE"
+    MERGE_TARGET = "MERGE_TARGET"
+
+
+class ObjectType(str, Enum):
+    SOURCE = "SOURCE"
+    ATTRIBUTE = "ATTRIBUTE"
+    ORIGINATOR = "ORIGINATOR"
+    PROVIDER = "PROVIDER"
+    ACM = "ACM"
+    RELATIONSHIP = "RELATIONSHIP"
+    NODE = "NODE"
+    NODE_LINK = "NODE_LINK"
+    RESOLVED_OBJECT_CONFIG = "RESOLVED_OBJECT_CONFIG"
+    NODE_IDENTIFIER = "NODE_IDENTIFIER"
+    COMMENT = "COMMENT"
+    ALERT = "ALERT"
+    OBJECT_COLLECTION = "OBJECT_COLLECTION"
+
+
 action = Action.CREATE
+object_type = ObjectType.SOURCE
+user_dn = SETTINGS.user_dn
+acm = {}
 
 
 def test_controller_text_file_reader():
