@@ -115,11 +115,14 @@ class Relationship(OmsObject):
 class CreateObjectResponse(BaseModel):
     """Represents the response for object "create" endpoints."""
 
+    print("**********CREATE OBJECT RESPONSE************")
     success: bool = Field(
         ...,
         examples=[True],
         description="Indicates if the object was successfully created in the graph."
     )
+    print(success)
+    print("**********END CREATE RESPONSE**********")
 
 
 class DeleteObjectResponse(BaseModel):

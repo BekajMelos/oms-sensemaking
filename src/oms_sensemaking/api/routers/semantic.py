@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, Relationship
+from oms_sensemaking.models.semantic import Node as OrmNode
 from oms_sensemaking.clients import get_db_session
 
 router: APIRouter = APIRouter()
@@ -21,9 +22,25 @@ def delete_attribute(db: Annotated[Session, Depends(get_db_session)], attribute_
     """Delete an attribute in the graph."""
     return DeleteObjectResponse(success=True)
 
+@router.get("/node", response_model=list[Node])
+def get_nodes(db: Annotated[Session, Depends(get_db_session)]):
+    """Gets all nodes in the graph."""
+    print("************GET NODES***********")
+    print("DB = ", db)
+    return db
 
 @router.post("/node", response_model=CreateObjectResponse, response_model_exclude_none=True)
 def create_node(db: Annotated[Session, Depends(get_db_session)], node: Node) -> CreateObjectResponse:
+    print("************CREATE NODE**************")
+    print(node)
+    print(type(node))
+    print("*********")
+    print(db)
+    print(type(db))
+    print("CREATED OBJECT RESPONSE = ", CreateObjectResponse(success=True))
+    print("CREATED OBJECT RESPONSE NO SUCCESS = ", CreateObjectResponse)
+    print("****************BEFORE END****************")
+    db.add(OrmNode(**node.model_dump()))
     """Create a node in the graph."""
     return CreateObjectResponse(success=True)
 

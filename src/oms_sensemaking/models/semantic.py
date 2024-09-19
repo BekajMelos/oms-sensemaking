@@ -1,15 +1,43 @@
 """Semantic Sensemaker models."""
 
+import uuid
+from pydantic import UUID4, BaseModel, Field, field_serializer
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
+from sqlalchemy.orm import (
+    Mapped,
+    MappedAsDataclass,
+    Session,
+    declared_attr,
+    mapped_column,
+    query_expression,
+    with_expression,
+)
 
-class Node(BaseORM, OmsAttributeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
+class OmsNodeMixin(MappedAsDataclass):
+
+    id: UUID4
+    version: str
+    acm: str
+    tags: str
+    guideID: str
+    name: str
+    tier: str
+    classIri: str
+    className: str
+    ifcCodes: str
+    allegience: str
+    allegienceAor: str
+    currentAor: str
+    isNo: bool
+
+class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
     """
     Represents a node in OMS.
 
     This model is also a dataclass. The order of the positional parameters in
     the generated ``__init__()`` method are:
 
-    - node_id
+    - id
     - version
     - acm
     - tags
