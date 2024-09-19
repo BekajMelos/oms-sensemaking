@@ -254,7 +254,9 @@ To integrate with PyCharm, use the [PyCharm Ruff plugin].
 # Run and listen for events from sqs
 python -m oms_sensemaking geo
 # Run and read events from local file
-python -m oms_sensemaking geo --filename data/N11QN_202212011800.csv
+python -m oms_sensemaking geo --filename etc/data/N11QN_202212011800.csv
+# Run NLP analysis on a local text file
+python -m oms_sensemaking nlp -f etc/data/madcow.txt
 ```
 
 ## Running Unit Tests
