@@ -87,8 +87,6 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from tests.nlp.test_nlp_service import service
-
 load_dotenv()
 
 from oms_sdk import DEFAULT_ACM
@@ -211,7 +209,7 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     text = nlp_service.get_text_from_file(args.filename)
-    service.run_nlp_service(text)
+    nlp_service.run_nlp_service(text)
 
 
 def run_semantic() -> None:
