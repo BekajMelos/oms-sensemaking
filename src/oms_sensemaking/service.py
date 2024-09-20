@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import about
+from oms_sensemaking.api.routers import about, nlp
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import NoOpEventConsumer
@@ -31,7 +31,7 @@ def get_controllers() -> list[SensemakerController]:
         # TODO: set queue names independently
         GeospatialSensemakerController(GeoSQSListener()),
         NlpSensemakerController(NoOpEventConsumer()),
-        SemanticSensemakerController(NoOpEventConsumer())
+        SemanticSensemakerController(NoOpEventConsumer()),
     ]
 
     return controllers
@@ -73,7 +73,7 @@ def handle_exception(_, ex: Exception):
     """
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={'detail': str(ex) or f'Unexpected error: {ex.__class__.__name__}'}
+        content={"detail": str(ex) or f"Unexpected error: {ex.__class__.__name__}"},
     )
 
 
@@ -84,10 +84,7 @@ def create_app(config: Settings) -> FastAPI:
     :param config: configuration used to initialize FastAPI and submodules.
     """
     application: FastAPI = FastAPIOffline(
-        title=__title__,
-        description=__description__,
-        version=__version__,
-        lifespan=lifespan
+        title=__title__, description=__description__, version=__version__, lifespan=lifespan
     )
 
     # initialize gzip middleware
@@ -95,6 +92,7 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure routes
     application.include_router(about.router)
+    application.include_router(nlp.router, prefix="/nlp", tags=["nlp"])
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
