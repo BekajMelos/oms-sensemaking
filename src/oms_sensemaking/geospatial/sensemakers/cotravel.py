@@ -112,11 +112,22 @@ class Colocation:
 
 
 class CotravelSensemaker(Sensemaker):
-    """A sensemaker for analyzing tracks for cotravelers."""
+    """
+    A sensemaker for analyzing tracks for cotravelers.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "co-travel" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> list[PotentialMatch]:
         """Run the *cotravel* algorithm on the given track."""

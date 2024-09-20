@@ -73,11 +73,22 @@ class TopSimilar:
 
 
 class SimilarTracksSensemaker(Sensemaker):
-    """A sensemaker for detecting similar tracks."""
+    """
+    A sensemaker for detecting similar tracks.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "similar tracks" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         """Create a new instance of SimilarTracksSensemaker."""
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> TopSimilar:
         """

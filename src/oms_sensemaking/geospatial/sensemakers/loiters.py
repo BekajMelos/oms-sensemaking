@@ -66,11 +66,22 @@ class Loiter:
 
 
 class LoiterSensemaker(Sensemaker):
-    """A sensemaker for analyzing tracks for loiters."""
+    """
+    A sensemaker for analyzing tracks for loiters.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "loiter" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         """Create a new instance of LoiterSesnemaker."""
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """
