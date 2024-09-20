@@ -42,6 +42,39 @@ be packaged and deployed to a server or browsed locally.
 
 ## Building the Docker Image
 
+The Docker image is intended to be used in two separate contexts: in development
+as part of a *docker compose* environment and as a standalone image that can be
+deployed in other environments.
+
+The project version number is determined dynamically based on Git tags. Since
+the local `.git` directory is excluded from the Docker image, the application's
+version needs to be provided as a build argument. This circumvents the automatic
+detection of the version number during the image build process.
+
+To Build the OMS Sensemaking Docker Image:
+
+1. Ensure you have a local virtual environment (e.g. `.venv`)
+
+    See the [Development Environment] documentation for how to set this up.
+
+2. Ensure you have a `.netrc` filed configured
+
+    See the [Development Environment] documentation for how to set this up.
+
+3. Use `docker build` to build the image
+
+    ```
+    VENV_DIR="${VENV_DIR:-.venv}"
+    APP_VERSION=$(source $VENV_DIR/bin/activate && python -m setuptools_scm)
+
+    docker build \
+    --build-arg $APP_VERSION \
+    --no-cache \
+    -t oms_sensemaking:latest \
+    --secret id=mynetrc,src=${HOME}/.netrc
+    .
+    ```
+
 ## Versioning *OMS Sensemaking*
 
 *OMS Sensemaking* leverages [setuptools-scm] for dynamic versioning based on Git tags.
@@ -90,3 +123,4 @@ To cut new release:
       reference them in the release notes.
 
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
+[Development Environment]: dev.md 
