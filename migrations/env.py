@@ -1,3 +1,4 @@
+"""Alembic environment configuration."""
 from logging.config import fileConfig
 
 from alembic import context
@@ -35,7 +36,7 @@ target_metadata = BaseORM.metadata
 
 
 def include_name(name, type_, parent_names):
-    """Returns True if name is a table related to one of the ORM models, False otherwise.
+    """Return True if name is a table related to one of the ORM models, False otherwise.
 
     This function helps ignore tables not managed by SQLAlchemy/Alembic (e.g. the PostGIS tables).
 

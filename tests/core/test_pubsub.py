@@ -1,3 +1,4 @@
+"""Tests for PubSub."""
 from oms_sensemaking.core.pubsub import PubSub
 
 

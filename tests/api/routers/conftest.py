@@ -1,3 +1,4 @@
+"""PyTest Configuration."""
 from typing import Iterator
 
 import pytest
@@ -8,5 +9,5 @@ from oms_sensemaking.service import app
 
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    """Yields a FastAPI TestClient."""
+    """Yield a FastAPI TestClient."""
     yield TestClient(app)

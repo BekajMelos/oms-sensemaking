@@ -19,10 +19,11 @@ select = [
 # ingoring some linting rules for compatibility with the ruff formatter
 # see https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
 ignore = [
-    'W191',  # tab-indentation
+    'D105',  # undocumented-magic-method
     'E111',  # indentation-with-invalid-multiple
     'E114',  # indentation-with-invalid-multiple-comment
-    'E117'   # over-indented
+    'E117',  # over-indented
+    'W191'   # tab-indentation
 ]
 
 

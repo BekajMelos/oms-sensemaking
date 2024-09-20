@@ -31,7 +31,15 @@ ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS: int = 2  # option 2: GeoJSON Short CRS (e
 
 
 class ComparisonResult:
+    """Represents the results of a track comparison."""
+
     def __init__(self, track_node_id: uuid.UUID, similarity_score: float):
+        """
+        Create a new instance of ComparisonResult.
+
+        :param track_node_id: The unique identifier for the Node associated with the track.
+        :param similarity_score: The similarity score.
+        """
         self.track_node_id = track_node_id
         self.similarity_score = similarity_score
 
@@ -43,7 +51,10 @@ class ComparisonResult:
 
 
 class TopSimilar:
+    """Represents the top similar tracks."""
+
     def __init__(self):
+        """Create a new instance of TopSimilar."""
         self.top_similarities = PriorityQueue(maxsize=SETTINGS.n_tracks)
 
     def __str__(self):
@@ -53,6 +64,11 @@ class TopSimilar:
         return self.__str__()
 
     def add_comparison_result(self, comparison_result: ComparisonResult) -> None:
+        """
+        Add a comparison result the to top similarities queue.
+
+        :param comparison_result: The results to enqueue.
+        """
         self.top_similarities.put((comparison_result.similarity_score, comparison_result.track_node_id))
 
 
@@ -60,6 +76,7 @@ class SimilarTracksSensemaker(Sensemaker):
     """A sensemaker for detecting similar tracks."""
 
     def __init__(self) -> None:
+        """Create a new instance of SimilarTracksSensemaker."""
         super().__init__()
 
     def process_data(self, data: Track) -> TopSimilar:
@@ -112,6 +129,14 @@ class SimilarTracksSensemaker(Sensemaker):
     def determine_jaccard_similarity(
         ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], eval_track_node_id: uuid.UUID
     ) -> ComparisonResult:
+        """
+        Determine the Jaccard similairty between two track geohash sets.
+
+        :param ref_track_geohash_set: The references track geohash set.
+        :param eval_track_geohash_set:
+        :param eval_track_node_id:
+        :return: A comparison result with similarity score.
+        """
         # intersection of two sets
         intersection = len(ref_track_geohash_set.intersection(eval_track_geohash_set))
         # Unions of two sets
