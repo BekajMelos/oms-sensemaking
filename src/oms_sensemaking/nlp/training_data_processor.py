@@ -1,3 +1,4 @@
+"""Utilities for training data."""
 import argparse
 import logging
 import os
@@ -17,13 +18,21 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingDataProcessor:
+    """Utility class for training data."""
+
     def __init__(self, annotated_filepath: str, save_directory: str):
+        """
+        Create a new instance of TrainingDataProcessor.
+
+        :param annotated_filepath: The path to an annotated document.
+        :param save_directory: The output directory.
+        """
         self.annotated_filepath = annotated_filepath
         self.save_directory = save_directory
         self.properties = {"annotators": "tokenize, pos, lemma, depparse"}
 
     def run_pipeline(self):
-        """The entire pipeline of functions needed to convert .jsonl to proper .tsv format for CoreNLP model training"""
+        """Run a pipeline to convert .jsonl to CoreNLP .tsv format for model training."""
         doccano_results = self.load_jsonl_file()
         for result in doccano_results:
             processed_doccano_result = self.process_doccano_result(result)
@@ -31,15 +40,15 @@ class TrainingDataProcessor:
             self.write_relation_result(processed_doccano_result, self.save_directory)
 
     def load_jsonl_file(self) -> list[DoccanoResult]:
-        """Opens the .jsonl Doccano-annotated file and formats the data as a list of DoccanoResults"""
+        """Open the .jsonl Doccano-annotated file and formats the data as a list of DoccanoResults."""
         with open(self.annotated_filepath, "r") as file:
             data = pd.read_json(file, lines=True, chunksize=1)
             doccano_results = [
                 DoccanoResult(
                     item["id"].values[0],
                     item["text"].values[0],
-                    {DoccanoEntity(entity) for entity in item["entities"].values[0]},
-                    {DoccanoRelation(relation) for relation in item["relations"].values[0]},
+                    {DoccanoEntity(**entity) for entity in item["entities"].values[0]},
+                    {DoccanoRelation(**relation) for relation in item["relations"].values[0]},
                     item["Comments"].values[0],
                 )
                 for item in data
@@ -48,12 +57,14 @@ class TrainingDataProcessor:
 
     def process_doccano_result(self, doccano_result: DoccanoResult) -> ProcessedResult:
         """
+        Process results from Doccanno.
+
         This function builds the ProcessedResult data type and has three parts:
+
         1. Using the CoreNLP client to get tokens from the text
         2. Going through the DoccanoResult entities and mapping them to tokens
         3. Going through the DoccanoResult relations and mapping Relations between tokens
         """
-
         # Tokenize the entities and relations
         text = doccano_result.text
 
@@ -75,8 +86,11 @@ class TrainingDataProcessor:
         return processed_result
 
     def tokenize_text(self, text: str) -> RangeMap:
-        """Using the CoreNLP client to get tokens from the text"""
+        """
+        Tokenize the given text using CoreNLP.
 
+        :param text: The text to tokenize.
+        """
         if not text:
             text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
@@ -107,7 +121,7 @@ class TrainingDataProcessor:
     def map_entities_to_tokens(
         self, doccano_result: DoccanoResult, doc_token_range_map: RangeMap
     ) -> dict[int, TokenReference]:
-        """Going through the DoccanoResult entities and mapping them to tokens"""
+        """Map Doccano result entities to tokens."""
         entity_token_map = {}
         for doccano_entity in doccano_result.entities:
             # Get list of tokens in the offset range
@@ -144,7 +158,7 @@ class TrainingDataProcessor:
     def link_relations(
         self, doccano_result: DoccanoResult, entity_token_map: dict[int, TokenReference]
     ) -> set[ProcessedRelation]:
-        """Going through the DoccanoResult relations and mapping Relations between tokens"""
+        """Link relations between tokens."""
         processed_relation_set = set({})
         for doccano_relation in doccano_result.relations:
             # Get each of the features of a doccano relation
@@ -161,7 +175,7 @@ class TrainingDataProcessor:
         return processed_relation_set
 
     def write_ner_result(self, processed_result: ProcessedResult, save_directory: str):
-        """Formats and saves the NER info from ProcessedResult to the specified NER .tsv file"""
+        """Format and save the NER info from ProcessedResult to the specified NER .tsv file."""
         ner_save_directory = save_directory + "/ner/"
         if not os.path.exists(ner_save_directory):
             os.makedirs(ner_save_directory)
@@ -180,7 +194,7 @@ class TrainingDataProcessor:
             logger.error("Unable to open or create NER .tsv file.")
 
     def write_relation_result(self, processed_result: ProcessedResult, save_directory: str):
-        """Formats and saves the Relation info from ProcessedResult to the specified Relation .tsv file"""
+        """Format and save the Relation info from ProcessedResult to the specified Relation .tsv file."""
         relation_save_directory = save_directory + "/relation/"
         if not os.path.exists(relation_save_directory):
             os.makedirs(relation_save_directory)

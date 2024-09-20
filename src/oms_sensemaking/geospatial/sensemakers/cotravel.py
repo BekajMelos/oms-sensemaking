@@ -28,6 +28,8 @@ MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.max_lag_lead_duration
 
 
 class PotentialMatch:
+    """Represents a potential co-travel match."""
+
     def __init__(
         self,
         track1: UUID,
@@ -38,6 +40,7 @@ class PotentialMatch:
         last_time2: datetime,
         true_cotravel: bool,
     ):
+        """Create a new instance of PotentialMatch."""
         self.track1 = track1
         self.track2 = track2
         self.start_time1 = start_time1
@@ -78,11 +81,11 @@ class PotentialMatch:
         )
 
     def calculate_and_set_geometry(self, track1: Track, track2: Track) -> None:
-       """Set the geometry for the cotravel
+       """
+       Set the geometry for the cotravel.
 
        :param track1: First track
        :param track2: Second track
-       :return: None
        """
        start_time = min(self.start_time1, self.start_time2)
        end_time = max(self.last_time1, self.last_time2)
@@ -95,6 +98,7 @@ class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
     def __init__(self, track1: UUID, track2: UUID, point: Point, db_point: Point):
+        """Create a new instance of Colocation."""
         self.track1 = track1
         self.track2 = track2
         self.point = point
@@ -121,10 +125,12 @@ class CotravelSensemaker(Sensemaker):
     """
 
     def __init__(self) -> None:
+        """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> list[PotentialMatch]:
+        """Run the *cotravel* algorithm on the given track."""
         LOGGER.info(f"Detecting Cotravels in {data.node_id}")
 
         cotravels: list[PotentialMatch] = []
@@ -289,7 +295,8 @@ class CotravelSensemaker(Sensemaker):
     # TODO maybe move to utility
     @staticmethod
     def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> List[List[float]]:
-        """Return points within provided time bounds
+        """
+        Return points within provided time bounds.
 
         :param track: Track to extract points from
         :param start_time: earliest point timestamp

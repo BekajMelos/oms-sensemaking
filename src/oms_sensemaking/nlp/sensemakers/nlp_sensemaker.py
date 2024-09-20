@@ -22,6 +22,7 @@ class NlpSensemaker(Sensemaker):
     """
 
     def __init__(self) -> None:
+        """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
 

@@ -19,7 +19,15 @@ LOITER_MIN_TIME = timedelta(seconds=SETTINGS.loiter_min_time)
 
 
 class PotentialLoiter:
+    """Reprents a potential loiter event."""
+
     def __init__(self, start_time: datetime, latest_time: datetime):
+        """
+        Create a new instance of PotentialLoiter.
+
+        :param start_time: The time potential loiter started.
+        :param latest_time: The time the potential loiter ended.
+        """
         self.start_time = start_time
         self.latest_time = latest_time
 
@@ -31,6 +39,8 @@ class PotentialLoiter:
 
 
 class Loiter:
+    """Represents a loiter event."""
+
     def __init__(
         self,
         track_node_id: UUID,
@@ -40,6 +50,7 @@ class Loiter:
         processed_points: list[Point],
         geometry: str,
     ):
+        """Create a new instance of Loiter."""
         self.track_node_id = track_node_id
         self.geohash_low = geohash_low
         self.start_time = start_time
@@ -68,6 +79,7 @@ class LoiterSensemaker(Sensemaker):
     """
 
     def __init__(self) -> None:
+        """Create a new instance of LoiterSesnemaker."""
         super().__init__()
         self.version = (1, 0, 0)
 

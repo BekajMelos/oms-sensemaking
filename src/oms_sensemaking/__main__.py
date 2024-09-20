@@ -2,7 +2,7 @@
 Provides a CLI for oms-sensemaking.
 
 ```
-$python -m oms_sensemaking -h
+$ python -m oms_sensemaking -h
 usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
 
 A utility for analysing OMS data.
@@ -49,6 +49,18 @@ options:
   -f FILENAME, --filename FILENAME
                         File to run on.
 ```
+
+Examples
+--------
+Run and listen for events from SQS::
+
+    $ python -m oms_sensemaking geo
+
+
+Run and process events from local file:
+
+    $ python -m oms_sensemaking geo --filename data/N11QN_202212011800.csv
+
 
 Natural Language Processing CLI
 ===============================
@@ -101,17 +113,20 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 class PasswordAction(Action):
     """An argparse action for handling passwords."""
 
-    def __call__(self,
-                 parser: ArgumentParser,
-                 namespace: Namespace,
-                 values: Union[str, Sequence[Any], None],
-                 option_string: Optional[str] = None) -> None:
+    def __call__(
+        self,
+        parser: ArgumentParser,
+        namespace: Namespace,
+        values: Union[str, Sequence[Any], None],
+        option_string: Optional[str] = None,
+    ) -> None:
+        """Use getpass to for safe (i.e. note echoed to console) password retrieval."""
         setattr(namespace, self.dest, getpass())
 
 
 def add_db_cli_args(arg_parser: ArgumentParser) -> ArgumentParser:
     """
-    Defines common database CLI arguments on the given parser.
+    Define common database CLI arguments on the given parser.
 
     :param arg_parser: The parser to initialize with common database arguments.
     :return: The configured arg_parser.
@@ -135,7 +150,7 @@ def add_db_cli_args(arg_parser: ArgumentParser) -> ArgumentParser:
 
 def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
     """
-    Adds the standard OMSB CLI options to the given parser.
+    Add the standard OMSB CLI options to the given parser.
 
     :param parser: A CLI parser.
     :return: the configured parser.

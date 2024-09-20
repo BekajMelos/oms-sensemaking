@@ -1,8 +1,11 @@
+"""Utilities for working with *entities* and *relationships*."""
 from oms_sensemaking.nlp.models.document_as_entity import DocumentAsEntity
 from oms_sensemaking.nlp.models.document_has_relation import DocumentHasRelation
 
 
 class EntitiesAndRelationships:
+    """Represents entitise and relationships."""
+
     def __init__(
         self,
         ner_entities: list,
@@ -10,6 +13,7 @@ class EntitiesAndRelationships:
         document_entity: DocumentAsEntity,
         document_relationships: list[DocumentHasRelation],
     ):
+        """Create a new instance of EntitiesAndRelationship."""
         self.ner_entities = ner_entities
         self.ner_relationships = ner_relationships
         self.document_entity = document_entity
