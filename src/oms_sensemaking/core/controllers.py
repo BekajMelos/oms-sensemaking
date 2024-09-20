@@ -71,7 +71,7 @@ class SensemakerController(ABC):
         """
         Unregister a sensemaker.
 
-        :param sensemaker: The sensemaker (i.e. an instance of ``Sensemaker``).
+        :param name: The name of the sensemaker to unregister.
         :return: True if the Sensemaker was unregistered and False otherwise.
         """
         with self.lock:

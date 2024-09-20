@@ -108,10 +108,21 @@ class Colocation:
 
 
 class CotravelSensemaker(Sensemaker):
-    """A sensemaker for analyzing tracks for cotravelers."""
+    """
+    A sensemaker for analyzing tracks for cotravelers.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "co-travel" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> list[PotentialMatch]:
         LOGGER.info(f"Detecting Cotravels in {data.node_id}")
@@ -197,7 +208,6 @@ class CotravelSensemaker(Sensemaker):
         :return: List of cotravels
 
         """
-
         with db_session() as db:
             query = db.execute(
                 select(
