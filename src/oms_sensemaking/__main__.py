@@ -210,7 +210,7 @@ def run_nlp(args: Namespace) -> None:
     from oms_sensemaking.nlp.nlp_service import NlpService
 
     nlp_service = NlpService()
-    text = nlp_service.get_text_from_file(args.filepath)
+    text = nlp_service.get_text_from_file(args.filename)
     service.run_nlp_service(text)
 
 
