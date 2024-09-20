@@ -14,7 +14,9 @@ class CoreNlpService:
             }
         else:
             self.props = props
-        self.client = CoreNLPClient(properties=self.props, timeout=60000, memory="16G")
+        self.client = CoreNLPClient(
+            properties=self.props, endpoint="http://localhost:9000", timeout=60000, memory="16G"
+        )
 
     def annotate_document(self, text: str):
         """

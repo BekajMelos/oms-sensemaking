@@ -1,16 +1,14 @@
 from fastapi import APIRouter
-from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.controllers import start_controller_and_wait
-from oms_sensemaking.nlp.controllers import NlpApiReceiver, NlpSensemakerController
+from oms_sensemaking.api.schemas.nlp import AnalyzeTextResponse
+from oms_sensemaking.models.nlp import TextSubmission
+from oms_sensemaking.nlp.nlp_service import NlpService
 
 router: APIRouter = APIRouter()
 
 
-# TODO: Add response model
-@router.post("/ner", status_code=200)
-def analyze_text(text: str):
-    nlp: NlpSensemakerController = NlpSensemakerController(NlpApiReceiver(text, DEFAULT_ACM, SETTINGS.user_dn))
-    start_controller_and_wait(nlp)
-    return {"status": "OK"}
+@router.post("/ner", response_model=AnalyzeTextResponse, response_model_exclude_none=True, status_code=200)
+def analyze_text(submission: TextSubmission):
+    nlp: NlpService = NlpService()
+    nlp.run_nlp_service(submission.text)
+    return AnalyzeTextResponse(success=True)
