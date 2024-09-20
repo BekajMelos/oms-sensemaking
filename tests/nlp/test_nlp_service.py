@@ -2,8 +2,7 @@
 
 from uuid import uuid4
 
-from oms_sensemaking.nlp.models.submission_data import SubmissionData
-from oms_sensemaking.nlp.nlp_service import NlpService
+from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
 
 service = NlpService()
 doc_id = uuid4()
@@ -15,19 +14,15 @@ sample_text = (
     " said on Wednesday consumers should buy sheepmeat from countries other than Britain until the "
     "scientific advice was clearer."
 )
-data = SubmissionData(document_id=doc_id, text=sample_text)
+reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
 
-def test_run_nlp_sm():
+def test_run_nlp():
     """Tests just running the business logic"""
-    findings = service.run_nlp_sensemaker(data)
+    findings = service.run_nlp(reader)
     assert findings.ner_entities
     assert findings.document_entity
     assert findings.ner_relationships
     assert findings.document_relationships
     assert len(findings.document_relationships) == len(findings.ner_entities)
     assert findings.document_entity.document_id == doc_id
-
-
-def test_run_nlp_full_service():
-    assert service.run_nlp_service(data.text)
