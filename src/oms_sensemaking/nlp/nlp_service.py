@@ -1,51 +1,13 @@
 """NLP Sensemaker Service"""
 
 import logging
-from abc import ABC, abstractmethod
 from uuid import uuid4
 
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
-from oms_sensemaking.nlp.models.submission_data import SubmissionData
+from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class NlpReader(ABC):
-    @abstractmethod
-    def read(self) -> SubmissionData:
-        """
-        Provide a SubmissionData object to the NlpService
-        """
-        raise NotImplementedError()
-
-
-class NlpStringReader(NlpReader):
-    def __init__(self, text, document_id=None):
-        self.text = text
-        self.document_id = document_id if document_id else uuid4()
-
-    def read(self) -> SubmissionData:
-        return SubmissionData(document_id=self.document_id, text=self.text)
-
-
-class NlpFileReader(NlpReader):
-    def __init__(self, filepath, document_id=None):
-        """
-        Read text file and get contents as string
-        :param filepath: path to text file
-        :param document_id: unique identifier of document
-        """
-        self.filepath = filepath
-        self.document_id = document_id if document_id else uuid4()
-
-    def read_file(self) -> str:
-        with open(self.filepath, "r") as file:
-            file_text = file.read()
-        return file_text
-
-    def read(self) -> SubmissionData:
-        return SubmissionData(self.document_id, self.read_file())
 
 
 class NlpService:
