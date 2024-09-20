@@ -19,3 +19,5 @@ dynamically generated API reference and OMS Sensemaking quickstart guide.
 
 
 [Setting up an OMS Sensemaking Development Environment]: ./docs/dev-guide/dev.md
+[mkdocs]: https://www.mkdocs.org/
+[mkdocstring]: https://mkdocstrings.github.io/
