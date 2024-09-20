@@ -87,7 +87,7 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from oms_sensemaking.nlp.nlp_service import NlpFileReader
+from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
 load_dotenv()
 
