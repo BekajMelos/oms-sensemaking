@@ -1,4 +1,4 @@
-"""Tests for the NLP Sensemaker and Annotation Processor"""
+"""Tests for the NLP Sensemaker and Annotation Processor."""
 
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData

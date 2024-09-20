@@ -52,7 +52,6 @@ options:
 
 Examples
 --------
-
 Run and listen for events from SQS::
 
     $ python -m oms_sensemaking geo
