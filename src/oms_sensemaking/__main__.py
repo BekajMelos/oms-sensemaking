@@ -205,11 +205,11 @@ def run_geospatial(args: Namespace) -> None:
 def run_nlp(args: Namespace) -> None:
     """Run the NLP algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.nlp.controllers import NlpSensemakerController, TextFileReader
+    from oms_sensemaking.nlp.nlp_service import NlpService
 
-    # TODO : Add another event consumer or something else for receiving API calls
-    nlp: NlpSensemakerController = NlpSensemakerController(TextFileReader(args.filename, DEFAULT_ACM, SETTINGS.user_dn))
-    start_controller_and_wait(nlp)
+    nlp_service = NlpService()
+    text = nlp_service.get_text_from_file(args.filename)
+    nlp_service.run_nlp_service(text)
 
 
 def run_semantic() -> None:

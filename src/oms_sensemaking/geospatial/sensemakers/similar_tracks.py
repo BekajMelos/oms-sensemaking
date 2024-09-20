@@ -57,16 +57,27 @@ class TopSimilar:
 
 
 class SimilarTracksSensemaker(Sensemaker):
-    """A sensemaker for detecting similar tracks."""
+    """
+    A sensemaker for detecting similar tracks.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "similar tracks" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> TopSimilar:
         """
         Primary method to obtain N-most similar track objects to the track provided.
 
-        :param track: Track object to detect cotravels on
+        :param data: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.info(f"Looking for similar tracks to {data.node_id}")
