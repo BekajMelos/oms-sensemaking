@@ -1,5 +1,11 @@
+# mkdocs.yml --- mkdocs configuration.
 site_name: OMS Sensemaking
 site_description: OMS Sensemaking Project Documentation
+
+copyright: 2024 Black Cape, Inc.
+repo_url: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking
+
+dev_addr: '127.0.0.1:4000'
 
 theme:
   name: "material"
