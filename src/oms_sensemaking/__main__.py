@@ -2,7 +2,7 @@
 Provides a CLI for oms-sensemaking.
 
 ```
-$python -m oms_sensemaking -h
+$ python -m oms_sensemaking -h
 usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
 
 A utility for analysing OMS data.
@@ -49,6 +49,19 @@ options:
   -f FILENAME, --filename FILENAME
                         File to run on.
 ```
+
+Examples
+--------
+
+Run and listen for events from SQS::
+
+    $ python -m oms_sensemaking geo
+
+
+Run and process events from local file:
+
+    $ python -m oms_sensemaking geo --filename data/N11QN_202212011800.csv
+
 
 Natural Language Processing CLI
 ===============================

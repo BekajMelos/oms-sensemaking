@@ -1,0 +1,29 @@
+site_name: OMS Sensemaking
+site_description: OMS Sensemaking Project Documentation
+
+theme:
+  name: "material"
+
+nav:
+  - Home: index.md
+  - Development Guide:
+      - Development Environment: dev-guide/dev.md
+      - Packaging & Versioning: dev-guide/packaging.md
+      - Environment Variables: dev-guide/env-vars.md
+      - CLI: dev-guide/cli.md
+  - Code Reference: reference/
+
+plugins:
+- search
+- gen-files:
+    scripts:
+    - scripts/gen_ref_pages.py
+- literate-nav:
+    nav_file: SUMMARY.md
+- section-index
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: sphinx
+          modernize_annotations: true

@@ -83,7 +83,7 @@ class SimilarTracksSensemaker(Sensemaker):
         """
         Primary method to obtain N-most similar track objects to the track provided.
 
-        :param track: Track object to detect cotravels on
+        :param data: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.info(f"Looking for similar tracks to {data.node_id}")
