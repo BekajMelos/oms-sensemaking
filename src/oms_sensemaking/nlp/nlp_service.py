@@ -34,6 +34,17 @@ class NlpService:
         ents_and_rels = nlp_sensemaker.process_data(SubmissionData(document_id=data.document_id, text=data.text))
         return ents_and_rels
 
+    def get_text_from_file(self, filepath: str) -> str:
+        # TODO: may be able to delete this later if we don't need/want to run NLP from command line
+        """
+        Read text file and get contents as string
+        :param filepath: path to text file
+        :return: string representation of text file contents
+        """
+        with open(filepath, "r") as file:
+            file_text = file.read()
+        return file_text
+
     def submit_findings_to_oms(self, findings: EntitiesAndRelationships) -> bool:
         # TODO: Implement this function to call the EntityDecorator
         print(findings)
