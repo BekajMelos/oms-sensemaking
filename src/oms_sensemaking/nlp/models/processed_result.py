@@ -1,3 +1,4 @@
+"""Utilities for working with processed results."""
 from dataclasses import dataclass
 
 from collections_extended import RangeMap
@@ -8,6 +9,8 @@ from oms_sensemaking.nlp.models.token_reference import TokenReference
 
 @dataclass
 class ProcessedResult:
+    """Represents a processed result."""
+
     doc_id: int
     doc_token_map: RangeMap
     entity_token_ref: dict[int, TokenReference]

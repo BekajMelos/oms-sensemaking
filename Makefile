@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: build build-docker clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
+.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -36,6 +36,9 @@ format:  ## Run the formatter
 
 build-docker:  ## Build docker image
 	docker build --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) --no-cache -t oms_sensemaking:latest --secret id=mynetrc,src=$${HOME}/.netrc .
+
+build-docs:  ## Build project documentation static site.
+	mkdocs build
 
 version:  ## Display the project version
 	@echo $(shell source .venv/bin/activate && python -m setuptools_scm)

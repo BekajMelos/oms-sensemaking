@@ -54,8 +54,7 @@ def tester_db(db: Session) -> Iterator[Session]:
 
 
 def test_most_similar_tracks_success_exact_same_path(tester_db):
-    """Test similar track with same path"""
-
+    """Test similar track with same path."""
     node_id = uuid4()
     # first point is wayyy east of london
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(2.289575, 41.467810).wkt, altitude=None,
@@ -83,7 +82,7 @@ def test_most_similar_tracks_success_exact_same_path(tester_db):
 
 
 def test_most_similar_tracks_success_start(tester_db):
-    """Test similar track where ending point doesn't match the similar track"""
+    """Test similar track where ending point doesn't match the similar track."""
     node_id = uuid4()
 
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.165222, 51.482286).wkt, altitude=None,
@@ -109,8 +108,7 @@ def test_most_similar_tracks_success_start(tester_db):
 
 
 def test_most_similar_tracks_success_end(tester_db):
-    """Test similar track where starting point doesn't match the similar track"""
-
+    """Test similar track where starting point doesn't match the similar track."""
     node_id = uuid4()
     # first point is wayyy east of london
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(0.226432, 51.479597).wkt, altitude=None,
