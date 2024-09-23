@@ -1,12 +1,16 @@
+"""Utilities for working with CoreNLP."""
 from stanza.server import CoreNLPClient
 
 
 class CoreNlpService:
-    """
-    This class is for interacting with the Stanza CoreNLP client
-    """
+    """Utility class for interacting with the Stanza CoreNLP client."""
 
     def __init__(self, props: dict):
+        """
+        Create a new instance of CoreNlpService.
+
+        :param props:
+        """
         if not props:
             self.props = {
                 "annotators": "tokenize, pos, lemma, ner, depparse, relation",
@@ -20,7 +24,12 @@ class CoreNlpService:
 
     def annotate_document(self, text: str):
         """
-        Uses the client with the props specified above to access CoreNLP and annotate a document
+        Annotate the given document text.
+
+        Uses the configure properties with CoreNLP and annotate a document.
+
+        :param text: The document text to annotate.
+        :return: The annotated document.
         """
         with self.client:
             annotated_doc = self.client.annotate(text)

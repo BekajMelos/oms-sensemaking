@@ -5,8 +5,7 @@ from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 
 
 def test_process_doccano_result():
-    """Tests when entities and relations exist"""
-
+    """Tests when entities and relations exist."""
     # Make a test DoccanoEntity
     label = "Thing"
     start_offset_1, end_offset_1 = 34, 41
@@ -14,15 +13,15 @@ def test_process_doccano_result():
     entity_id_1 = 1
     entity_id_2 = 2
     test_ent_1 = DoccanoEntity(
-        {"id": entity_id_1, "label": label, "start_offset": start_offset_1, "end_offset": end_offset_1}
+        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
     )
     test_ent_2 = DoccanoEntity(
-        {"id": entity_id_2, "label": label, "start_offset": start_offset_2, "end_offset": end_offset_2}
+        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
     )
 
     # Make a test DoccanoRelation
     relation_type = "related_to"
-    test_relation = DoccanoRelation({"id": 11, "from_id": entity_id_1, "to_id": entity_id_2, "type": relation_type})
+    test_relation = DoccanoRelation(id=11, from_id=entity_id_1, to_id=entity_id_2, type=relation_type)
 
     # Make a test DoccanoResult
     result_id = 111
@@ -49,8 +48,7 @@ def test_process_doccano_result():
 
 
 def test_process_doccano_result_no_relation():
-    """Tests when there are no relations"""
-
+    """Tests when there are no relations."""
     # Make a test DoccanoEntity
     label = "Thing"
     start_offset_1, end_offset_1 = 34, 41
@@ -58,10 +56,10 @@ def test_process_doccano_result_no_relation():
     entity_id_1 = 1
     entity_id_2 = 2
     test_ent_1 = DoccanoEntity(
-        {"id": entity_id_1, "label": label, "start_offset": start_offset_1, "end_offset": end_offset_1}
+        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
     )
     test_ent_2 = DoccanoEntity(
-        {"id": entity_id_2, "label": label, "start_offset": start_offset_2, "end_offset": end_offset_2}
+        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
     )
 
     # Make a test DoccanoResult
@@ -87,8 +85,7 @@ def test_process_doccano_result_no_relation():
 
 
 def test_process_doccano_result_no_entities_relations():
-    """Tests when entities and relations do not exist"""
-
+    """Tests when entities and relations do not exist."""
     # Make a test DoccanoResult
     result_id = 111
     text = "This is some sample text relating Entity1 to Entity2."
@@ -111,8 +108,7 @@ def test_process_doccano_result_no_entities_relations():
 
 
 def test_tokenize_text():
-    """Tests different cases of text to tokenize"""
-
+    """Tests different cases of text to tokenize."""
     tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
 
     text1 = "This is some sample text relating Entity1 to Entity2."
@@ -132,8 +128,7 @@ def test_tokenize_text():
 
 
 def test_map_entities_to_tokens():
-    """Tests building the mappings between entities and text tokens"""
-
+    """Tests building the mappings between entities and text tokens."""
     # Make a test DoccanoEntity
     label = "Thing"
     start_offset_1, end_offset_1 = 34, 41
@@ -141,15 +136,15 @@ def test_map_entities_to_tokens():
     entity_id_1 = 1
     entity_id_2 = 2
     test_ent_1 = DoccanoEntity(
-        {"id": entity_id_1, "label": label, "start_offset": start_offset_1, "end_offset": end_offset_1}
+        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
     )
     test_ent_2 = DoccanoEntity(
-        {"id": entity_id_2, "label": label, "start_offset": start_offset_2, "end_offset": end_offset_2}
+        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
     )
 
     # Make a test DoccanoRelation
     relation_type = "related_to"
-    test_relation = DoccanoRelation({"id": 11, "from_id": entity_id_1, "to_id": entity_id_2, "type": relation_type})
+    test_relation = DoccanoRelation(id=11, from_id=entity_id_1, to_id=entity_id_2, type=relation_type)
 
     # Make a test DoccanoResult
     result_id = 111

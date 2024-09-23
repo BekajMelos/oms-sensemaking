@@ -5,11 +5,10 @@ from uuid import UUID, uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.exc import StatementError
-from sqlalchemy.orm import Session, with_expression
+from sqlalchemy.orm import Session
 
-from oms_sensemaking.models.geo import Point, Track, get_track, get_track_points
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 FINDING_ID_1: UUID = UUID("f604f7d3-b78d-49af-a2cf-75eae08cec52")
