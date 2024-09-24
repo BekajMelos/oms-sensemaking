@@ -224,7 +224,7 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_nlp(nlp_reader, corenlp_host=SETTINGS.corenlp_localhost)
+    nlp_service.run_nlp(nlp_reader, source_id=args.source_id, corenlp_host=SETTINGS.corenlp_localhost)
 
 
 def run_semantic() -> None:

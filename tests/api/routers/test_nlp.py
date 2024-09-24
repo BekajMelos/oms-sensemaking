@@ -1,4 +1,5 @@
 """Tests for the "NLP" router."""
+
 from fastapi.testclient import TestClient
 from httpx import Response
 from oms_sdk import DEFAULT_ACM
@@ -10,9 +11,8 @@ def test_extract_entities_and_relationships(client: TestClient):
     response: Response = client.post(
         "/nlp",
         json=NlpRequest(
-            acm=DEFAULT_ACM,
-            text="The quick brown fox jumps over the lazy dog."
-        ).model_dump()
+            acm=DEFAULT_ACM, source_id="sensemaking-test", text="The quick brown fox jumps over the lazy dog."
+        ).model_dump(),
     )
     assert response.status_code == 200
 

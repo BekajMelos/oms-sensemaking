@@ -1,7 +1,7 @@
 """NLP Sensemaker Service"""
 
 import logging
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
@@ -14,21 +14,28 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
-    def run_nlp(self, nlp_reader: NlpReader, corenlp_host: str = SETTINGS.corenlp_dockerhost):
+    def run_nlp(self, nlp_reader: NlpReader, source_id: str | UUID, corenlp_host: str = SETTINGS.corenlp_dockerhost):
         """
         Pipeline called by API to run the NLP Business Logic and report findings back to OMS
         :param nlp_reader: The body of text to be analyzed by the NLP Service
         :param corenlp_host: Host site for CoreNLP
+        :param source_id: ID of the text's Source
         """
         submission_data = nlp_reader.read()
         nlp_sensemaker = NlpSensemaker(corenlp_host=corenlp_host)
         ents_and_rels = nlp_sensemaker.process_data(submission_data)
-        self.submit_findings_to_oms(ents_and_rels)
+        self.submit_findings_to_oms(ents_and_rels, source_id)
         return ents_and_rels
 
-    def submit_findings_to_oms(self, findings: EntitiesAndRelationships) -> bool:
+    def submit_findings_to_oms(self, findings: EntitiesAndRelationships, source_id: str) -> bool:
+        """
+        Submit the Entities and Relationships to OMS
+        :param findings: found Entities and Relationships
+        :param source_id: ID of the text's Source
+        """
         # TODO: Implement this function to call the EntityDecorator
         LOGGER.debug(findings)
+        LOGGER.debug(source_id)
         return True
 
 
@@ -44,5 +51,5 @@ if __name__ == "__main__":
     )
     doc_id = uuid4()
     nlp_service = NlpService()
-    nlp_reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(nlp_reader, SETTINGS.corenlp_localhost)
+    reader = NlpStringReader(text=text, document_id=doc_id)
+    nlp_service.run_nlp(reader, SETTINGS.corenlp_localhost)

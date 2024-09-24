@@ -1,5 +1,6 @@
 """Tests for the NLP Sensemaker and Annotation Processor."""
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
@@ -14,7 +15,7 @@ sample_text = (
     "scientific advice was clearer."
 )
 sample_doc_id = "MadCow"
-nlp_sensemaker = NlpSensemaker()
+nlp_sensemaker = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
 
 
 def test_process_data_empty_test():
@@ -44,13 +45,13 @@ def test_process_data_normal_text():
 def test_use_service_empty_doc():
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
-    assert not annotation.sentence
+    assert not annotation["sentences"]
 
 
 def test_use_service_normal_doc():
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
-    assert annotation.sentence
+    assert annotation["sentences"]
 
 
 def test_annotation_processor():
@@ -63,17 +64,17 @@ def test_annotation_processor():
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
     # Every entity in the annotation must have been extracted
-    for sentence in annotation.sentence:
-        for entity in sentence.mentions:
+    for sentence in annotation["sentences"]:
+        for entity in sentence["entitymentions"]:
             assert entity in ents
     # Every relation in the annotation must have been extracted
-    for sentence in annotation.sentence:
-        for relation in sentence.relation:
-            if relation.type != "_NR":
+    for sentence in annotation["sentences"]:
+        for relation in sentence["openie"]:
+            if relation["relation"] != "_NR":
                 assert relation in rels
     # Every relation added must not have type _NR
     for relation in rels:
-        assert relation.type != "_NR"
+        assert relation["relation"] != "_NR"
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)
