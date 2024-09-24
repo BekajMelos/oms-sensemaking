@@ -12,12 +12,11 @@ from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import about, semantic
+from oms_sensemaking.api.routers import about, semantic, nlp
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import NoOpEventConsumer
 from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
-from oms_sensemaking.nlp.controllers import NlpSensemakerController
 from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -30,8 +29,7 @@ def get_controllers() -> list[SensemakerController]:
     controllers: list[SensemakerController] = [
         # TODO: set queue names independently
         GeospatialSensemakerController(GeoSQSListener()),
-        NlpSensemakerController(NoOpEventConsumer()),
-        SemanticSensemakerController(NoOpEventConsumer())
+        SemanticSensemakerController(NoOpEventConsumer()),
     ]
 
     return controllers
@@ -58,11 +56,10 @@ async def lifespan(application: FastAPI):
     yield
 
     for controller, controller_thread in controllers:
-        LOGGER.warning("actually handling the keyboard stop")
+        LOGGER.warning("Handling the keyboard interrupt.")
         controller.stop()
 
         if controller_thread.is_alive():
-            LOGGER.warning("Thread status: %s", controller_thread.is_alive())
             controller_thread.join()
 
 
@@ -74,7 +71,7 @@ def handle_exception(_, ex: Exception):
     """
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={'detail': str(ex) or f'Unexpected error: {ex.__class__.__name__}'}
+        content={"detail": str(ex) or f"Unexpected error: {ex.__class__.__name__}"},
     )
 
 
@@ -85,10 +82,7 @@ def create_app(config: Settings) -> FastAPI:
     :param config: configuration used to initialize FastAPI and submodules.
     """
     application: FastAPI = FastAPIOffline(
-        title=__title__,
-        description=__description__,
-        version=__version__,
-        lifespan=lifespan
+        title=__title__, description=__description__, version=__version__, lifespan=lifespan
     )
 
     # initialize gzip middleware
@@ -104,6 +98,12 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure semantic route
     application.include_router(semantic.router)
+
+    application.include_router(
+        nlp.router,
+        prefix="/nlp",
+        tags=["NLP"]
+    )
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)

@@ -1,0 +1,82 @@
+# Environment Settings
+
+> ***NOTE***: The *Docker Compose* column indicates if setting the variable in
+> `.env` will carry over to one or more of the containers defined in
+> `docker-compose.yml`. The variables that do not carry over either rely on a
+> sensible default value or are configured directly in `docker-compose.yml`.
+
+
+##### Service Variables
+
+| Variable Name   | Example | Description                                                    | Docker Compose |
+|:----------------|:--------|:---------------------------------------------------------------|:--------------:|
+| `APP_LOG_LEVEL` | `DEBUG` | Option to set log level                                        | Yes            |
+| `RELOAD_APP`    | `1`     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
+
+
+##### Database Settings
+
+> ***NOTE***: There are two database users that need to be configured (i.e.
+> admin user and a regular user). There are also three different tools being
+> configured by docker: the *oms_sensemaking* service, the psql command line
+> tool, and [pgAdmin].
+
+
+| Variable Name                 | Example                           | Description                                           | Docker Compose |
+|:------------------------------|:----------------------------------|:------------------------------------------------------|:--------------:|
+| `DB_HOST`                     | `postgis`                         | The database hostname                                 | No             |
+| `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                | Yes            |
+| `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                 | Yes            |
+| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                     | Yes            |
+| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admmin user           | Yes            |
+| `PGUSER`                      | `appuser`                         | [psql] The *regular* PostgreSQL user                  | Yes            |
+| `PGPASSWORD`                  | `xxxxxx`                          | [psql] The password for the *regular* PostgreSQL user | Yes            |
+| `PGDATABASE`                  | `oms_sensemaking`                 | [psql] The database to connect to                     | Yes            |
+| `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.     | Yes            |
+| `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin]The password for the default pgAdmin user.   | Yes            |
+| `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin]A login banner for pgAdmin                   | Yes            |
+
+
+##### AWS Settings
+
+| Variable Name           | Example                                             | Description                           | Docker Compose |
+|:------------------------|:----------------------------------------------------|:--------------------------------------|:--------------:|
+| `AWS_ENDPOINT_URL`      | `http://localhost:4566` or `http://localstack:4566` | AWS Endpoint                          | No             |
+| `AWS_ACCESS_KEY_ID`     | `FAKE`                                              | AWS Access Key                        | No             |
+| `AWS_SECRET_ACCESS_KEY` | `FAKE`                                              | AWS Secret Key                        | No             |
+| `AWS_REGION_NAME`       | `us-east-1`                                         | AWS Region                            | No             |
+| `AWS_USE_SSL`           | `False`                                             | Boolean to use SSL for SQS Connection | No             |
+| `AWS_VERIFY`            | `False`                                             | Boolean to use SSL verifiation        | No             |
+
+
+##### OMSB Settings
+
+| Variable Name  | Example                                            | Description               | Docker Compose |
+|:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
+| `OMSB_VERSION` | `Grimlock-INC-4`                                   | The version of oms-bridge | Yes            |
+| `OMSB_URL`     | `https://localhost:8443/graphql`                   | URL for OMSB              | No             |
+| `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
+| `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
+| `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
+
+##### Sensemaker Settings
+
+| Variable Name                      | Example                                                            | Description                                                    | Docker Compose |
+|:-----------------------------------|:-------------------------------------------------------------------|:---------------------------------------------------------------|:--------------:|
+| `SRID`                             | `4326`                                                             | Spatial Reference Identifier for storing Points       | No             |
+| `VALID_OBSERVED_THRESHOLD_SECONDS` | `900`                                                              | Threshold for amount of between Track Point Observations       | No             |
+| `CACHE_ENTRY_EXPIRE_SEC`           | `30 `                                                              | How long to wait for new points before creating a new Track    | No             |
+| `GEOHASH_LOW`                      | `5`                                                                | Low geohash                                                    | No             |
+| `GEOHASH_HIGH`                     | `7`                                                                | High geohash                                                   | No             |
+| `POLL_PERIOD_SECONDS`              | `10`                                                               | How often to poll for new incoming Attributes                  | No             |
+| `OPERATED_BY_IRI`                  | `http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy` | IRI for Operated By                                            | No             |
+| `DETECT_LOITERS`                   | `True`                                                             | Toggle on/off Loiter Detection                                 | No             |
+| `LOITER_MIN_TIME`                  | `900`                                                              | Minimum amount of time for a valid Loiter Event                | No             |
+| `DETECT_COTRAVELS`                 | `True`                                                             | Toggle on/off Cotravel Detection                               | No             |
+| `MIN_COTRAVEL_DURATION_SECONDS`    | `1200`                                                             | Minimum between Objects in a Track for a Cotravel Event        | No             |
+| `MIN_LAG_LEAD_DURATION_SECONDS`    | `1200`                                                             | Minimum amount between Objects in a Track for a Lag/Lead Event | No             |
+| `MAX_LAG_LEAD_DURATION_SECONDS`    | `2700`                                                             | Maximum between Objects in a Track for a Lag/Lead Event        | No             |
+| `SIMILAR_TRACKS`                   | `True`                                                             | Toggle on/off Similar Track Calculations                       | No             |
+| `N_TRACKS`                         | `5`                                                                | Number of similar tracks to return                             | No             |
+| `WITHIN_METERS`                    | `3000.0`                                                           | Used to define the search space for potential similar tracks   | No             |
+| `SQS_QUEUE_URL`                    | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger` | SQS Queue URL                            | Yes            |

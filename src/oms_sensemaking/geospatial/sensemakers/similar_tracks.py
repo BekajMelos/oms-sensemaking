@@ -1,43 +1,45 @@
 """Similar Tracks Sensemakers."""
 import logging
 import uuid
-from datetime import datetime, timedelta
+from collections import defaultdict
+from datetime import timedelta
 from queue import PriorityQueue
 from typing import List, Set
 
-import shapely
-from geoalchemy2.elements import WKTElement
+from geoalchemy2.types import Geography
 from geolib import geohash
-from oms_sdk import DEFAULT_ACM
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.dialects.postgresql import aggregate_order_by
+from sqlalchemy.sql import cast
 
+from oms_sensemaking.clients import db_engine, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_node_id_projection import GroupByTrackNodeIdProjection
-from oms_sensemaking.models.geo import SRID, Point, Track
+from oms_sensemaking.models.geo import Point, Track, get_track
+
+LOGGER = logging.getLogger(__name__)
+
 
 CACHE_ENTRY_EXPIRE_SEC = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
 
-LOGGER = logging.getLogger(__name__)
 
 TRACK_CREATED_EVENT: str = "track_created"
 
-# FAKE DB
-NODE_UUID1 = uuid.uuid4()
-
-NODE_UUID2 = uuid.uuid4()
-
-SOURCE_UUID = uuid.uuid4()
-
-
-
-
-
-
-LOGGER = logging.getLogger(__name__)
+ST_TRANSFORM_MAX_DECIMAL_DIGITS: int = 9  # maxdecimaldigits parameter in Postgis ST_TRANSFORM
+ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS: int = 2  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
 
 
 class ComparisonResult:
+    """Represents the results of a track comparison."""
+
     def __init__(self, track_node_id: uuid.UUID, similarity_score: float):
+        """
+        Create a new instance of ComparisonResult.
+
+        :param track_node_id: The unique identifier for the Node associated with the track.
+        :param similarity_score: The similarity score.
+        """
         self.track_node_id = track_node_id
         self.similarity_score = similarity_score
 
@@ -49,7 +51,10 @@ class ComparisonResult:
 
 
 class TopSimilar:
+    """Represents the top similar tracks."""
+
     def __init__(self):
+        """Create a new instance of TopSimilar."""
         self.top_similarities = PriorityQueue(maxsize=SETTINGS.n_tracks)
 
     def __str__(self):
@@ -59,20 +64,37 @@ class TopSimilar:
         return self.__str__()
 
     def add_comparison_result(self, comparison_result: ComparisonResult) -> None:
+        """
+        Add a comparison result the to top similarities queue.
+
+        :param comparison_result: The results to enqueue.
+        """
         self.top_similarities.put((comparison_result.similarity_score, comparison_result.track_node_id))
 
 
 class SimilarTracksSensemaker(Sensemaker):
-    """A sensemaker for detecting similar tracks."""
+    """
+    A sensemaker for detecting similar tracks.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "similar tracks" algorithm implementation.
+
+    """
 
     def __init__(self) -> None:
+        """Create a new instance of SimilarTracksSensemaker."""
         super().__init__()
+        self.version = (1, 0, 0)
 
     def process_data(self, data: Track) -> TopSimilar:
         """
         Primary method to obtain N-most similar track objects to the track provided.
 
-        :param track: Track object to detect cotravels on
+        :param data: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.info(f"Looking for similar tracks to {data.node_id}")
@@ -95,7 +117,7 @@ class SimilarTracksSensemaker(Sensemaker):
             if similar_track_group.track_node_id == data.node_id:
                 continue
 
-            #
+            # filter to one entry per trackId
             if similar_track_group.track_node_id in seen_groups:
                 continue
             seen_groups.append(similar_track_group.track_node_id)
@@ -118,6 +140,14 @@ class SimilarTracksSensemaker(Sensemaker):
     def determine_jaccard_similarity(
         ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], eval_track_node_id: uuid.UUID
     ) -> ComparisonResult:
+        """
+        Determine the Jaccard similairty between two track geohash sets.
+
+        :param ref_track_geohash_set: The references track geohash set.
+        :param eval_track_geohash_set:
+        :param eval_track_node_id:
+        :return: A comparison result with similarity score.
+        """
         # intersection of two sets
         intersection = len(ref_track_geohash_set.intersection(eval_track_geohash_set))
         # Unions of two sets
@@ -134,7 +164,8 @@ class SimilarTracksSensemaker(Sensemaker):
         :param group_projection: GroupByTrackNodeIdProjection
         :return: Track object
         """
-        return cls.get_track(group_projection.track_node_id)
+        with db_session() as db:
+            return get_track(db, group_projection.track_node_id)
 
     @staticmethod
     def get_buffered_geohash_set(points: List[Point]) -> Set[str]:
@@ -170,74 +201,112 @@ class SimilarTracksSensemaker(Sensemaker):
 
         return buffered_geohash_set
 
+
     @staticmethod
     def query_for_similar_tracks(
-            first: List[float],
-            last: List[float],
-            query_distance: float) -> List[GroupByTrackNodeIdProjection]:
+        first: List[float], last: List[float], query_distance: float
+    ) -> List[GroupByTrackNodeIdProjection]:
         """
         Primary method to obtain the other tracks that have either the same start or end point provided.
 
         The distance is the range from the point to include in the results.
-        The query requires that a track has at least 2 points.
 
-        SELECT track_node_id, ARRAY_AGG(ST_AsGeoJSON(ST_Transform(geometry, 4326), 9, 2)
-            ORDER BY start_time) AS track_bookends
-            FROM tracks
-            WHERE (is_start = true AND ST_DWithin(geometry, ST_Transform(ST_GeomFromGeoJSON(:geoJsonStart)::geometry,
-                4326), :distance)) OR (is_end = true AND ST_DWithin(geometry,
-                ST_Transform(ST_GeomFromGeoJSON(:geoJsonEnd)::geometry, 4326), :distance))
-            GROUP BY track_node_id
-            HAVING COUNT(geometry) >= 2
+        E.g. Query for the end "bookends". Note the DESC column
+        SELECT points.node_id, array_agg(
+            ST_AsGeoJSON(ST_Transform(points.location, 4326), 9, 2) ORDER BY points.detection_time) AS bookend
+        FROM points
+        JOIN (
+            SELECT anon_2.node_id AS node_id, anon_2.attribute_id AS attribute_id,
+            anon_2.detection_time AS detection_time
+            FROM (
+                SELECT points.node_id AS node_id, points.node_version AS node_version,
+                points.attribute_id AS attribute_id, points.attribute_version AS attribute_version,
+                points.location AS location, points.altitude AS altitude, points.detection_time AS detection_time,
+                points.acm AS acm, points.created_at AS created_at, points.updated_at AS updated_at,
+                ROW_NUMBER() OVER (PARTITION BY points.node_id ORDER BY points.detection_time DESC) AS row_number
+                    FROM points
+            ) AS anon_2
+            WHERE anon_2.row_number = 1
+        ) AS anon_1 ON points.node_id = anon_1.node_id AND points.attribute_id = anon_1.attribute_id
+        WHERE ST_DWithin(
+            CAST(points.location AS geography(GEOMETRY,-1)),
+            CAST(ST_Transform(ST_GeomFromGeoJSON('{''type'': ''Point'', ''coordinates'': [2.183748, 41.356069]}'), 4326)
+                 AS geography(GEOMETRY,-1)), 3000.0)
+        GROUP BY points.node_id
 
-        :param first: Point of the first point in the track.
-        :param last: Point of the last point in the track.
-        :param query_distance: Threshold .
+        :param first: Point of the first point in the track
         :return: List of GroupByTrackNodeIdProjections
         """
-        return [GroupByTrackNodeIdProjection(NODE_UUID1, [])]
 
-    @staticmethod
-    def get_track(track_node_id: uuid.UUID) -> Track:
-        """
-        Get Track by UUID.
+        def generate_query(order_col, geojson):
 
-        :param track_node_id: node id of the Track to retrieve
-        :return: Track object
-        """
-        return Track(
-            [
-                Point(
-                    DEFAULT_ACM,
-                    WKTElement(shapely.Point((-0.165222, 51.482286)).wkt, srid=SRID),
-                    altitude=None,
-                    detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-                    node_id=track_node_id,
-                    node_version=1,
-                    attribute_id=uuid.uuid4(),
-                    attribute_version=1
-                ),
-                Point(
-                    DEFAULT_ACM,
-                    WKTElement(shapely.Point((-0.210562, 51.466103)).wkt, srid=SRID),
-                    altitude=None,
-                    detection_time=datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
-                    node_id=track_node_id,
-                    node_version=1,
-                    attribute_id=uuid.uuid4(),
-                    attribute_version=1
-                ),
-                Point(
-                    DEFAULT_ACM,
-                    WKTElement(shapely.Point((-0.229466, 51.487613)).wkt, srid=SRID),
-                    altitude=None,
-                    detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-                    node_id=track_node_id,
-                    node_version=1,
-                    attribute_id=uuid.uuid4(),
-                    attribute_version=1
-                ),
-            ]
-            ,
-            track_node_id
-        )
+            # sub-subquery to label the rows in the Point table after ordering by order_col
+            sub_subquery = select(
+                Point,
+                func.ROW_NUMBER().over(partition_by=Point.node_id, order_by=order_col).label('row_number')
+            ).subquery()
+
+            # use the row number to find the first value. This subquery gives us either the set of starting track
+            # points or the set of ending track points depending on the order_col order (desc or not)
+            subquery = select(
+                sub_subquery.c.node_id, sub_subquery.c.attribute_id, sub_subquery.c.detection_time
+            ).where(sub_subquery.c.row_number == 1).subquery()
+
+            # This query will join the original Point table with the sorted start or end table in order to look at the
+            # entire set of starting (or ending) points. Then look for points that are within the query_distance.
+            # The points are casted to the Geography type to allow the query_distance to be in meters.
+            # Overall, this query will find tracks that have starting points that are within the query_distance of the
+            # given track. Then with the end query, it will find tracks that end within the query distance of the given
+            # track.
+            query = select(
+                    Point.node_id,
+                    func.array_agg(  # the array_agg will return the point as a geojson
+                        aggregate_order_by(
+                            func.ST_asGeoJSON(
+                                func.ST_Transform(Point.location, SETTINGS.srid),
+                                ST_TRANSFORM_MAX_DECIMAL_DIGITS,  # maxdecimaldigits
+                                ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
+                            ),
+                            Point.detection_time
+                        )
+                    ).label('bookend')
+                ).join(
+                    subquery, and_(Point.node_id == subquery.c.node_id, Point.attribute_id == subquery.c.attribute_id)
+                ).where(
+                    func.ST_DWithin(
+                        cast(Point.location, Geography(srid=-1)),
+                        cast(func.ST_Transform(
+                                func.ST_GeomFromGeoJSON(str(geojson)), SETTINGS.srid), Geography(srid=-1)),
+                             query_distance)
+                ).group_by(Point.node_id)
+
+            return query
+
+
+        with db_session() as db:
+
+            start_geojson = {
+                "type": "Point",
+                "coordinates": first
+            }
+
+            start_query = generate_query(Point.detection_time, start_geojson)
+            LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            res = db.execute(start_query)
+            start_groups = res.all()
+
+            end_geojson = {
+                "type": "Point",
+                "coordinates": last
+            }
+            end_query = generate_query(desc(Point.detection_time), end_geojson)
+            LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            res = db.execute(end_query)
+            end_groups = res.all()
+
+            # combine the start bookends with the end bookends by node_id
+            groups = defaultdict(list)
+            for node_id, bookend in start_groups + end_groups:
+                groups[node_id].append(bookend)
+
+        return [GroupByTrackNodeIdProjection(node_id, bookends) for node_id, bookends in groups.items()]

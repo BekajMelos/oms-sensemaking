@@ -3,7 +3,7 @@
 import logging
 from abc import ABC, abstractmethod
 from threading import Lock
-from typing import Any
+from typing import Any, Tuple
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -15,6 +15,9 @@ class Sensemaker(ABC):
         """Create a new instance of the sensemaker."""
         super().__init__()
         self.lock: Lock = Lock()
+
+        #: The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
+        self.version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
 
     def setup(self):
         """
@@ -33,6 +36,11 @@ class Sensemaker(ABC):
         needed after the sensemaker is executed.
         """
         LOGGER.debug("Cleaning up after %s", self.__class__)
+
+    @property
+    def version_string(self) -> str:
+        """Return the algorithm version as a semantic version string."""
+        return ".".join(map(str, self.version))
 
     def execute(self, data: Any) -> Any:
         """

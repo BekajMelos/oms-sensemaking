@@ -1,3 +1,4 @@
+"""Alembic environment configuration."""
 from logging.config import fileConfig
 
 from alembic import context
@@ -8,6 +9,7 @@ from oms_sensemaking.config import SETTINGS
 # do not delete the following imports
 from oms_sensemaking.models.base import BaseORM
 from oms_sensemaking.models.geo import *
+from oms_sensemaking.models.sensemaking import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -35,7 +37,7 @@ target_metadata = BaseORM.metadata
 
 
 def include_name(name, type_, parent_names):
-    """Returns True if name is a table related to one of the ORM models, False otherwise.
+    """Return True if name is a table related to one of the ORM models, False otherwise.
 
     This function helps ignore tables not managed by SQLAlchemy/Alembic (e.g. the PostGIS tables).
 
