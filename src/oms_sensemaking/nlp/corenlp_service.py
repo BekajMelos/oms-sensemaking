@@ -21,8 +21,8 @@ class CoreNlpService:
         else:
             self.props = props
         # TODO: Use configs to set the url
-        # self.url = f"http://localhost:9000/?properties={self.props}"
-        self.url = f"http://host.docker.internal:9000/?properties={self.props}"
+        self.url = f"http://localhost:9000/?properties={self.props}"
+        # self.url = f"http://host.docker.internal:9000/?properties={self.props}"
 
     def annotate_document(self, text: str):
         """
@@ -33,5 +33,6 @@ class CoreNlpService:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
-        annotated_doc = requests.post(self.url, data=text).json()
+        result = requests.post(self.url, data=text.encode("utf-8"))
+        annotated_doc = result.json()
         return annotated_doc

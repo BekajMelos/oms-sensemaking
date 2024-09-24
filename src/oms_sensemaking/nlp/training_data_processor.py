@@ -1,4 +1,5 @@
 """Utilities for training data."""
+
 import argparse
 import logging
 import os
@@ -97,19 +98,19 @@ class TrainingDataProcessor:
         # The client is used here only for annotation purposes, no NER or relation extraction yet
         corenlp_client = CoreNlpService(props=self.properties)
         annotation = corenlp_client.annotate_document(text)
-        sentences = annotation.sentence  # grab the sentences from the annotation
+        sentences = annotation["sentences"]  # grab the sentences from the annotation
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
         global_token_index = 0
         doc_token_range_map = RangeMap()  # Imported data type, maps ranges of char offsets to TokenReferences
         for sentence in sentences:
-            for token in sentence.token:
+            for token in sentence["tokens"]:
                 # Building the TokenReference with the token parts taken from the sentence
-                start_offset = token.beginChar
-                end_offset = token.endChar
-                pos_tag = token.pos
+                start_offset = token["characterOffsetBegin"]
+                end_offset = token["characterOffsetEnd"]
+                pos_tag = token["pos"]
                 token_reference = TokenReference(
-                    token.originalText, global_token_index, start_offset, end_offset, "0", pos_tag
+                    token["originalText"], global_token_index, start_offset, end_offset, "0", pos_tag
                 )
                 global_token_index += 1
 
