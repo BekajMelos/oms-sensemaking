@@ -125,8 +125,6 @@ ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
 
-ENV CORENLP_HOME="/opt/stanza_corenlp"
-
 ENV MODULE_NAME=oms_sensemaking.service
 
 # dump the Python traceback for segfaults and other signals
@@ -171,11 +169,6 @@ apt-get install -y --no-install-recommends $BUILD_DEPS
 
 # install app
 pip install .
-
-# install CoreNLP
-mkdir -p $CORENLP_HOME
-chown $USER_NAME:$GROUP_NAME $CORENLP_HOME
-python3 -c 'import stanza; stanza.install_corenlp()'
 
 # configure app
 mv $APP_HOME/docker/*.sh /
