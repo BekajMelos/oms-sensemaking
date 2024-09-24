@@ -1,22 +1,20 @@
 """Utilities for working with Documents as Entities."""
 
+from dataclasses import dataclass
+from uuid import UUID
 
+
+@dataclass
 class DocumentAsEntity:
     """Represents a document as an entity."""
 
-    def __init__(self, document_id: str, text: str):
-        """
-        Create a new instance of DocumentAsEntity.
+    """
+    Create a new instance of DocumentAsEntity.
 
-        :param document_id: The unique identifier of the document.
-        :param text: The text content of the document.
-        """
-        self.document_id = document_id
-        self.text = text
-        self.entityType = "DOCUMENT"  # key format entityType matches the same field as CoreNLP Entities
+    :param document_id: The unique identifier of the document.
+    :param text: The text content of the document.
+    """
 
-    def __str__(self):
-        return str(self.__dict__)
-
-    def __repr__(self):
-        return self.__str__()
+    document_id: str | UUID
+    text: str
+    entity_type: str = "DOCUMENT"

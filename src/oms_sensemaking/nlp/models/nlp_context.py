@@ -1,4 +1,5 @@
 """Utilities for working with CoreNLP context."""
+
 from dataclasses import dataclass
 
 

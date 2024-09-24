@@ -1,10 +1,12 @@
 """Provides utilities for working with submitted data."""
 
+from uuid import UUID
+
 
 class SubmissionData:
     """Represents submitted data."""
 
-    def __init__(self, document_id: str, text: str):
+    def __init__(self, document_id: str | UUID, text: str):
         """
         Create a new instance of SubmissionData.
 

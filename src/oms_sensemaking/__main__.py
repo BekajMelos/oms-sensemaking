@@ -88,6 +88,7 @@ options:
   -h, --help  show this help message and exit
 ```
 """
+
 import logging
 import os
 import time
@@ -97,6 +98,8 @@ from logging.config import dictConfig
 from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
+
+from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
 load_dotenv()
 
@@ -132,17 +135,13 @@ def add_db_cli_args(arg_parser: ArgumentParser) -> ArgumentParser:
     :return: The configured arg_parser.
     """
     arg_parser.add_argument(
-        "-H", "--db-host",
-        default=os.getenv("DB_HOST", "127.0.0.1"),
-        help="The database hostname or IP address."
+        "-H", "--db-host", default=os.getenv("DB_HOST", "127.0.0.1"), help="The database hostname or IP address."
     )
     arg_parser.add_argument("-p", "--db-port", default=SETTINGS.db_port or "5432", help="The database port.")
     arg_parser.add_argument("-u", "--db-user", default=SETTINGS.db_user or "appuser", help="The database user.")
     arg_parser.add_argument("-P", "--db_password", action=PasswordAction, nargs="?", default=SETTINGS.db_password)
     arg_parser.add_argument(
-        "-s", "--db-schema",
-        default=SETTINGS.db_schema or 'oms_sensemaking',
-        help='The database schema.'
+        "-s", "--db-schema", default=SETTINGS.db_schema or "oms_sensemaking", help="The database schema."
     )
 
     return arg_parser
@@ -155,16 +154,31 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
     :param parser: A CLI parser.
     :return: the configured parser.
     """
-    parser.add_argument("-U", "--url", default="https://localhost:8443/graphql",
-                        help="The URL to OMSB. Defaults to https://localhost:8443/graphql.")
-    parser.add_argument("-c", "--cert", default="./etc/pki/test10.pem",
-                        help="The path to the user's certificate. Defaults to ./etc/pki/test10.cert")
-    parser.add_argument("-k", "--key", default="./etc/pki/test10.key",
-                        help="The path to the user's private key. Defaults to ./etc/pki/test10.key")
-    parser.add_argument("-d", "--user-dn", default=os.getenv("USER_DN",
-                                                             "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"),
-                        help="The user's distinguished name. Defaults to value of the USER_DN env variable, if set, "
-                             "otherwise cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us")
+    parser.add_argument(
+        "-U",
+        "--url",
+        default="https://localhost:8443/graphql",
+        help="The URL to OMSB. Defaults to https://localhost:8443/graphql.",
+    )
+    parser.add_argument(
+        "-c",
+        "--cert",
+        default="./etc/pki/test10.pem",
+        help="The path to the user's certificate. Defaults to ./etc/pki/test10.cert",
+    )
+    parser.add_argument(
+        "-k",
+        "--key",
+        default="./etc/pki/test10.key",
+        help="The path to the user's private key. Defaults to ./etc/pki/test10.key",
+    )
+    parser.add_argument(
+        "-d",
+        "--user-dn",
+        default=os.getenv("USER_DN", "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"),
+        help="The user's distinguished name. Defaults to value of the USER_DN env variable, if set, "
+        "otherwise cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us",
+    )
     # parser.add_argument("--pkcs12", default=os.getenv("PKCS12_FILE"),
     #                     help="The path to the user's PKCS12 file. Mutually exclusive from the --cert/--key options.")
     # parser.add_argument("--pkcs12-password", action=PasswordAction, nargs='?', default=os.getenv("PKCS12_PASSWORD"),
@@ -197,23 +211,20 @@ def run_geospatial(args: Namespace) -> None:
     from oms_sensemaking.geospatial.controllers import CSVFileParser, GeospatialSensemakerController, GeoSQSListener
 
     geo: GeospatialSensemakerController = GeospatialSensemakerController(
-        GeoSQSListener() if args.filename is None else CSVFileParser(
-            args.filename,
-            DEFAULT_ACM,
-            SETTINGS.user_dn
-        )
+        GeoSQSListener() if args.filename is None else CSVFileParser(args.filename, DEFAULT_ACM, SETTINGS.user_dn)
     )
 
     start_controller_and_wait(geo)
 
 
-def run_nlp() -> None:
+def run_nlp(args: Namespace) -> None:
     """Run the NLP algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import DummyObjectEventConsumer
-    from oms_sensemaking.nlp.controllers import NlpSensemakerController
+    from oms_sensemaking.nlp.nlp_service import NlpService
 
-    start_controller_and_wait(NlpSensemakerController(DummyObjectEventConsumer()))
+    nlp_service = NlpService()
+    nlp_reader = NlpFileReader(args.filename)
+    nlp_service.run_nlp(nlp_reader)
 
 
 def run_semantic() -> None:
@@ -237,16 +248,15 @@ def get_cli_parser() -> ArgumentParser:
 
     # geospatial subcommand
     geo_parser: ArgumentParser = add_omsb_cli_args(
-        add_db_cli_args(
-            subparsers.add_parser("geo", help="Run geospatial analytics.")
-        )
+        add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
     geo_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
     geo_parser.set_defaults(func=run_geospatial)
 
     # natural language processing subcommand
     nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
-    nlp_parser.set_defaults(func=lambda args: run_nlp())
+    nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
+    nlp_parser.set_defaults(func=run_nlp)
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
     semantic_parser.set_defaults(func=lambda args: run_semantic())

@@ -1,4 +1,5 @@
 """Annotation Processor."""
+
 from oms_sensemaking.nlp.models.document_as_entity import DocumentAsEntity
 from oms_sensemaking.nlp.models.document_has_relation import DocumentHasRelation
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
@@ -63,7 +64,9 @@ class AnnotationProcessor:
             # Loop through all the entities and creates a DocumentHasRelationship for each of them
             doc_rel_obj_id = "DocumentRelation-" + str(doc_rel_index)
             document_relationship = DocumentHasRelation(
-                object_id=doc_rel_obj_id, document_id=data.document_id, ner_entity=entity
+                object_id=doc_rel_obj_id,
+                document_id=data.document_id,
+                ner_entity=entity.entityMentionIndex,
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1

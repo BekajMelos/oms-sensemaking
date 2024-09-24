@@ -83,4 +83,4 @@ def test_annotation_processor():
     # Every document relation created must have the attribute document_id matching the original document's id
     assert all_ents_and_rels.document_entity.document_id == sample_doc_id
     # Every document relation created must have the attribute entity_type matching the original document's id
-    assert all_ents_and_rels.document_entity.entityType == "DOCUMENT"
+    assert all_ents_and_rels.document_entity.entity_type == "DOCUMENT"
