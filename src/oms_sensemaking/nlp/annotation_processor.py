@@ -40,14 +40,16 @@ class AnnotationProcessor:
 
     def find_relationships(self, annotation) -> list:
         """Grab the relationships from the annotation."""
-        # TODO: Figure out how to properly get relationships from CoreNLP docker instance
         relationships = []
-        # for sentence in annotation["sentences"]:  # Loop through the annotation
-        #     print("SENTENCE HERE")
-        #     print(sentence)
+        # for sentence in annotation.sentence:  # Loop through the annotation
         #     for relation in sentence.relation:  # Takes each of the relations in the document and adds to the list
         #         if relation.type != "_NR":  # Skips relations without a relation type
         #             relationships.append(relation)
+        for sentence in annotation["sentences"]:  # Loop through the annotation
+            # TODO: CoreNLP container doesn't return the exact relations we want...
+            for relation in sentence["openie"]:  # Takes each of the relations in the document and adds to the list
+                if relation["relation"] != "_NR":  # Skips relations without a relation type
+                    relationships.append(relation)
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
@@ -69,7 +71,6 @@ class AnnotationProcessor:
         for entity in entities:
             # Loop through all the entities and creates a DocumentHasRelationship for each of them
             doc_rel_obj_id = "DocumentRelation-" + str(doc_rel_index)
-            # print(entity["docTokenBegin"])
             document_relationship = DocumentHasRelation(
                 object_id=doc_rel_obj_id,
                 document_id=data.document_id,
