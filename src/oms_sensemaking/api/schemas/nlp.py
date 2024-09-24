@@ -1,11 +1,21 @@
+"""Schemas representing the input and output formats for the NLP sensemaker."""
+
+from oms_sdk import DEFAULT_ACM
 from pydantic import BaseModel, Field
 
 
-class AnalyzeTextResponse(BaseModel):
-    """Represents the response for object "create" endpoints."""
+class NlpRequest(BaseModel):
+    """Represents a request to the NLP sensemaker."""
 
-    print("**********ANALYZE TEXT RESPONSE************")
+    acm: dict = Field(..., description="The ACM for the associated data.", examples=[DEFAULT_ACM])
+    text: str = Field(
+        ..., description="The text to analyze.", examples=["The quick brown fox jumps over the lazy dog."]
+    )
+    # TODO: add request definition ehre
 
-    success: bool = Field(..., examples=[True], description="Indicates if the text was successfully analyzed.")
-    print(success)
-    print("**********ANALYZE TEXT RESPONSE**********")
+
+class NlpResponse(BaseModel):
+    """Represents a request to the NLP sensemaker."""
+
+    acm: dict = Field(..., description="The ACM for the associated data.", examples=[DEFAULT_ACM])
+    # TODO: add response definition ehre
