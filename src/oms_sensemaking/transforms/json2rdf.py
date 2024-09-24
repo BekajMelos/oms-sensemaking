@@ -69,6 +69,7 @@ class AccessControlMarking(object):
         self.namespace = namespace
 
     def __call__(self, data):
+
         signature = []
         for k in self.acm_keys:
 
@@ -86,15 +87,21 @@ class AccessControlMarking(object):
                     signature.append(attr.strip())
                 else:
                     signature.append(str(attr.strip()))
-
-        return md5("".join(signature).encode('utf-8')).hexdigest()
+        
+        acm_guid = md5("".join(signature).encode('utf-8')).hexdigest()
+        return acm_guid
 
 
 class JSON2RDF():
-    def __init__(self, source_model=None, construct=None, ns_uri="https://blackcape.io/source-model/osmb-midb/node#"):
+    def __init__(self, source_model=None, construct=None, ns_uri=None):
         self.types = None
         self.source_data = None
-        self.construct = open(construct, 'r').read()
+
+        # construct query
+        construct_query_text = open(construct, 'r')
+        self.construct = construct_query_text.read()
+        construct_query_text.close()
+
         self.record_ns = Namespace(ns_uri)
         qry = "SELECT * WHERE {?datatype_property a owl:DatatypeProperty; rdfs:label ?l; rdfs:range ?range}"
         self.source_model = Graph().parse(source_model, format='ttl')
@@ -124,6 +131,7 @@ class JSON2RDF():
         record = BNode()
         self.g.add((record, RDF.type, self.record_ns.Record))
         self.source_data['_derived_acm_guid'] = self.make_acm(self.source_data)
+        
 
         for k in self.source_data:
             if k not in self.source_lookup: continue
@@ -147,7 +155,7 @@ class JSON2RDF():
                 if typed_value is not None:
                     self.g.add((record, datatype_property, typed_value))
 
-        return self.g.query(self.construct)
+        return self.g.query(self.construct), self.g
 
 
 

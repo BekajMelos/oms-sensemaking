@@ -1,7 +1,8 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix src: <https://blackcape.io/source-model/osmb-midb/node#> .
+@prefix src: <http://blackcape.io/ontology/node#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 
 src: a owl:Ontology .
 

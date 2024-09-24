@@ -1,7 +1,12 @@
-PREFIX src: <https://blackcape.io/source-model/osmb-midb/node#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX dico: <http://schema.dia.mil/DefenseIntelligenceCoreOntology/>
+PREFIX scmtemp: <http://blackcape.io/ontology/control-markings/>
+PREFIX src: <http://blackcape.io/ontology/node#> 
+PREFIX cnyobj: <http://blackcape.io/ontology/country_obj/>
+PREFIX cnyid: <http://blackcape.io/ontology/country_id/>
+
+
 CONSTRUCT {
 
     ?object_instance a dico:MilitaryOrganization ;
@@ -13,7 +18,7 @@ CONSTRUCT {
     ## Country Code Identifier (FIPS10 code)
     ?dice_cny_code a dico:CountryCode; cco:has_text_value ?cny_cd.
 
-    src:AccessControlMarking a owl:Class;
+    <http://blackcape.io/ontology/control-markings/AccessControlMarking> a owl:Class;
                                rdfs:subClassOf cco:DirectiveInformationContentEntity ,
                                src:acm_function_restriction ;
                                owl:isDefinedBy "https://www.dni.gov/files/documents/ICD/ICD-710.pdf"^^xsd:anyURI .
@@ -22,17 +27,15 @@ CONSTRUCT {
                     owl:onProperty cco:prescribes;
                     owl:someValuesFrom src:IntelligenceDisseminationFunction .
 
-    ?acm_instance a src:AccessControlMarking .
-    # source (resource locator, uri, etc)
-    # provider (MIDB)
-    # originator (author)
+    ?acm_instance a scmtemp:AccessControlMarking ; rdfs:label ?_derived_acm_guid.
+
 
 }
 WHERE
 {
     ?r a src:Record; src:_id ?object_id.
-    BIND(URI(CONCAT("http://blackcape.io/ontology/nodes/", ?object_id )) as ?object_instance)
-    ##BIND(CONCAT("http://blackcape.io/ontology/reification/", ?reification ) as ?object_instance)
+    BIND(URI(CONCAT("http://blackcape.io/ontology/node#", ?object_id )) as ?object_instance)
+
     ?r src:_derived_acm_guid ?_derived_acm_guid.
     BIND(URI(CONCAT("http://blackcape.io/ontology/control-markings/", ?_derived_acm_guid )) as ?acm_instance)
 
@@ -87,11 +90,11 @@ WHERE
 
         # bind
         bind(strdt(?_source_allegiance_fips10 , xsd:string) as ?cny_cd)
-        bind (URI(concat("http://blackcape.io/ontology/non_name_id_country/",?cny_cd)) as ?dice_cny_code)
-        bind (URI(concat("http://blackcape.io/ontology/country/",?_source_allegiance_fullName)) as ?cny)
+        bind (URI(concat("http://blackcape.io/ontology/country_id/",?cny_cd)) as ?dice_cny_code)
+        ## bind (URI(concat("http://blackcape.io/ontology/country_temp/",?_source_allegiance_fullName)) as ?cny)
         bind (STRDT(concat("Country of ",?_source_allegiance_fullName), xsd:string) as ?cny_label)
 
-        bind (URI(concat("http://blackcape.io/ontology/country/",?_source_allegiance_fullName)) as ?cny)
+        bind (URI(concat("http://blackcape.io/ontology/country_obj/",?_source_allegiance_fullName)) as ?cny)
     }
     ## operating status
     OPTIONAL {
