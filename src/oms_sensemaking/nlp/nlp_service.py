@@ -3,6 +3,7 @@
 import logging
 from uuid import uuid4
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
@@ -13,13 +14,14 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
-    def run_nlp(self, nlp_reader: NlpReader):
+    def run_nlp(self, nlp_reader: NlpReader, corenlp_host: str = SETTINGS.corenlp_dockerhost):
         """
         Pipeline called by API to run the NLP Business Logic and report findings back to OMS
         :param nlp_reader: The body of text to be analyzed by the NLP Service
+        :param corenlp_host: Host site for CoreNLP
         """
         submission_data = nlp_reader.read()
-        nlp_sensemaker = NlpSensemaker()
+        nlp_sensemaker = NlpSensemaker(corenlp_host=corenlp_host)
         ents_and_rels = nlp_sensemaker.process_data(submission_data)
         self.submit_findings_to_oms(ents_and_rels)
         return ents_and_rels
@@ -43,4 +45,4 @@ if __name__ == "__main__":
     doc_id = uuid4()
     nlp_service = NlpService()
     nlp_reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(nlp_reader)
+    nlp_service.run_nlp(nlp_reader, SETTINGS.corenlp_localhost)

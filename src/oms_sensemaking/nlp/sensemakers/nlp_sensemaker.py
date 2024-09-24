@@ -1,6 +1,8 @@
 """Natural Language Processing (NLP) Sensemaker."""
+
 import argparse
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.corenlp_service import CoreNlpService
@@ -21,10 +23,11 @@ class NlpSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, corenlp_host: str = SETTINGS.corenlp_dockerhost) -> None:
         """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
+        self.corenlp_host = corenlp_host
 
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
@@ -39,7 +42,7 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> str:
         """Access the CoreNlpService to annotate text."""
-        corenlp_service = CoreNlpService(props={})
+        corenlp_service = CoreNlpService(props={}, host=self.corenlp_host)
         annotated_doc = corenlp_service.annotate_document(text=document)
         return annotated_doc
 
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text_file_path = args.text_filepath
 
-    nlp_sm = NlpSensemaker()
+    nlp_sm = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id="MadCow", text=text)

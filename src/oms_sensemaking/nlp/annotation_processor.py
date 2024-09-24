@@ -30,9 +30,6 @@ class AnnotationProcessor:
     def find_entities(self, annotation) -> list:
         """Grab the nodes from the annotation."""
         entity_mentions = []
-        # for sentence in annotation.sentence:  # Loop through the annotation
-        #     for mention in sentence.mentions:  # Loop through each of the entities in the annotation
-        #         entity_mentions.append(mention)  # Adds the entity to a list
         for sentence in annotation["sentences"]:  # Loop through the annotation
             for mention in sentence["entitymentions"]:  # Loop through each of the entities in the annotation
                 entity_mentions.append(mention)  # Adds the entity to a list
@@ -41,10 +38,6 @@ class AnnotationProcessor:
     def find_relationships(self, annotation) -> list:
         """Grab the relationships from the annotation."""
         relationships = []
-        # for sentence in annotation.sentence:  # Loop through the annotation
-        #     for relation in sentence.relation:  # Takes each of the relations in the document and adds to the list
-        #         if relation.type != "_NR":  # Skips relations without a relation type
-        #             relationships.append(relation)
         for sentence in annotation["sentences"]:  # Loop through the annotation
             # TODO: CoreNLP container doesn't return the exact relations we want...
             for relation in sentence["openie"]:  # Takes each of the relations in the document and adds to the list

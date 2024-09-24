@@ -94,6 +94,12 @@ class Settings(BaseSettings):
 
     gzip_minimum_size: int = 1000
 
+    # NLP Settings
+    corenlp_localhost: str = Field("localhost:9000",
+                                   description="Host and port for CoreNLP when running a script.")
+    corenlp_dockerhost: str = Field("host.docker.internal:9000",
+                                    description="Host and port for CoreNLP when calling from API.")
+
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")

@@ -2,13 +2,13 @@
 
 import requests
 
-# from stanza.server import CoreNLPClient
+from oms_sensemaking.config import SETTINGS
 
 
 class CoreNlpService:
     """Utility class for interacting with the Stanza CoreNLP client."""
 
-    def __init__(self, props: dict):
+    def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):
         """
         Create a new instance of CoreNlpService.
 
@@ -20,9 +20,8 @@ class CoreNlpService:
             }
         else:
             self.props = props
-        # TODO: Use configs to set the url
-        self.url = f"http://localhost:9000/?properties={self.props}"
-        # self.url = f"http://host.docker.internal:9000/?properties={self.props}"
+        self.corenlp_host = host
+        self.url = f"http://{self.corenlp_host}/?properties={self.props}"
 
     def annotate_document(self, text: str):
         """
