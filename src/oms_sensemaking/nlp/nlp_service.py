@@ -26,7 +26,7 @@ class NlpService:
 
     def submit_findings_to_oms(self, findings: EntitiesAndRelationships) -> bool:
         # TODO: Implement this function to call the EntityDecorator
-        print(findings)
+        # print(findings)
         return True
 
 

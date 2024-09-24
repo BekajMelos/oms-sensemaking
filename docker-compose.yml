@@ -140,6 +140,17 @@ services:
     volumes:
      - doccano-db:/data
 
+  corenlp:
+    build:
+        context: https://github.com/NLPbox/stanford-corenlp-docker
+    image: corenlp:latest
+    ports:
+      - "9000:9000"
+    environment:
+      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation
+    depends_on:
+      - omsb2
+
 volumes:
   doccano-db:
   localstack:
