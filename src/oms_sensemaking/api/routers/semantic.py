@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
-from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, NodeResponse, Relationship
+from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, Relationship
 from oms_sensemaking.models.semantic import Node as OrmNode
 from oms_sensemaking.clients import get_db_session
 
@@ -40,8 +40,11 @@ def create_node(db: Annotated[Session, Depends(get_db_session)], node: Node) -> 
     print("CREATED OBJECT RESPONSE NO SUCCESS = ", CreateObjectResponse)
     print("****************BEFORE END****************")
     db.add(OrmNode(**node.model_dump()))
+    #db.commit()
+    #db.refresh(node)
     """Create a node in the graph."""
-    return CreateObjectResponse(success=True)
+    return node
+    #return CreateObjectResponse(success=True)
 
 
 @router.delete("/node/{node_id}", response_model=DeleteObjectResponse, response_model_exclude_none=True)
