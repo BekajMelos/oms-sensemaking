@@ -1,0 +1,35 @@
+# mkdocs.yml --- mkdocs configuration.
+site_name: OMS Sensemaking
+site_description: OMS Sensemaking Project Documentation
+
+copyright: 2024 Black Cape, Inc.
+repo_url: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking
+
+dev_addr: '127.0.0.1:4000'
+
+theme:
+  name: "material"
+
+nav:
+  - Home: index.md
+  - Development Guide:
+      - Development Environment: dev-guide/dev.md
+      - Packaging & Versioning: dev-guide/packaging.md
+      - Environment Variables: dev-guide/env-vars.md
+      - CLI: dev-guide/cli.md
+  - Code Reference: reference/
+
+plugins:
+- search
+- gen-files:
+    scripts:
+    - scripts/gen_ref_pages.py
+- literate-nav:
+    nav_file: SUMMARY.md
+- section-index
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: sphinx
+          modernize_annotations: true

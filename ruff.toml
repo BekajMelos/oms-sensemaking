@@ -19,10 +19,11 @@ select = [
 # ingoring some linting rules for compatibility with the ruff formatter
 # see https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
 ignore = [
-    'W191',  # tab-indentation
+    'D105',  # undocumented-magic-method
     'E111',  # indentation-with-invalid-multiple
     'E114',  # indentation-with-invalid-multiple-comment
-    'E117'   # over-indented
+    'E117',  # over-indented
+    'W191'   # tab-indentation
 ]
 
 
@@ -37,6 +38,9 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 
 # Ignore `F403` (undefined-local-with-import-star) in Alembic environment config
 'migrations/env.py' = ['F403']
+
+# Ingore `N803` (invalid-argument-name) in OMS object events
+'**/core/events.py' = ['N803']
 
 
 [format]

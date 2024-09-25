@@ -4,21 +4,34 @@ services:
       context: .
       secrets:
         - mynetrc
-    volumes:
-      - .:/app
     ports:
       - 5001:80
     environment:
+      # AWS
+      AWS_ENDPOINT_URL: http://localstack:4566
+      #SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+
+      # database config
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
-    entrypoint: /start-reload.sh
+      PGHOST: postgis
+
+      # misc.
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      RELOAD_APP: ${RELOAD_APP:-1}
+    volumes:
+      - .:/app
+      - ./etc/pki/test10.key:/opt/common/pki/service.private
+      - ./etc/pki/test10.pem:/opt/common/pki/service.public
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: on-failure
+    depends_on:
+      - postgis
 
   postgis:
     image: postgis/postgis:16-3.4-alpine
@@ -53,9 +66,85 @@ services:
     depends_on:
       - postgis
 
+  # NOTE: The omsb container should not require the "ess" or "guide" services,
+  #       but it may try to resolve the hostnames, which results in a stack
+  #       trace being logged. This can be ignored, since the purpose of this
+  #       configuration is to provide a minimal omsb for development & testing.
+  omsb2:
+    image: tex.gerbil-cloud.ts.net:5000/ado/services/oms-bridge/oms-bridge:${OMSB_VERSION}
+    environment:
+      # PostgreSQL/PostGIS variables
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD:
+    env_file:
+      - ./docker/omsb/omsb.env
+    volumes:
+      - ./etc/pki:/opt/oms-bridge/pki
+      - ./etc/whitelist.txt:/opt/oms-bridge/etc/whitelist.txt
+      - ./etc/collectionstatus/LocalCollectionStatusThresholds.yaml:/opt/oms-bridge/etc/collectionstatus/CollectionStatusThresholds.yaml
+    ports:
+      - "8010:8000"
+      - "8020:8443"
+    depends_on:
+      - postgis
+      - localstack
+    profiles:
+      - local
+
+  localstack:
+    hostname: localstack
+    image: localstack/localstack:3.4.0
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./docker/localstack:/etc/localstack/init/ready.d"
+    profiles:
+      - local
+
+  aac2:
+#    hostname: aac2
+#    container_name: aac2
+    image: tex.gerbil-cloud.ts.net:5000/dpaas-internal/aac/ent-aac-service:2.1.15.3
+    command: sh -c "./entrypoint.sh"
+    volumes:
+      - ./etc/pki:/opt/common/pki
+      - ./docker/aac2/entrypoint.sh:/app/entrypoint.sh
+      - ./docker/aac2/users:/app/users
+    ports:
+      - "5022:3000"
+    environment:
+      HOST_URL: 0.0.0.0:3000
+      DEVELOPMENT_MODE: "true"
+      ENABLE_L1_CACHE_SYNC: "false"
+      HOST_TLS_CERT_FILE: /opt/common/pki/server.public
+      HOST_TLS_KEY_FILE: /opt/common/pki/server.private
+      TEMPLATES_PARSE_INTERVAL: 15s
+    profiles:
+      - local
+
+  doccano:
+    image: doccano/doccano
+    ports:
+      - "8000:8000"
+    environment:
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: password
+    volumes:
+     - doccano-db:/data
+
 volumes:
-  postgis:
+  doccano-db:
+  localstack:
   pgadmin:
+  postgis:
 
 secrets:
   mynetrc:

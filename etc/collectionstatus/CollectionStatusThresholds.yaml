@@ -1,0 +1,5 @@
+# list of acceptable thresholds of time with units for each originator/provider to determine data intake health
+#
+# This is not a comprehensive list of all originators/providers in OMS-Bridge, only those we are tracking at a high level
+# Acceptable units are: [SECONDS, MINUTES, HOURS, DAYS]
+originators:
