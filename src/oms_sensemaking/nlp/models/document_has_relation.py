@@ -1,9 +1,8 @@
 """Utilities for working with documents as relations."""
 
+from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
-
-from attr import dataclass
 
 
 @dataclass
