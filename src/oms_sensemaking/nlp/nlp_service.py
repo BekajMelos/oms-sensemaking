@@ -1,5 +1,6 @@
 """NLP Sensemaker Service"""
 
+import dataclasses
 import logging
 from uuid import UUID, uuid4
 
@@ -7,6 +8,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
+from tests.nlp.test_nlp_service import source_id
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -21,11 +23,23 @@ class NlpService:
         :param corenlp_host: Host site for CoreNLP
         :param source_id: ID of the text's Source
         """
+        # CoreNLP host must be SETTINGS.corenlp_localhost if running tests
+        corenlp_host = SETTINGS.corenlp_localhost if source_id == "sensemaking-test" else corenlp_host
+
+        # Use the NLP Sensemaker to process the text data for findings
         submission_data = nlp_reader.read()
         nlp_sensemaker = NlpSensemaker(corenlp_host=corenlp_host)
-        ents_and_rels = nlp_sensemaker.process_data(submission_data)
-        self.submit_findings_to_oms(ents_and_rels, source_id)
-        return ents_and_rels
+        findings = nlp_sensemaker.process_data(submission_data)
+
+        # Submit the findings to OMS (future work)
+        self.submit_findings_to_oms(findings, source_id)
+
+        # Convert findings data to dicts for serializable FastAPI response
+        findings_dict = dataclasses.asdict(findings)
+        findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
+
+        # Return as dictionary to API for response
+        return findings_dict
 
     def submit_findings_to_oms(self, findings: EntitiesAndRelationships, source_id: str) -> bool:
         """
@@ -50,6 +64,7 @@ if __name__ == "__main__":
         "scientific advice was clearer."
     )
     doc_id = uuid4()
+    source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(reader, SETTINGS.corenlp_localhost)
+    nlp_service.run_nlp(reader, source_id, SETTINGS.corenlp_localhost)
