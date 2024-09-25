@@ -31,7 +31,7 @@ dependencies = [
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
     'types-requests==2.32.0',
-    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python.git@v1.2.0'
+    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/oms/oms-sdk-python.git@v1.2.0'
 ]
 
 [project.optional-dependencies]
