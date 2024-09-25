@@ -70,13 +70,15 @@ class Node(OmsObject):
     id: UUID4
     version: str # change to Long type
     acm: str # change to ACM type
-    tags: list[str]
+    #tags: list[str]
+    tags: str
     guideID: str
     name: str
     tier: str # change to object type
     classIri: str
     className: str
-    ifcCodes: list[str]
+    #ifcCodes: list[str]
+    ifcCodes: str
     allegiance: str
     allegianceAor: str
     currentAor: str

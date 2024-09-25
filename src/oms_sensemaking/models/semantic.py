@@ -1,6 +1,8 @@
 """Semantic Sensemaker models."""
 
 import uuid
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import DateTime, Dialect, Integer, String, Boolean, MetaData, TypeDecorator, select
 from pydantic import UUID4, BaseModel, Field, field_serializer
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
 from sqlalchemy.orm import (
@@ -15,20 +17,92 @@ from sqlalchemy.orm import (
 
 class OmsNodeMixin(MappedAsDataclass):
 
-    id: UUID4
-    version: str
-    acm: str
-    tags: str
-    guideID: str
-    name: str
-    tier: str
-    classIri: str
-    className: str
-    ifcCodes: str
-    allegience: str
-    allegienceAor: str
-    currentAor: str
-    isNo: bool
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        comment='The ID of the node associated with the object.'
+    )
+    version: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    acm: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    tags: Mapped[str] = mapped_column( #change to list
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    guideID: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    name: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    tier: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    classIri: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    className: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    ifcCodes: Mapped[str] = mapped_column( #change to list
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    allegiance: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    allegianceAor: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    currentAor: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+    isNso: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+
+    #id: UUID4 = Field(..., examples=["63a17206-8d4d-4825-9b0e-958cf54fa639"])
+    #version: str = Field(..., examples=["test"])
+    #acm: str = Field(..., examples=["test"])
+    #tags: list[str] = Field(..., examples=[["test", "test2"]])
+    #guideID: str = Field(..., examples=["test"])
+    #name: str = Field(..., examples=["test"])
+    #tier: str = Field(..., examples=["test"])
+    #classIri: str = Field(..., examples=["test"])
+    #className: str = Field(..., examples=["test"])
+    #ifcCodes: list[str] = Field(..., examples=[["test", "test2"]])
+    #allegience: str = Field(..., examples=["test"])
+    #allegienceAor: str = Field(..., examples=["test"])
+    #currentAor: str = Field(..., examples=["test"])
+    #isNso: bool = Field(..., examples=[True])
 
 class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
     """
