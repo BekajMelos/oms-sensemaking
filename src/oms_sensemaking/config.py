@@ -159,7 +159,7 @@ class Settings(BaseSettings):
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
     )
 
-    omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
+    omsb_url: str = Field("https://omsb2:8020/graphql", description="URL for OMSB")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
         "/opt/common/pki/service.public",
