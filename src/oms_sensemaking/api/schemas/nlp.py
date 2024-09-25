@@ -14,7 +14,6 @@ class NlpRequest(BaseModel):
     text: str = Field(
         ..., description="The text to analyze.", examples=["The quick brown fox jumps over the lazy dog."]
     )
-    # TODO: add request definition here
 
 
 class NlpResponse(BaseModel):
@@ -25,4 +24,3 @@ class NlpResponse(BaseModel):
         ..., description="The SourceID of the Source associated with the submitted text.", examples=["id1"]
     )
     findings: dict = Field(..., description="The entities and relationships extracted from the text.", examples=[{}])
-    # TODO: add response definition here
