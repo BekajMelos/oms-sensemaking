@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
-from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, Relationship
+from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, NodeResponse, Relationship
 from oms_sensemaking.models.semantic import Node as OrmNode
 from oms_sensemaking.clients import get_db_session
 
@@ -25,9 +25,8 @@ def delete_attribute(db: Annotated[Session, Depends(get_db_session)], attribute_
 @router.get("/node", response_model=list[Node])
 def get_nodes(db: Annotated[Session, Depends(get_db_session)]):
     """Gets all nodes in the graph."""
-    print("************GET NODES***********")
-    print("DB = ", db)
-    return db
+    nodes = db.query(OrmNode).all()
+    return nodes
 
 @router.post("/node", response_model=CreateObjectResponse, response_model_exclude_none=True)
 def create_node(db: Annotated[Session, Depends(get_db_session)], node: Node) -> CreateObjectResponse:
