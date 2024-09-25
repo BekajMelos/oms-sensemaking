@@ -8,7 +8,6 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
-from tests.nlp.test_nlp_service import source_id
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class NlpService:
         findings = nlp_sensemaker.process_data(submission_data)
 
         # Submit the findings to OMS (future work)
-        self.submit_findings_to_oms(findings, source_id)
+        self.submit_findings_to_oms(findings=findings, source_id=source_id)
 
         # Convert findings data to dicts for serializable FastAPI response
         findings_dict = dataclasses.asdict(findings)
@@ -41,7 +40,7 @@ class NlpService:
         # Return as dictionary to API for response
         return findings_dict
 
-    def submit_findings_to_oms(self, findings: EntitiesAndRelationships, source_id: str) -> bool:
+    def submit_findings_to_oms(self, findings: EntitiesAndRelationships, source_id: str | UUID) -> bool:
         """
         Submit the Entities and Relationships to OMS
         :param findings: found Entities and Relationships

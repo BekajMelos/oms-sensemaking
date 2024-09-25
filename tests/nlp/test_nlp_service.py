@@ -22,9 +22,9 @@ reader = NlpStringReader(text=sample_text, document_id=doc_id)
 def test_run_nlp():
     """Tests just running the business logic"""
     findings = service.run_nlp(reader, source_id=source_id, corenlp_host=SETTINGS.corenlp_localhost)
-    assert findings.ner_entities
-    assert findings.document_entity
-    assert findings.ner_relationships
-    assert findings.document_relationships
-    assert len(findings.document_relationships) == len(findings.ner_entities)
-    assert findings.document_entity.document_id == doc_id
+    assert findings["ner_entities"]
+    assert findings["document_entity"]
+    assert findings["ner_relationships"]
+    assert findings["document_relationships"]
+    assert len(findings["document_relationships"]) == len(findings["ner_entities"])
+    assert findings["document_entity"]["document_id"] == doc_id
