@@ -30,21 +30,12 @@ def get_nodes(db: Annotated[Session, Depends(get_db_session)]):
 
 @router.post("/node", response_model=CreateObjectResponse, response_model_exclude_none=True)
 def create_node(db: Annotated[Session, Depends(get_db_session)], node: Node) -> CreateObjectResponse:
-    print("************CREATE NODE**************")
-    print(node)
-    print(type(node))
-    print("*********")
-    print(db)
-    print(type(db))
-    print("CREATED OBJECT RESPONSE = ", CreateObjectResponse(success=True))
-    print("CREATED OBJECT RESPONSE NO SUCCESS = ", CreateObjectResponse)
-    print("****************BEFORE END****************")
-    db.add(OrmNode(**node.model_dump()))
-    #db.commit()
-    #db.refresh(node)
     """Create a node in the graph."""
-    return node
-    #return CreateObjectResponse(success=True)
+    orm_node = OrmNode(**node.model_dump())
+    db.add(orm_node)
+    db.commit()
+    db.refresh(orm_node)
+    return CreateObjectResponse(success=True)
 
 
 @router.delete("/node/{node_id}", response_model=DeleteObjectResponse, response_model_exclude_none=True)

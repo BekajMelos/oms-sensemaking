@@ -113,38 +113,14 @@ class Relationship(OmsObject):
         """
         return super().serialize_uuid(val)
 
-# class NodeResponse(BaseModel):
-#     id: UUID4
-#     version: str # change to Long type
-#     acm: str # change to ACM type
-#     #tags: list[str]
-#     tags: str
-#     guideID: str
-#     name: str
-#     tier: str # change to object type
-#     classIri: str
-#     className: str
-#     #ifcCodes: list[str]
-#     ifcCodes: str
-#     allegiance: str
-#     allegianceAor: str
-#     currentAor: str
-#     isNso: bool
-
-#     class Config:
-#         orm_mode = True 
 
 class CreateObjectResponse(BaseModel):
     """Represents the response for object "create" endpoints."""
-
-    print("**********CREATE OBJECT RESPONSE************")
     success: bool = Field(
         ...,
         examples=[True],
         description="Indicates if the object was successfully created in the graph."
     )
-    print(success)
-    print("**********END CREATE RESPONSE**********")
 
 
 class DeleteObjectResponse(BaseModel):
