@@ -1,8 +1,12 @@
 """Utilities for working with CoreNLP."""
 
+import logging
+
 import requests
 
 from oms_sensemaking.config import SETTINGS
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class CoreNlpService:
@@ -34,4 +38,5 @@ class CoreNlpService:
         """
         result = requests.post(self.url, data=text.encode("utf-8"))
         annotated_doc = result.json()
+        LOGGER.debug(annotated_doc)
         return annotated_doc
