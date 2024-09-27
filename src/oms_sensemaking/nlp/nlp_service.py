@@ -22,8 +22,6 @@ class NlpService:
         :param corenlp_host: Host site for CoreNLP
         :param source_id: ID of the text's Source
         """
-        # CoreNLP host must be SETTINGS.corenlp_localhost if running tests
-        corenlp_host = SETTINGS.corenlp_localhost if source_id == "sensemaking-test" else corenlp_host
 
         # Use the NLP Sensemaker to process the text data for findings
         submission_data = nlp_reader.read()
