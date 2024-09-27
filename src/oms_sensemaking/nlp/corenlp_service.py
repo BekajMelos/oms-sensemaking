@@ -35,7 +35,16 @@ class CoreNlpService:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
+        # Handling empty text submission case
+        if not text:
+            return []
+
+        # Formatting text for submission and sending it to the CoreNLP container
         data = {"text": text}
         result = httpx.post(self.url, data=data, content=text, timeout=None)
+
+        # Parsing the xml response to get it as a dictionary for easy indexing later
         formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
-        return formatted_annotations
+
+        # If there is only one sentence it by default returns a dict instead of a list of dicts, so this corrects that
+        return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations

@@ -12,12 +12,8 @@ def test_process_doccano_result():
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoRelation
     relation_type = "related_to"
@@ -55,12 +51,8 @@ def test_process_doccano_result_no_relation():
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoResult
     result_id = 111
@@ -121,10 +113,10 @@ def test_tokenize_text():
     tokenized3 = tdp.tokenize_text(text3)
     tokenized4 = tdp.tokenize_text(text4)
 
-    assert len([tokenized1[key] for key in tokenized1]) == 10
-    assert len([tokenized2[key] for key in tokenized2]) == 0
-    assert len([tokenized3[key] for key in tokenized3]) == 0
-    assert len([tokenized4[key] for key in tokenized4]) == 2
+    assert len(tokenized1) == 10
+    assert len(tokenized2) == 0
+    assert len(tokenized3) == 0
+    assert len(tokenized4) == 2
 
 
 def test_map_entities_to_tokens():
@@ -135,12 +127,8 @@ def test_map_entities_to_tokens():
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoRelation
     relation_type = "related_to"

@@ -45,13 +45,13 @@ def test_process_data_normal_text():
 def test_use_service_empty_doc():
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
-    assert not annotation["sentences"]
+    assert not annotation
 
 
 def test_use_service_normal_doc():
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
-    assert annotation["sentences"]
+    assert annotation
 
 
 def test_annotation_processor():
@@ -64,17 +64,21 @@ def test_annotation_processor():
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
     # Every entity in the annotation must have been extracted
-    for sentence in annotation["sentences"]:
-        for entity in sentence["entitymentions"]:
-            assert entity in ents
-    # Every relation in the annotation must have been extracted
-    for sentence in annotation["sentences"]:
-        for relation in sentence["openie"]:
-            if relation["relation"] != "_NR":
-                assert relation in rels
+    for sentence in annotation:
+        if "MachineReading" in sentence and sentence["MachineReading"]["entities"]:
+            # Loop through each of the entities in the annotation
+            for entity in sentence["MachineReading"]["entities"]["entity"]:
+                if entity["#text"] != "O":
+                    assert entity in ents
+        # Every relation in the annotation must have been extracted
+        if "MachineReading" in sentence and sentence["MachineReading"]["relations"]:
+            # TODO: Verify formatting
+            for relation in sentence["MachineReading"]["relations"]["relation"]:
+                if relation["#text"] != "_NR":
+                    assert relation in rels
     # Every relation added must not have type _NR
     for relation in rels:
-        assert relation["relation"] != "_NR"
+        assert relation["#text"] != "_NR"
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)
