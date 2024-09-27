@@ -7,6 +7,8 @@ Microservice that provides analytics for OMS data.
 
 - [Setting up an OMS Sensemaking Development Environment]
 
+  + This file can be found locally at `docs/dev-guide/dev.md`
+
 The *OMS Sensemaking* project is documented using [mkdocs] and [mkdocstrings].
 Once you have a development environment installed, you can host a local copy of
 the project documentation with `mkdocs serve`, which will host the project at
@@ -18,6 +20,6 @@ environment configuration, application configuration, and packaging as well as a
 dynamically generated API reference and OMS Sensemaking quickstart guide.
 
 
-[Setting up an OMS Sensemaking Development Environment]: docs/dev-guide/dev.md
+[Setting up an OMS Sensemaking Development Environment]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/src/branch/main/docs/dev-guide/dev.md
 [mkdocs]: https://www.mkdocs.org/
 [mkdocstring]: https://mkdocstrings.github.io/
