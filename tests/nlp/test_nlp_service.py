@@ -20,15 +20,6 @@ sample_text = (
 reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
 
-# TODO: implement this
-class MockCoreNlpService(CoreNlpClient):
-    def set_response(self, response):
-        self.response = response
-
-    def annotate_document(self, text: str) -> list:
-        return self.response
-
-
 def test_run_nlp():
     """Tests just running the business logic"""
     findings = service.run_nlp(reader, source_id=source_id, corenlp_host=CoreNlpClient({}, SETTINGS.corenlp_localhost))
