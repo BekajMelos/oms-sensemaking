@@ -1,9 +1,9 @@
 """Schemas representing OMS objects."""
 import uuid
+from enum import Enum
 from typing import Any, Optional
 
 from pydantic import UUID4, BaseModel, Field, field_serializer
-from enum import Enum
 
 
 class OmsObject(BaseModel):

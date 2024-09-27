@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, Relationship
-from oms_sensemaking.models.semantic import Node as OrmNode
 from oms_sensemaking.clients import get_db_session
+from oms_sensemaking.models.semantic import Node as OrmNode
 
 router: APIRouter = APIRouter()
 
