@@ -1,17 +1,17 @@
 """NLP Sensemaker Service"""
 
-from abc import ABC
 import dataclasses
 import logging
 from uuid import UUID, uuid4
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.nlp.corenlp_service import NlpHost
+from oms_sensemaking.nlp.corenlp_service import CoreNlpService, NlpHost
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(reader, source_id, SETTINGS.corenlp_localhost)
+    nlp_service.run_nlp(reader, source_id, CoreNlpService({}, SETTINGS.corenlp_localhost))

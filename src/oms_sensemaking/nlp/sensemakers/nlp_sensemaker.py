@@ -1,6 +1,5 @@
 """Natural Language Processing (NLP) Sensemaker."""
 
-from abc import ABC
 import argparse
 
 from oms_sensemaking.config import SETTINGS
@@ -10,6 +9,7 @@ from oms_sensemaking.nlp.corenlp_service import CoreNlpService
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.nlp_service import NlpHost
+
 
 class NlpSensemaker(Sensemaker):
     """

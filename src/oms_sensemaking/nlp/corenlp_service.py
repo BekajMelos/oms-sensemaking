@@ -1,7 +1,7 @@
 """Utilities for working with CoreNLP."""
 
-from abc import ABC
 import logging
+from abc import ABC, abstractmethod
 
 import httpx
 import xmltodict
@@ -10,12 +10,15 @@ from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+
 class NlpHost(ABC):
+    @abstractmethod
     def annotate_document(self, text: str) -> list:
-        pass
+        raise NotImplementedError()
+
 
 class CoreNlpService(NlpHost):
-    """Utility class for interacting with the Stanza CoreNLP client."""
+    """Utility class for interacting with the CoreNLP Docker container server."""
 
     def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):
         """
