@@ -65,7 +65,7 @@ class Attribute(OmsObject):
     attribute_value: Any
 
 
-class ObjectTier(str, Enum): # Figure out how to pass this
+class ObjectTier(str, Enum):
     PRIMARY = "PRIMARY"
     DERIVATIVE = "DERIVATIVE"
     OBSERVATIONAL = "OBSERVATIONAL"
