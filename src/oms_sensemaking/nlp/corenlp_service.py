@@ -1,5 +1,6 @@
 """Utilities for working with CoreNLP."""
 
+from abc import ABC
 import logging
 
 import httpx
@@ -9,8 +10,11 @@ from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+class NlpHost(ABC):
+    def annotate_document(self, text: str) -> list:
+        pass
 
-class CoreNlpService:
+class CoreNlpService(NlpHost):
     """Utility class for interacting with the Stanza CoreNLP client."""
 
     def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):

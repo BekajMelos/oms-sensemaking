@@ -3,7 +3,7 @@
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
-from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
+from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import CoreNlpService, NlpSensemaker
 
 empty_text = ""
 sample_text = (
@@ -15,7 +15,7 @@ sample_text = (
     "scientific advice was clearer."
 )
 sample_doc_id = "MadCow"
-nlp_sensemaker = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
+nlp_sensemaker = NlpSensemaker(CoreNlpService({}, SETTINGS.corenlp_localhost))
 
 
 def test_process_data_empty_test():

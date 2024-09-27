@@ -1,5 +1,6 @@
 """Natural Language Processing (NLP) Sensemaker."""
 
+from abc import ABC
 import argparse
 
 from oms_sensemaking.config import SETTINGS
@@ -8,7 +9,7 @@ from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.corenlp_service import CoreNlpService
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
-
+from oms_sensemaking.nlp.nlp_service import NlpHost
 
 class NlpSensemaker(Sensemaker):
     """
@@ -23,11 +24,11 @@ class NlpSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, corenlp_host: str = SETTINGS.corenlp_dockerhost) -> None:
+    def __init__(self, host: NlpHost) -> None:
         """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.corenlp_host = corenlp_host
+        self.corenlp_host = host
 
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
@@ -42,8 +43,8 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> list:
         """Access the CoreNlpService to annotate text."""
-        corenlp_service = CoreNlpService(props={}, host=self.corenlp_host)
-        annotated_doc = corenlp_service.annotate_document(text=document)
+        # corenlp_service = CoreNlpService(props={}, host=self.corenlp_host)
+        annotated_doc = self.corenlp_host.annotate_document(text=document)
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: list) -> EntitiesAndRelationships:
@@ -65,7 +66,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text_file_path = args.text_filepath
 
-    nlp_sm = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
+    # nlp_sm = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
+    nlp_sm = NlpSensemaker(CoreNlpService({}, SETTINGS.corenlp_localhost))
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id="MadCow", text=text)
