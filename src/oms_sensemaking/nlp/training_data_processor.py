@@ -31,7 +31,7 @@ class TrainingDataProcessor:
         """
         self.annotated_filepath = annotated_filepath
         self.save_directory = save_directory
-        self.properties = {"annotators": "tokenize, pos, lemma, depparse"}
+        self.properties = {"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}
         self.corenlp_host = corenlp_host
 
     def run_pipeline(self):
@@ -100,19 +100,18 @@ class TrainingDataProcessor:
         # The client is used here only for annotation purposes, no NER or relation extraction yet
         corenlp_client = CoreNlpService(props=self.properties, host=self.corenlp_host)
         annotation = corenlp_client.annotate_document(text)
-        sentences = annotation["sentences"]  # grab the sentences from the annotation
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
         global_token_index = 0
         doc_token_range_map = RangeMap()  # Imported data type, maps ranges of char offsets to TokenReferences
-        for sentence in sentences:
-            for token in sentence["tokens"]:
+        for sentence in annotation:
+            for token in sentence["tokens"]["token"]:
                 # Building the TokenReference with the token parts taken from the sentence
-                start_offset = token["characterOffsetBegin"]
-                end_offset = token["characterOffsetEnd"]
-                pos_tag = token["pos"]
+                start_offset = int(token["CharacterOffsetBegin"])
+                end_offset = int(token["CharacterOffsetEnd"])
+                pos_tag = token["POS"]
                 token_reference = TokenReference(
-                    token["originalText"], global_token_index, start_offset, end_offset, "0", pos_tag
+                    token["word"], global_token_index, start_offset, end_offset, "0", pos_tag
                 )
                 global_token_index += 1
 

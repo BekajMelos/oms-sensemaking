@@ -36,6 +36,6 @@ class CoreNlpService:
         :return: The annotated document.
         """
         data = {"text": text}
-        result = httpx.post(self.url, data=data, timeout=None)
+        result = httpx.post(self.url, data=data, content=text, timeout=None)
         formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
         return formatted_annotations
