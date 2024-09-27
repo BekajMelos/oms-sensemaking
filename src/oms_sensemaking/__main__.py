@@ -256,6 +256,7 @@ def get_cli_parser() -> ArgumentParser:
     # natural language processing subcommand
     nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
     nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
+    nlp_parser.add_argument("-id", "--source-id", type=str, help="Source ID of the text.")
     nlp_parser.set_defaults(func=run_nlp)
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")

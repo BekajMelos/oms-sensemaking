@@ -2,7 +2,8 @@
 
 import logging
 
-import requests
+import httpx
+import xmltodict
 
 from oms_sensemaking.config import SETTINGS
 
@@ -19,15 +20,13 @@ class CoreNlpService:
         :param props:
         """
         if not props:
-            self.props = {
-                "annotators": "tokenize, pos, lemma, ner, depparse, relation, openie",
-            }
+            self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "xml"}
         else:
             self.props = props
         self.corenlp_host = host
         self.url = f"http://{self.corenlp_host}/?properties={self.props}"
 
-    def annotate_document(self, text: str):
+    def annotate_document(self, text: str) -> list:
         """
         Annotate the given document text.
 
@@ -36,7 +35,7 @@ class CoreNlpService:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
-        result = requests.post(self.url, data=text.encode("utf-8"))
-        annotated_doc = result.json()
-        LOGGER.debug(annotated_doc)
-        return annotated_doc
+        data = {"text": text}
+        result = httpx.post(self.url, data=data, timeout=None)
+        formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
+        return formatted_annotations

@@ -27,22 +27,29 @@ class AnnotationProcessor:
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
         return entities_and_relationships
 
-    def find_entities(self, annotation) -> list:
+    def find_entities(self, annotation: dict) -> list:
         """Grab the nodes from the annotation."""
         entity_mentions = []
-        for sentence in annotation["sentences"]:  # Loop through the annotation
-            for mention in sentence["entitymentions"]:  # Loop through each of the entities in the annotation
-                entity_mentions.append(mention)  # Adds the entity to a list
+        for sentence in annotation:  # Loop through the annotation
+            if "MachineReading" in sentence and sentence["MachineReading"]["entities"]:
+                # TODO: Verify formatting
+                # Loop through each of the entities in the annotation
+                for entity in sentence["MachineReading"]["entities"]["entity"]:
+                    if isinstance(entity, dict) and entity["#text"] != "O":
+                        entity_mentions.append(entity)  # Adds the entity to a list
         return entity_mentions
 
-    def find_relationships(self, annotation) -> list:
+    def find_relationships(self, annotation: dict) -> list:
         """Grab the relationships from the annotation."""
         relationships = []
-        for sentence in annotation["sentences"]:  # Loop through the annotation
-            # TODO: CoreNLP container doesn't return the exact relations we want...
-            for relation in sentence["openie"]:  # Takes each of the relations in the document and adds to the list
-                if relation["relation"] != "_NR":  # Skips relations without a relation type
-                    relationships.append(relation)
+        for sentence in annotation:  # Loop through the annotation
+            # Takes each of the relations in the document and adds to the list
+            if "MachineReading" in sentence and sentence["MachineReading"]["relations"]:
+                # TODO: Verify formatting
+                for relation in sentence["MachineReading"]["relations"]["relation"]:
+                    # Skips relations without a relation type
+                    if isinstance(relation, dict) and relation["#text"] != "_NR":
+                        relationships.append(relation)
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
@@ -67,8 +74,7 @@ class AnnotationProcessor:
             document_relationship = DocumentHasRelation(
                 object_id=doc_rel_obj_id,
                 document_id=data.document_id,
-                # ner_entity=entity.entityMentionIndex,
-                ner_entity=entity["docTokenBegin"],
+                ner_entity=entity["@id"],
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
