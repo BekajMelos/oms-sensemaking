@@ -8,7 +8,7 @@ import pandas as pd
 from collections_extended import RangeMap
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class TrainingDataProcessor:
     """Utility class for training data."""
 
-    def __init__(self, annotated_filepath: str, save_directory: str, corenlp_host: str = SETTINGS.corenlp_localhost):
+    def __init__(self, annotated_filepath: str, save_directory: str, corenlp_host: CoreNlpClient):
         """
         Create a new instance of TrainingDataProcessor.
 
@@ -98,7 +98,7 @@ class TrainingDataProcessor:
             text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
-        corenlp_client = CoreNlpService(props=self.properties, host=self.corenlp_host)
+        corenlp_client = self.corenlp_host
         annotation = corenlp_client.annotate_document(text)
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
@@ -256,5 +256,12 @@ if __name__ == "__main__":
     save_directory = args.save_directory
 
     # Creating the TDP with args and running its pipeline
-    processor = TrainingDataProcessor(annotated_jsonl, save_directory, corenlp_host=SETTINGS.corenlp_localhost)
+    processor = TrainingDataProcessor(
+        annotated_jsonl,
+        save_directory,
+        corenlp_host=CoreNlpClient(
+            props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"},
+            host=SETTINGS.corenlp_localhost,
+        ),
+    )
     processor.run_pipeline()

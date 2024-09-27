@@ -5,7 +5,7 @@ import logging
 from uuid import UUID, uuid4
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService, NlpHost
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
@@ -16,7 +16,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
-    def run_nlp(self, nlp_reader: NlpReader, source_id: str | UUID, corenlp_host: NlpHost):
+    def run_nlp(self, nlp_reader: NlpReader, source_id: str | UUID, corenlp_host: CoreNlpClient):
         """
         Pipeline called by API to run the NLP Business Logic and report findings back to OMS
         :param nlp_reader: The body of text to be analyzed by the NLP Service
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(reader, source_id, CoreNlpService({}, SETTINGS.corenlp_localhost))
+    nlp_service.run_nlp(reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))

@@ -99,7 +99,7 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
 load_dotenv()
@@ -225,7 +225,9 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_nlp(nlp_reader, source_id=args.source_id, corenlp_host=CoreNlpService(props={}, host=SETTINGS.corenlp_localhost))
+    nlp_service.run_nlp(
+        nlp_reader, source_id=args.source_id, corenlp_host=CoreNlpClient(props={}, host=SETTINGS.corenlp_localhost)
+    )
 
 
 def run_semantic() -> None:

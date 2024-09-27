@@ -5,10 +5,9 @@ import argparse
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
-from oms_sensemaking.nlp.nlp_service import NlpHost
 
 
 class NlpSensemaker(Sensemaker):
@@ -24,7 +23,7 @@ class NlpSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, host: NlpHost) -> None:
+    def __init__(self, host: CoreNlpClient) -> None:
         """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -66,8 +65,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text_file_path = args.text_filepath
 
-    # nlp_sm = NlpSensemaker(corenlp_host=SETTINGS.corenlp_localhost)
-    nlp_sm = NlpSensemaker(CoreNlpService({}, SETTINGS.corenlp_localhost))
+    nlp_sm = NlpSensemaker(CoreNlpClient({}, SETTINGS.corenlp_localhost))
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id="MadCow", text=text)
