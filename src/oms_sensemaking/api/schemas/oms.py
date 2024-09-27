@@ -65,6 +65,11 @@ class Attribute(OmsObject):
     attribute_value: Any
 
 
+class ObjectTier(str, Enum): # Figure out how to pass this
+    PRIMARY = "PRIMARY"
+    DERIVATIVE = "DERIVATIVE"
+    OBSERVATIONAL = "OBSERVATIONAL"
+
 class Node(OmsObject):
     """Represents a Node object in OMS."""
 
@@ -74,7 +79,7 @@ class Node(OmsObject):
     tags: list[str]
     guideID: str
     name: str
-    tier: str # change to object type
+    tier: ObjectTier
     classIri: str
     className: str
     ifcCodes: list[str]
@@ -83,11 +88,6 @@ class Node(OmsObject):
     currentAor: str
     isNso: bool
 
-
-class ObjectTier(str, Enum): # Figure out how to pass this
-    PRIMARY = "PRIMARY"
-    DERIVATIVE = "DERIVATIVE"
-    OBSERVATIONAL = "OBSERVATIONAL"
 
 class Relationship(OmsObject):
     """Represents an Attribute object in OMS."""

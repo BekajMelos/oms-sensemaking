@@ -2,9 +2,10 @@
 
 import uuid
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy import DateTime, Dialect, Integer, String, Boolean, MetaData, TypeDecorator, select
+from sqlalchemy import DateTime, Dialect, Integer, String, Enum, Boolean, MetaData, TypeDecorator, select
 from pydantic import UUID4, BaseModel, Field, field_serializer
 from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
+from src.oms_sensemaking.api.schemas.oms import ObjectTier
 from sqlalchemy.orm import (
     Mapped,
     MappedAsDataclass,
@@ -31,62 +32,62 @@ class OmsNodeMixin(MappedAsDataclass):
     acm: Mapped[dict] = mapped_column(
         JSONB,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The acm of the node.'
     )
     tags: Mapped[list[str]] = mapped_column(
         JSONB,
         nullable=False,
-        comment='A list of tags.'
+        comment='A tags of the node.'
     )
     guideID: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The guideID of the node.'
     )
     name: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The name of the node.'
     )
-    tier: Mapped[str] = mapped_column(
-        String,
+    tier: Mapped[ObjectTier] = mapped_column(
+        Enum(ObjectTier),
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The tier of the node.'
     )
     classIri: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The classIri of the node.'
     )
     className: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The className of the node.'
     )
     ifcCodes: Mapped[list[str]] = mapped_column(
         JSONB,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The ifcCodes of the node.'
     )
     allegiance: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The allegiance of the node.'
     )
     allegianceAor: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The allegianceAor of the node.'
     )
     currentAor: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The currentAor of the node.'
     )
     isNso: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='The isNso of the node (boolean).'
     )
 
 class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
