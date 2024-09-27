@@ -23,20 +23,20 @@ class OmsNodeMixin(MappedAsDataclass):
         nullable=False,
         comment='The ID of the node associated with the object.'
     )
-    version: Mapped[str] = mapped_column(
-        String,
+    version: Mapped[int] = mapped_column(
+        Integer,
         nullable=False,
         comment='The version of the node associated with this object.'
     )
-    acm: Mapped[str] = mapped_column(
-        String,
+    acm: Mapped[dict] = mapped_column(
+        JSONB,
         nullable=False,
         comment='The version of the node associated with this object.'
     )
-    tags: Mapped[str] = mapped_column( #change to list
-        String,
+    tags: Mapped[list[str]] = mapped_column(
+        JSONB,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='A list of tags.'
     )
     guideID: Mapped[str] = mapped_column(
         String,
@@ -63,8 +63,8 @@ class OmsNodeMixin(MappedAsDataclass):
         nullable=False,
         comment='The version of the node associated with this object.'
     )
-    ifcCodes: Mapped[str] = mapped_column( #change to list
-        String,
+    ifcCodes: Mapped[list[str]] = mapped_column(
+        JSONB,
         nullable=False,
         comment='The version of the node associated with this object.'
     )
@@ -88,21 +88,6 @@ class OmsNodeMixin(MappedAsDataclass):
         nullable=False,
         comment='The version of the node associated with this object.'
     )
-
-    #id: UUID4 = Field(..., examples=["63a17206-8d4d-4825-9b0e-958cf54fa639"])
-    #version: str = Field(..., examples=["test"])
-    #acm: str = Field(..., examples=["test"])
-    #tags: list[str] = Field(..., examples=[["test", "test2"]])
-    #guideID: str = Field(..., examples=["test"])
-    #name: str = Field(..., examples=["test"])
-    #tier: str = Field(..., examples=["test"])
-    #classIri: str = Field(..., examples=["test"])
-    #className: str = Field(..., examples=["test"])
-    #ifcCodes: list[str] = Field(..., examples=[["test", "test2"]])
-    #allegience: str = Field(..., examples=["test"])
-    #allegienceAor: str = Field(..., examples=["test"])
-    #currentAor: str = Field(..., examples=["test"])
-    #isNso: bool = Field(..., examples=[True])
 
 class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
     """
@@ -128,18 +113,3 @@ class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDat
     """
 
     __tablename__: str = 'nodes'
-
-    # def __post_init__(self):
-    """
-        Post initialization.
-
-        This function is responsible for formatting the location field in the
-        event that it is set as a string, rather than a specific GeoAlchemy type.
-        """
-    """
-        if isinstance(self.location, str):
-            self.location = WKTElement(self.location, srid=SRID)
-
-    def __lt__(self, other: "Node"):
-        return self.detection_time < other.detection_time
-    """

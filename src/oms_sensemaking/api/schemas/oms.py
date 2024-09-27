@@ -3,6 +3,7 @@ import uuid
 from typing import Any, Optional
 
 from pydantic import UUID4, BaseModel, Field, field_serializer
+from enum import Enum
 
 
 class OmsObject(BaseModel):
@@ -68,24 +69,25 @@ class Node(OmsObject):
     """Represents a Node object in OMS."""
 
     id: UUID4
-    version: str # change to Long type
-    acm: str # change to ACM type
-    #tags: list[str]
-    tags: str
+    version: int
+    acm: dict
+    tags: list[str]
     guideID: str
     name: str
     tier: str # change to object type
     classIri: str
     className: str
-    #ifcCodes: list[str]
-    ifcCodes: str
+    ifcCodes: list[str]
     allegiance: str
     allegianceAor: str
     currentAor: str
     isNso: bool
-    #class_iri: str = Field(..., examples=["http://purl.obolibrary.org/obo/BFO_0000030"])
-    #class_name: str = Field(..., examples=["Object"])
 
+
+class ObjectTier(str, Enum): # Figure out how to pass this
+    PRIMARY = "PRIMARY"
+    DERIVATIVE = "DERIVATIVE"
+    OBSERVATIONAL = "OBSERVATIONAL"
 
 class Relationship(OmsObject):
     """Represents an Attribute object in OMS."""
