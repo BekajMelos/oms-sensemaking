@@ -14,7 +14,7 @@ class AnnotationProcessor:
     It also creates relationships between a document and each of the entities found within it.
     """
 
-    def extract_info(self, data: SubmissionData, annotation: dict) -> EntitiesAndRelationships:
+    def extract_info(self, data: SubmissionData, annotation: list) -> EntitiesAndRelationships:
         """
         Extract the entities and relationships the given CoreNLP annotation.
 
@@ -27,7 +27,7 @@ class AnnotationProcessor:
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
         return entities_and_relationships
 
-    def find_entities(self, annotation: dict) -> list:
+    def find_entities(self, annotation: list) -> list:
         """Grab the nodes from the annotation."""
         entity_mentions = []
         for sentence in annotation:  # Loop through the annotation
@@ -39,7 +39,7 @@ class AnnotationProcessor:
                         entity_mentions.append(entity)  # Adds the entity to a list
         return entity_mentions
 
-    def find_relationships(self, annotation: dict) -> list:
+    def find_relationships(self, annotation: list) -> list:
         """Grab the relationships from the annotation."""
         relationships = []
         for sentence in annotation:  # Loop through the annotation
