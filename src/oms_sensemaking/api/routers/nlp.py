@@ -6,7 +6,6 @@ from fastapi import APIRouter
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
 
 router: APIRouter = APIRouter()
@@ -21,8 +20,6 @@ def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     # Call NLP Sensemaker via the NlpService to get findings (eventually will also submit to OMS)
     nlp: NlpService = NlpService()
     reader = NlpStringReader(nlp_req.text)
-    findings = nlp.run_nlp(
-        nlp_reader=reader, source_id=nlp_req.source_id, corenlp_host=CoreNlpClient({}, SETTINGS.corenlp_dockerhost)
-    )
+    findings = nlp.run_nlp(nlp_reader=reader, source_id=nlp_req.source_id, corenlp_host=SETTINGS.corenlp_client)
 
     return NlpResponse(acm=nlp_req.acm, source_id=nlp_req.source_id, findings=findings)

@@ -6,6 +6,8 @@ from typing import Any, Dict, Optional
 from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient, MockCoreNlpClient
+
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 
 
@@ -99,6 +101,10 @@ class Settings(BaseSettings):
                                    description="Host and port for CoreNLP when running a script.")
     corenlp_dockerhost: str = Field("host.docker.internal:9000",
                                     description="Host and port for CoreNLP when calling from API.")
+    corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, host="host.docker.internal:9000"),
+                           description="Client for interacting with CoreNLP Docker container.")
+    mock_corenlp_client: MockCoreNlpClient = Field(MockCoreNlpClient(props={}, host="localhost:9000"),
+                                                   description="Mock client replacing CoreNLP client")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
