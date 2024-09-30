@@ -23,11 +23,11 @@ class NlpSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, host: CoreNlpClient) -> None:
+    def __init__(self, client: CoreNlpClient) -> None:
         """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.corenlp_host = host
+        self.corenlp_client = client
 
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
@@ -42,8 +42,7 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> list:
         """Access the CoreNlpService to annotate text."""
-        # corenlp_service = CoreNlpService(props={}, host=self.corenlp_host)
-        annotated_doc = self.corenlp_host.annotate_document(text=document)
+        annotated_doc = self.corenlp_client.annotate_document(text=document)
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: list) -> EntitiesAndRelationships:

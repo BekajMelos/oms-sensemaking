@@ -4,9 +4,9 @@ from mock_responses import mock_response_long_text, mock_response_no_text
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
-from oms_sensemaking.nlp.corenlp_client import MockCoreNlpClient
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
+from tests.nlp.mock_corenlp_client import MockCoreNlpClient
 
 empty_text = ""
 sample_text = (

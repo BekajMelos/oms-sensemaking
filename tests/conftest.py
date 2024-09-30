@@ -8,11 +8,11 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
+from nlp.mock_corenlp_client import MockCoreNlpClient
 from nlp.mock_responses import mock_response_short_text
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
-from oms_sensemaking.nlp.corenlp_client import MockCoreNlpClient
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
@@ -34,8 +34,8 @@ if SETTINGS.corenlp_dockerhost != SETTINGS.corenlp_localhost:
     SETTINGS.corenlp_dockerhost = SETTINGS.corenlp_localhost
 
 if not isinstance(SETTINGS.corenlp_client, MockCoreNlpClient):
-    SETTINGS.corenlp_client = SETTINGS.mock_corenlp_client
-    SETTINGS.mock_corenlp_client.set_response(mock_response_short_text)
+    SETTINGS.corenlp_client = MockCoreNlpClient(props={}, client=SETTINGS.corenlp_localhost)
+    SETTINGS.corenlp_client.set_response(mock_response_short_text)
 
 
 @pytest.fixture

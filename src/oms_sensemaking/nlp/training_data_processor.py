@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class TrainingDataProcessor:
     """Utility class for training data."""
 
-    def __init__(self, annotated_filepath: str, save_directory: str, corenlp_host: CoreNlpClient):
+    def __init__(self, annotated_filepath: str, save_directory: str, corenlp_client: CoreNlpClient):
         """
         Create a new instance of TrainingDataProcessor.
 
@@ -32,7 +32,7 @@ class TrainingDataProcessor:
         self.annotated_filepath = annotated_filepath
         self.save_directory = save_directory
         self.properties = {"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}
-        self.corenlp_host = corenlp_host
+        self.corenlp_client = corenlp_client
 
     def run_pipeline(self):
         """Run a pipeline to convert .jsonl to CoreNLP .tsv format for model training."""
@@ -98,7 +98,7 @@ class TrainingDataProcessor:
             text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
-        corenlp_client = self.corenlp_host
+        corenlp_client = self.corenlp_client
         annotation = corenlp_client.annotate_document(text)
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
@@ -259,9 +259,9 @@ if __name__ == "__main__":
     processor = TrainingDataProcessor(
         annotated_jsonl,
         save_directory,
-        corenlp_host=CoreNlpClient(
+        corenlp_client=CoreNlpClient(
             props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"},
-            host=SETTINGS.corenlp_localhost,
+            client=SETTINGS.corenlp_localhost,
         ),
     )
     processor.run_pipeline()

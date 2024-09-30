@@ -16,7 +16,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
-    def run_nlp(self, nlp_reader: NlpReader, source_id: str | UUID, corenlp_host: CoreNlpClient):
+    def run_nlp(self, nlp_reader: NlpReader, source_id: str | UUID, corenlp_client: CoreNlpClient):
         """
         Pipeline called by API to run the NLP Business Logic and report findings back to OMS
         :param nlp_reader: The body of text to be analyzed by the NLP Service
@@ -26,7 +26,7 @@ class NlpService:
 
         # Use the NLP Sensemaker to process the text data for findings
         submission_data = nlp_reader.read()
-        nlp_sensemaker = NlpSensemaker(corenlp_host)
+        nlp_sensemaker = NlpSensemaker(corenlp_client)
         findings = nlp_sensemaker.process_data(submission_data)
 
         # Submit the findings to OMS (future work)
