@@ -30,18 +30,17 @@ dependencies = [
     'python-dotenv==1.0.1',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
-    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/oms/oms-sdk-python.git@v1.2.0',
+    'oms_sdk==1.2.2',
     'xmltodict==0.13.0'
 ]
 
 [project.optional-dependencies]
 dev = [
-    'coverage==7.6.0',
     'mypy==1.11.1',
     'pre-commit==3.7.1',
-    'types-python-dateutil==2.9.0.20240316',
     'ruff==0.6.1',
-    'types-shapely==2.0.0.20240714',
+    'types-python-dateutil==2.9.0.20240316',
+    'types-shapely==2.0.0.20240714'
 ]
 
 docs = [
