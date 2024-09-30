@@ -30,21 +30,30 @@ python -m venv --prompt sensemaking .venv  # create virtual environment
 source .venv/bin/activate                  # activate virtual environment
 ```
 
-### Step 2: Configure git authentication
+### Step 2: Configure Private PyPI
 
-*oms-sensemaking* includes a dependency on the [oms-sdk] that is defined using a
-[PEP 508] compatible URL to the oms-sdk project's Git repository, which will
-require authentication. You can configure your local system to authenticate
-automatically using a local `.netrc` file.
+*oms-sensemaking* includes a dependency on the [oms-sdk] which is hosted in a
+private PyPI. You can configure your system to authenticate automatically
+using a local `.netrc` file.
 
 Create a `.netrc` file in your home directory:
 
 ```
 # ~/.netrc
-
 machine tex.gerbil-cloud.ts.net
 login your-login-here
 password "your password"
+```
+
+You will also need to configure pip to pull dependencies from the private PyPI
+first and fall back to the public PyPI. To do this, add a `pip.conf` file to
+your `.venv` directory with the following contents:
+
+```
+# .venv/pip.conf --- local project pip configuration.
+[global]
+index-url = https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
+extra-index-url = https://pypi.org/simple
 ```
 
 ### Step 3: Install Project Dependencies
