@@ -56,6 +56,16 @@ index-url = https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
 extra-index-url = https://pypi.org/simple
 ```
 
+> ***NOTE***: Pip can alternatively be configured through environment variables:
+>
+> ```sh
+> # default to private PyPI
+> export PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
+>
+> # fallback to public PyPI
+> export PIP_EXTRA_URL="https://pypi.org/simple"
+> ```
+
 ### Step 3: Install Project Dependencies
 
 1. Upgrade *pip* and *wheel*
