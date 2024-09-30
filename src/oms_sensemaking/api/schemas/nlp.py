@@ -2,10 +2,10 @@
 
 from pydantic import BaseModel, Field
 
-from oms_sensemaking.models.nlp import NlpMixin
+from oms_sensemaking.core.schemas import SecurityMixin, SourceMixin
 
 
-class NlpRequest(NlpMixin, BaseModel):
+class NlpRequest(SecurityMixin, SourceMixin, BaseModel):
     """Represents a request to the NLP sensemaker."""
 
     text: str = Field(
@@ -13,7 +13,7 @@ class NlpRequest(NlpMixin, BaseModel):
     )
 
 
-class NlpResponse(NlpMixin, BaseModel):
+class NlpResponse(SecurityMixin, SourceMixin, BaseModel):
     """Represents a request to the NLP sensemaker."""
 
     findings: dict = Field(..., description="The entities and relationships extracted from the text.", examples=[{}])
