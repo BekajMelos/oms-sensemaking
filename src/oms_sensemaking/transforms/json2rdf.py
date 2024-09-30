@@ -24,10 +24,10 @@ class NpEncoder(json.JSONEncoder):
 
 class DateEncoder():
     def __init__(self):
-        self.datetime_pattern_Z = re.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})Z")
+        self.datetime_pattern_Z = re.compile("(\d{4}-\d{2}-\d]{2})(T| )(\d{2}:\d{2}:\d{2})Z")
         self.datetime_pattern = re.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
-        self.date_pattern = re.compile('[0-9]{4}-[0-9]{2}-[0-9]{2}')
-        self.numeric_date_valid = re.compile('[0-3][\d]{3}[0-1][\d][0-3][\d]')
+        self.date_pattern = re.compile('\d{4}-\d{2}-\d{2}')
+        self.numeric_date_valid = re.compile('[0-2][\d]{3}[0-1][\d][0-3][\d]')
 
     def __call__(self, input_string):
 
