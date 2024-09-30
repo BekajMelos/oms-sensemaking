@@ -16,10 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: '.python-version'
       - name: Configure Private PyPI
         run: |          
           cat > ~/.netrc <<EOF
@@ -29,6 +25,10 @@ jobs:
           
           EOF
           chmod 600 ~/.netrc
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
       - name: Install dependencies
         run: |
           python -m venv .venv
@@ -51,10 +51,6 @@ jobs:
 #
 #    steps:
 #      - uses: actions/checkout@v4
-#      - name: Set up Python
-#        uses: actions/setup-python@v5
-#        with:
-#          python-version-file: '.python-version'
 #      - name: Configure Private PyPI
 #        run: |
 #          cat > ~/.netrc <<EOF
@@ -64,6 +60,10 @@ jobs:
 #
 #          EOF
 #          chmod 600 ~/.netrc
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version-file: '.python-version'
 #      - name: Install dependencies
 #        run: |
 #          python -m venv .venv
