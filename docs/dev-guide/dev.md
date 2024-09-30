@@ -63,7 +63,7 @@ extra-index-url = https://pypi.org/simple
 > export PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
 >
 > # fallback to public PyPI
-> export PIP_EXTRA_URL="https://pypi.org/simple"
+> export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
 > ```
 
 ### Step 3: Install Project Dependencies

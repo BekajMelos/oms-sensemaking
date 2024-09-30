@@ -121,7 +121,7 @@ ARG APP_VERSION="0.0.0"
 ARG PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
 
 # fallback to public PyPI
-ARG PIP_EXTRA_URL="https://pypi.org/simple"
+ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
 
 # disable pip cache
 ARG PIP_NO_CACHE_DIR=1
