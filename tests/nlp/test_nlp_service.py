@@ -2,8 +2,10 @@
 
 from uuid import uuid4
 
+from mock_responses import mock_response_long_text
+
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
+from oms_sensemaking.nlp.corenlp_client import MockCoreNlpClient
 from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
 
 service = NlpService()
@@ -19,10 +21,13 @@ sample_text = (
 )
 reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
+mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
+mock_client.set_response(mock_response_long_text)
+
 
 def test_run_nlp():
     """Tests just running the business logic"""
-    findings = service.run_nlp(reader, source_id=source_id, corenlp_host=CoreNlpClient({}, SETTINGS.corenlp_localhost))
+    findings = service.run_nlp(reader, source_id=source_id, corenlp_host=mock_client)
     assert findings["ner_entities"]
     assert findings["document_entity"]
     assert findings["ner_relationships"]

@@ -1,9 +1,12 @@
 """Tests for the NLP Sensemaker and Annotation Processor."""
 
+from mock_responses import mock_response_long_text, mock_response_no_text
+
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
+from oms_sensemaking.nlp.corenlp_client import MockCoreNlpClient
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
-from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import CoreNlpClient, NlpSensemaker
+from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 empty_text = ""
 sample_text = (
@@ -15,11 +18,15 @@ sample_text = (
     "scientific advice was clearer."
 )
 sample_doc_id = "MadCow"
-# TODO: change CoreNlpService to MockService
-nlp_sensemaker = NlpSensemaker(CoreNlpClient({}, SETTINGS.corenlp_localhost))
+
+mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
+nlp_sensemaker = NlpSensemaker(mock_client)
 
 
 def test_process_data_empty_test():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_no_text)
+
     data = SubmissionData(document_id=sample_doc_id, text=empty_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -33,6 +40,9 @@ def test_process_data_empty_test():
 
 
 def test_process_data_normal_text():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     data = SubmissionData(document_id=sample_doc_id, text=sample_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -44,18 +54,27 @@ def test_process_data_normal_text():
 
 
 def test_use_service_empty_doc():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_no_text)
+
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
     assert not annotation
 
 
 def test_use_service_normal_doc():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
     assert annotation
 
 
 def test_annotation_processor():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     data = SubmissionData(sample_doc_id, sample_text)
 
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)

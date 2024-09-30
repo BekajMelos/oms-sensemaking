@@ -5,15 +5,13 @@ import logging
 import httpx
 import xmltodict
 
-from oms_sensemaking.config import SETTINGS
-
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class CoreNlpClient:
     """Utility class for interacting with the CoreNLP Docker container server."""
 
-    def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):
+    def __init__(self, props: dict, host: str):
         """
         Create a new instance of CoreNlpService.
 
@@ -50,14 +48,12 @@ class CoreNlpClient:
         return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
 
 
-# TODO: implement this and use in tests
 class MockCoreNlpClient(CoreNlpClient):
-    def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):
+    def __init__(self, props: dict, host: str):
         super().__init__(props, host)
         self.response = None
 
     def set_response(self, response):
-        # TODO: Come up with default responses
         self.response = response
 
     def annotate_document(self, text: str) -> list:

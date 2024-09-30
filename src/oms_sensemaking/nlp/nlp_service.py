@@ -53,14 +53,7 @@ class NlpService:
 
 # TODO: Delete main once the API is up and running. Do the following in the API call
 if __name__ == "__main__":
-    text = (
-        "EU rejects German call to boycott British lamb. Peter Blackburn BRUSSELS 1996-08-22 "
-        "The European Commission said on Thursday it disagreed with German advice to consumers "
-        "to shun British lamb until scientists determine whether mad cow disease can be transmitted"
-        " to sheep. Germany's representative to the European Union's veterinary committee Werner Zwingmann"
-        " said on Wednesday consumers should buy sheepmeat from countries other than Britain until the "
-        "scientific advice was clearer."
-    )
+    text = "ThisissomesampletextrelatingEntity1toEntity2"
     doc_id = uuid4()
     source_id = "1"
     nlp_service = NlpService()
