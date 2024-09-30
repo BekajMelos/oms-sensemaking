@@ -51,9 +51,9 @@ class CoreNlpClient:
 class MockCoreNlpClient(CoreNlpClient):
     def __init__(self, props: dict, host: str):
         super().__init__(props, host)
-        self.response = None
+        self.response: list = []
 
-    def set_response(self, response):
+    def set_response(self, response: list):
         self.response = response
 
     def annotate_document(self, text: str) -> list:
