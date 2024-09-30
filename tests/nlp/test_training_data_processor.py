@@ -5,7 +5,7 @@ from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 
-# TODO: Switch CoreNlpClient for MockClient
+# TODO: Switch CoreNlpClient for MockCoreNlpClient
 tdp = TrainingDataProcessor(
     annotated_filepath="",
     save_directory="",

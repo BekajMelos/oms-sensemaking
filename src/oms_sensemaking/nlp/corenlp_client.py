@@ -52,6 +52,10 @@ class CoreNlpClient:
 
 # TODO: implement this and use in tests
 class MockCoreNlpClient(CoreNlpClient):
+    def __init__(self, props: dict, host: str = SETTINGS.corenlp_dockerhost):
+        super().__init__(props, host)
+        self.response = None
+
     def set_response(self, response):
         # TODO: Come up with default responses
         self.response = response
