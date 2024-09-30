@@ -51,7 +51,7 @@ class CoreNlpClient:
 
 
 # TODO: implement this and use in tests
-class MockCoreNlpService(CoreNlpClient):
+class MockCoreNlpClient(CoreNlpClient):
     def set_response(self, response):
         # TODO: Come up with default responses
         self.response = response
