@@ -15,7 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure Private PyPI
-        run: |          
+        run: |
+          echo "User: ${{ gitea.repository_owner }}"
           cat > ~/.netrc <<EOF
           machine tex.gerbil-cloud.ts.net
           login ${{ gitea.repository_owner }}
