@@ -21,72 +21,72 @@ class OmsNodeMixin(MappedAsDataclass):
         UUID(as_uuid=True),
         primary_key=True,
         nullable=False,
-        comment='The ID of the node associated with the object.'
+        comment='ID (primary key)'
     )
     version: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        comment='The version of the node associated with this object.'
+        comment='version'
     )
     acm: Mapped[dict] = mapped_column(
         JSONB,
         nullable=False,
-        comment='The acm of the node.'
+        comment='acm'
     )
     tags: Mapped[list[str]] = mapped_column(
         JSONB,
         nullable=False,
-        comment='A tags of the node.'
+        comment='tags'
     )
-    guideID: Mapped[str] = mapped_column(
+    guide_id: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The guideID of the node.'
+        comment='guideID'
     )
     name: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The name of the node.'
+        comment='name'
     )
     tier: Mapped[ObjectTier] = mapped_column(
         Enum(ObjectTier),
         nullable=False,
-        comment='The tier of the node.'
+        comment='tier'
     )
-    classIri: Mapped[str] = mapped_column(
+    class_iri: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The classIri of the node.'
+        comment='classIri'
     )
-    className: Mapped[str] = mapped_column(
+    class_name: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The className of the node.'
+        comment='className'
     )
-    ifcCodes: Mapped[list[str]] = mapped_column(
+    ifc_codes: Mapped[list[str]] = mapped_column(
         JSONB,
         nullable=False,
-        comment='The ifcCodes of the node.'
+        comment='ifcCodes'
     )
     allegiance: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The allegiance of the node.'
+        comment='allegiance'
     )
-    allegianceAor: Mapped[str] = mapped_column(
+    allegiance_aor: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The allegianceAor of the node.'
+        comment='allegianceAor'
     )
-    currentAor: Mapped[str] = mapped_column(
+    current_aor: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        comment='The currentAor of the node.'
+        comment='currentAor'
     )
-    isNso: Mapped[bool] = mapped_column(
+    is_nso: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        comment='The isNso of the node (boolean).'
+        comment='isNso (boolean)'
     )
 
 class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
@@ -100,16 +100,16 @@ class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDat
     - version
     - acm
     - tags
-    - guideID
+    - guide_id
     - name
     - tier
-    - classIri
-    - className
-    - ifcCodes
+    - class_iri
+    - class_name
+    - ifc_codes
     - allegiance
-    - allegianceAor
-    - currentAor
-    - isNso
+    - allegiance_aor
+    - current_aor
+    - is_nso
     """
 
     __tablename__: str = 'nodes'

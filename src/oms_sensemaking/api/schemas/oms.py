@@ -77,16 +77,16 @@ class Node(OmsObject):
     version: int
     acm: dict
     tags: list[str]
-    guideID: str
+    guide_id: str
     name: str
     tier: ObjectTier
-    classIri: str
-    className: str
-    ifcCodes: list[str]
+    class_iri: str
+    class_name: str
+    ifc_codes: list[str]
     allegiance: str
-    allegianceAor: str
-    currentAor: str
-    isNso: bool
+    allegiance_aor: str
+    current_aor: str
+    is_nso: bool
 
 
 class Relationship(OmsObject):
