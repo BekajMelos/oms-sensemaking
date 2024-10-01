@@ -2,6 +2,7 @@
 
 import argparse
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text_file_path = args.text_filepath
 
-    nlp_sm = NlpSensemaker(CoreNlpClient({}, "localhost:9000"))
+    nlp_sm = NlpSensemaker(CoreNlpClient({}, SETTINGS.corenlp_localhost))
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id="MadCow", text=text)

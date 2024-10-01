@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from collections_extended import RangeMap
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
@@ -260,7 +261,7 @@ if __name__ == "__main__":
         save_directory,
         corenlp_client=CoreNlpClient(
             props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"},
-            hostname="localhost:9000",
+            hostname=SETTINGS.corenlp_localhost,
         ),
     )
     processor.run_pipeline()

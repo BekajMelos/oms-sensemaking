@@ -30,8 +30,8 @@ alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "
 alembic_cfg.set_main_option("sqlalchemy.url", SETTINGS.db_uri)
 
 # NLP Configuration
-if SETTINGS.corenlp_host != "localhost:9000":
-    SETTINGS.corenlp_host = "localhost:9000"
+if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
+    SETTINGS.corenlp_host = SETTINGS.corenlp_localhost
 
 if not isinstance(SETTINGS.corenlp_client, MockCoreNlpClient):
     SETTINGS.corenlp_client = MockCoreNlpClient(props={}, hostname=SETTINGS.corenlp_host)
