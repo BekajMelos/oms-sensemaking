@@ -28,7 +28,7 @@ def test_create_node(client: TestClient, db: Session):
     create_node(client)
 
 
-def test_delete_node(client: TestClient):
+def test_delete_node(client: TestClient, db: Session):
     # create the node
     node_id: UUID = create_node(client)
 
