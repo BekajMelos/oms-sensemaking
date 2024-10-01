@@ -10,7 +10,7 @@ from sqlalchemy.orm import (
     mapped_column,
 )
 
-from src.oms_sensemaking.api.schemas.oms import ObjectTier
+from oms_sensemaking.api.schemas.oms import ObjectTier
 
 from .base import AuditMixin, BaseORM, SecurityMarkingMixin
 
@@ -89,7 +89,7 @@ class OmsNodeMixin(MappedAsDataclass):
         comment='isNso (boolean)'
     )
 
-class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin): #add UtcDateTime if necessary
+class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin):
     """
     Represents a node in OMS.
 
