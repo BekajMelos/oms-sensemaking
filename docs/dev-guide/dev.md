@@ -11,6 +11,11 @@ using matches the version defined in `.python-version`.
 
 ## Setting Up A Development Environment:
 
+### Step 1: Install Docker
+
+See the [Install Docker Engine] section of the Docker Manual for platform 
+specific installation instructions.
+
 ### Step 1: Create a Virtual Environment
 
 Use the built-in [venv] module to create a virtual environment for the new
@@ -191,3 +196,4 @@ To integrate with PyCharm, use the [PyCharm Ruff plugin].
 [oms-sdk]: https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python
 [PEP 508]: https://peps.python.org/pep-0508/
 [Environment Variables]: ./env-vars.md
+[Install Docker Engine]: https://docs.docker.com/engine/install/
