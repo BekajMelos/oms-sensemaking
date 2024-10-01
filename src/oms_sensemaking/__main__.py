@@ -228,7 +228,7 @@ def run_nlp(args: Namespace) -> None:
     nlp_service.run_nlp(
         nlp_reader,
         source_id=args.source_id,
-        corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
+        corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_host),
     )
 
 

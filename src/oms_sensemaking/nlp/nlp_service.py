@@ -4,7 +4,6 @@ import dataclasses
 import logging
 from uuid import UUID, uuid4
 
-from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
@@ -58,4 +57,4 @@ if __name__ == "__main__":
     source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_nlp(reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
+    nlp_service.run_nlp(reader, source_id, CoreNlpClient({}, "localhost:9000"))

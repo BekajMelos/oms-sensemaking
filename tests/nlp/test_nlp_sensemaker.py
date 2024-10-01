@@ -19,7 +19,7 @@ sample_text = (
 )
 sample_doc_id = "MadCow"
 
-mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
+mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
 nlp_sensemaker = NlpSensemaker(mock_client)
 
 

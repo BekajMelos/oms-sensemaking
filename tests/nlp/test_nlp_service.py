@@ -21,7 +21,7 @@ sample_text = (
 )
 reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
-mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
+mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
 mock_client.set_response(mock_response_long_text)
 
 

@@ -97,8 +97,8 @@ class Settings(BaseSettings):
     gzip_minimum_size: int = 1000
 
     # NLP Settings
-    corenlp_localhost: str = Field("localhost:9000",
-                                   description="Host and port for CoreNLP when running a script.")
+    corenlp_host: str = Field("localhost:9000",
+                                   description="Host and port for CoreNLP.")
     corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, hostname="host.docker.internal:9000"),
                            description="Client for interacting with CoreNLP Docker container.")
 
