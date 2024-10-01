@@ -5,7 +5,7 @@ on: push
 
 env:
   # workflow config
-  PIP_NO_CACHE_DIR: 1
+  #PIP_NO_CACHE_DIR: 1
   PIP_PROGRESS_BAR: off
 
 jobs:
