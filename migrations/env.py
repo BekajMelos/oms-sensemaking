@@ -2,6 +2,8 @@
 from logging.config import fileConfig
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
+
 from oms_sensemaking.config import SETTINGS
 
 # do not delete the following imports
@@ -9,7 +11,6 @@ from oms_sensemaking.models.base import BaseORM
 from oms_sensemaking.models.geo import *
 from oms_sensemaking.models.semantic import *
 from oms_sensemaking.models.sensemaking import *
-from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
