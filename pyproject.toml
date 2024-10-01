@@ -30,7 +30,7 @@ dependencies = [
     'python-dotenv==1.0.1',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
-    'oms_sdk==1.2.2',
+    'oms_sdk==1.2.3',
     'xmltodict==0.13.0'
 ]
 
@@ -53,6 +53,7 @@ docs = [
 ]
 
 test = [
+    'coverage==7.6.0',
     'pytest==8.3.2',
     'pytest-cov==5.0.0',
     'pytest-asyncio==0.23.8'

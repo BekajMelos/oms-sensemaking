@@ -77,7 +77,7 @@ extra-index-url = https://pypi.org/simple
     > ***NOTE***: *oms_sensemaking* has at least two "extra" sets of
     > dependencies defined: "dev" and "test". See the
     > `project.optional-dependencies` declaration in `pyproject.toml`.
-   
+
         pip install -e ".[build,dev,docs,test]"
 
 
@@ -101,7 +101,7 @@ will rely on the default values set in the applicaton's configuraton:
 |:--------------------|:---------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                        | The password for the PostgreSQL admmin user           |
 | `OMSB_VERSION`      | `Grimlock-INC-5`                 | The version of oms-bridge                             |
-| `OMSB_URL`          | `https://localhost:8443/graphql` | URL for OMSB                                          |
+| `OMSB_URL`          | `https://localhost:8020/graphql` | URL for OMSB                                          |
 | `CERT_PATH`         | `./pki/test10.pem`               | Path to User PEM                                      |
 | `KEY_PATH`          | `./pki/test10.key`               | Path to User Key                                      |
 

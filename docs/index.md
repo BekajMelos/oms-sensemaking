@@ -28,7 +28,7 @@
         # OMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=Grimlock-INC-4
+        OMSB_VERSION=Grimlock-INC-5
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 
@@ -36,7 +36,7 @@
 
         docker compose up -d
 
-    This will start the OMS Sensemaking service on port 5001. The REST API 
+    This will start the OMS Sensemaking service on port 5001. The REST API
     docs can be found at http://localhost:5001/docs
 
     > To stop the OMS Sensemaking Docker environment, run `docker compose down`

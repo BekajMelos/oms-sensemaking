@@ -158,8 +158,8 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument(
         "-U",
         "--url",
-        default="https://localhost:8443/graphql",
-        help="The URL to OMSB. Defaults to https://localhost:8443/graphql.",
+        default="https://localhost:8020/graphql",
+        help="The URL to OMSB. Defaults to https://localhost:8020/graphql.",
     )
     parser.add_argument(
         "-c",
