@@ -11,7 +11,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class CoreNlpClient:
     """Utility class for interacting with the CoreNLP Docker container server."""
 
-    def __init__(self, props: dict, client: str):
+    def __init__(self, props: dict, hostname: str):
         """
         Create a new instance of CoreNlpService.
 
@@ -21,8 +21,8 @@ class CoreNlpClient:
             self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "xml"}
         else:
             self.props = props
-        self.corenlp_client = client
-        self.url = f"http://{self.corenlp_client}/?properties={self.props}"
+        self.hostname = hostname
+        self.url = f"http://{self.hostname}/?properties={self.props}"
 
     def annotate_document(self, text: str) -> list:
         """

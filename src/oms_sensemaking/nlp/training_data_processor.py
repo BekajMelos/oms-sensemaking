@@ -261,7 +261,7 @@ if __name__ == "__main__":
         save_directory,
         corenlp_client=CoreNlpClient(
             props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"},
-            client=SETTINGS.corenlp_localhost,
+            hostname=SETTINGS.corenlp_localhost,
         ),
     )
     processor.run_pipeline()

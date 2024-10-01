@@ -8,7 +8,7 @@ from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 from tests.nlp.mock_corenlp_client import MockCoreNlpClient
 
 mock_client = MockCoreNlpClient(
-    props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, client=SETTINGS.corenlp_localhost
+    props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_localhost
 )
 
 mock_client.set_response(mock_response_normal_text)

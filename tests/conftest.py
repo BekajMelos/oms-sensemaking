@@ -34,7 +34,7 @@ if SETTINGS.corenlp_dockerhost != SETTINGS.corenlp_localhost:
     SETTINGS.corenlp_dockerhost = SETTINGS.corenlp_localhost
 
 if not isinstance(SETTINGS.corenlp_client, MockCoreNlpClient):
-    SETTINGS.corenlp_client = MockCoreNlpClient(props={}, client=SETTINGS.corenlp_localhost)
+    SETTINGS.corenlp_client = MockCoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost)
     SETTINGS.corenlp_client.set_response(mock_response_short_text)
 
 

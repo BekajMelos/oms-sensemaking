@@ -2,8 +2,8 @@ from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 
 class MockCoreNlpClient(CoreNlpClient):
-    def __init__(self, props: dict, client: str):
-        super().__init__(props, client)
+    def __init__(self, props: dict, hostname: str):
+        super().__init__(props, hostname)
         self.response = None
 
     def set_response(self, response):
