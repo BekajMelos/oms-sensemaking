@@ -41,7 +41,7 @@ def create_node(db: Annotated[Session, Depends(get_db_session)], node: Node) -> 
 @router.delete("/node/{node_id}", response_model=DeleteObjectResponse, response_model_exclude_none=True)
 def delete_node(db: Annotated[Session, Depends(get_db_session)], node_id: str) -> DeleteObjectResponse:
     """Delete a node in the graph."""
-    node = db.query(OrmNode).filter(Node.id == node_id).first()
+    node = db.query(OrmNode).filter(OrmNode.id == node_id).first()
     db.delete(node)
     db.commit()
     return DeleteObjectResponse(success=True)
