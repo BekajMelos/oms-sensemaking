@@ -1,8 +1,12 @@
 """Tests for the NLP Sensemaker and Annotation Processor."""
 
+from mock_responses import mock_response_long_text, mock_response_no_text
+
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
+from tests.nlp.mock_corenlp_client import MockCoreNlpClient
 
 empty_text = ""
 sample_text = (
@@ -14,10 +18,15 @@ sample_text = (
     "scientific advice was clearer."
 )
 sample_doc_id = "MadCow"
-nlp_sensemaker = NlpSensemaker()
+
+mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
+nlp_sensemaker = NlpSensemaker(mock_client)
 
 
 def test_process_data_empty_test():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_no_text)
+
     data = SubmissionData(document_id=sample_doc_id, text=empty_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -31,6 +40,9 @@ def test_process_data_empty_test():
 
 
 def test_process_data_normal_text():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     data = SubmissionData(document_id=sample_doc_id, text=sample_text)
 
     processed_data = nlp_sensemaker.process_data(data=data)
@@ -42,18 +54,27 @@ def test_process_data_normal_text():
 
 
 def test_use_service_empty_doc():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_no_text)
+
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
-    assert not annotation.sentence
+    assert not annotation
 
 
 def test_use_service_normal_doc():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
-    assert annotation.sentence
+    assert annotation
 
 
 def test_annotation_processor():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_long_text)
+
     data = SubmissionData(sample_doc_id, sample_text)
 
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
@@ -63,17 +84,21 @@ def test_annotation_processor():
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
     # Every entity in the annotation must have been extracted
-    for sentence in annotation.sentence:
-        for entity in sentence.mentions:
-            assert entity in ents
-    # Every relation in the annotation must have been extracted
-    for sentence in annotation.sentence:
-        for relation in sentence.relation:
-            if relation.type != "_NR":
-                assert relation in rels
+    for sentence in annotation:
+        if "MachineReading" in sentence and sentence["MachineReading"]["entities"]:
+            # Loop through each of the entities in the annotation
+            for entity in sentence["MachineReading"]["entities"]["entity"]:
+                if entity["#text"] != "O":
+                    assert entity in ents
+        # Every relation in the annotation must have been extracted
+        if "MachineReading" in sentence and sentence["MachineReading"]["relations"]:
+            # TODO: Verify formatting
+            for relation in sentence["MachineReading"]["relations"]["relation"]:
+                if relation["#text"] != "_NR":
+                    assert relation in rels
     # Every relation added must not have type _NR
     for relation in rels:
-        assert relation.type != "_NR"
+        assert relation["#text"] != "_NR"
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)

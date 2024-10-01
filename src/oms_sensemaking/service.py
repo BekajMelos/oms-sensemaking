@@ -90,12 +90,9 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure routes
     application.include_router(about.router)
+    application.include_router(nlp.router, prefix="/nlp", tags=["nlp"])
 
-    application.include_router(
-        nlp.router,
-        prefix="/nlp",
-        tags=["NLP"]
-    )
+    application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)

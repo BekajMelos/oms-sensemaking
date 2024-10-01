@@ -80,13 +80,6 @@ extra-index-url = https://pypi.org/simple
 
         pip install -e ".[build,dev,docs,test]"
 
-3. Install CoreNLP
-
-        python -c 'import stanza; stanza.install_corenlp()'
-
-    To train a custom CoreNLP model, or generate the data needed to train the
-    model, follow the instructions in [train_corenlp_model.md].
-
 
 ### Step 4: Configure Local Environment Variables
 
