@@ -6,7 +6,8 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
-from tests.nlp.mock_corenlp_client import MockCoreNlpClient
+
+from .mock_corenlp_client import MockCoreNlpClient
 
 empty_text = ""
 sample_text = (

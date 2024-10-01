@@ -5,7 +5,8 @@ from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
-from tests.nlp.mock_corenlp_client import MockCoreNlpClient
+
+from .mock_corenlp_client import MockCoreNlpClient
 
 mock_client = MockCoreNlpClient(
     props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
