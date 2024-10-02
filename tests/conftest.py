@@ -8,11 +8,12 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from nlp.mock_corenlp_client import MockCoreNlpClient
-from nlp.mock_responses import mock_response_short_text
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
+
+from .nlp.mock_corenlp_client import MockCoreNlpClient
+from .nlp.mock_responses import mock_response_short_text
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging

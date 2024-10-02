@@ -1,12 +1,11 @@
 """Tests for the NlpSensemakerController"""
-
 from uuid import uuid4
-
-from mock_responses import mock_response_long_text
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
-from tests.nlp.mock_corenlp_client import MockCoreNlpClient
+
+from .mock_corenlp_client import MockCoreNlpClient
+from .mock_responses import mock_response_long_text
 
 service = NlpService()
 doc_id = uuid4()
