@@ -22,33 +22,48 @@ class NpEncoder(json.JSONEncoder):
         return super(NpEncoder, self).default(obj)
 
 
-class DateEncoder():
+class DateEncoder(object):
     def __init__(self):
-        self.datetime_pattern_Z = re.compile("(\d{4}-\d{2}-\d]{2})(T| )(\d{2}:\d{2}:\d{2})Z")
-        self.datetime_pattern = re.compile("([0-9]{4}-[0-9]{2}-[0-9]{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
+        self.datetime_pattern_Z = re.compile("(\d{4}-\d{2}-\d{2})(T| )(\d{2}:\d{2}:\d{2})Z")
+        self.datetime_pattern = re.compile("(\d{4}-\d{2}-\d{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
         self.date_pattern = re.compile('\d{4}-\d{2}-\d{2}')
-        self.numeric_date_valid = re.compile('[0-2][\d]{3}[0-1][\d][0-3][\d]')
+        self.numeric_date_valid = re.compile('\d{8}')
 
     def __call__(self, input_string):
+        print(input_string)
 
         if self.datetime_pattern_Z.search(input_string):
             elem = self.datetime_pattern_Z.findall(input_string.strip())
             if len(elem) != 0:
                 elem = elem[0]
-                value_fmt = "".join([elem[0], "T", elem[2]])
-                return value_fmt, XSD.dateTime
+                value_fmt = "".join([elem[0], "T", elem[2]]).strip("Z")
+                try:
+                    dt = datetime.strptime(value_fmt, "%Y-%m-%dT%H:%M:%S")
+                    return dt.strftime("%Y-%m-%dT%H:%M:%S"), XSD.dateTime
+                except:
+                    return None, None
 
         elif self.datetime_pattern.search(input_string.strip()):
-            return input_string.replace(" ", "T").strip(), XSD.dateTime
+            input_string = input_string.replace(" ", "T").strip()
+            try:
+                dt = datetime.strptime(input_string, "%Y-%m-%dT%H:%M:%S")
+                return dt.strftime("%Y-%m-%dT%H:%M:%S"), XSD.dateTime
+            except:
+                return None, None
 
         elif self.date_pattern.search(input_string):
-            return input_string, XSD.date
+            try:
+                dt = datetime.strptime(input_string, "%Y-%m-%d")
+                return dt.strftime("%Y-%m-%d"), XSD.date
+            except:
+                return None, None
 
-        elif self.datetime_pattern.search(input_string.strip()):
-            return input_string.replace(" ", "T").strip(), XSD.dateTime
-
-        elif self.date_pattern.search(input_string):
-            return input_string, XSD.date
+        elif self.numeric_date_valid.search(input_string) and len(input_string) == 8:
+            try:
+                dt = datetime.strptime(input_string, '%Y%m%d')
+                return dt.strftime('%Y-%m-%d'), XSD.date
+            except:
+                return None, None
 
         else:
             return None, None
@@ -87,12 +102,12 @@ class AccessControlMarking(object):
                     signature.append(attr.strip())
                 else:
                     signature.append(str(attr.strip()))
-        
+
         acm_guid = md5("".join(signature).encode('utf-8')).hexdigest()
         return acm_guid
 
 
-class JSON2RDF():
+class JSON2RDF(object):
     def __init__(self, source_model=None, construct=None, ns_uri=None):
         self.types = None
         self.source_data = None
@@ -113,7 +128,7 @@ class JSON2RDF():
     def _get_typed_value(self, value, datatype):
         if value is None:
             return None
-        elif (isinstance(value, str)):
+        elif isinstance(value, str):
             if value != "" and len(value) > 0:
                 if datatype in [XSD.date, XSD.dateTime, XSD.dateTimeStamp]:
                     value, datatype = self.encode_date(value)
@@ -125,13 +140,12 @@ class JSON2RDF():
 
     def __call__(self, jsonobj: dict):
         self.g = Graph()
-        df = json_normalize(data=jsonobj, sep="_", meta_prefix="_")  ## ingest flattend object to dataframe
+        df = json_normalize(data=jsonobj, sep="_", meta_prefix="_")  # ingest flattened object to dataframe
         self.types = {k: df.dtypes.get(k).__str__() for k in df.dtypes.to_dict()}
         self.source_data = {k: df[k][0] for k in df}
         record = BNode()
         self.g.add((record, RDF.type, self.record_ns.Record))
         self.source_data['_derived_acm_guid'] = self.make_acm(self.source_data)
-        
 
         for k in self.source_data:
             if k not in self.source_lookup: continue
@@ -156,8 +170,3 @@ class JSON2RDF():
                     self.g.add((record, datatype_property, typed_value))
 
         return self.g.query(self.construct), self.g
-
-
-
-
-
