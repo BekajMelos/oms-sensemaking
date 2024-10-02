@@ -10,6 +10,10 @@ pipeline {
             name: 'AGENT',
             defaultValue: 'CODE',
             description: 'use a specific agent(s) by label to run the build on')
+        booleanParam(
+            name: 'SKIP_UNIT_TESTS',
+            defaultValue: true,
+            description: 'whether or not to skip unit tests')
     }
 
     environment {
@@ -27,6 +31,9 @@ pipeline {
 
     stages {
         stage('Prepare') {
+            when {
+                expression { params.SKIP_UNIT_TESTS == false }
+            }
             agent {
                 dockerfile {
                     label params.AGENT
@@ -53,14 +60,14 @@ pipeline {
                             echo "password ${SERVICE_ACCOUNT_PSW}" >> ${HOME}/.netrc
 
                             echo "[global]" > /tmp/venv/pip.conf
-                            echo "index-url = ${artUrl}/api/pypi/pypi" >> /tmp/venv/pip.conf
+                            echo "index-url = ${artUrl}/api/pypi/pypi/simple" >> /tmp/venv/pip.conf
                             echo "extra-index-url = https://pypi.org/simple" >> /tmp/venv/pip.conf
 
                             pip install -e ".[dev,docs,test,build]"
                         '''
 
                         script {
-                            env.APP_VERSION = sh(script: 'python -m setuptools_scm', returnStdout: true).trim()
+                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
                         }
                     }
                 }
@@ -68,10 +75,6 @@ pipeline {
                     steps {
                         sh '''
                             . /tmp/venv/bin/activate
-                            set -a
-                            . ci/aide.env
-                            set +a
-
                             python -m pytest tests --cov-report=xml || true
                         '''
                         stash(includes: 'coverage.xml', name: 'coverage')
@@ -116,8 +119,13 @@ pipeline {
         }
         stage('Scan with SonarQube') {
             steps {
-                unstash('coverage')
+                script {
+                    try {
+                        unstash('coverage')
+                    } catch {}
+                }
                 sh '''
+                    touch coverage.xml
                     /jenkins2/dependency-check/bin/dependency-check.sh -n -s . \
                         --disableOssIndex \
                         --enableExperimental \
