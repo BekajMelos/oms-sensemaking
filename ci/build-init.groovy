@@ -34,7 +34,10 @@ pipeline {
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
                     additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/python:${PYTHON_VERSION}-slim'
-                    args '-e HOME=/tmp'
+                    args '''
+                        -e HOME=/tmp \
+                        -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
+                    '''
                 }
             }
             stages {
