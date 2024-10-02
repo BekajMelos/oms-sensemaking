@@ -1,4 +1,4 @@
-FROM alpine:3.19 as builder
+FROM alpine:3.19 AS builder
 MAINTAINER Arne Neumann <nlpbox.programming@arne.cl>
 
 RUN apk update && apk add py3-pip wget
