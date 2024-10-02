@@ -22,7 +22,7 @@ class NlpStringReader(NlpReader):
         :param document_id: unique identifier of document
         """
         self.text = text
-        self.document_id = document_id if document_id else uuid4()
+        self.document_id = document_id if document_id else str(uuid4())
 
     def read(self) -> SubmissionData:
         """Read a string and formats it as SubmissionData"""
@@ -37,7 +37,7 @@ class NlpFileReader(NlpReader):
         :param document_id: unique identifier of document
         """
         self.filepath = filepath
-        self.document_id = document_id if document_id else uuid4()
+        self.document_id = document_id if document_id else str(uuid4())
 
     def read_file(self) -> str:
         """Read a file and extract the text as a string"""
