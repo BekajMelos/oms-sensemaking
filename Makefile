@@ -70,3 +70,5 @@ nuke: down
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 
+refresh: nuke  # Purge all generated content and restart
+	docker compose --profile local up --build -d

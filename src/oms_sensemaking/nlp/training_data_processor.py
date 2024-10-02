@@ -1,4 +1,5 @@
 """Utilities for training data."""
+
 import argparse
 import logging
 import os
@@ -6,7 +7,8 @@ import os
 import pandas as pd
 from collections_extended import RangeMap
 
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
@@ -20,7 +22,7 @@ logger = logging.getLogger(__name__)
 class TrainingDataProcessor:
     """Utility class for training data."""
 
-    def __init__(self, annotated_filepath: str, save_directory: str):
+    def __init__(self, annotated_filepath: str, save_directory: str, corenlp_client: CoreNlpClient):
         """
         Create a new instance of TrainingDataProcessor.
 
@@ -29,7 +31,8 @@ class TrainingDataProcessor:
         """
         self.annotated_filepath = annotated_filepath
         self.save_directory = save_directory
-        self.properties = {"annotators": "tokenize, pos, lemma, depparse"}
+        self.properties = {"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}
+        self.corenlp_client = corenlp_client
 
     def run_pipeline(self):
         """Run a pipeline to convert .jsonl to CoreNLP .tsv format for model training."""
@@ -95,21 +98,20 @@ class TrainingDataProcessor:
             text = ""
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
-        corenlp_client = CoreNlpService(props=self.properties)
+        corenlp_client = self.corenlp_client
         annotation = corenlp_client.annotate_document(text)
-        sentences = annotation.sentence  # grab the sentences from the annotation
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
         global_token_index = 0
         doc_token_range_map = RangeMap()  # Imported data type, maps ranges of char offsets to TokenReferences
-        for sentence in sentences:
-            for token in sentence.token:
+        for sentence in annotation:
+            for token in sentence["tokens"]["token"]:
                 # Building the TokenReference with the token parts taken from the sentence
-                start_offset = token.beginChar
-                end_offset = token.endChar
-                pos_tag = token.pos
+                start_offset = int(token["CharacterOffsetBegin"])
+                end_offset = int(token["CharacterOffsetEnd"])
+                pos_tag = token["POS"]
                 token_reference = TokenReference(
-                    token.originalText, global_token_index, start_offset, end_offset, "0", pos_tag
+                    token["word"], global_token_index, start_offset, end_offset, "0", pos_tag
                 )
                 global_token_index += 1
 
@@ -254,5 +256,12 @@ if __name__ == "__main__":
     save_directory = args.save_directory
 
     # Creating the TDP with args and running its pipeline
-    processor = TrainingDataProcessor(annotated_jsonl, save_directory)
+    processor = TrainingDataProcessor(
+        annotated_jsonl,
+        save_directory,
+        corenlp_client=CoreNlpClient(
+            props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"},
+            hostname=SETTINGS.corenlp_localhost,
+        ),
+    )
     processor.run_pipeline()

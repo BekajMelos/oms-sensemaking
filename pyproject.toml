@@ -30,8 +30,8 @@ dependencies = [
     'python-dotenv==1.0.1',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
-    'stanza==1.8.2',
-    'oms_sdk==1.2.3'
+    'oms_sdk==1.2.3',
+    'xmltodict==0.13.0'
 ]
 
 [project.optional-dependencies]
