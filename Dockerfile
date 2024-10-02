@@ -196,5 +196,13 @@ apt-get autoclean -y
 apt-get autoremove -y
 EOF
 
+LABEL maintainer="The OMS Team <oms@blackcape.io>"
+LABEL org.label-schema.build-date=${APP_DATE}
+LABEL org.label-schema.name="oms-sensemaking"
+LABEL org.label-schema.description="docker image for oms-sensemaking"
+LABEL org.label-schema.vcs-url="https://gitlab.code.dodiis.mil/aio4/services/omsbridge/oms-sensemaking"
+LABEL org.label-schema.vcs-ref=${VCS_REF}
+LABEL org.label-schema.version=${APP_VERSION}
+
 USER ${USER_NAME}
 CMD ["/start.sh"]

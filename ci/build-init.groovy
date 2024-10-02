@@ -19,6 +19,10 @@ pipeline {
         SONARQUBE_URL = 'https://sonarqube.code.dodiis.mil/'
         SONARQUBE_API_KEY = credentials('sonar-svc-aio4-dev')
         SONARQUBE_PROJECT = 'aio4-dev:oms-sensemaking'
+
+        PYTHON_VERSION = sh(script: 'cat .python-version', returnStdout: true).trim()
+
+        DOCKER_PROD_IMAGE = 'aio4/services/oms/oms-sensemaking:'
     }
 
     stages {
@@ -29,7 +33,7 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/python:3.10.14-slim'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/python:${PYTHON_VERSION}-slim'
                     args '-e HOME=/tmp'
                 }
             }
@@ -39,10 +43,22 @@ pipeline {
                         sh '''
                             python -m venv /tmp/venv
                             . /tmp/venv/bin/activate
+                            pip install -U pip wheel
 
-                            pip install poetry
-                            poetry install --all-extras
+                            echo "machine artifactory.code.dodiis.mil" > ${HOME}/.netrc
+                            echo "login ${SERVICE_ACCOUNT_USR}" >> ${HOME}/.netrc
+                            echo "password ${SERVICE_ACCOUNT_PSW}" >> ${HOME}/.netrc
+
+                            echo "[global]" > /tmp/venv/pip.conf
+                            echo "index-url = ${artUrl}/api/pypi/pypi" >> /tmp/venv/pip.conf
+                            echo "extra-index-url = https://pypi.org/simple" >> /tmp/venv/pip.conf
+
+                            pip install -e ".[dev,docs,test,build]"
                         '''
+
+                        script {
+                            env.APP_VERSION = sh(script: 'python -m setuptools_scm', returnStdout: true).trim()
+                        }
                     }
                 }
                 stage('Test') {
@@ -53,58 +69,49 @@ pipeline {
                             . ci/aide.env
                             set +a
 
-                            poetry run python -m pytest tests --cov-report=xml || true
+                            python -m pytest tests --cov-report=xml || true
                         '''
                         stash(includes: 'coverage.xml', name: 'coverage')
                     }
                 }
-                stage('Build') {
-                    steps {
-                        sh '''
-                            . /tmp/venv/bin/activate
-
-                            poetry self add poetry-dynamic-versioning
-                            poetry build
-                        '''
-                        stash(includes: 'dist/*.whl', name: 'packages')
-                    }
-                    post {
-                        always {
-                            archiveArtifacts(
-                                artifacts: 'dist/*.whl',
-                                onlyIfSuccessful: false)
-                        }
-                    }
-
-                }
             }
         }
-        stage('Publish') {
+        stage('Build') {
             steps {
-                unstash('packages')
-                script {
-                    def server = Artifactory.newServer(
-                        url: env.artUrl,
-                        credentialsId: env.SERVICE_ACCOUNT_ID
-                    )
+                sh '''
+                    . /tmp/venv/bin/activate
 
-                    def uploadSpec = '''
-                        {
-                            "files": [
-                                {
-                                    "pattern": "dist/oms*.whl",
-                                    "target": "pypi-proj-local/aio4/dev/services/oms/"
-                                }
-                            ]
-                        }
-                    '''
-
-                    def buildInfo = server.upload(spec: uploadSpec)
-                    server.publishBuildInfo(buildInfo)
-                }
+                    docker build \
+                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE} \
+                        --build-arg APP_VERSION=${APP_VERSION} \
+                        --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                        --build-arg VCS_REF=$(git rev-parse HEAD) \
+                        --secret id=mynetrc,src=${HOME}/.netrc \
+                        .
+                    docker push ${artDockerUrl}/${DOCKER_PROD_IMAGE}
+                '''
             }
         }
-        stage('Scan') {
+        stage('Scan with Prisma') {
+            steps {
+                prismaCloudScanImage(
+                    ca: '',
+                    cert: '',
+                    dockerAddress: 'unix:///var/run/docker.sock',
+                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}",
+                    key: '',
+                    logLevel: 'info',
+                    podmanPath: '',
+                    project: '',
+                    resultsFile: 'oms-sensemaking-prisma-scan.json',
+                    ignoreImageBuildTime: true
+                )
+                prismaCloudPublish(
+                    resultsFilePattern: 'oms-sensemaking-prisma-scan.json'
+                )
+            }
+        }
+        stage('Scan with SonarQube') {
             steps {
                 unstash('coverage')
                 sh '''
@@ -117,7 +124,7 @@ pipeline {
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.login=${SONARQUBE_API_KEY} \
                         -Dsonar.projectKey=${SONARQUBE_PROJECT} \
-                        -Dsonar.sources=oms_sdk \
+                        -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                         -Dsonar.python.coverage.reportPaths=coverage.xml
                 '''
