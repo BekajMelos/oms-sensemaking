@@ -1,11 +1,11 @@
-from mock_responses import mock_response_bunched_text, mock_response_no_text, mock_response_normal_text
-
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
-from tests.nlp.mock_corenlp_client import MockCoreNlpClient
+
+from .mock_corenlp_client import MockCoreNlpClient
+from .mock_responses import mock_response_bunched_text, mock_response_no_text, mock_response_normal_text
 
 mock_client = MockCoreNlpClient(
     props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
