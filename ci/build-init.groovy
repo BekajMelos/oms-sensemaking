@@ -18,7 +18,7 @@ pipeline {
 
         SONARQUBE_URL = 'https://sonarqube.code.dodiis.mil/'
         SONARQUBE_API_KEY = credentials('sonar-svc-aio4-dev')
-        SONARQUBE_PROJECT = 'aio4-dev:oms-sdk-python'
+        SONARQUBE_PROJECT = 'aio4-dev:oms-sensemaking'
     }
 
     stages {
