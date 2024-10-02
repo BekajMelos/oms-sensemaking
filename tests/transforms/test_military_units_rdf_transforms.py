@@ -3,9 +3,9 @@ from typing import Iterator, List
 
 import pytest
 import yaml
-from rdflib import Graph, Namespace  ## add to toml
+from rdflib import Graph, Namespace, XSD
 
-from src.oms_sensemaking.transforms.json2rdf import JSON2RDF
+from src.oms_sensemaking.transforms.json2rdf import JSON2RDF, DateEncoder
 
 
 @pytest.fixture
@@ -63,3 +63,45 @@ def test_mil_unit_transform(input_fixture):
     ttl_output = open(f"{configs.get('output_path')}{configs.get('test_mil_unit_midb').replace('.json', 'ttl')}", 'w')
     ttl_output.write(aligned_graph.serialize(format='ttl'))
     ttl_output.close()
+
+
+def test_dateparser():
+    encode_date = DateEncoder()
+
+    # postive test cases
+    value_out, datatype = encode_date("2023-01-23 10:00:00Z")  ## without T
+    assert ("2023-01-23T10:00:00" == value_out)
+    assert (datatype == XSD.dateTime)
+
+    value_out, datatype = encode_date("2023-01-23T10:00:00Z")  ## with T
+    assert ("2023-01-23T10:00:00" == value_out)
+    assert (datatype == XSD.dateTime)
+
+    value_out, datatype = encode_date("2023-01-24 10:00:00")
+    assert ("2023-01-24T10:00:00" == value_out)
+    assert (datatype == XSD.dateTime)
+
+    value_out, datatype = encode_date("2023-01-24")
+    assert ('2023-01-24' == value_out)
+    assert (datatype == XSD.date)
+
+    value_out, datatype = encode_date("20231002")
+    assert ('2023-10-02' == value_out)
+    assert (datatype == XSD.date)
+
+    ## negative test cases
+    value_out, datatype = encode_date("2023-41-24 10:00:00")
+    assert (value_out is None)
+    assert (datatype is None)
+
+    value_out, datatype = encode_date("2023-41-24")
+    assert (value_out is None)
+    assert (datatype is None)
+
+    value_out, datatype = encode_date("20234124")
+    assert (value_out is None)
+    assert (datatype is None)
+
+    value_out, datatype = encode_date("2023T4124-04Z")
+    assert (value_out is None)
+    assert (datatype is None)
