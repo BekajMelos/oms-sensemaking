@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from dotenv import load_dotenv
+from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -85,6 +86,14 @@ class NlpService:
 
         # 3. Return success indicator
         return True
+
+    def get_all_findings_from_postgis(self):
+        """Get the findings from the postgis database"""
+
+        with db_session() as db:
+            findings_query = db.execute(select(Finding).where(Finding.finding_type == "NLP_FINDINGS"))
+            result = findings_query.scalars().all()
+        return result
 
     def submit_findings_to_oms(self, findings: dict, source_id: str | UUID) -> bool:
         """
