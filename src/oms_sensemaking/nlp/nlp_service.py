@@ -42,24 +42,29 @@ class NlpService:
         findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
 
         # Submit findings to postgis
-        self.submit_findings_to_postgis(acm, findings_dict, execution_time=ex_time)
+        self.submit_findings_to_postgis(acm=acm, findings=findings_dict, execution_time=ex_time)
 
         # Return as dictionary to API for response
         return findings_dict
 
     def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime) -> bool:
+        """
+        Submit findings as Finding objects to the findings table in postgis
+        :param acm: the acm
+        :param findings: the result of running the NLP NER Sensemaker converted to a dictionary
+        :param execution_time: the time at which the algorithm was executed
+        """
         # 1. Turn findings into Finding object
         finding_object = Finding(
-            # TODO: Add all attributes that we have available
             acm=acm,
             finding_id=uuid4(),  # TODO: If submitting ind. nodes, create uuid for each and save in dict
             finding_type=FindingType.NLP_RECOGNIZED_ENTITY,  # TODO: change or add more types
             finding_data=findings,
-            oms_version=None,
+            oms_version="Grimlock-INC-5",  # TODO: Get from env
             published_at=utcnow_with_timezone(),
             algorithm_name="NER",
             algorithm_version="0.0.1",  # TODO: Get from config
-            algorithm_configuration=None,
+            algorithm_configuration={},
             executed_at=execution_time,
         )
 
@@ -87,7 +92,7 @@ class NlpService:
 # TODO: Delete main once the API is up and running. Do the following in the API call
 if __name__ == "__main__":
     text = "This is some sample text relating Entity1 to Entity2"
-    acm = {}
+    acm: dict = {}
     doc_id = "41d83ecb-4c60-4294-9c51-eb4d1e444df6"
     source_id = "1"
     nlp_service = NlpService()
