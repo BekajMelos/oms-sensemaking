@@ -5,7 +5,7 @@ import pytest
 import yaml
 from rdflib import Graph, Namespace, XSD
 
-from src.oms_sensemaking.transforms.json2rdf import JSON2RDF, DateEncoder
+from oms_sensemaking.transforms.json2rdf import JSON2RDF, DateEncoder
 
 
 @pytest.fixture
