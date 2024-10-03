@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 from httpx import Response
 from oms_sdk import DEFAULT_ACM
+from requests import Session
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
 
@@ -10,7 +11,7 @@ test_source_id = "sensemaking-test"
 test_text = "The quick brown fox jumps over the lazy dog."
 
 
-def test_extract_entities_and_relationships(client: TestClient):
+def test_extract_entities_and_relationships(client: TestClient, db: Session):
     response: Response = client.post(
         "/nlp",
         json=NlpRequest(acm=DEFAULT_ACM, source_id=test_source_id, text=test_text).model_dump(),

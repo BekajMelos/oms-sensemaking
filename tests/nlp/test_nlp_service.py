@@ -1,9 +1,11 @@
 """Tests for the NlpSensemakerController"""
 
+from typing import Iterator
 from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.base import utcnow_with_timezone
@@ -25,28 +27,39 @@ sample_text = (
 )
 reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
-mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
-mock_client.set_response(mock_response_long_text)
+mock_corenlp_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
+mock_corenlp_client.set_response(mock_response_long_text)
 
-findings = service.run_nlp(acm=DEFAULT_ACM, nlp_reader=reader, source_id=source_id, corenlp_client=mock_client)
+mock_findings = service.run_nlp(nlp_reader=reader, corenlp_client=mock_corenlp_client)
 
 
-def test_run_nlp():
+@pytest.fixture
+def mock_db(db: Session) -> Iterator[Session]:
+    yield db
+
+
+def test_run_service(mock_db):
+    result = service.run_service(
+        acm=DEFAULT_ACM, nlp_reader=reader, source_id=source_id, corenlp_client=mock_corenlp_client
+    )
+    assert result
+
+
+def test_run_nlp(mock_db):
     """Tests just running the business logic"""
-    assert findings["ner_entities"]
-    assert findings["document_entity"]
-    assert findings["ner_relationships"]
-    assert findings["document_relationships"]
-    assert len(findings["document_relationships"]) == len(findings["ner_entities"])
-    assert findings["document_entity"]["document_id"] == doc_id
+    assert mock_findings["ner_entities"]
+    assert mock_findings["document_entity"]
+    assert mock_findings["ner_relationships"]
+    assert mock_findings["document_relationships"]
+    assert len(mock_findings["document_relationships"]) == len(mock_findings["ner_entities"])
+    assert mock_findings["document_entity"]["document_id"] == doc_id
 
 
-@pytest.mark.integration
-def test_submit_findings_to_postgis():
-    """Tests submitting findings to postgis"""
+def test_submit_findings_to_postgis(mock_db):
+    """Tests submitting mocked findings to postgis"""
     acm = DEFAULT_ACM
     execution_time = utcnow_with_timezone()
-    result = service.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
+    result = service.submit_findings_to_postgis(acm=acm, findings=mock_findings, execution_time=execution_time)
     assert result
 
 

@@ -225,7 +225,7 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_nlp(
+    nlp_service.run_service(
         acm=DEFAULT_ACM,
         nlp_reader=nlp_reader,
         source_id=args.source_id,
