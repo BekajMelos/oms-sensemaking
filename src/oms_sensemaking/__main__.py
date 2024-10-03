@@ -99,6 +99,7 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
 load_dotenv()
@@ -157,8 +158,8 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument(
         "-U",
         "--url",
-        default="https://localhost:8443/graphql",
-        help="The URL to OMSB. Defaults to https://localhost:8443/graphql.",
+        default="https://localhost:8020/graphql",
+        help="The URL to OMSB. Defaults to https://localhost:8020/graphql.",
     )
     parser.add_argument(
         "-c",
@@ -224,7 +225,11 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_nlp(nlp_reader)
+    nlp_service.run_nlp(
+        nlp_reader,
+        source_id=args.source_id,
+        corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
+    )
 
 
 def run_semantic() -> None:
@@ -256,6 +261,7 @@ def get_cli_parser() -> ArgumentParser:
     # natural language processing subcommand
     nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
     nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
+    nlp_parser.add_argument("-id", "--source-id", type=str, help="Source ID of the text.")
     nlp_parser.set_defaults(func=run_nlp)
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")

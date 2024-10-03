@@ -117,6 +117,12 @@ FROM python-base AS app
 
 ARG APP_VERSION="0.0.0"
 
+# default to private PyPI
+ARG PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
+
+# fallback to public PyPI
+ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+
 # disable pip cache
 ARG PIP_NO_CACHE_DIR=1
 
@@ -124,8 +130,6 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
-
-ENV CORENLP_HOME="/opt/stanza_corenlp"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -147,9 +151,8 @@ ENV PYTHONPATH=${APP_HOME}/src
 COPY . ${APP_HOME}
 
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
-#       for a PEP5O8 Git URL to be used to define a dependency on the oms_sdk
-#       project. This exists because there is no infrastructure for hosting
-#       custom dependencies in the development environment.
+#       for a private PyPI to be used to define a dependency on the oms_sdk
+#       project.
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
 set -e
 
@@ -171,11 +174,6 @@ apt-get install -y --no-install-recommends $BUILD_DEPS
 
 # install app
 pip install .
-
-# install CoreNLP
-mkdir -p $CORENLP_HOME
-chown $USER_NAME:$GROUP_NAME $CORENLP_HOME
-python3 -c 'import stanza; stanza.install_corenlp()'
 
 # configure app
 mv $APP_HOME/docker/*.sh /

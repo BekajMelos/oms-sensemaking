@@ -1,18 +1,25 @@
 """The NLP REST API."""
+
+import logging
+
 from fastapi import APIRouter
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
-
-# from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
 
 router: APIRouter = APIRouter()
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 @router.post("/")
 def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     """Run the NLP entities and relationships."""
-    # TODO: call the sensemaker with the input data
-    # results = NlpSensemaker.execute()
 
-    # TODO: determine what part of the results should be returned to the caller
-    return NlpResponse(acm=nlp_req.acm)
+    # Call NLP Sensemaker via the NlpService to get findings (eventually will also submit to OMS)
+    nlp: NlpService = NlpService()
+    reader = NlpStringReader(nlp_req.text)
+    findings = nlp.run_nlp(nlp_reader=reader, source_id=nlp_req.source_id, corenlp_client=SETTINGS.corenlp_client)
+
+    return NlpResponse(acm=nlp_req.acm, source_id=nlp_req.source_id, findings=findings)

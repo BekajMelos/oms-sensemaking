@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import about, nlp
+from oms_sensemaking.api.routers import about, nlp, semantic
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import NoOpEventConsumer
@@ -90,12 +90,8 @@ def create_app(config: Settings) -> FastAPI:
 
     # configure routes
     application.include_router(about.router)
-
-    application.include_router(
-        nlp.router,
-        prefix="/nlp",
-        tags=["NLP"]
-    )
+    application.include_router(semantic.router, prefix="/semantic", tags=["semantic"])
+    application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)

@@ -11,6 +11,11 @@ using matches the version defined in `.python-version`.
 
 ## Setting Up A Development Environment:
 
+### Step 1: Install Docker
+
+See the [Install Docker Engine] section of the Docker Manual for platform 
+specific installation instructions.
+
 ### Step 1: Create a Virtual Environment
 
 Use the built-in [venv] module to create a virtual environment for the new
@@ -30,22 +35,41 @@ python -m venv --prompt sensemaking .venv  # create virtual environment
 source .venv/bin/activate                  # activate virtual environment
 ```
 
-### Step 2: Configure git authentication
+### Step 2: Configure Private PyPI
 
-*oms-sensemaking* includes a dependency on the [oms-sdk] that is defined using a
-[PEP 508] compatible URL to the oms-sdk project's Git repository, which will
-require authentication. You can configure your local system to authenticate
-automatically using a local `.netrc` file.
+*oms-sensemaking* includes a dependency on the [oms-sdk] which is hosted in a
+private PyPI. You can configure your system to authenticate automatically
+using a local `.netrc` file.
 
 Create a `.netrc` file in your home directory:
 
 ```
 # ~/.netrc
-
 machine tex.gerbil-cloud.ts.net
 login your-login-here
 password "your password"
 ```
+
+You will also need to configure pip to pull dependencies from the private PyPI
+first and fall back to the public PyPI. To do this, add a `pip.conf` file to
+your `.venv` directory with the following contents:
+
+```
+# .venv/pip.conf --- local project pip configuration.
+[global]
+index-url = https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
+extra-index-url = https://pypi.org/simple
+```
+
+> ***NOTE***: Pip can alternatively be configured through environment variables:
+>
+> ```sh
+> # default to private PyPI
+> export PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
+>
+> # fallback to public PyPI
+> export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+> ```
 
 ### Step 3: Install Project Dependencies
 
@@ -58,15 +82,8 @@ password "your password"
     > ***NOTE***: *oms_sensemaking* has at least two "extra" sets of
     > dependencies defined: "dev" and "test". See the
     > `project.optional-dependencies` declaration in `pyproject.toml`.
-   
+
         pip install -e ".[build,dev,docs,test]"
-
-3. Install CoreNLP
-
-        python -c 'import stanza; stanza.install_corenlp()'
-
-    To train a custom CoreNLP model, or generate the data needed to train the
-    model, follow the instructions in [train_corenlp_model.md].
 
 
 ### Step 4: Configure Local Environment Variables
@@ -89,7 +106,7 @@ will rely on the default values set in the applicaton's configuraton:
 |:--------------------|:---------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                        | The password for the PostgreSQL admmin user           |
 | `OMSB_VERSION`      | `Grimlock-INC-5`                 | The version of oms-bridge                             |
-| `OMSB_URL`          | `https://localhost:8443/graphql` | URL for OMSB                                          |
+| `OMSB_URL`          | `https://localhost:8020/graphql` | URL for OMSB                                          |
 | `CERT_PATH`         | `./pki/test10.pem`               | Path to User PEM                                      |
 | `KEY_PATH`          | `./pki/test10.key`               | Path to User Key                                      |
 
@@ -179,3 +196,4 @@ To integrate with PyCharm, use the [PyCharm Ruff plugin].
 [oms-sdk]: https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python
 [PEP 508]: https://peps.python.org/pep-0508/
 [Environment Variables]: ./env-vars.md
+[Install Docker Engine]: https://docs.docker.com/engine/install/

@@ -53,8 +53,8 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-4`                                   | The version of oms-bridge | Yes            |
-| `OMSB_URL`     | `https://localhost:8443/graphql`                   | URL for OMSB              | No             |
+| `OMSB_VERSION` | `Grimlock-INC-5`                                   | The version of oms-bridge | Yes            |
+| `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |

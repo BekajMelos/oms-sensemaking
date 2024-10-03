@@ -1,23 +1,38 @@
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
 from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 
+from .mock_corenlp_client import MockCoreNlpClient
+from .mock_responses import mock_response_bunched_text, mock_response_no_text, mock_response_normal_text
+
+mock_client = MockCoreNlpClient(
+    props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
+)
+
+mock_client.set_response(mock_response_normal_text)
+
+tdp = TrainingDataProcessor(
+    annotated_filepath="",
+    save_directory="",
+    corenlp_client=mock_client,
+)
+
 
 def test_process_doccano_result():
     """Tests when entities and relations exist."""
+    # Set mock response for this test
+    mock_client.set_response(mock_response_normal_text)
+
     # Make a test DoccanoEntity
     label = "Thing"
     start_offset_1, end_offset_1 = 34, 41
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoRelation
     relation_type = "related_to"
@@ -32,7 +47,6 @@ def test_process_doccano_result():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -49,18 +63,17 @@ def test_process_doccano_result():
 
 def test_process_doccano_result_no_relation():
     """Tests when there are no relations."""
+    # Set mock response for this test
+    mock_client.set_response(mock_response_normal_text)
+
     # Make a test DoccanoEntity
     label = "Thing"
     start_offset_1, end_offset_1 = 34, 41
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoResult
     result_id = 111
@@ -71,7 +84,6 @@ def test_process_doccano_result_no_relation():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -86,6 +98,9 @@ def test_process_doccano_result_no_relation():
 
 def test_process_doccano_result_no_entities_relations():
     """Tests when entities and relations do not exist."""
+    # Set mock response for this test
+    mock_client.set_response(mock_response_normal_text)
+
     # Make a test DoccanoResult
     result_id = 111
     text = "This is some sample text relating Entity1 to Entity2."
@@ -95,7 +110,6 @@ def test_process_doccano_result_no_entities_relations():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
     test_processed_result = tdp.process_doccano_result(test_doccano_result)
     relations = [relation for relation in test_processed_result.processed_relation_set]
 
@@ -107,27 +121,38 @@ def test_process_doccano_result_no_entities_relations():
     assert not relations
 
 
+# TODO: Mock client here
 def test_tokenize_text():
     """Tests different cases of text to tokenize."""
-    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
 
     text1 = "This is some sample text relating Entity1 to Entity2."
     text2 = ""
     text3 = None
     text4 = "ThisissomesampletextrelatingEntity1toEntity2."
 
+    # Set mock response for this test
+    mock_client.set_response(mock_response_normal_text)
     tokenized1 = tdp.tokenize_text(text1)
+
+    # Set mock response for this test
+    mock_client.set_response(mock_response_no_text)
     tokenized2 = tdp.tokenize_text(text2)
     tokenized3 = tdp.tokenize_text(text3)
+
+    # Set mock response for this test
+    mock_client.set_response(mock_response_bunched_text)
     tokenized4 = tdp.tokenize_text(text4)
 
-    assert len([tokenized1[key] for key in tokenized1]) == 10
-    assert len([tokenized2[key] for key in tokenized2]) == 0
-    assert len([tokenized3[key] for key in tokenized3]) == 0
-    assert len([tokenized4[key] for key in tokenized4]) == 2
+    assert len(tokenized1) == 10
+    assert len(tokenized2) == 0
+    assert len(tokenized3) == 0
+    assert len(tokenized4) == 2
 
 
 def test_map_entities_to_tokens():
+    # Set mock response for this test
+    mock_client.set_response(mock_response_normal_text)
+
     """Tests building the mappings between entities and text tokens."""
     # Make a test DoccanoEntity
     label = "Thing"
@@ -135,12 +160,8 @@ def test_map_entities_to_tokens():
     start_offset_2, end_offset_2 = 45, 52
     entity_id_1 = 1
     entity_id_2 = 2
-    test_ent_1 = DoccanoEntity(
-        id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1
-    )
-    test_ent_2 = DoccanoEntity(
-        id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2
-    )
+    test_ent_1 = DoccanoEntity(id=entity_id_1, label=label, start_offset=start_offset_1, end_offset=end_offset_1)
+    test_ent_2 = DoccanoEntity(id=entity_id_2, label=label, start_offset=start_offset_2, end_offset=end_offset_2)
 
     # Make a test DoccanoRelation
     relation_type = "related_to"
@@ -155,8 +176,6 @@ def test_map_entities_to_tokens():
     test_doccano_result = DoccanoResult(result_id, text, entities, relations, comments)
 
     # Run the function
-    tdp = TrainingDataProcessor(annotated_filepath="", save_directory="")
-    # test_processed_result = tdp.process_doccano_result(test_doccano_result)
     tokenized_text_map = tdp.tokenize_text(text)
     mapped_entities = tdp.map_entities_to_tokens(test_doccano_result, tokenized_text_map)
 

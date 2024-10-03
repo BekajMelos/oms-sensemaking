@@ -28,14 +28,12 @@ You can find the official steps on the [Doccano github](https://github.com/docca
 
 
 ## Follow thsese steps to use the TrainingDataProcessor to turn an annotated `.jsonl` file into a `.tsv` file suitable for training a custom CoreNLP Model
-1. [Download CoreNLP 4.5.7](https://stanfordnlp.github.io/CoreNLP/download.html), and set the classpath variable in `~/.zshrc` by adding `export CLASSPATH=$CLASSPATH:<path-to-corenlp-download-directory>/stanford-corenlp-4.5.7/*:`
-2. Install Stanza's CoreNLP Client by running `python src/oms_sensemaking/nlp/install_corenlp_client.py`. To check that it properly installed, run `cd && ls` and make sure that it is present as folder `stanza_corenlp` in your home directory.
-3. Download a sample annotated [.jsonl file](https://drive.google.com/file/d/11axfbv7zpZEliiLxkCVsC2b-KTuf9wDq/view?usp=share_link) from the shared drive. Alternatively, generate your own annotation with [Doccano](https://github.com/doccano/doccano)
-4. Run `python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <path-to-jsonl-file>`
-5. If you used a one-line `.jsonl` file, running the previous command should generate files in `src/oms_sensemaking/nlp/training/ner/` as `ner_x.tsv` and to `src/oms_sensemaking/nlp/training/relation/` as `relation_x.tsv`, where `x` depends on the `id` field in the `.jsonl` file
+1. Download a sample annotated [.jsonl file](https://drive.google.com/file/d/11axfbv7zpZEliiLxkCVsC2b-KTuf9wDq/view?usp=share_link) from the shared drive. Alternatively, generate your own annotation with [Doccano](https://github.com/doccano/doccano)
+2. Run `python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <path-to-jsonl-file>`
+3. If you used a one-line `.jsonl` file, running the previous command should generate files in `src/oms_sensemaking/nlp/training/ner/` as `ner_x.tsv` and to `src/oms_sensemaking/nlp/training/relation/` as `relation_x.tsv`, where `x` depends on the `id` field in the `.jsonl` file
 - Else if you used a two-line or `.jsonl` file, running the previous command should generate files in `src/oms_sensemaking/nlp/training/ner/` with names `ner_1.tsv` and `ner_2.tsv`, and `src/oms_sensemaking/nlp/training/relation/` as `relation_1.tsv` and `relation_2.tsv`, etc. for each line in the `.jsonl` file, again, with the number depending on the `id` field of the `.jsonl` file.
 - Upon opening the files, they should match the format/contents of the files of the same name in the [shared drive](https://drive.google.com/drive/folders/1VYO13pXthft8mB5TZwnsmuazHBJi0IB_?usp=share_link) if you used the sample `.jsonl` files. These resulting `.tsv` files are the files used to train the CoreNLP model.
-6. Repeat steps 3-5, using a different `.jsonl` file for testing. You can find one [here](https://drive.google.com/file/d/1Tk9Xd7JJYjDaDqxIyVpsQOsZl0aGp-U6/view?usp=share_link) in the shared drive. This time, specify the save directory of the testing `.tsv` files as to not confuse them with the training files by running 
+4. Repeat steps 3-5, using a different `.jsonl` file for testing. You can find one [here](https://drive.google.com/file/d/1Tk9Xd7JJYjDaDqxIyVpsQOsZl0aGp-U6/view?usp=share_link) in the shared drive. This time, specify the save directory of the testing `.tsv` files as to not confuse them with the training files by running 
 ```
 python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <path-to-jsonl-file> --save-directory <path-to-save-directory>
 ```

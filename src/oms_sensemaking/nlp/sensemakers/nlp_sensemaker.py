@@ -1,9 +1,11 @@
 """Natural Language Processing (NLP) Sensemaker."""
+
 import argparse
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
-from oms_sensemaking.nlp.corenlp_service import CoreNlpService
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
 
@@ -21,10 +23,11 @@ class NlpSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, client: CoreNlpClient) -> None:
         """Create a new instance of NlpSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
+        self.corenlp_client = client
 
     def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
         """
@@ -37,13 +40,12 @@ class NlpSensemaker(Sensemaker):
         processed_annotation = self.process_annotation(data, annotation)
         return processed_annotation
 
-    def use_corenlp_service(self, document: str) -> str:
+    def use_corenlp_service(self, document: str) -> list:
         """Access the CoreNlpService to annotate text."""
-        corenlp_service = CoreNlpService(props={})
-        annotated_doc = corenlp_service.annotate_document(text=document)
+        annotated_doc = self.corenlp_client.annotate_document(text=document)
         return annotated_doc
 
-    def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
+    def process_annotation(self, data: SubmissionData, annotation: list) -> EntitiesAndRelationships:
         """Use the AnnotationProcessor to get the nodes and relations from the submitted data."""
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
         return nodes_and_relations
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text_file_path = args.text_filepath
 
-    nlp_sm = NlpSensemaker()
+    nlp_sm = NlpSensemaker(CoreNlpClient({}, SETTINGS.corenlp_localhost))
     with open(text_file_path, "r") as text_file:
         text = text_file.read()
     document_data = SubmissionData(document_id="MadCow", text=text)

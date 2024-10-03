@@ -39,3 +39,19 @@ def db_session() -> Iterator[Session]:
         yield db
     finally:
         db.close()
+
+
+def get_db_session() -> Iterator[Session]:
+    """
+    Get a database session generator.
+
+    This function yields a database session and automatically closes the
+    session when processing is complete. This can be used as a dependency
+    injected database session in FastAPI.
+    """
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()

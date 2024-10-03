@@ -71,7 +71,7 @@ services:
   #       trace being logged. This can be ignored, since the purpose of this
   #       configuration is to provide a minimal omsb for development & testing.
   omsb2:
-    image: tex.gerbil-cloud.ts.net:5000/ado/services/oms-bridge/oms-bridge:${OMSB_VERSION}
+    image: tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
     environment:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -139,6 +139,25 @@ services:
       ADMIN_PASSWORD: password
     volumes:
      - doccano-db:/data
+
+#  corenlp:
+#    command: docker buildx build -t corenlp https://github.com/NLPbox/stanford-corenlp-docker.git
+#    build:
+#        context: https://github.com/NLPbox/stanford-corenlp-docker
+#    image: corenlp:latest
+#    ports:
+#      - "9000:9000"
+#    environment:
+#      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation
+
+  corenlp:
+    build:
+      dockerfile: docker/corenlp/Dockerfile
+    image: corenlp:latest
+    ports:
+      - "9000:9000"
+    environment:
+      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
 
 volumes:
   doccano-db:

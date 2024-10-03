@@ -1,22 +1,19 @@
 """Schemas representing the input and output formats for the NLP sensemaker."""
-from oms_sdk import DEFAULT_ACM
+
 from pydantic import BaseModel, Field
 
+from oms_sensemaking.core.schemas import SecurityMixin, SourceMixin
 
-class NlpRequest(BaseModel):
+
+class NlpRequest(SecurityMixin, SourceMixin, BaseModel):
     """Represents a request to the NLP sensemaker."""
 
-    acm: dict = Field(..., description="The ACM for the associated data.", examples=[DEFAULT_ACM])
     text: str = Field(
-        ...,
-        description="The text to analyze.",
-        examples=["The quick brown fox jumps over the lazy dog."]
+        ..., description="The text to analyze.", examples=["The quick brown fox jumps over the lazy dog."]
     )
-    # TODO: add request definition ehre
 
 
-class NlpResponse(BaseModel):
+class NlpResponse(SecurityMixin, SourceMixin, BaseModel):
     """Represents a request to the NLP sensemaker."""
 
-    acm: dict = Field(..., description="The ACM for the associated data.", examples=[DEFAULT_ACM])
-    # TODO: add response definition ehre
+    findings: dict = Field(..., description="The entities and relationships extracted from the text.", examples=[{}])
