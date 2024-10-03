@@ -5,6 +5,8 @@ import logging
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from dotenv import load_dotenv
+
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.base import utcnow_with_timezone
@@ -14,6 +16,8 @@ from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 
 class NlpService:
@@ -62,14 +66,14 @@ class NlpService:
         # 1. Turn findings into Finding object
         finding_object = Finding(
             acm=acm,
-            finding_id=uuid4(),  # TODO: If submitting ind. nodes, create uuid for each and save in dict
-            finding_type=FindingType.NLP_RECOGNIZED_ENTITY,  # TODO: change or add more types
+            finding_id=uuid4(),
+            finding_type=FindingType.NLP_FINDINGS,
             finding_data=findings,
-            oms_version="Grimlock-INC-5",  # TODO: Get from env
+            oms_version=SETTINGS.oms_version,
             published_at=utcnow_with_timezone(),
-            algorithm_name="NER",
-            algorithm_version="0.0.1",  # TODO: Get from config
-            algorithm_configuration={},
+            algorithm_name=SETTINGS.nlp_algorithm_name,
+            algorithm_version=SETTINGS.algorithm_version,
+            algorithm_configuration=SETTINGS.nlp_configuration,
             executed_at=execution_time,
         )
 
@@ -79,7 +83,7 @@ class NlpService:
             db.commit()
             db.refresh(finding_object)
 
-        # 3. Return success object
+        # 3. Return success indicator
         return True
 
     def submit_findings_to_oms(self, findings: dict, source_id: str | UUID) -> bool:

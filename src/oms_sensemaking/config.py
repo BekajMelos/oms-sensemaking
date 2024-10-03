@@ -1,14 +1,17 @@
 """Application configuration."""
-
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from dotenv import load_dotenv
 from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
+
+load_dotenv()
 
 
 class LogConfig(BaseSettings):
@@ -96,6 +99,8 @@ class Settings(BaseSettings):
 
     gzip_minimum_size: int = 1000
 
+    oms_version: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
+
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
                               description="Host and port for CoreNLP when running local script.")
@@ -103,6 +108,12 @@ class Settings(BaseSettings):
                                    description="Host and port for CoreNLP.")
     corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, hostname=corenlp_host.default),
                            description="Client for interacting with CoreNLP Docker container.")
+    nlp_configuration: dict = Field(
+        {"NER Model": "Default CoreNLP NER", "Relationship Extraction Model": "Default CoreNLP Relation Extraction"},
+        description="Configuration of the NLP NER/Relationship extraction algorithm"
+    )
+    algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
+    nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
