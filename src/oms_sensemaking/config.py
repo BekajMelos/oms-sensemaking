@@ -106,7 +106,7 @@ class Settings(BaseSettings):
                               description="Host and port for CoreNLP when running local script.")
     corenlp_host: str = Field("host.docker.internal:9000",
                                    description="Host and port for CoreNLP.")
-    corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, hostname=corenlp_host.default),
+    corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, hostname="host.docker.internal:9000"),
                            description="Client for interacting with CoreNLP Docker container.")
     nlp_configuration: dict = Field(
         {"NER Model": "Default CoreNLP NER", "Relationship Extraction Model": "Default CoreNLP Relation Extraction"},
