@@ -26,7 +26,7 @@ pipeline {
 
         PYTHON_VERSION = sh(script: 'cat .python-version', returnStdout: true).trim()
 
-        DOCKER_PROD_IMAGE = 'aio4/services/oms/oms-sensemaking:latest'
+        DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
     }
 
     stages {
@@ -103,7 +103,8 @@ pipeline {
                     echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
 
                     docker build \
-                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE} \
+                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} \
+                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
                         --build-arg APP_VERSION=${APP_VERSION} \
                         --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=$(git rev-parse HEAD) \
