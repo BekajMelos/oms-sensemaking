@@ -26,7 +26,7 @@ pipeline {
 
         PYTHON_VERSION = sh(script: 'cat .python-version', returnStdout: true).trim()
 
-        DOCKER_PROD_IMAGE = 'aio4/services/oms/oms-sensemaking:'
+        DOCKER_PROD_IMAGE = 'aio4/services/oms/oms-sensemaking:latest'
     }
 
     stages {
@@ -85,14 +85,18 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    . /tmp/venv/bin/activate
+                    echo "machine artifactory.code.dodiis.mil" > .netrc
+                    echo "login ${SERVICE_ACCOUNT_USR}" >> .netrc
+                    echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
 
                     docker build \
                         -t ${artDockerUrl}/${DOCKER_PROD_IMAGE} \
                         --build-arg APP_VERSION=${APP_VERSION} \
                         --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                         --build-arg VCS_REF=$(git rev-parse HEAD) \
-                        --secret id=mynetrc,src=${HOME}/.netrc \
+                        --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
+                        --secret id=mynetrc,src=.netrc \
+                        --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
                         .
                     docker push ${artDockerUrl}/${DOCKER_PROD_IMAGE}
                 '''
@@ -122,7 +126,9 @@ pipeline {
                 script {
                     try {
                         unstash('coverage')
-                    } catch {}
+                    } catch (e) {
+                        print 'failed to unstash coverage report. continuing...'
+                    }
                 }
                 sh '''
                     touch coverage.xml

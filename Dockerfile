@@ -117,6 +117,10 @@ FROM python-base AS app
 
 ARG APP_VERSION="0.0.0"
 
+ARG APP_DATE
+
+ARG VCS_REF
+
 # default to private PyPI
 ARG PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
 
@@ -153,8 +157,14 @@ COPY . ${APP_HOME}
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
 #       for a private PyPI to be used to define a dependency on the oms_sdk
 #       project.
-RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
+RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
+    --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
+
+# use the provided ca certificate bundle if available
+if [ -f /root/ca-certificate.crt ]; then
+  cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
+fi
 
 # configure package manager
 apt-get update
