@@ -31,9 +31,6 @@ pipeline {
 
     stages {
         stage('Prepare') {
-            when {
-                expression { params.SKIP_UNIT_TESTS == false }
-            }
             agent {
                 dockerfile {
                     label params.AGENT
@@ -48,12 +45,12 @@ pipeline {
                 }
             }
             stages {
-                stage('Install') {
+                stage('Version') {
                     steps {
                         sh '''
                             python -m venv /tmp/venv
                             . /tmp/venv/bin/activate
-                            pip install -U pip wheel
+                            pip install -U pip wheel setuptools_scm
 
                             echo "machine artifactory.code.dodiis.mil" > ${HOME}/.netrc
                             echo "login ${SERVICE_ACCOUNT_USR}" >> ${HOME}/.netrc
@@ -62,7 +59,20 @@ pipeline {
                             echo "[global]" > /tmp/venv/pip.conf
                             echo "index-url = ${artUrl}/api/pypi/pypi/simple" >> /tmp/venv/pip.conf
                             echo "extra-index-url = https://pypi.org/simple" >> /tmp/venv/pip.conf
+                        '''
 
+                        script {
+                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
+                        }
+                    }
+                }
+                stage('Install') {
+                    when {
+                        expression { params.SKIP_UNIT_TESTS == false }
+                    }
+                    steps {
+                        sh '''
+                            . /tmp/venv/bin/activate
                             pip install -e ".[dev,docs,test,build]"
                         '''
 
@@ -72,6 +82,9 @@ pipeline {
                     }
                 }
                 stage('Test') {
+                    when {
+                        expression { params.SKIP_UNIT_TESTS == false }
+                    }
                     steps {
                         sh '''
                             . /tmp/venv/bin/activate
