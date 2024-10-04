@@ -97,23 +97,27 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh '''
-                    echo "machine artifactory.code.dodiis.mil" > .netrc
-                    echo "login ${SERVICE_ACCOUNT_USR}" >> .netrc
-                    echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
+                script {
+                    docker.withRegistry('https://${artDockerUrl}', env.SERVICE_ACCOUNT_ID) {
+                        sh '''
+                            echo "machine artifactory.code.dodiis.mil" > .netrc
+                            echo "login ${SERVICE_ACCOUNT_USR}" >> .netrc
+                            echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
 
-                    docker build \
-                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} \
-                        -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
-                        --build-arg APP_VERSION=${APP_VERSION} \
-                        --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-                        --build-arg VCS_REF=$(git rev-parse HEAD) \
-                        --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
-                        --secret id=mynetrc,src=.netrc \
-                        --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
-                        .
-                    docker push ${artDockerUrl}/${DOCKER_PROD_IMAGE}
-                '''
+                            docker build \
+                                -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} \
+                                -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
+                                --build-arg APP_VERSION=${APP_VERSION} \
+                                --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                                --build-arg VCS_REF=$(git rev-parse HEAD) \
+                                --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
+                                --secret id=mynetrc,src=.netrc \
+                                --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+                                .
+                            docker push ${artDockerUrl}/${DOCKER_PROD_IMAGE}
+                        '''
+                    }
+                }
             }
         }
         stage('Scan with Prisma') {
@@ -175,6 +179,10 @@ pipeline {
     post {
         always {
             cleanWs(disableDeferredWipeout: true)
+            sh '''
+                docker rmi ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} || true
+                docker rmi ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest || true
+            '''
         }
     }
 }
