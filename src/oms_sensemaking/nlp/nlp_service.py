@@ -13,6 +13,8 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
+from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
+from oms_sensemaking.nlp.nlp_publisher import NlpPublisher
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
@@ -37,7 +39,7 @@ class NlpService:
 
         return findings
 
-    def run_nlp(self, nlp_reader: NlpReader, corenlp_client: CoreNlpClient):
+    def run_nlp(self, nlp_reader: NlpReader, corenlp_client: CoreNlpClient) -> dict:
         """
         Runs the NLP Sensemaker Business Logic
         :param nlp_reader: The body of text to be analyzed by the NLP Service
@@ -50,12 +52,8 @@ class NlpService:
         nlp_sensemaker = NlpSensemaker(corenlp_client)
         findings = nlp_sensemaker.process_data(submission_data)
 
-        # Convert findings data to dicts for serializable FastAPI response
-        findings_dict = dataclasses.asdict(findings)
-        findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
-
         # Return as dictionary to API for response
-        return findings_dict
+        return self.findings_to_dict(findings)
 
     def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime) -> bool:
         """
@@ -101,10 +99,21 @@ class NlpService:
         :param findings: found Entities and Relationships
         :param source_id: ID of the text's Source
         """
-        # TODO: Implement this function to call the EntityDecorator
-        LOGGER.debug(findings)
-        LOGGER.debug(source_id)
+        nlp_publisher = NlpPublisher(source_id)
+        nlp_publisher.publisher_pipeline(findings)
         return True
+
+    def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
+        # Convert findings data to dicts for serializable FastAPI response
+        findings_dict = dataclasses.asdict(findings)
+        findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
+        return findings_dict
+
+    def validate_source(self, source_id: str):
+        """Validate the source referenced by the source_id"""
+        # TODO: Use this to validate the source
+        # 1. Query OMS_SDK for a source with the given source_id
+        pass
 
 
 # TODO: Delete main once the API is up and running. Do the following in the API call
