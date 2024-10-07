@@ -1,6 +1,6 @@
 """Geospatial Sensemaker models."""
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from functools import cached_property
 from typing import Optional, Union
@@ -153,6 +153,11 @@ class Track:
     def to_linestring(self) -> LineString:
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
+
+
+    def to_dict(self) -> dict:
+        """Return a dictionary representation of the object."""
+        return asdict(self)
 
 
 def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]:
