@@ -36,12 +36,11 @@ class AnnotationProcessor:
                 # Loop through each of the entities in the annotation
                 for entity in sentence["MachineReading"]["entities"]["entity"]:
                     if isinstance(entity, dict):
+                        # Set the word from the text that the entity represents
                         entity["word"] = tokens[int(entity["span"]["@start"])]["word"]
-                        if entity["#text"] != "O":
-                            entity_mentions.append(entity)  # Adds the entity to a list
-                        else:
+                        if entity["#text"] == "O":  # If no NER label (O), grab it from the tokens
                             entity["#text"] = tokens[int(entity["span"]["@start"])]["NER"]
-                            entity_mentions.append(entity)  # Adds the entity to a list
+                        entity_mentions.append(entity)  # Adds the entity to a list
         return entity_mentions
 
     def find_relationships(self, annotation: list) -> list:
