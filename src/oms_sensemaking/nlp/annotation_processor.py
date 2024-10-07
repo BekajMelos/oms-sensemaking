@@ -31,31 +31,17 @@ class AnnotationProcessor:
         """Grab the nodes from the annotation."""
         entity_mentions = []
         for sentence in annotation:  # Loop through the annotation
-            print(sentence.keys())
-            print("\n")
-            for token in sentence["tokens"]["token"]:
-                print(token)
-            print("\n")
-
-            # Need to grab the word from the tokens since they are not included by default in the MachineReading ents
-            # entity_ners = [token["NER"] for token in sentence["tokens"]["token"] if token["NER"] != "O"]
-            # entity_words = [token["word"] for token in sentence["tokens"]["token"] if token["NER"] != "O"]
             tokens = [token for token in sentence["tokens"]["token"]]
-
             if "MachineReading" in sentence and sentence["MachineReading"]["entities"]:
                 # Loop through each of the entities in the annotation
                 for entity in sentence["MachineReading"]["entities"]["entity"]:
-                    print(entity)
                     if isinstance(entity, dict):
-                        # entity["word"] = entity_words.pop(0)
                         entity["word"] = tokens[int(entity["span"]["@start"])]["word"]
                         if entity["#text"] != "O":
                             entity_mentions.append(entity)  # Adds the entity to a list
                         else:
-                            # entity["#text"] = entity_ners.pop(0)
                             entity["#text"] = tokens[int(entity["span"]["@start"])]["NER"]
                             entity_mentions.append(entity)  # Adds the entity to a list
-        # print(entity_mentions)
         return entity_mentions
 
     def find_relationships(self, annotation: list) -> list:
