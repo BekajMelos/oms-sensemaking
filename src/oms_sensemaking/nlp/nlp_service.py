@@ -3,7 +3,7 @@
 import dataclasses
 import logging
 from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from dotenv import load_dotenv
 from sqlalchemy import select
@@ -26,7 +26,7 @@ load_dotenv()
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
-    def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str | UUID, corenlp_client: CoreNlpClient):
+    def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
         execution_time = utcnow_with_timezone()
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
@@ -93,7 +93,7 @@ class NlpService:
             result = findings_query.scalars().all()
         return result
 
-    def submit_findings_to_oms(self, findings: dict, source_id: str | UUID) -> bool:
+    def submit_findings_to_oms(self, findings: dict, source_id: str) -> bool:
         """
         Submit the Entities and Relationships to OMS
         :param findings: found Entities and Relationships
