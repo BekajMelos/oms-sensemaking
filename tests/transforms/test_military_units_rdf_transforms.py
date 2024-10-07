@@ -1,26 +1,16 @@
 import json
-from typing import Iterator, List
-
-import pytest
 import yaml
-from rdflib import Graph, Namespace, XSD
+from rdflib import Graph, Namespace  # add to toml
+from oms_sensemaking.transforms.json2rdf import JSON2RDF
 
-from oms_sensemaking.transforms.json2rdf import JSON2RDF, DateEncoder
 
+def test_mil_unit_transform():
 
-@pytest.fixture
-def setUp() -> Iterator(dict):
     config_data = open('transform-test-config.yml', 'r')
     configs = yaml.safe_load(config_data.read())
     config_data.close()
-    yield configs
 
-
-def test_mil_unit_transform(input_fixture):
-    # JSON object required for the transformer
-    configs = next(input_fixture)
-
-    test_obj_fin = open(f"{configs.get('test_data_path')}{configs.get('test_mil_unit_midb')}", 'r')
+    test_obj_fin = open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", 'r')
     test_obj = json.loads(test_obj_fin.read())
     test_obj_fin.close()
 
@@ -58,50 +48,11 @@ def test_mil_unit_transform(input_fixture):
         aligned_graph.add(stmt)
     assert (len(aligned_graph) > 0)
 
-    # drop a copy of the RDF graph in test output
+    # TODO: SPARQL validations here
 
-    ttl_output = open(f"{configs.get('output_path')}{configs.get('test_mil_unit_midb').replace('.json', 'ttl')}", 'w')
+    # drop a copy of the RDF graph in test output
+    output_path = configs.get('test_output_path')
+    output_file = configs.get('test_input_files')[0].replace('.json', '.ttl')
+    ttl_output = open(f"{output_path}{output_file}", 'w')
     ttl_output.write(aligned_graph.serialize(format='ttl'))
     ttl_output.close()
-
-
-def test_dateparser():
-    encode_date = DateEncoder()
-
-    # postive test cases
-    value_out, datatype = encode_date("2023-01-23 10:00:00Z")  ## without T
-    assert ("2023-01-23T10:00:00" == value_out)
-    assert (datatype == XSD.dateTime)
-
-    value_out, datatype = encode_date("2023-01-23T10:00:00Z")  ## with T
-    assert ("2023-01-23T10:00:00" == value_out)
-    assert (datatype == XSD.dateTime)
-
-    value_out, datatype = encode_date("2023-01-24 10:00:00")
-    assert ("2023-01-24T10:00:00" == value_out)
-    assert (datatype == XSD.dateTime)
-
-    value_out, datatype = encode_date("2023-01-24")
-    assert ('2023-01-24' == value_out)
-    assert (datatype == XSD.date)
-
-    value_out, datatype = encode_date("20231002")
-    assert ('2023-10-02' == value_out)
-    assert (datatype == XSD.date)
-
-    ## negative test cases
-    value_out, datatype = encode_date("2023-41-24 10:00:00")
-    assert (value_out is None)
-    assert (datatype is None)
-
-    value_out, datatype = encode_date("2023-41-24")
-    assert (value_out is None)
-    assert (datatype is None)
-
-    value_out, datatype = encode_date("20234124")
-    assert (value_out is None)
-    assert (datatype is None)
-
-    value_out, datatype = encode_date("2023T4124-04Z")
-    assert (value_out is None)
-    assert (datatype is None)

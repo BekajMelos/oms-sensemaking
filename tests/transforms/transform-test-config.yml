@@ -2,6 +2,6 @@ test_input_path: test_data/mil_units/
 test_input_files:
   - test_obj_MIDB-cc0b63ee19a6c263b0d3a38cb8f7d074b73c8b25ab42c40902fefc2b42c90210.json
 test_output_path: test_outputs/mil_units/
-construct_query_path: ../../src/oms_sensemaking/transforms/resources/construct.sparql
-source_model_path: ../../src/oms_sensemaking/transforms/resources/source_model.ttl
+construct_query_path: ../../src/transforms/resources/construct.sparql
+source_model_path: ../../src/transforms/resources/source_model.ttl
 namespace_uri: http://blackcape.io/ontology/node#
