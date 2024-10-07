@@ -1,6 +1,7 @@
 """Utilities for working with CoreNLP."""
 
 import logging
+from typing import Any
 
 import httpx
 import xmltodict
@@ -18,13 +19,13 @@ class CoreNlpClient:
         :param props:
         """
         if not props:
-            self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "xml"}
+            self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
         else:
             self.props = props
         self.hostname = hostname
         self.url = f"http://{self.hostname}/?properties={self.props}"
 
-    def annotate_document(self, text: str) -> list:
+    def annotate_document(self, text: str) -> Any:
         """
         Annotate the given document text.
 
@@ -33,28 +34,33 @@ class CoreNlpClient:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
-        # Handling empty text submission case
-        if not text:
-            return []
 
-        # Formatting text for submission and sending it to the CoreNLP container
-        data = {"text": text}
-        result = httpx.post(self.url, data=data, content=text, timeout=None)
+        if self.props["outputFormat"] == "text":
+            # Handling empty text submission case
+            if not text:
+                return ""
 
-        # Parsing the xml response to get it as a dictionary for easy indexing later
-        formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
+            # Formatting text for submission and sending it to the CoreNLP container
+            data = {"text": text}
+            result = httpx.post(self.url, data=data, content=text, timeout=None)
+            return result.text
 
-        # If there is only one sentence it by default returns a dict instead of a list of dicts, so this corrects that
-        return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
+        elif self.props["outputFormat"] == "xml":
+            # Handling empty text submission case
+            if not text:
+                return []
 
+            # Formatting text for submission and sending it to the CoreNLP container
+            data = {"text": text}
+            result = httpx.post(self.url, data=data, content=text, timeout=None)
 
-class MockCoreNlpClient(CoreNlpClient):
-    def __init__(self, props: dict, host: str):
-        super().__init__(props, host)
-        self.response: list = []
+            # Parsing the xml response to get it as a dictionary for easy indexing later
+            formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
 
-    def set_response(self, response: list):
-        self.response = response
+            # If there is only one sentence it by default returns a dict instead of a list of dicts, this corrects that
+            return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
 
-    def annotate_document(self, text: str) -> list:
-        return self.response
+        elif self.props["outputFormat"] == "json":
+            data = {"text": text}
+            result = httpx.post(self.url, data=data, content=text, timeout=None)
+            return result.json()

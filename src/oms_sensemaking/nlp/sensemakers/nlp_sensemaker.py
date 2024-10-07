@@ -40,12 +40,12 @@ class NlpSensemaker(Sensemaker):
         processed_annotation = self.process_annotation(data, annotation)
         return processed_annotation
 
-    def use_corenlp_service(self, document: str) -> list:
+    def use_corenlp_service(self, document: str) -> str:
         """Access the CoreNlpService to annotate text."""
         annotated_doc = self.corenlp_client.annotate_document(text=document)
         return annotated_doc
 
-    def process_annotation(self, data: SubmissionData, annotation: list) -> EntitiesAndRelationships:
+    def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """Use the AnnotationProcessor to get the nodes and relations from the submitted data."""
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
         return nodes_and_relations
