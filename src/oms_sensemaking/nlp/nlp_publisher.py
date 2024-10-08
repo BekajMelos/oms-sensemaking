@@ -10,15 +10,12 @@ from oms_sensemaking.config import SETTINGS
 class NlpPublisher:
     def __init__(self, source_id: str):
         self.source_id = source_id
-        self.id_mapping: dict = {}
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
 
     def publisher_pipeline(self, findings: dict):
         """Run the publisher on the findings"""
-        self.generate_ids(findings)
-
         attributes = self.format_attributes(findings)
         nodes = self.format_nodes(findings)
         relationships = self.format_relationships(findings)
@@ -26,13 +23,6 @@ class NlpPublisher:
         self.publish_attributes(attributes)
         self.publish_nodes(nodes)
         self.publish_relationships(relationships)
-
-    def generate_ids(self, findings: dict):
-        """Set self.id_mapping for nodes and relationships and generate a mapping between them"""
-        # 1. Loop through the listed entities
-        # 2. For each entity, generate a uuid
-        # 3. Saved in self.id_mapping, map the entity-index to the uuid
-        pass
 
     def format_nodes(self, findings: dict) -> list[NodeNode]:
         """Format the Node objects from the findings"""

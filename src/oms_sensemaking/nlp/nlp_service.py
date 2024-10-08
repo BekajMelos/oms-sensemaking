@@ -93,7 +93,7 @@ class NlpService:
             result = findings_query.scalars().all()
         return result
 
-    def submit_findings_to_oms(self, findings: dict, source_id: str) -> bool:
+    def submit_findings_to_oms(self, findings: dict, source_id: str):
         """
         Submit the Entities and Relationships to OMS
         :param findings: found Entities and Relationships
@@ -101,7 +101,6 @@ class NlpService:
         """
         nlp_publisher = NlpPublisher(source_id)
         nlp_publisher.publisher_pipeline(findings)
-        return True
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
         # Convert findings data to dicts for serializable FastAPI response
