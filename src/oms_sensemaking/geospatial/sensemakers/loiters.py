@@ -2,14 +2,26 @@
 
 import logging
 from datetime import datetime, timedelta
+from functools import cached_property
+from typing import List
 from uuid import UUID
 
 from geolib import geohash
+from oms_sdk.generated.generated_graphql_client.client import (
+    Client,
+    CreateAttributeInput,
+    CreateNodeInput,
+    CreateRelationshipInput,
+)
+from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
+from oms_sdk.generated.generated_graphql_client.input_types import GeoInput, IdQuery
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.core.acm import get_acm_rollup
+from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,8 +50,10 @@ class PotentialLoiter:
         return self.__str__()
 
 
-class Loiter:
+class Loiter(FindingBase):
     """Represents a loiter event."""
+
+    FINDING_TYPE = FindingType.GEO_LOITER
 
     def __init__(
         self,
@@ -58,11 +72,97 @@ class Loiter:
         self.processed_points = processed_points
         self.geometry = geometry
 
+    @cached_property
+    def acm(self) -> dict:
+        return get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
+
     def __str__(self):
-        return str(self.__dict__)
+        return str(self.to_dict())
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def to_geojson(self) -> dict:
+        """Geojson representation of the loiter geometry"""
+
+        return {
+            "type": "LineString",
+            "coordinates": [
+                    point.coordinates for point in self.processed_points
+                ]
+        }
+
+
+class LoiterOmsPublisher(OmsPublisher):
+
+    def publish(self, track: Track, loiters: List[Loiter]) -> None:
+        """
+        Write loiter events to OMSB
+
+        :param track: Track in which the loiter was found
+        :param loiters: List of Loiter events
+        :return: None
+        """
+
+        LOGGER.debug("Writing Loiter output to OMS")
+
+        for loiter in loiters:
+
+            track_node = self.oms_client.node(query=IdQuery(id=loiter.track_node_id))
+
+            if not track_node:
+                # TODO do we need to do somethign about this?
+                LOGGER.error(f"No track node with id {loiter.track_node_id}")
+                return
+
+            name = SETTINGS.loiter_event_name + "-" + str(loiter.track_node_id)
+            tags = [SETTINGS.geo_sensemaker_event_tag]
+            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+
+            create_event_node = CreateNodeInput(
+                    acm=loiter.acm,
+                    name=name,
+                    tier=ObjectTier.DERIVATIVE,
+                    tags=tags,
+                    classIri=SETTINGS.loiter_event_node_iri,
+                    ifcCodes=set(),
+                    isNso=True
+                )
+            event_node = self.oms_client.create_node(create_event_node)
+
+            create_relationship_input = CreateRelationshipInput(
+                    tags=tags,
+                    name=name,
+                    startNodeId=event_node.id,
+                    endNodeId=loiter.track_node_id,
+                    confidence=Confidence.HIGH,
+                    acm=loiter.acm,
+                    objectPropertyIri=SETTINGS.loiter_relationship_iri,
+                    sourceId=source_id
+                )
+            _ = self.oms_client.create_relationship(create_relationship_input)
+
+            create_attribute_input = CreateAttributeInput(
+                    attributeIri=SETTINGS.loiter_event_node_attribute_iri,
+                    attributeValue="geo",
+                    attributeDisplayValue="",
+                    attributeType=AttributeType.SPATIOTEMPORAL.value,
+                    confidence=Confidence.HIGH.value,
+                    tags=tags,
+                    sourceId=source_id,
+                    geo=GeoInput(
+                        geoJson=loiter.to_geojson,
+                        startTime=loiter.start_time,
+                        endTime=loiter.end_time
+                        ),
+                    nodeId=event_node.id,
+                    acm=loiter.acm,
+                    valueStart=loiter.start_time,
+                    valueEnd=loiter.end_time
+                )
+            _ = self.oms_client.create_attribute(create_attribute_input)
+            LOGGER.debug('Done writing output to OMS')
 
 
 class LoiterSensemaker(Sensemaker):
@@ -78,10 +178,21 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
-        """Create a new instance of LoiterSesnemaker."""
+    def __init__(self, oms_client: Client, output_to_oms: bool) -> None:
+        """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        self.config = {
+            "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
+            "loiter_min_time": SETTINGS.loiter_min_time,
+            "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
+            "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
+            "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+            "geohash_low": SETTINGS.geohash_low
+        }
+        if output_to_oms:
+            self.publisher = LoiterOmsPublisher(oms_client)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """
@@ -127,7 +238,8 @@ class LoiterSensemaker(Sensemaker):
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            LOGGER.info(f"Found Loiters: {confirmed_loiters}")
+            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}): {confirmed_loiters}")
+
         return confirmed_loiters
 
     @staticmethod
