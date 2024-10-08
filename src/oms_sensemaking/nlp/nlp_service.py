@@ -55,7 +55,7 @@ class NlpService:
         # Return as dictionary to API for response
         return self.findings_to_dict(findings)
 
-    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime) -> bool:
+    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime):
         """
         Submit findings as Finding objects to the findings table in postgis
         :param acm: the acm
@@ -82,14 +82,11 @@ class NlpService:
             db.commit()
             db.refresh(finding_object)
 
-        # 3. Return success indicator
-        return True
-
     def get_all_findings_from_postgis(self):
         """Get the findings from the postgis database"""
 
         with db_session() as db:
-            findings_query = db.execute(select(Finding).where(Finding.finding_type == "NLP_FINDINGS"))
+            findings_query = db.execute(select(Finding).where(Finding.finding_type == FindingType.NLP_FINDINGS))
             result = findings_query.scalars().all()
         return result
 
