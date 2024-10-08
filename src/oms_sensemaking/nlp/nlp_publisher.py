@@ -1,4 +1,5 @@
 from oms_sdk import get_generated_graphql_client
+from oms_sdk.generated.generated_graphql_client import Source
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
@@ -34,7 +35,6 @@ class NlpPublisher:
         """Format the Relationship objects from the findings"""
         # 1. Get the findings[ner_relationships] and findings[document_relationships]
         # 2. For each, format as a Relationship and add to list of Relationships
-        # 3. Grab the uuid of each node in the relationship and add to Relationship object
         pass
 
     def format_attributes(self, findings: dict) -> list[AttributeAttribute]:
@@ -57,38 +57,46 @@ class NlpPublisher:
         # 1. for each attribute, publish it to OMS linked to the corresponding node
         pass
 
-    def get_nodes(self):
+    def get_nodes(self) -> list[NodeNode]:
         """Get existing Nodes from OMS"""
         pass
 
-    def get_relationships(self):
+    def get_relationships(self) -> list[RelationshipRelationship]:
         """Get existing Relationships from OMS"""
         pass
 
-    def get_source(self):
+    def get_attributes(self) -> list[AttributeAttribute]:
+        """Get existing Attributes from OMS"""
+        pass
+
+    def get_source(self, source_id: str) -> Source:
         """Get existing Source from OMS"""
         pass
 
-    def update_node(self):
+    def update_node(self, node_id: str):
         """Update node"""
         pass
 
-    def update_relationship(self):
+    def update_relationship(self, relationship_id: str):
         """Update relationship"""
         pass
 
-    def update_source(self):
+    def update_attribute(self, attribute_id: str):
+        """Update attribute"""
+        pass
+
+    def update_source(self, source_id: str):
         """Update source with new attributes and relationships"""
         pass
 
-    def delete_node(self):
+    def delete_node(self, node_id: str):
         """Delete existing Node from OMS"""
         pass
 
-    def delete_relationship(self):
+    def delete_relationship(self, relationship_id: str):
         """Delete existing Relationship from OMS"""
         pass
 
-    def delete_attribute(self):
+    def delete_attribute(self, attribute_id: str):
         """Delete existing attribute from OMS"""
         pass
