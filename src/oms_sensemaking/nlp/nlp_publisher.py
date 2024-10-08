@@ -31,7 +31,7 @@ class NlpPublisher:
         """Set self.id_mapping for nodes and relationships and generate a mapping between them"""
         # 1. Loop through the listed entities
         # 2. For each entity, generate a uuid
-        # 3. Saved in self.id_maCpping, map the entity-index to the uuid
+        # 3. Saved in self.id_mapping, map the entity-index to the uuid
         pass
 
     def format_nodes(self, findings: dict) -> list[NodeNode]:
@@ -97,4 +97,8 @@ class NlpPublisher:
 
     def delete_relationship(self):
         """Delete existing Relationship from OMS"""
+        pass
+
+    def delete_attribute(self):
+        """Delete existing attribute from OMS"""
         pass
