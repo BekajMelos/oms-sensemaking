@@ -40,7 +40,7 @@ class DateEncoder(object):
                 try:
                     dt = datetime.strptime(value_fmt, "%Y-%m-%dT%H:%M:%S")
                     return dt.strftime("%Y-%m-%dT%H:%M:%S"), XSD.dateTime
-                except:
+                except Exception:
                     return None, None
 
         elif self.datetime_pattern.search(input_string.strip()):
@@ -48,21 +48,21 @@ class DateEncoder(object):
             try:
                 dt = datetime.strptime(input_string, "%Y-%m-%dT%H:%M:%S")
                 return dt.strftime("%Y-%m-%dT%H:%M:%S"), XSD.dateTime
-            except:
+            except Exception:
                 return None, None
 
         elif self.date_pattern.search(input_string):
             try:
                 dt = datetime.strptime(input_string, "%Y-%m-%d")
                 return dt.strftime("%Y-%m-%d"), XSD.date
-            except:
+            except Exception:
                 return None, None
 
         elif self.numeric_date_valid.search(input_string) and len(input_string) == 8:
             try:
                 dt = datetime.strptime(input_string, '%Y%m%d')
                 return dt.strftime('%Y-%m-%d'), XSD.date
-            except:
+            except Exception:
                 return None, None
 
         else:
