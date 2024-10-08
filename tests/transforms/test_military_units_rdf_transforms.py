@@ -8,13 +8,11 @@ from oms_sensemaking.transforms.json2rdf import JSON2RDF
 
 def test_mil_unit_transform():
 
-    config_data = open('transform-test-config.yml', 'r')
-    configs = yaml.safe_load(config_data.read())
-    config_data.close()
+    with open('transform-test-config.yml', 'r') as config_data:
+        configs = yaml.safe_load(config_data.read())
 
-    test_obj_fin = open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", 'r')
-    test_obj = json.loads(test_obj_fin.read())
-    test_obj_fin.close()
+    with open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", 'r') as test_obj_fin:
+        test_obj = json.loads(test_obj_fin.read())
 
     assert (len(test_obj) > 0)
 
@@ -55,6 +53,5 @@ def test_mil_unit_transform():
     # drop a copy of the RDF graph in test output
     output_path = configs.get('test_output_path')
     output_file = configs.get('test_input_files')[0].replace('.json', '.ttl')
-    ttl_output = open(f"{output_path}{output_file}", 'w')
-    ttl_output.write(aligned_graph.serialize(format='ttl'))
-    ttl_output.close()
+    with open(f"{output_path}{output_file}", 'w') as ttl_output:
+        ttl_output.write(aligned_graph.serialize(format='ttl'))

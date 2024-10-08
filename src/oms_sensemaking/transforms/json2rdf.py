@@ -113,9 +113,8 @@ class JSON2RDF(object):
         self.source_data = None
 
         # construct query
-        construct_query_text = open(construct, 'r')
-        self.construct = construct_query_text.read()
-        construct_query_text.close()
+        with open(construct, 'r') as construct_query_text:
+            self.construct = construct_query_text.read()
 
         self.record_ns = Namespace(ns_uri)
         qry = "SELECT * WHERE {?datatype_property a owl:DatatypeProperty; rdfs:label ?l; rdfs:range ?range}"
