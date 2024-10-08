@@ -42,7 +42,6 @@ class NlpService:
         Runs the NLP Sensemaker Business Logic
         :param nlp_reader: The body of text to be analyzed by the NLP Service
         :param corenlp_client: Host site for CoreNLP
-        :param source_id: ID of the text's Source
         """
 
         # Use the NLP Sensemaker to process the text data for findings
