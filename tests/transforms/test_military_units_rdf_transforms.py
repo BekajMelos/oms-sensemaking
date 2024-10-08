@@ -1,6 +1,8 @@
 import json
+
 import yaml
 from rdflib import Graph, Namespace  # add to toml
+
 from oms_sensemaking.transforms.json2rdf import JSON2RDF
 
 

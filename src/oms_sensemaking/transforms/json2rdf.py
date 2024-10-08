@@ -1,12 +1,12 @@
 import json
-import numpy as np
 import re
-from pandas import json_normalize
-from rdflib import *
+import warnings
 from datetime import datetime
 from hashlib import md5
 
-import warnings
+import numpy as np
+from pandas import json_normalize
+from rdflib import *
 
 warnings.filterwarnings("error", category=UserWarning)
 
@@ -24,10 +24,10 @@ class NpEncoder(json.JSONEncoder):
 
 class DateEncoder(object):
     def __init__(self):
-        self.datetime_pattern_Z = re.compile("(\d{4}-\d{2}-\d{2})(T| )(\d{2}:\d{2}:\d{2})Z")
-        self.datetime_pattern = re.compile("(\d{4}-\d{2}-\d{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
-        self.date_pattern = re.compile('\d{4}-\d{2}-\d{2}')
-        self.numeric_date_valid = re.compile('\d{8}')
+        self.datetime_pattern_Z = re.compile(r"(\d{4}-\d{2}-\d{2})(T| )(\d{2}:\d{2}:\d{2})Z")
+        self.datetime_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
+        self.date_pattern = re.compile(r'\d{4}-\d{2}-\d{2}')
+        self.numeric_date_valid = re.compile(r'\d{8}')
 
     def __call__(self, input_string):
         print(input_string)
