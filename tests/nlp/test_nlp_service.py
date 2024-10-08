@@ -61,8 +61,7 @@ def test_submit_findings_to_postgis(mock_db):
     execution_time = utcnow_with_timezone()
 
     # First check if it runs with no problems
-    result = service.submit_findings_to_postgis(acm=acm, findings=mock_findings, execution_time=execution_time)
-    assert result
+    service.submit_findings_to_postgis(acm=acm, findings=mock_findings, execution_time=execution_time)
 
     # Check the db for the posted findings
     results = service.get_all_findings_from_postgis()

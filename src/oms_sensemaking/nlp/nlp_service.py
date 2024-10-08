@@ -57,7 +57,7 @@ class NlpService:
         # Return as dictionary to API for response
         return findings_dict
 
-    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime) -> bool:
+    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime):
         """
         Submit findings as Finding objects to the findings table in postgis
         :param acm: the acm
@@ -83,9 +83,6 @@ class NlpService:
             db.add(finding_object)
             db.commit()
             db.refresh(finding_object)
-
-        # 3. Return success indicator
-        return True
 
     def get_all_findings_from_postgis(self):
         """Get the findings from the postgis database"""
