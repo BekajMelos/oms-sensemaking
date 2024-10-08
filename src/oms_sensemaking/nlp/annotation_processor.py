@@ -1,6 +1,7 @@
 """Annotation Processor."""
 
 import re
+from uuid import uuid4
 
 from oms_sensemaking.nlp.models.document_as_entity import DocumentAsEntity
 from oms_sensemaking.nlp.models.document_has_relation import DocumentHasRelation
@@ -28,6 +29,7 @@ class AnnotationProcessor:
             r"hstart=\d+, hend=\d+, estart=\d+, "
             r'eend=\d+, headPosition=\d+, value="[^"]+", corefID=-?\d+]\n)+)]'
         )
+        self.uuid_entity_map = {}
 
     def extract_info(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """
@@ -46,45 +48,69 @@ class AnnotationProcessor:
         """Grab the nodes from the annotation."""
         entities = []
 
+        # Apply regex to the annotation to find the entities
         matches = self.entity_pattern.finditer(annotation)
         for match in matches:
-            entity = {
-                "type": match.group("type"),
-                "objectId": match.group("objectId"),
-                "hstart": int(match.group("hstart")),
-                "hend": int(match.group("hend")),
-                "estart": int(match.group("estart")),
-                "eend": int(match.group("eend")),
-                "headPosition": int(match.group("headPosition")),
-                "value": match.group("value"),
-                "corefID": int(match.group("corefID")),
-            }
-            if entity not in entities:
+            entity_obj_id = match.group("objectId")
+
+            # Only build entity if not seen before, leave out duplicates
+            if entity_obj_id not in self.uuid_entity_map:
+                # Create unique id for each entity, and add to map
+                entity_uuid = str(uuid4())
+                self.uuid_entity_map[entity_obj_id] = entity_uuid
+
+                # Build the entity
+                entity = {
+                    "type": match.group("type"),
+                    "objectId": match.group("objectId"),
+                    "uuid": entity_uuid,
+                    "hstart": int(match.group("hstart")),
+                    "hend": int(match.group("hend")),
+                    "estart": int(match.group("estart")),
+                    "eend": int(match.group("eend")),
+                    "headPosition": int(match.group("headPosition")),
+                    "value": match.group("value"),
+                    "corefID": int(match.group("corefID")),
+                }
+
                 entities.append(entity)
+
         return entities
 
     def find_relationships(self, annotation: str) -> list:
         """Grab the relationships from the annotation."""
         relationships = []
+
+        # Find relations from the text using the regex pattern
         relation_matches = self.relation_pattern.finditer(annotation)
-        relation_count = 1
+
+        relation_count = 1  # For keeping track of the relation object id
         for match in relation_matches:
+            # Build the relation
             relation = {
                 "type": match.group("type"),
                 "objectId": f"RelationMention-{relation_count}",
+                "uuid": str(uuid4()),
                 "start": int(match.group("start")),
                 "end": int(match.group("end")),
                 "relations": match.group("relations").split("; "),
                 "entities": [],
             }
-            relation_count += 1
+            relation_count += 1  # Increment the relation object id
 
             # Find nested entity mentions within each relation mention
             nested_entities = self.entity_pattern.finditer(match.group("entities"))
+
+            # Build each entity that is found in the relation
             for entity_match in nested_entities:
+                entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
+                entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
+
+                # Build the entity
                 entity = {
                     "type": entity_match.group("type"),
-                    "objectId": entity_match.group("objectId"),
+                    "objectId": entity_object_id,
+                    "uuid": entity_uuid,
                     "hstart": int(entity_match.group("hstart")),
                     "hend": int(entity_match.group("hend")),
                     "estart": int(entity_match.group("estart")),
@@ -93,8 +119,10 @@ class AnnotationProcessor:
                     "value": entity_match.group("value"),
                     "corefID": int(entity_match.group("corefID")),
                 }
+                # Add the entity to the relation's entities
                 relation["entities"].append(entity)
 
+            # Add the relation to the list of relations
             relationships.append(relation)
         return relationships
 
@@ -107,20 +135,21 @@ class AnnotationProcessor:
         :param relationships:
         :return:
         """
-        # 1. Create entity for document
-        # 2. Relate each entity in the document to the document's entity
-
         document_relationships = []
-        # Creates an entity for the document
+
+        # 1. Create entity for document
         document_entity = DocumentAsEntity(document_id=data.document_id, text=data.text)
         doc_rel_index = 1
+
+        # 2. Relate each entity in the document to the document's entity
         for entity in entities:
             # Loop through all the entities and creates a DocumentHasRelationship for each of them
             doc_rel_obj_id = "DocumentRelation-" + str(doc_rel_index)
             document_relationship = DocumentHasRelation(
-                object_id=doc_rel_obj_id,
-                document_id=data.document_id,
-                ner_entity=entity["objectId"],
+                doc_obj_id=doc_rel_obj_id,
+                document_uuid=data.document_id,
+                entity_obj_id=entity["objectId"],
+                entity_uuid=entity["uuid"],
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
