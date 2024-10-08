@@ -6,7 +6,7 @@ from hashlib import md5
 
 import numpy as np
 from pandas import json_normalize
-from rdflib import *
+from rdflib import RDF, XSD, BNode, Graph, Literal, Namespace
 
 warnings.filterwarnings("error", category=UserWarning)
 
@@ -148,7 +148,8 @@ class JSON2RDF(object):
         self.source_data['_derived_acm_guid'] = self.make_acm(self.source_data)
 
         for k in self.source_data:
-            if k not in self.source_lookup: continue
+            if k not in self.source_lookup:
+                continue
 
             value = self.source_data[k]
             datatype = self.source_lookup.get(k).get('datatype')
