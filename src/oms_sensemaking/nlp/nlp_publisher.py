@@ -42,17 +42,17 @@ class NlpPublisher:
         # TODO: decide what goes in an attribute (if anything)
         pass
 
-    def publish_nodes(self, nodes: list[NodeNode]) -> bool:
+    def publish_nodes(self, nodes: list[NodeNode]):
         """Publish the Nodes to OMS"""
         # 1. for each node, publish it to OMS
         pass
 
-    def publish_relationships(self, relationships: list[RelationshipRelationship]) -> bool:
+    def publish_relationships(self, relationships: list[RelationshipRelationship]):
         """Publish the relationships to OMS"""
         # 1. for each relationship, publish it to OMS
         pass
 
-    def publish_attributes(self, attributes: list[AttributeAttribute]) -> bool:
+    def publish_attributes(self, attributes: list[AttributeAttribute]):
         """Publish the attributes to oms"""
         # 1. for each attribute, publish it to OMS linked to the corresponding node
         pass
