@@ -6,7 +6,7 @@ from oms_sensemaking.nlp.models.submission_data import SubmissionData
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 from .mock_corenlp_client import MockCoreNlpClient
-from .mock_responses import mock_response_long_text, mock_response_no_text
+from .mock_responses import mock_response_long_text_str, mock_response_no_text_str
 
 empty_text = ""
 sample_text = (
@@ -25,7 +25,7 @@ nlp_sensemaker = NlpSensemaker(mock_client)
 
 def test_process_data_empty_test():
     # Set mock response for this test
-    mock_client.set_response(mock_response_no_text)
+    mock_client.set_response(mock_response_no_text_str)
 
     data = SubmissionData(document_id=sample_doc_id, text=empty_text)
 
@@ -41,7 +41,7 @@ def test_process_data_empty_test():
 
 def test_process_data_normal_text():
     # Set mock response for this test
-    mock_client.set_response(mock_response_long_text)
+    mock_client.set_response(mock_response_long_text_str)
 
     data = SubmissionData(document_id=sample_doc_id, text=sample_text)
 
@@ -55,7 +55,7 @@ def test_process_data_normal_text():
 
 def test_use_service_empty_doc():
     # Set mock response for this test
-    mock_client.set_response(mock_response_no_text)
+    mock_client.set_response(mock_response_no_text_str)
 
     annotation = nlp_sensemaker.use_corenlp_service(empty_text)
     # An annotation of an empty piece of text should not have any sentences
@@ -64,7 +64,7 @@ def test_use_service_empty_doc():
 
 def test_use_service_normal_doc():
     # Set mock response for this test
-    mock_client.set_response(mock_response_long_text)
+    mock_client.set_response(mock_response_long_text_str)
 
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     # An annotation of a document should contain sentences
@@ -73,7 +73,7 @@ def test_use_service_normal_doc():
 
 def test_annotation_processor():
     # Set mock response for this test
-    mock_client.set_response(mock_response_long_text)
+    mock_client.set_response(mock_response_long_text_str)
 
     data = SubmissionData(sample_doc_id, sample_text)
 
@@ -84,21 +84,14 @@ def test_annotation_processor():
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
     # Every entity in the annotation must have been extracted
-    for sentence in annotation:
-        if "MachineReading" in sentence and sentence["MachineReading"]["entities"]:
-            # Loop through each of the entities in the annotation
-            for entity in sentence["MachineReading"]["entities"]["entity"]:
-                if entity["#text"] != "O":
-                    assert entity in ents
-        # Every relation in the annotation must have been extracted
-        if "MachineReading" in sentence and sentence["MachineReading"]["relations"]:
-            # TODO: Verify formatting
-            for relation in sentence["MachineReading"]["relations"]["relation"]:
-                if relation["#text"] != "_NR":
-                    assert relation in rels
-    # Every relation added must not have type _NR
-    for relation in rels:
-        assert relation["#text"] != "_NR"
+    ent_matches = ann_processor.entity_pattern.finditer(annotation)
+    all_ents = [match for match in ent_matches]
+    assert len(all_ents) == len(ents)
+
+    # Every relation in the annotation must have been extracted
+    rel_matches = ann_processor.relation_pattern.finditer(annotation)
+    all_rels = [match for match in rel_matches]
+    assert len(all_rels) == len(rels)
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)

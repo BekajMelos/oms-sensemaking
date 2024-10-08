@@ -31,7 +31,6 @@ class TrainingDataProcessor:
         """
         self.annotated_filepath = annotated_filepath
         self.save_directory = save_directory
-        self.properties = {"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}
         self.corenlp_client = corenlp_client
 
     def run_pipeline(self):

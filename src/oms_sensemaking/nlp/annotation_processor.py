@@ -66,6 +66,7 @@ class AnnotationProcessor:
         """Grab the relationships from the annotation."""
         relationships = []
 
+        # TODO: Add relation IDs
         relation_matches = self.relation_pattern.finditer(annotation)
         for match in relation_matches:
             relation = {

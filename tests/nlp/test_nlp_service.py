@@ -12,7 +12,7 @@ from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
 
 from .mock_corenlp_client import MockCoreNlpClient
-from .mock_responses import mock_response_long_text
+from .mock_responses import mock_response_long_text_str
 
 service = NlpService()
 doc_id = str(uuid4())
@@ -28,7 +28,7 @@ sample_text = (
 reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
 mock_corenlp_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
-mock_corenlp_client.set_response(mock_response_long_text)
+mock_corenlp_client.set_response(mock_response_long_text_str)
 
 mock_findings = service.run_nlp(nlp_reader=reader, corenlp_client=mock_corenlp_client)
 
