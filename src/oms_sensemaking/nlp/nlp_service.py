@@ -91,7 +91,7 @@ class NlpService:
         """Get the findings from the postgis database"""
 
         with db_session() as db:
-            findings_query = db.execute(select(Finding).where(Finding.finding_type == "NLP_FINDINGS"))
+            findings_query = db.execute(select(Finding).where(Finding.finding_type == FindingType.NLP_FINDINGS))
             result = findings_query.scalars().all()
         return result
 
