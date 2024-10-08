@@ -72,4 +72,4 @@ def test_submit_findings_to_postgis(mock_db):
 
 def test_submit_findings_to_oms():
     """Not implemented: tests submitting findings to OMS"""
-    assert True
+    pytest.skip("Skipping because this function is not implemented yet.")
