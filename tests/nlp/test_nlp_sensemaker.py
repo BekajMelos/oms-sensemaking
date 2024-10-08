@@ -85,7 +85,11 @@ def test_annotation_processor():
 
     # Every entity in the annotation must have been extracted
     ent_matches = ann_processor.entity_pattern.finditer(annotation)
-    all_ents = [match for match in ent_matches]
+    all_ents = []
+    for match in ent_matches:
+        ent_id = match.group("objectId")
+        if ent_id not in all_ents:
+            all_ents.append(ent_id)
     assert len(all_ents) == len(ents)
 
     # Every relation in the annotation must have been extracted

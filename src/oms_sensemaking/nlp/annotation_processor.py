@@ -59,23 +59,25 @@ class AnnotationProcessor:
                 "value": match.group("value"),
                 "corefID": int(match.group("corefID")),
             }
-            entities.append(entity)
+            if entity not in entities:
+                entities.append(entity)
         return entities
 
     def find_relationships(self, annotation: str) -> list:
         """Grab the relationships from the annotation."""
         relationships = []
-
-        # TODO: Add relation IDs
         relation_matches = self.relation_pattern.finditer(annotation)
+        relation_count = 1
         for match in relation_matches:
             relation = {
                 "type": match.group("type"),
+                "objectId": f"RelationMention-{relation_count}",
                 "start": int(match.group("start")),
                 "end": int(match.group("end")),
                 "relations": match.group("relations").split("; "),
                 "entities": [],
             }
+            relation_count += 1
 
             # Find nested entity mentions within each relation mention
             nested_entities = self.entity_pattern.finditer(match.group("entities"))
