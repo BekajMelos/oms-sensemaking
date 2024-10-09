@@ -99,6 +99,7 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.core.events import ObjectEventConsumer
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
@@ -165,7 +166,7 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
         "-c",
         "--cert",
         default="./etc/pki/test10.pem",
-        help="The path to the user's certificate. Defaults to ./etc/pki/test10.cert",
+        help="The path to the user's certificate. Defaults to ./etc/pki/test10.pem"
     )
     parser.add_argument(
         "-k",
@@ -179,6 +180,12 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
         default=os.getenv("USER_DN", "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"),
         help="The user's distinguished name. Defaults to value of the USER_DN env variable, if set, "
         "otherwise cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us",
+    )
+    parser.add_argument(
+        "-a",
+        "--aac-url",
+        default="http://localhost:5022",
+        help="The url for the AAC service. Defaults to http://localhost:5022",
     )
     # parser.add_argument("--pkcs12", default=os.getenv("PKCS12_FILE"),
     #                     help="The path to the user's PKCS12 file. Mutually exclusive from the --cert/--key options.")
@@ -206,14 +213,21 @@ def run_geospatial(args: Namespace) -> None:
     SETTINGS.user_dn = args.user_dn
     SETTINGS.cert_path = args.cert
     SETTINGS.key_path = args.key
+    SETTINGS.aac_url = args.aac_url
     # TODO: Handle PKCS12
 
     # lazy load controller to allow CLI args to override app config
     from oms_sensemaking.geospatial.controllers import CSVFileParser, GeospatialSensemakerController, GeoSQSListener
 
-    geo: GeospatialSensemakerController = GeospatialSensemakerController(
-        GeoSQSListener() if args.filename is None else CSVFileParser(args.filename, DEFAULT_ACM, SETTINGS.user_dn)
-    )
+    event_consumer: ObjectEventConsumer
+    controller_kwargs: dict = {}
+    if args.filename is None:
+        event_consumer = GeoSQSListener()
+    else:
+        event_consumer = CSVFileParser(args.filename, DEFAULT_ACM, SETTINGS.user_dn)
+        controller_kwargs = {"output_to_oms": False}
+
+    geo: GeospatialSensemakerController = GeospatialSensemakerController(event_consumer, **controller_kwargs)
 
     start_controller_and_wait(geo)
 
