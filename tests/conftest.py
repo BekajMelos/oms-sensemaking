@@ -3,11 +3,13 @@
 from logging.config import dictConfig
 from pathlib import Path
 from typing import Iterator
+from unittest import mock
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
@@ -38,6 +40,9 @@ if not isinstance(SETTINGS.corenlp_client, MockCoreNlpClient):
     SETTINGS.corenlp_client = MockCoreNlpClient(props={}, hostname=SETTINGS.corenlp_host)
     SETTINGS.corenlp_client.set_response(mock_response_short_text_str)
 
+# Update aac url to hit our test instance
+SETTINGS.aac_url = "http://localhost:5022"
+
 
 @pytest.fixture
 def db() -> Iterator[Session]:
@@ -63,3 +68,8 @@ def db() -> Iterator[Session]:
 
     # purge database tables
     command.downgrade(alembic_cfg, "base")
+
+
+@pytest.fixture
+def mock_oms_client():
+    return mock.MagicMock(spec=Client)

@@ -15,6 +15,7 @@ from oms_sensemaking.models.geo import Point, Track, get_track, get_track_points
 ATTR_ID_FFX: UUID = UUID("f604f7d3-b78d-49af-a2cf-75eae08cec52")
 NODE_ID_FFX: UUID = UUID("6796b293-e0b2-4ba3-a361-c59c6e07248b")
 NODE_ID: UUID = UUID("0c5c85b1-fa89-4b78-a4cd-a5cee6e90ec8")
+SOURCE_ID: UUID = uuid4()
 
 DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr ID
     [34.052235, -118.243683, 100, "Central Los Angeles, downtown area", NODE_ID, uuid4()],
@@ -44,7 +45,8 @@ def tester_db(db: Session) -> Iterator[Session]:
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
             detection_time=datetime.now(tz=timezone.utc),
-            acm=DEFAULT_ACM
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID
         )
 
         db.add(point)
@@ -133,7 +135,8 @@ def test_get_or_create_new_record(db: Session):
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
         detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
+        source_id=SOURCE_ID
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
 
     assert point
@@ -149,7 +152,8 @@ def test_point_updated_at_no_timezone(tester_db: Session):
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
         detection_time=datetime.now(tz=timezone.utc),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
+        source_id=SOURCE_ID
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
 
     tester_db.add(point)
@@ -192,7 +196,8 @@ def test_geohash_nearby_query(db: Session):
         location="POINT(-73.8456 40.7246)",
         altitude=None,
         detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
+        source_id=SOURCE_ID
     ), node_id=point1_node_id, attribute_id=point1_attr_id)
     point2_node_id: UUID = uuid4()
     point2_attr_id: UUID = uuid4()
@@ -204,7 +209,8 @@ def test_geohash_nearby_query(db: Session):
         location="POINT(-73.8456 40.7246)",
         altitude=None,
         detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
+        source_id=SOURCE_ID
     ), node_id=point2_node_id, attribute_id=point2_attr_id)
     point3, is_new = Point.get_or_create(db, defaults=dict(
         node_id=NODE_ID_FFX,
@@ -214,7 +220,8 @@ def test_geohash_nearby_query(db: Session):
         location="POINT(-77.306373 38.846224)",  # lng lat
         altitude=None,
         detection_time=datetime.now(tz=timezone.utc),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
+        source_id=SOURCE_ID
     ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
 
     nearby_points = db.execute(

@@ -15,6 +15,7 @@ from oms_sensemaking.models.geo import Point, Track
 NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
+SOURCE_ID = uuid4()
 DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr ID, detection_time,
     # Track 1
     [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00")],
@@ -43,7 +44,8 @@ def tester_db(db: Session) -> Iterator[Session]:
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
             detection_time=row[6],
-            acm=DEFAULT_ACM
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID
         )
 
         db.add(point)
@@ -59,15 +61,15 @@ def test_most_similar_tracks_success_exact_same_path(tester_db):
     # first point is wayyy east of london
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(2.289575, 41.467810).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location=shapely.Point(2.217167, 41.399953).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location=shapely.Point(2.183748, 41.356069).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -87,16 +89,16 @@ def test_most_similar_tracks_success_start(tester_db):
 
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.165222, 51.482286).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.210562, 51.466103).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # last point is wayyy west of london
     p3 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.405754, 51.489425).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -113,15 +115,15 @@ def test_most_similar_tracks_success_end(tester_db):
     # first point is wayyy east of london
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(0.226432, 51.479597).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.186849, 51.465229).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.225258, 51.476589).wkt, altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())

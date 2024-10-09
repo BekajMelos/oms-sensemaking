@@ -42,7 +42,6 @@ class NlpService:
         Runs the NLP Sensemaker Business Logic
         :param nlp_reader: The body of text to be analyzed by the NLP Service
         :param corenlp_client: Host site for CoreNLP
-        :param source_id: ID of the text's Source
         """
 
         # Use the NLP Sensemaker to process the text data for findings
@@ -57,7 +56,7 @@ class NlpService:
         # Return as dictionary to API for response
         return findings_dict
 
-    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime) -> bool:
+    def submit_findings_to_postgis(self, acm: dict, findings: dict, execution_time: datetime):
         """
         Submit findings as Finding objects to the findings table in postgis
         :param acm: the acm
@@ -70,7 +69,7 @@ class NlpService:
             finding_id=uuid4(),
             finding_type=FindingType.NLP_FINDINGS,
             finding_data=findings,
-            oms_version=SETTINGS.oms_version,
+            oms_version=SETTINGS.oms_version_env,
             published_at=utcnow_with_timezone(),
             algorithm_name=SETTINGS.nlp_algorithm_name,
             algorithm_version=SETTINGS.algorithm_version,
@@ -84,14 +83,11 @@ class NlpService:
             db.commit()
             db.refresh(finding_object)
 
-        # 3. Return success indicator
-        return True
-
     def get_all_findings_from_postgis(self):
         """Get the findings from the postgis database"""
 
         with db_session() as db:
-            findings_query = db.execute(select(Finding).where(Finding.finding_type == "NLP_FINDINGS"))
+            findings_query = db.execute(select(Finding).where(Finding.finding_type == FindingType.NLP_FINDINGS))
             result = findings_query.scalars().all()
         return result
 
