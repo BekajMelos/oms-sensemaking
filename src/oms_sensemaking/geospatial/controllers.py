@@ -2,7 +2,7 @@
 
 import csv
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Event, Timer
@@ -15,7 +15,7 @@ from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.enums import Action
+from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
 from sqlalchemy import select
@@ -91,7 +91,7 @@ class CSVFileParser(ObjectEventConsumer):
                         detection_time=datetime.fromtimestamp(float(row["now"]), tz=timezone.utc),
                         node_version=1,
                         attribute_version=1
-                    ), node_id=node_id, attribute_id=uuid4())
+                    ), node_id=node_id, attribute_id=uuid4(), source_id=uuid4())
 
                     db.add(point)
                     db.commit()
@@ -177,7 +177,7 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
+    def __init__(self, event_consumer: ObjectEventConsumer, output_to_oms: bool = True) -> None:
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer)
 
@@ -190,6 +190,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
+        self.output_to_oms = output_to_oms
 
     def start(self) -> None:
         """Start the controller."""
@@ -197,7 +198,7 @@ class GeospatialSensemakerController(SensemakerController):
             self.register("cotravel", CotravelSensemaker())
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker())
+            self.register("loiter", LoiterSensemaker(self.oms_client, self.output_to_oms))
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
@@ -244,28 +245,33 @@ class GeospatialSensemakerController(SensemakerController):
             # extract info from OMS via API calls
             oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
 
-            if oms_attr:
-                track_node: Optional[NodeNode] = self.get_track_node(oms_attr)
+            # we expect an observation node and a track node. If these don't exist, we can ignore the point.
+            if not oms_attr:
+                return True
 
-                if track_node:
-                    with db_session() as db:
-                        # we're still using the point object for detections, so don't expire it
-                        db.expire_on_commit = False
-                        point, is_new = Point.get_or_create(db, defaults=dict(
-                            acm=oms_attr.acm,
-                            location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
-                                      f'{oms_attr.geo.geoJson["coordinates"][1]})'),
-                            altitude=None,  # TODO include this
-                            detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
-                            node_version=int(oms_attr.node.version),
-                            attribute_version=int(oms_attr.version)
-                        ), node_id=track_node.id, attribute_id=oms_attr.id)
+            track_node: Optional[NodeNode] = self.get_track_node(oms_attr)
+            if not track_node:
+                return True
 
-                    if not is_new:
-                        if point:
-                            LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
-                        else:
-                            LOGGER.warning("Unable to process point.")
+            with db_session() as db:
+                # we're still using the point object for detections, so don't expire it
+                db.expire_on_commit = False
+                point, is_new = Point.get_or_create(db, defaults=dict(
+                    acm=oms_attr.acm,
+                    location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
+                                f'{oms_attr.geo.geoJson["coordinates"][1]})'),
+                    altitude=None,  # TODO include this
+                    detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
+                    node_version=int(oms_attr.node.version),
+                    attribute_version=int(oms_attr.version)
+                ), node_id=track_node.id, attribute_id=oms_attr.id, source_id=oms_attr.sourceId)
+
+            if not is_new:
+                if point:
+                    LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
+                else:
+                    LOGGER.warning("Unable to process point.")
+
         if point:
             with self.lock:
                 self.buffer[point.node_id] = now
@@ -303,8 +309,14 @@ class GeospatialSensemakerController(SensemakerController):
 
                     try:
                         with ThreadPoolExecutor() as executor:
+                            futures = []
                             for sensemaker in self._registry.values():
-                                executor.submit(sensemaker.execute, track)
+                                future = executor.submit(sensemaker.execute, track)
+                                futures.append(future)
+
+                            # make sure errors are caught
+                            for future in as_completed(futures):
+                                _ = future.result()
 
                             executor.shutdown(wait=True)
                     except Exception:
@@ -331,6 +343,12 @@ class GeospatialSensemakerController(SensemakerController):
         # Filter Attributes
         # Only process if there is a node ID
         if not oms_attr or oms_attr.nodeId is None:
+            return None
+
+        if oms_attr.attributeType != AttributeType.SPATIOTEMPORAL.value:
+            return None
+
+        if oms_attr.geo.geoJson["type"].lower() != "point":
             return None
 
         return oms_attr

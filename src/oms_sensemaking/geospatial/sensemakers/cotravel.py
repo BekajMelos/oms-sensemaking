@@ -3,7 +3,7 @@ import logging
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
 from geolib import geohash
@@ -308,3 +308,8 @@ class CotravelSensemaker(Sensemaker):
             if point.detection_time >= start_time and point.detection_time <= end_time:
                 points.append(point.coordinates)
         return points
+
+    def save_findings(self, cotravels: Any) -> None:
+        """Save findings to the database."""
+        # Will Implement in a future Ticket
+        pass

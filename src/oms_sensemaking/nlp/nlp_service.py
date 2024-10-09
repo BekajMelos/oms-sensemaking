@@ -44,7 +44,6 @@ class NlpService:
         Runs the NLP Sensemaker Business Logic
         :param nlp_reader: The body of text to be analyzed by the NLP Service
         :param corenlp_client: Host site for CoreNLP
-        :param source_id: ID of the text's Source
         """
 
         # Use the NLP Sensemaker to process the text data for findings
@@ -68,7 +67,7 @@ class NlpService:
             finding_id=uuid4(),
             finding_type=FindingType.NLP_FINDINGS,
             finding_data=findings,
-            oms_version=SETTINGS.oms_version,
+            oms_version=SETTINGS.oms_version_env,
             published_at=utcnow_with_timezone(),
             algorithm_name=SETTINGS.nlp_algorithm_name,
             algorithm_version=SETTINGS.algorithm_version,
