@@ -117,6 +117,10 @@ FROM python-base AS app
 
 ARG APP_VERSION="0.0.0"
 
+ARG APP_DATE
+
+ARG VCS_REF
+
 # default to private PyPI
 ARG PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
 
@@ -153,8 +157,14 @@ COPY . ${APP_HOME}
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
 #       for a private PyPI to be used to define a dependency on the oms_sdk
 #       project.
-RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 <<EOF
+RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
+    --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
+
+# use the provided ca certificate bundle if available
+if [ -f /root/ca-certificate.crt ]; then
+  cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
+fi
 
 # configure package manager
 apt-get update
@@ -195,6 +205,14 @@ apt-get clean -y
 apt-get autoclean -y
 apt-get autoremove -y
 EOF
+
+LABEL maintainer="The OMS Team <oms@blackcape.io>"
+LABEL org.label-schema.build-date=${APP_DATE}
+LABEL org.label-schema.name="oms-sensemaking"
+LABEL org.label-schema.description="docker image for oms-sensemaking"
+LABEL org.label-schema.vcs-url="https://gitlab.code.dodiis.mil/aio4/services/omsbridge/oms-sensemaking"
+LABEL org.label-schema.vcs-ref=${VCS_REF}
+LABEL org.label-schema.version=${APP_VERSION}
 
 USER ${USER_NAME}
 CMD ["/start.sh"]
