@@ -14,7 +14,7 @@ from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
-from oms_sensemaking.nlp.nlp_publisher import NlpPublisher
+from oms_sensemaking.nlp.nlp_publisher import NlpOmsPublisher
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
@@ -95,7 +95,7 @@ class NlpService:
         :param findings: found Entities and Relationships
         :param source_id: ID of the text's Source
         """
-        nlp_publisher = NlpPublisher(source_id)
+        nlp_publisher = NlpOmsPublisher(source_id)
         nlp_publisher.publisher_pipeline(findings)
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
