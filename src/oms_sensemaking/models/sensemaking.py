@@ -19,28 +19,17 @@ class AlgorithmMixin(MappedAsDataclass):
     """
 
     algorithm_name: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment="The name of the sensemaker that produced the finding."
+        String, nullable=False, comment="The name of the sensemaker that produced the finding."
     )
 
-    algorithm_version: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment="The version of the sensemaker."
-    )
+    algorithm_version: Mapped[str] = mapped_column(String, nullable=False, comment="The version of the sensemaker.")
 
     algorithm_configuration: Mapped[dict] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment="The configuration that the algorithm was run with."
+        JSONB, nullable=False, comment="The configuration that the algorithm was run with."
     )
 
     executed_at: Mapped[datetime] = mapped_column(
-        UtcDateTime,
-        unique=False,
-        nullable=False,
-        comment="The time the algorithm was executed."
+        UtcDateTime, unique=False, nullable=False, comment="The time the algorithm was executed."
     )
 
 
@@ -52,6 +41,7 @@ class FindingType(enum.Enum):
     GEO_LOITER = "GEO_LOITER"
     GEO_SIMILAR_TRACKS = "GEO_SIMILAR_TRACKS"
     NLP_RECOGNIZED_ENTITY = "NLP_RECOGNIZED_ENTITY"
+    NLP_FINDINGS = "NLP_FINDINGS"
 
 
 class FindingMixin(MappedAsDataclass):
@@ -62,26 +52,17 @@ class FindingMixin(MappedAsDataclass):
         unique=False,
         nullable=False,
         # default=FindingType.UNKNOWN,
-        comment='The type of finding being represented.'
+        comment="The type of finding being represented.",
     )
 
-    finding_data: Mapped[dict] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment="The results of running a sensemaker."
-    )
+    finding_data: Mapped[dict] = mapped_column(JSONB, nullable=False, comment="The results of running a sensemaker.")
 
     oms_version: Mapped[str] = mapped_column(
-        String,
-        nullable=True,
-        comment="The version of OMS that the finding was published to."
+        String, nullable=True, comment="The version of OMS that the finding was published to."
     )
 
     published_at: Mapped[datetime] = mapped_column(
-        UtcDateTime,
-        unique=False,
-        nullable=True,
-        comment="The time the finding was published."
+        UtcDateTime, unique=False, nullable=True, comment="The time the finding was published."
     )
 
 
@@ -111,5 +92,5 @@ class Finding(BaseORM, FindingMixin, AlgorithmMixin, SecurityMarkingMixin, Audit
         primary_key=True,
         nullable=False,
         default_factory=uuid.uuid4,
-        comment='A unique identifier for the finding.'
+        comment="A unique identifier for the finding.",
     )

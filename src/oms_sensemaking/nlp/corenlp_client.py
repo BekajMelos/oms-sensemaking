@@ -46,15 +46,3 @@ class CoreNlpClient:
 
         # If there is only one sentence it by default returns a dict instead of a list of dicts, so this corrects that
         return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
-
-
-class MockCoreNlpClient(CoreNlpClient):
-    def __init__(self, props: dict, host: str):
-        super().__init__(props, host)
-        self.response: list = []
-
-    def set_response(self, response: list):
-        self.response = response
-
-    def annotate_document(self, text: str) -> list:
-        return self.response

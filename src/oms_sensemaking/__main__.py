@@ -166,7 +166,7 @@ def add_omsb_cli_args(parser: ArgumentParser) -> ArgumentParser:
         "-c",
         "--cert",
         default="./etc/pki/test10.pem",
-        help="The path to the user's certificate. Defaults to ./etc/pki/test10.pem"
+        help="The path to the user's certificate. Defaults to ./etc/pki/test10.pem",
     )
     parser.add_argument(
         "-k",
@@ -239,8 +239,9 @@ def run_nlp(args: Namespace) -> None:
 
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_nlp(
-        nlp_reader,
+    nlp_service.run_service(
+        acm=DEFAULT_ACM,
+        nlp_reader=nlp_reader,
         source_id=args.source_id,
         corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
     )
