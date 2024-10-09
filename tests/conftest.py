@@ -14,9 +14,6 @@ from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 
-from .nlp.mock_corenlp_client import MockCoreNlpClient
-from .nlp.mock_responses import mock_response_short_text_str
-
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
 
@@ -35,10 +32,6 @@ alembic_cfg.set_main_option("sqlalchemy.url", SETTINGS.db_uri)
 # NLP Configuration
 if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
     SETTINGS.corenlp_host = SETTINGS.corenlp_localhost
-
-if not isinstance(SETTINGS.corenlp_client, MockCoreNlpClient):
-    SETTINGS.corenlp_client = MockCoreNlpClient(props={}, hostname=SETTINGS.corenlp_host)
-    SETTINGS.corenlp_client.set_response(mock_response_short_text_str)
 
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
