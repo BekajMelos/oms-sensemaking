@@ -69,7 +69,7 @@ class NlpService:
             finding_id=uuid4(),
             finding_type=FindingType.NLP_FINDINGS,
             finding_data=findings,
-            oms_version=SETTINGS.oms_version,
+            oms_version=SETTINGS.oms_version_env,
             published_at=utcnow_with_timezone(),
             algorithm_name=SETTINGS.nlp_algorithm_name,
             algorithm_version=SETTINGS.algorithm_version,

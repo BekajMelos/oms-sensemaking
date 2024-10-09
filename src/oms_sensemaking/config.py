@@ -99,7 +99,7 @@ class Settings(BaseSettings):
 
     gzip_minimum_size: int = 1000
 
-    oms_version: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
+    oms_version_env: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
 
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
@@ -137,10 +137,19 @@ class Settings(BaseSettings):
     operated_by_iri: str = Field(
         "http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy", description="IRI for Operated By"
     )
+    geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
+                                          description="Tag for OMSB objects from the geospatial sensemakers")
 
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
     loiter_min_time: int = Field(900, description="Minimum amount of time for a valid Loiter Event")
+    loiter_event_name: str = Field("LoiterEvent", description="Name prefix for OMSB Loiter Event Nodes")
+    loiter_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+                                   description="OMSB Loiter Event Node IRI")
+    loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
+                                         description="OMSB Loiter Event Node to Track Relationship IRI")
+    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+                                                 description="OMSB Loiter Event Node Geo Attribute IRI")
 
     # Cotravel Settings
     detect_cotravels: bool = Field(True, description="Toggle on/off Cotravel Detection")
@@ -181,6 +190,8 @@ class Settings(BaseSettings):
     )
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
+    omsb_version: str = Field("Grimlock-INC-5", description="OMSB Version")
+    aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
         "/opt/common/pki/service.public",

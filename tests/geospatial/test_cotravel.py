@@ -15,6 +15,7 @@ from oms_sensemaking.models.geo import Point, Track
 NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
+SOURCE_ID = uuid4()
 DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr ID, detection_time,
     # Track 1
     [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00")],
@@ -50,7 +51,8 @@ def tester_db(db: Session) -> Iterator[Session]:
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
             detection_time=row[6],
-            acm=DEFAULT_ACM
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID
         )
 
         db.add(point)
@@ -67,15 +69,15 @@ def test_cotravel_success(tester_db):
     # 10 minutes behind fixture track
     p1 = Point(acm=DEFAULT_ACM, location="POINT (-0.148931 51.484423)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location="POINT (-0.186849 51.465229)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location="POINT (-0.225258 51.476589)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -99,15 +101,15 @@ def test_multiple_cotravel_success(tester_db):
     # 10 minutes behind fixture track
     p1 = Point(acm=DEFAULT_ACM, location="POINT (2.289577 41.467812)", altitude=None,
                detection_time=datetime.fromisoformat("2024-08-20T16:39:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location="POINT (2.217169 41.399955)", altitude=None,
                detection_time=datetime.fromisoformat("2024-08-20T16:49:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location="POINT (2.183750 41.356071)", altitude=None,
                detection_time=datetime.fromisoformat("2024-08-20T16:59:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -140,15 +142,15 @@ def test_lag_lead_success(tester_db):
     # 35 minutes behind fixture track
     p1 = Point(acm=DEFAULT_ACM, location="POINT (-0.148931 51.484423)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:35:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location="POINT (-0.186849 51.465229)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:45:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location="POINT (-0.225258 51.476589)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T12:55:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -172,15 +174,15 @@ def test_cotravel_too_far_behind(tester_db):
     # 95 minutes behind fixture track
     p1 = Point(acm=DEFAULT_ACM, location="POINT (-0.148931 51.484423)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T13:35:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location="POINT (-0.186849 51.465229)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T13:45:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location="POINT (-0.225258 51.476589)", altitude=None,
                detection_time=datetime.fromisoformat("2024-03-20T13:55:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=uuid4())
@@ -197,20 +199,20 @@ def test_cotravel_valid_before_observation_threshold_exceeded(tester_db):
     # 10 minutes behind fixture track
     p1 = Point(acm=DEFAULT_ACM, location="POINT (15.650729 38.252533)", altitude=None,
                detection_time=datetime.fromisoformat("2024-09-10T05:10:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p2 = Point(acm=DEFAULT_ACM, location="POINT (15.610534 38.228556)", altitude=None,
                detection_time=datetime.fromisoformat("2024-09-10T05:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     p3 = Point(acm=DEFAULT_ACM, location="POINT (15.594253 38.185378)", altitude=None,
                detection_time=datetime.fromisoformat("2024-09-10T05:30:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # past observational threshold so shouldn't be added
     p4 = Point(acm=DEFAULT_ACM, location="POINT (15.578989 38.142175)", altitude=None,
                detection_time=datetime.fromisoformat("2024-09-10T05:46:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1)
+               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4], node_id=uuid4())
