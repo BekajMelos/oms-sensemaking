@@ -69,6 +69,8 @@ def test_submit_findings_to_postgis(mock_db):
         assert finding.finding_data == mock_findings
 
 
-def test_submit_findings_to_oms():
+def test_submit_findings_to_oms(mock_db):
     """Not implemented: tests submitting findings to OMS"""
-    pytest.skip("Skipping because this function is not implemented yet.")
+    service.submit_findings_to_oms(findings=mock_findings, source_id=source_id)
+    # TODO: Get the findings from OMS and verify that they are correct
+    pytest.skip("Skipping because this function is not completed yet.")
