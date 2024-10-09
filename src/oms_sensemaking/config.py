@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
-
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 
 load_dotenv()
@@ -106,8 +104,6 @@ class Settings(BaseSettings):
                               description="Host and port for CoreNLP when running local script.")
     corenlp_host: str = Field("host.docker.internal:9000",
                                    description="Host and port for CoreNLP.")
-    corenlp_client: CoreNlpClient = Field(CoreNlpClient(props={}, hostname="host.docker.internal:9000"),
-                           description="Client for interacting with CoreNLP Docker container.")
     nlp_configuration: dict = Field(
         {"NER Model": "Default CoreNLP NER", "Relationship Extraction Model": "Default CoreNLP Relation Extraction"},
         description="Configuration of the NLP NER/Relationship extraction algorithm"
