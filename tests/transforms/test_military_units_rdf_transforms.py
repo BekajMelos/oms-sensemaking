@@ -8,7 +8,7 @@ from oms_sensemaking.transforms.json2rdf import JSON2RDF
 
 def test_mil_unit_transform():
 
-    with open('transform-test-config.yml', 'r') as config_data:
+    with open('./tests/transforms/transform-test-config.yml', 'r') as config_data:
         configs = yaml.safe_load(config_data.read())
 
     with open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", 'r') as test_obj_fin:
