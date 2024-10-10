@@ -103,40 +103,24 @@ class NlpOmsPublisher:
             self.oms_client.create_attribute(attribute)
 
     ### GET ###
-    def get_nodes(self) -> NodesNodes:
+    def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Nodes from OMS"""
-        nodes = self.oms_client.nodes(
-            query=NodeQuery(
-                # TODO: Add query arguments
-            )
-        )
+        nodes = self.oms_client.nodes(query=node_info)
         return nodes
 
-    def get_relationships(self) -> RelationshipsRelationships:
+    def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
         """Get existing Relationships from OMS"""
-        relationships = self.oms_client.relationships(
-            query=RelationshipQuery(
-                # TODO: Add query arguments
-            )
-        )
+        relationships = self.oms_client.relationships(query=relationship_info)
         return relationships
 
-    def get_attributes(self) -> AttributesAttributes:
+    def get_attributes(self, attribute_info: AttributeQuery) -> AttributesAttributes:
         """Get existing Attributes from OMS"""
-        attributes = self.oms_client.attributes(
-            query=AttributeQuery(
-                # TODO: Add query arguments
-            )
-        )
+        attributes = self.oms_client.attributes(query=attribute_info)
         return attributes
 
-    def get_source(self) -> SourceSource:
+    def get_source(self, source_id: str) -> SourceSource:
         """Get existing Attributes from OMS"""
-        source = self.oms_client.source(
-            query=IdQuery(
-                # TODO: Add query arguments
-            )
-        )
+        source = self.oms_client.source(query=IdQuery(id=source_id))
         return source
 
     ### UPDATE ###
