@@ -1,9 +1,19 @@
 from oms_sdk import get_generated_graphql_client
+from oms_sdk.generated.generated_graphql_client import (
+    AttributesAttributes,
+    NodesNodes,
+    RelationshipQuery,
+    RelationshipsRelationships,
+    SourceSource,
+)
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.input_types import (
+    AttributeQuery,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
+    IdQuery,
+    NodeQuery,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -36,6 +46,7 @@ class NlpOmsPublisher:
         """
         # 1. Get the findings[ner_entities] and findings[document_entity]
         # 2. For each, format as a Node and add to list of Nodes
+        # TODO: Implement function
         return []
 
     def format_relationships(self, findings: dict) -> list[CreateRelationshipInput]:
@@ -45,6 +56,7 @@ class NlpOmsPublisher:
         """
         # 1. Get the findings[ner_relationships] and findings[document_relationships]
         # 2. For each, format as a Relationship and add to list of Relationships
+        # TODO: Implement function
         return []
 
     def format_attributes(self, findings: dict) -> list[CreateAttributeInput]:
@@ -54,6 +66,7 @@ class NlpOmsPublisher:
         """
         # TODO: decide what goes in an attribute (if anything, could be NER label, text associated with node, etc.)
         # Link each attribute to the node that it comes from
+        # TODO: Implement function
         return []
 
     def publish_nodes(self, nodes: list[CreateNodeInput]):
@@ -82,3 +95,39 @@ class NlpOmsPublisher:
         # 1. for each attribute, publish it to OMS
         for attribute in attributes:
             self.oms_client.create_attribute(attribute)
+
+    def get_nodes(self) -> NodesNodes:
+        """Get existing Nodes from OMS"""
+        nodes = self.oms_client.nodes(
+            query=NodeQuery(
+                # TODO: Add query arguments
+            )
+        )
+        return nodes
+
+    def get_relationships(self) -> RelationshipsRelationships:
+        """Get existing Relationships from OMS"""
+        relationships = self.oms_client.relationships(
+            query=RelationshipQuery(
+                # TODO: Add query arguments
+            )
+        )
+        return relationships
+
+    def get_attributes(self) -> AttributesAttributes:
+        """Get existing Attributes from OMS"""
+        attributes = self.oms_client.attributes(
+            query=AttributeQuery(
+                # TODO: Add query arguments
+            )
+        )
+        return attributes
+
+    def get_source(self) -> SourceSource:
+        """Get existing Attributes from OMS"""
+        source = self.oms_client.source(
+            query=IdQuery(
+                # TODO: Add query arguments
+            )
+        )
+        return source
