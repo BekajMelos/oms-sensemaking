@@ -1,10 +1,14 @@
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributes,
+    DeleteByIdInput,
     NodesNodes,
     RelationshipQuery,
     RelationshipsRelationships,
     SourceSource,
+    UpdateAttributeInput,
+    UpdateRelationshipInput,
+    UpdateSourceInput,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.input_types import (
@@ -14,6 +18,7 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     CreateRelationshipInput,
     IdQuery,
     NodeQuery,
+    UpdateNodeInput,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -69,6 +74,7 @@ class NlpOmsPublisher:
         # TODO: Implement function
         return []
 
+    ### PUBLISH/CREATE ###
     def publish_nodes(self, nodes: list[CreateNodeInput]):
         """
         Publish the Nodes to OMS
@@ -96,6 +102,7 @@ class NlpOmsPublisher:
         for attribute in attributes:
             self.oms_client.create_attribute(attribute)
 
+    ### GET ###
     def get_nodes(self) -> NodesNodes:
         """Get existing Nodes from OMS"""
         nodes = self.oms_client.nodes(
@@ -131,3 +138,33 @@ class NlpOmsPublisher:
             )
         )
         return source
+
+    ### UPDATE ###
+    def update_node(self, update_input: UpdateNodeInput):
+        """Update node"""
+        self.oms_client.update_node(update_input)
+
+    def update_relationship(self, update_input: UpdateRelationshipInput):
+        """Update relationship"""
+        self.oms_client.update_relationship(update_input)
+
+    def update_attribute(self, update_input: UpdateAttributeInput):
+        """Update attribute"""
+        self.oms_client.update_attribute(update_input)
+
+    def update_source(self, update_input: UpdateSourceInput):
+        """Update source"""
+        self.update_source(update_input)
+
+    ### DELETE ###
+    def delete_node(self, node_id):
+        """Update node"""
+        self.oms_client.delete_node(DeleteByIdInput(id=node_id))
+
+    def delete_relationship(self, relationship_id):
+        """Update relationship"""
+        self.oms_client.delete_relationship(DeleteByIdInput(id=relationship_id))
+
+    def delete_attribute(self, attribute_id):
+        """Update attribute"""
+        self.oms_client.delete_attribute(DeleteByIdInput(id=attribute_id))
