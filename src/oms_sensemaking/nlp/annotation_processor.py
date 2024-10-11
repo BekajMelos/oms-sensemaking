@@ -73,7 +73,8 @@ class AnnotationProcessor:
                     "corefID": int(match.group("corefID")),
                 }
 
-                entities.append(entity)
+                if match.group("type") != "O":
+                    entities.append(entity)
 
         return entities
 
@@ -103,27 +104,30 @@ class AnnotationProcessor:
 
             # Build each entity that is found in the relation
             for entity_match in nested_entities:
-                entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
-                entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
+                # Exclude typeless entities
+                if entity_match.group("type") != "O":
+                    entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
+                    entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
 
-                # Build the entity
-                entity = {
-                    "type": entity_match.group("type"),
-                    "objectId": entity_object_id,
-                    "uuid": entity_uuid,
-                    "hstart": int(entity_match.group("hstart")),
-                    "hend": int(entity_match.group("hend")),
-                    "estart": int(entity_match.group("estart")),
-                    "eend": int(entity_match.group("eend")),
-                    "headPosition": int(entity_match.group("headPosition")),
-                    "value": entity_match.group("value"),
-                    "corefID": int(entity_match.group("corefID")),
-                }
-                # Add the entity to the relation's entities
-                relation["entities"].append(entity)
+                    # Build the entity
+                    entity = {
+                        "type": entity_match.group("type"),
+                        "objectId": entity_object_id,
+                        "uuid": entity_uuid,
+                        "hstart": int(entity_match.group("hstart")),
+                        "hend": int(entity_match.group("hend")),
+                        "estart": int(entity_match.group("estart")),
+                        "eend": int(entity_match.group("eend")),
+                        "headPosition": int(entity_match.group("headPosition")),
+                        "value": entity_match.group("value"),
+                        "corefID": int(entity_match.group("corefID")),
+                    }
+                    # Add the entity to the relation's entities
+                    relation["entities"].append(entity)
 
-            # Add the relation to the list of relations
-            relationships.append(relation)
+            # Add the relation to the list of relations IF it has a type AND its entities both have types
+            if relation["type"] != "_NR" and len(relation["entities"]) == 2:
+                relationships.append(relation)
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:

@@ -88,14 +88,16 @@ def test_annotation_processor():
     all_ents = []
     for match in ent_matches:
         ent_id = match.group("objectId")
-        if ent_id not in all_ents:
+        ent_type = match.group("type")
+        if ent_id not in all_ents and ent_type != "O":
             all_ents.append(ent_id)
     assert len(all_ents) == len(ents)
 
-    # Every relation in the annotation must have been extracted
-    rel_matches = ann_processor.relation_pattern.finditer(annotation)
-    all_rels = [match for match in rel_matches]
-    assert len(all_rels) == len(rels)
+    # Every relation in the annotation and its entities must have a type
+    for rel in rels:
+        assert rel["type"] != "_NR"
+        for ent in rel["entities"]:
+            assert ent["type"] != "O"
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)
