@@ -96,7 +96,7 @@ class NlpService:
         :param source_id: ID of the text's Source
         """
         nlp_publisher = NlpOmsPublisher(source_id)
-        nlp_publisher.publisher_pipeline(findings)
+        nlp_publisher.publish(findings)
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
         # Convert findings data to dicts for serializable FastAPI response
