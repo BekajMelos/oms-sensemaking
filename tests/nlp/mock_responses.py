@@ -1,6 +1,6 @@
 """Mock responses for NLP testing using the MockCoreNlpClient"""
 
-mock_response_long_text = [
+mock_response_long_text_xml = [
     {
         "@id": "1",
         "tokens": {
@@ -401,7 +401,7 @@ mock_response_long_text = [
         },
     }
 ]
-mock_response_normal_text = [
+mock_response_normal_text_xml = [
     {
         "@id": "1",
         "tokens": {
@@ -779,7 +779,7 @@ mock_response_normal_text = [
         ],
     }
 ]
-mock_response_short_text = [
+mock_response_short_text_xml = [
     {
         "@id": "1",
         "tokens": {
@@ -1145,7 +1145,7 @@ mock_response_short_text = [
         ],
     }
 ]
-mock_response_bunched_text = [
+mock_response_bunched_text_xml = [
     {
         "@id": "1",
         "tokens": {
@@ -1247,4 +1247,36 @@ mock_response_bunched_text = [
         ],
     }
 ]
-mock_response_no_text = []
+mock_response_no_text_xml = []
+mock_response_long_text_str = """
+Extracted the following MachineReading entity mentions:
+        EntityMention [type=PEOPLE, objectId=EntityMention-1585, hstart=1, hend=2, estart=0, eend=2, headPosition=1, value="Blackburn", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1586, hstart=2, hend=3, estart=2, eend=3, headPosition=2, value="BRUSSELS", corefID=-1]
+        EntityMention [type=DATE, objectId=EntityMention-1587, hstart=3, hend=4, estart=3, eend=4, headPosition=3, value="1996-08-22", corefID=-1]
+        EntityMention [type=ORGANIZATION, objectId=EntityMention-1588, hstart=6, hend=7, estart=5, eend=7, headPosition=6, value="Commission", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1589, hstart=9, hend=10, estart=9, eend=10, headPosition=9, value="Thursday", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1590, hstart=13, hend=14, estart=13, eend=14, headPosition=13, value="German", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1591, hstart=19, hend=20, estart=19, eend=20, headPosition=19, value="British", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1592, hstart=27, hend=28, estart=27, eend=28, headPosition=27, value="disease", corefID=-1]
+
+Extracted the following MachineReading relation mentions:
+RelationMention [type=OrgBased_In, start=0, end=3, {OrgBased_In, 0.48585554167441475; _NR, 0.39204863807261303; Work_For, 0.05697886976897943; Live_In, 0.040949749969748574; Located_In, 0.02416720051424407}
+        EntityMention [type=PEOPLE, objectId=EntityMention-1585, hstart=1, hend=2, estart=0, eend=2, headPosition=1, value="Blackburn", corefID=-1]
+        EntityMention [type=O, objectId=EntityMention-1586, hstart=2, hend=3, estart=2, eend=3, headPosition=2, value="BRUSSELS", corefID=-1]
+]
+RelationMention [type=OrgBased_In, start=0, end=4, {OrgBased_In, 0.4231122535384349; _NR, 0.32532560991786497; Work_For, 0.12233352169646122; Live_In, 0.09619982737058766; Located_In, 0.03302878747665124}
+        EntityMention [type=PEOPLE, objectId=EntityMention-1585, hstart=1, hend=2, estart=0, eend=2, headPosition=1, value="Blackburn", corefID=-1]
+        EntityMention [type=DATE, objectId=EntityMention-1587, hstart=3, hend=4, estart=3, eend=4, headPosition=3, value="1996-08-22", corefID=-1]
+]
+RelationMention [type=OrgBased_In, start=0, end=4, {OrgBased_In, 0.42637356627661305; _NR, 0.3227652272329027; Work_For, 0.12194992490301874; Live_In, 0.09585574295997172; Located_In, 0.033055538627494045}
+        EntityMention [type=O, objectId=EntityMention-1587, hstart=3, hend=4, estart=3, eend=4, headPosition=3, value="1996-08-22", corefID=-1]
+        EntityMention [type=PEOPLE, objectId=EntityMention-1585, hstart=1, hend=2, estart=0, eend=2, headPosition=1, value="Blackburn", corefID=-1]
+]
+    """
+mock_response_short_text_str = """
+Extracted the following MachineReading entity mentions:
+
+Extracted the following MachineReading relation mentions:
+
+"""
+mock_response_no_text_str = ""
