@@ -35,7 +35,14 @@ format:  ## Run the formatter
 	ruff format
 
 build-docker:  ## Build docker image
-	docker build --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) --no-cache -t oms_sensemaking:latest --secret id=mynetrc,src=$${HOME}/.netrc .
+	docker build \
+          --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) \
+          --build-arg BUILD_DATE=$(shell date +%Y%m%d%H%M) \
+          --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
+          --no-cache \
+          -t oms_sensemaking:latest \
+          --secret id=mynetrc,src=$${HOME}/.netrc \
+          .
 
 build-docs:  ## Build project documentation static site.
 	mkdocs build
