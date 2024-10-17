@@ -8,6 +8,7 @@ data/*.json
 dist
 htmlcov
 site
+test_outputs
 venv
 .venv
 .coverage
