@@ -60,7 +60,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-sensemaking
+          images: ${{ env.DOCKER_REGISTRY }}/aio4/dev/services/oms/oms-sensemaking
 
       # Login against a Docker registry except on PR
       - name: Log into registry ${{ env.DOCKER_REGISTRY }}
