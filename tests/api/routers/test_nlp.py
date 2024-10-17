@@ -3,7 +3,7 @@
 from fastapi.testclient import TestClient
 from httpx import Response
 from oms_sdk import DEFAULT_ACM
-from requests import Session
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
 from oms_sensemaking.config import SETTINGS
