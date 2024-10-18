@@ -6,12 +6,12 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import shapely
+from geoalchemy2.shape import to_shape
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     CreateNodeInput,
-    CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
@@ -114,15 +114,12 @@ def test_loiter_success(mock_oms_client, db):
     loiter_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
         return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
-    mock_oms_client.create_relationship = MagicMock(
-        return_value=CreateRelationshipCreateRelationship.model_construct(id=uuid4(),
-                                                                          acm=DEFAULT_ACM,
-                                                                          startNodeId=loiter_node_id))
-    mock_oms_client.create_attribute = MagicMock()
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
     loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
 
     assert len(loiters) == 1
-    loiter = loiters[0]
+    loiter: Loiter = loiters[0]
 
     assert loiter.geohash_low == "gcpug"
     assert len(loiter.processed_points) == 5
@@ -173,7 +170,7 @@ def test_loiter_success(mock_oms_client, db):
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter.to_geojson,
+                geoJson=loiter.to_geojson(),
                 startTime=p2.detection_time,
                 endTime=p6.detection_time
                 ),
@@ -194,6 +191,7 @@ def test_loiter_success(mock_oms_client, db):
     ).scalars().all()
 
     assert len(findings) == 1
+    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
 def test_loiter_invalid_not_long_enough(mock_oms_client):
@@ -312,11 +310,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     loiter_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
         return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
-    mock_oms_client.create_relationship = MagicMock(
-        return_value=CreateRelationshipCreateRelationship.model_construct(id=uuid4(),
-                                                                          acm=DEFAULT_ACM,
-                                                                          startNodeId=loiter_node_id))
-    mock_oms_client.create_attribute = MagicMock()
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
 
     loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
     assert len(loiters) == 1
@@ -369,7 +364,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter.to_geojson,
+                geoJson=loiter.to_geojson(),
                 startTime=p2.detection_time,
                 endTime=p6.detection_time
                 ),
@@ -390,6 +385,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     ).scalars().all()
 
     assert len(findings) == 1
+    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
 def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
@@ -452,10 +448,8 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
         CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
         CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm)
     ]
-    mock_oms_client.create_relationship.side_effect = [
-        CreateRelationshipCreateRelationship.model_construct(id=uuid4(), acm=p1.acm, startNodeId=loiter_node_id1),
-        CreateRelationshipCreateRelationship.model_construct(id=uuid4(), acm=p1.acm, startNodeId=loiter_node_id2)
-    ]
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
 
     loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
     assert len(loiters) == 2
@@ -539,7 +533,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter1.to_geojson,
+                geoJson=loiter1.to_geojson(),
                 startTime=p2.detection_time,
                 endTime=p6.detection_time
                 ),
@@ -560,7 +554,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter2.to_geojson,
+                geoJson=loiter2.to_geojson(),
                 startTime=p8.detection_time,
                 endTime=p11.detection_time
                 ),
@@ -581,6 +575,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
     ).scalars().all()
 
     assert len(findings) == 2
+    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
 def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
@@ -643,11 +638,8 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
         CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
         CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm)
     ]
-    mock_oms_client.create_relationship.side_effect = [
-        CreateRelationshipCreateRelationship.model_construct(id=uuid4(), acm=p1.acm, startNodeId=loiter_node_id1),
-        CreateRelationshipCreateRelationship.model_construct(id=uuid4(), acm=p1.acm, startNodeId=loiter_node_id2)
-    ]
-    mock_oms_client.create_attribute = MagicMock()
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
 
     loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
     assert len(loiters) == 2
@@ -731,7 +723,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter1.to_geojson,
+                geoJson=loiter1.to_geojson(),
                 startTime=p2.detection_time,
                 endTime=p6.detection_time
                 ),
@@ -751,7 +743,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
             tags=tags,
             sourceId=p1.source_id,
             geo=GeoInput(
-                geoJson=loiter2.to_geojson,
+                geoJson=loiter2.to_geojson(),
                 startTime=p8.detection_time,
                 endTime=p11.detection_time
                 ),
@@ -772,3 +764,4 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
     ).scalars().all()
 
     assert len(findings) == 2
+    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
