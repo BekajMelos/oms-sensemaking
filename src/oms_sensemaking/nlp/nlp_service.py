@@ -31,7 +31,7 @@ class NlpService:
         execution_time = utcnow_with_timezone()
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
-        # Submit the findings to OMS (future work)
+        # Submit the findings to OMS
         self.submit_findings_to_oms(findings=findings, source_id=source_id)
 
         # Submit findings to postgis

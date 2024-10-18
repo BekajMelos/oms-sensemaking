@@ -1,6 +1,11 @@
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributes,
+    CreateAttributeCreateAttribute,
+    CreateNodeCreateNode,
+    CreateProviderCreateProvider,
+    CreateRelationshipCreateRelationship,
+    CreateSourceCreateSource,
     DeleteByIdInput,
     NodesNodes,
     RelationshipQuery,
@@ -15,7 +20,9 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     AttributeQuery,
     CreateAttributeInput,
     CreateNodeInput,
+    CreateProviderInput,
     CreateRelationshipInput,
+    CreateSourceInput,
     IdQuery,
     NodeQuery,
     UpdateNodeInput,
@@ -32,33 +39,70 @@ class OmsCrudTool:
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
 
+    # TODO: These go unused, remove them?
     ### PUBLISH/CREATE ###
-    def publish_nodes(self, nodes: list[CreateNodeInput]):
+    # def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
+    #     """
+    #     Publish the Nodes to OMS
+    #     :param nodes: a list of CreateNodeInput objects
+    #     """
+    #     # 1. for each node, publish it to OMS
+    #     return [self.oms_client.create_node(node) for node in nodes]
+    #
+    # def publish_relationships(
+    #         self, relationships: list[CreateRelationshipInput]) -> list[CreateRelationshipCreateRelationship]:
+    #     """
+    #     Publish the relationships to OMS
+    #     :param relationships: a list of CreateRelationshipInput objects
+    #     """
+    #     # 1. for each relationship, publish it to OMS
+    #     return [self.oms_client.create_relationship(relationship) for relationship in relationships]
+    #
+    # def publish_attributes(self, attributes: list[CreateAttributeInput]) -> list[CreateAttributeCreateAttribute]:
+    #     """
+    #     Publish the attributes to oms
+    #     :param attributes: a list of CreateAttributeInput objects
+    #     """
+    #     # 1. for each attribute, publish it to OMS
+    #     return [self.oms_client.create_attribute(attribute) for attribute in attributes]
+
+    def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
         Publish the Nodes to OMS
-        :param nodes: a list of CreateNodeInput objects
+        :param node_input: a  CreateNodeInput object
         """
         # 1. for each node, publish it to OMS
-        for node in nodes:
-            self.oms_client.create_node(node)
+        return self.oms_client.create_node(node_input)
 
-    def publish_relationships(self, relationships: list[CreateRelationshipInput]):
+    def create_relationship(self, relationship_input: CreateRelationshipInput) -> CreateRelationshipCreateRelationship:
         """
-        Publish the relationships to OMS
-        :param relationships: a list of CreateRelationshipInput objects
+        Publish the relationship to OMS
+        :param relationship_input: a CreateRelationshipInput object
         """
         # 1. for each relationship, publish it to OMS
-        for relationship in relationships:
-            self.oms_client.create_relationship(relationship)
+        return self.oms_client.create_relationship(relationship_input)
 
-    def publish_attributes(self, attributes: list[CreateAttributeInput]):
+    def create_attribute(self, attribute_input: CreateAttributeInput) -> CreateAttributeCreateAttribute:
         """
-        Publish the attributes to oms
-        :param attributes: a list of CreateAttributeInput objects
+        Publish the attribute to oms
+        :param attribute_input: a CreateAttributeInput object
         """
         # 1. for each attribute, publish it to OMS
-        for attribute in attributes:
-            self.oms_client.create_attribute(attribute)
+        return self.oms_client.create_attribute(attribute_input)
+
+    def create_source(self, source_input: CreateSourceInput) -> CreateSourceCreateSource:
+        """
+        Create a source in OMS
+        :param source_input: a CreateSourceInput object
+        """
+        return self.oms_client.create_source(source_input)
+
+    def create_provider(self, provider_input: CreateProviderInput) -> CreateProviderCreateProvider:
+        """
+        Create a provider in OMS
+        :param provider_input: a CreateProviderInput object
+        """
+        return self.oms_client.create_provider(provider_input)
 
     ### GET ###
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:

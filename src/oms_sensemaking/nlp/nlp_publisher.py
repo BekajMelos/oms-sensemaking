@@ -1,5 +1,11 @@
 from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Client, Confidence
+from oms_sdk.generated.generated_graphql_client import (
+    AttributeType,
+    Confidence,
+    CreateAttributeCreateAttribute,
+    CreateNodeCreateNode,
+    CreateRelationshipCreateRelationship,
+)
 from oms_sdk.generated.generated_graphql_client.input_types import (
     CreateAttributeInput,
     CreateNodeInput,
@@ -7,119 +13,150 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 )
 
 from oms_sensemaking.api.schemas.oms import ObjectTier
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.sensemakers import OmsPublisher
 
 
-class NlpOmsPublisher(OmsPublisher):
+class NlpOmsPublisher:
     """Formats and publishes the NLP Findings"""
 
-    def __init__(self, source_id: str, oms_client: Client):
-        super().__init__(oms_client)
+    def __init__(self, source_id: str):
         self.source_id = source_id
         self.oms_crud_tool = OmsCrudTool()
+        self.node_id_mapping = {}
+        self.node_iris = {
+            "PEOPLE": SETTINGS.nlp_person_iri,
+            "ORGANIZATION": SETTINGS.nlp_organization_iri,
+            "LOCATION": SETTINGS.nlp_location_iri,
+            "DOCUMENT": SETTINGS.nlp_document_iri,
+            "DATE": SETTINGS.nlp_date_iri,
+        }
+        self.relationship_iris = {
+            "Work_For": SETTINGS.nlp_work_for_iri,
+            "Live_In": SETTINGS.nlp_live_in_iri,
+            "OrgBased_In": SETTINGS.nlp_org_based_in_iri,
+            "Located_In": SETTINGS.nlp_located_in_iri,
+            "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
+        }
 
     def publish(self, findings: dict):
         """
         Run the publisher on the findings
         :param findings: The result of the NLP analysis on the body of text
         """
-        attributes = self.format_attributes(findings)
-        nodes = self.format_nodes(findings)
-        relationships = self.format_relationships(findings)
+        self.format_and_publish_nodes(findings)
+        self.format_and_publish_relationships(findings)
 
-        self.oms_crud_tool.publish_attributes(attributes)
-        self.oms_crud_tool.publish_nodes(nodes)
-        self.oms_crud_tool.publish_relationships(relationships)
-
-    def format_nodes(self, findings: dict) -> list[CreateNodeInput]:
+    def format_and_publish_nodes(self, findings: dict) -> list[CreateNodeCreateNode]:
         """
         Format the Node objects from the findings
         :param findings: The result of the NLP analysis on the body of text
         """
         # 1. Get the findings[ner_entities] and findings[document_entity]
-        # 2. For each, format as a Node and add to list of Nodes
-        create_nodes_input = []
+        # 2. For each, format as a Node and publish
+        published_nodes = []
 
         for entity in findings["ner_entities"]:
-            # Format the CreateNodeInput object
-            node_input = CreateNodeInput(
-                # ID????
-                acm=DEFAULT_ACM,
-                name=entity["value"],
-                tier=ObjectTier.DERIVATIVE,
-                classIri=entity["type"],
+            # Format and publish node
+            published_node = self.oms_crud_tool.create_node(
+                CreateNodeInput(
+                    acm=DEFAULT_ACM,
+                    name=entity["value"],
+                    tier=ObjectTier.DERIVATIVE,
+                    tags=[SETTINGS.node_tag],
+                    classIri=self.node_iris[entity["type"]],
+                    isNso=True,
+                )
             )
 
-            # Append the CreateNodeInput object to the list
-            create_nodes_input.append(node_input)
+            # Add node to list of published nodes
+            published_nodes.append(published_node)
 
-            # TODO: Get and format attribute
-            # attribute_input = []
+            # Update the entity ID to node ID mapping (this is used for creating relationships)
+            self.node_id_mapping[entity["uuid"]] = published_node.id
 
-        document_entity = findings["document_entity"]  # There's only one
-        # Format the CreateNodeInput and add it to the list for the document entith
-        document_node_input = CreateNodeInput(
-            # ID????
-            acm=DEFAULT_ACM,
-            name=document_entity.text,
-            tier=ObjectTier.DERIVATIVE,
-            classIri=document_entity.entity_type,
+            # Publish attribute containing entity's text
+            self.format_and_publish_attribute(entity, published_node)
+
+        document_entity = findings["document_entity"]
+
+        # Format and publish the document node
+        published_document_node = self.oms_crud_tool.create_node(
+            CreateNodeInput(
+                acm=DEFAULT_ACM,
+                name="Document Entity",
+                tier=ObjectTier.DERIVATIVE,
+                tags=[SETTINGS.node_tag],
+                classIri=self.node_iris["DOCUMENT"],
+                isNso=True,
+            )
         )
-        create_nodes_input.append(document_node_input)
 
-        # TODO: Get and format attribute for document node
-        # attribute_input = []
+        # Add published document node to list of published document nodes
+        published_nodes.append(published_document_node)
 
-        return create_nodes_input
+        # Map document entity ID to the published document Node ID
+        self.node_id_mapping[document_entity["document_id"]] = published_document_node.id
 
-    def format_relationships(self, findings: dict) -> list[CreateRelationshipInput]:
+        # Publish attribute containing document's text
+        self.format_and_publish_attribute(document_entity, published_document_node)
+
+        return published_nodes
+
+    def format_and_publish_relationships(self, findings: dict) -> list[CreateRelationshipCreateRelationship]:
         """
-        Format the Relationship objects from the findings
+        Format and publish the Relationship objects from the findings
         :param findings: The result of the NLP analysis on the body of text
         """
         # 1. Get the findings[ner_relationships] and findings[document_relationships]
-        # 2. For each, format as a Relationship and add to list of Relationships
-        create_relationships_input = []
+        # 2. For each, format as a Relationship and publish
+        published_relationships = []
         for relationship in findings["ner_relationships"]:
-            relationship_input = CreateRelationshipInput(
-                name=relationship["type"],
-                startNodeId=relationship["entities"][0]["uuid"],
-                endNodeId=relationship["entities"][1]["uuid"],
-                sourceId=self.source_id,
-                confidence=Confidence.UNKNOWN,
-                acm=DEFAULT_ACM,
-                objectPropertyIri=relationship["type"],
+            # Format and publish the relationship
+            self.oms_crud_tool.create_relationship(
+                CreateRelationshipInput(
+                    name=self.relationship_iris[relationship["type"]],
+                    startNodeId=self.node_id_mapping[relationship["entities"][0]["uuid"]],
+                    endNodeId=self.node_id_mapping[relationship["entities"][1]["uuid"]],
+                    sourceId=self.source_id,
+                    confidence=Confidence.UNKNOWN,
+                    acm=DEFAULT_ACM,
+                    objectPropertyIri=self.relationship_iris[relationship["type"]],
+                )
             )
-            create_relationships_input.append(relationship_input)
-
-            # TODO: Get and format attribute for relationship
-            # attribute_input = []
 
         for document_relationship in findings["document_relationships"]:
-            document_relationship_input = CreateRelationshipInput(
-                name=document_relationship["type"],
-                startNodeId=document_relationship["document_uuid"],
-                endNodeId=document_relationship["entity_uuid"],
-                sourceId=self.source_id,
-                confidence=Confidence.UNKNOWN,
-                acm=DEFAULT_ACM,
-                objectPropertyIri=document_relationship["type"],
+            # Format and publish the document relationship
+            self.oms_crud_tool.create_relationship(
+                CreateRelationshipInput(
+                    name=self.relationship_iris[document_relationship["type"]],
+                    startNodeId=self.node_id_mapping[document_relationship["document_uuid"]],
+                    endNodeId=self.node_id_mapping[document_relationship["entity_uuid"]],
+                    sourceId=self.source_id,
+                    confidence=Confidence.UNKNOWN,
+                    acm=DEFAULT_ACM,
+                    objectPropertyIri=self.relationship_iris[document_relationship["type"]],
+                )
             )
-            create_relationships_input.append(document_relationship_input)
 
-            # TODO: Get and format attribute for document relationship
-            # attribute_input = []
+        return published_relationships
 
-        return create_relationships_input
-
-    def format_attributes(self, findings: dict) -> list[CreateAttributeInput]:
+    def format_and_publish_attribute(
+        self, entity: dict, published_node: CreateNodeCreateNode
+    ) -> CreateAttributeCreateAttribute:
         """
-        Format attribute for a Node or Relationship
-        :param findings: The result of the NLP analysis on the body of text
+        Format and publish the published Nodes' attributes
+        :param entity: Entity to extract attribute from
+        :param published_node: Node to relate to attribute
         """
-        # TODO: decide what goes in an attribute (if anything, could be NER label, text associated with node, etc.)
-        # Link each attribute to the node that it comes from
-        # TODO: Implement function
-        # This may be integrated with the previous two functions
-        return []
+        return self.oms_crud_tool.create_attribute(
+            CreateAttributeInput(
+                attributeIri=SETTINGS.nlp_attribute_iri,
+                attributeValue=entity["value"],
+                attributeType=AttributeType.STRING,
+                confidence=Confidence.UNKNOWN,
+                sourceId=self.source_id,
+                nodeId=published_node.id,
+                acm=DEFAULT_ACM,
+            )
+        )
