@@ -30,6 +30,7 @@ jobs:
           
           EOF
           chmod 600 /root/.netrc
+          echo "192.168.232.1:53 tex.gerbil-cloud.ts.net" >> /etc/hosts
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -57,7 +58,7 @@ jobs:
         run: |
           echo "APP_VERSION=$(source .venv/bin/activate && python -m setuptools_scm)" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-          echo $GITHUB_ENV
+          cat $GITHUB_ENV
 
       - name: Docker meta
         id: meta
