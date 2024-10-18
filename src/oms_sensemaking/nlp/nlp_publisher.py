@@ -77,7 +77,7 @@ class NlpOmsPublisher:
             self.node_id_mapping[entity["uuid"]] = published_node.id
 
             # Publish attribute containing entity's text
-            self.format_and_publish_attribute(entity, published_node.id)
+            self.format_and_publish_attribute(entity["value"], entity["uuid"], published_node.id)
 
         document_entity = findings["document_entity"]
 
@@ -101,7 +101,9 @@ class NlpOmsPublisher:
             self.node_id_mapping[document_entity["document_id"]] = published_document_node.id
 
             # Publish attribute containing document's text
-            self.format_and_publish_attribute(document_entity, published_document_node.id)
+            self.format_and_publish_attribute(
+                document_entity["value"], document_entity["document_id"], published_document_node.id
+            )
 
         return published_nodes
 
@@ -160,16 +162,17 @@ class NlpOmsPublisher:
         return published_relationships
 
     def format_and_publish_attribute(
-        self, entity: dict, published_node_id: str
+        self, entity_value: str, entity_id: str, published_node_id: str
     ) -> CreateAttributeCreateAttribute | None:
         """
         Format and publish the published Nodes' attributes
-        :param entity: Entity to create attribute from
+        :param entity_value: Entity text value to create attribute from
+        :param entity_id: The entity's unique identifier
         :param published_node_id: Node to relate to attribute
         """
         # First check if the entity has been created as a node
-        if entity["uuid"] in self.node_id_mapping:
-            entity_value = entity["value"]
+        if entity_id in self.node_id_mapping:
+            entity_value = entity_value
             # Truncate the text if it is too long for an attribute value
             if len(entity_value) > 2048:  # max attribute value length is 2048
                 entity_value = entity_value[:2045] + "..."

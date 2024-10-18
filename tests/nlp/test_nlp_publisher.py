@@ -52,13 +52,16 @@ def test_format_and_publish_relationships(nlp_publisher):
 
 def test_format_and_publish_attribute(nlp_publisher):
     # Test case where nodes have not been created beforehand
-    nlp_publisher.format_and_publish_nodes(empty_findings)
-    published_attributes = []
-    for entity in large_findings["ner_entities"]:
-        published_attribute = nlp_publisher.format_and_publish_attribute(entity, "test_node_id")
-        if published_attribute:
-            published_attributes.append(published_attribute)
-    assert not published_attributes
+    assert not nlp_publisher.format_and_publish_attribute(
+        entity_value=large_findings["ner_entities"][0]["value"],
+        entity_id=large_findings["ner_entities"][0]["uuid"],
+        published_node_id="test_node_id",
+    )
 
     # Test case when nodes have been created
-    # TODO: Finish this test
+    published_nodes = nlp_publisher.format_and_publish_nodes(large_findings)
+    assert nlp_publisher.format_and_publish_attribute(
+        entity_value=large_findings["ner_entities"][0]["value"],
+        entity_id=large_findings["ner_entities"][0]["uuid"],
+        published_node_id=published_nodes[0].id,
+    )

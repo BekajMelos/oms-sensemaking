@@ -93,8 +93,7 @@ def mock_source() -> CreateSourceCreateSource:
     oms_crud_tool = OmsCrudTool()
 
     # Create test originator if it doesn't already exist
-    originator = oms_crud_tool.get_originator_by_name(test_originator_name).data[0]
-    if not originator:
+    if len(oms_crud_tool.get_originator_by_name(test_originator_name).data) == 0:
         originator = oms_crud_tool.create_originator(
             CreateOriginatorInput(
                 name=test_originator_name,
@@ -103,19 +102,21 @@ def mock_source() -> CreateSourceCreateSource:
                 tags=["test_nlp_originator"],
             )
         )
+    else:
+        originator = oms_crud_tool.get_originator_by_name(test_originator_name).data[0]
 
     # Create test provider if it doesn't already exist
-    provider = oms_crud_tool.get_provider_by_name(test_provider_name).data[0]
-    if not provider:
+    if len(oms_crud_tool.get_provider_by_name(test_provider_name).data) == 0:
         provider = oms_crud_tool.create_provider(
             CreateProviderInput(
                 name=test_provider_name, description="A test provider", originatorId=originator.id, acm=DEFAULT_ACM
             )
         )
+    else:
+        provider = oms_crud_tool.get_provider_by_name(test_provider_name).data[0]
 
     # Create test source if it doesn't already exist
-    source = oms_crud_tool.get_source_by_name(test_source_name).data[0]
-    if not source:
+    if len(oms_crud_tool.get_source_by_name(test_source_name).data) == 0:
         source = oms_crud_tool.create_source(
             CreateSourceInput(
                 name="nlp_test_source",
@@ -127,5 +128,7 @@ def mock_source() -> CreateSourceCreateSource:
                 dataAcm=DEFAULT_ACM,
             )
         )
+    else:
+        source = oms_crud_tool.get_source_by_name(test_source_name).data[0]
 
     yield source
