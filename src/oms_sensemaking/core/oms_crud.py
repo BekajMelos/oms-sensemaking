@@ -48,6 +48,33 @@ class OmsCrudTool:
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
 
+    def publish_nodes(self, nodes: list[CreateNodeInput]):
+        """
+        Publish the Nodes to OMS
+        :param nodes: a list of CreateNodeInput objects
+        """
+        # 1. for each node, publish it to OMS
+        for node in nodes:
+            self.oms_client.create_node(node)
+
+    def publish_relationships(self, relationships: list[CreateRelationshipInput]):
+        """
+        Publish the relationships to OMS
+        :param relationships: a list of CreateRelationshipInput objects
+        """
+        # 1. for each relationship, publish it to OMS
+        for relationship in relationships:
+            self.oms_client.create_relationship(relationship)
+
+    def publish_attributes(self, attributes: list[CreateAttributeInput]):
+        """
+        Publish the attributes to oms
+        :param attributes: a list of CreateAttributeInput objects
+        """
+        # 1. for each attribute, publish it to OMS
+        for attribute in attributes:
+            self.oms_client.create_attribute(attribute)
+
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
         Publish the Nodes to OMS
