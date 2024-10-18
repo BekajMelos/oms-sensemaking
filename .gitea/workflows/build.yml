@@ -30,8 +30,6 @@ jobs:
           
           EOF
           chmod 600 /root/.netrc
-          echo "100.64.70.2 tex.gerbil-cloud.ts.net" >> /etc/hosts
-          echo "name server 1.1.1.1" >> /etc/resolv.conf
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,12 +45,6 @@ jobs:
           source .venv/bin/activate
           pip install --upgrade pip wheel
           pip install -e ".[build]"
-
-#      - name: Setup Docker buildx
-#        uses: docker/setup-buildx-action@v3
-#        driver-opts: |
-#          driver-opts: |
-#            network=host
 
       - name: Retrieve build info
         id: version
@@ -83,8 +75,6 @@ jobs:
           context: .
           add-hosts: |
             tex.gerbil-cloud.ts.net:100.64.70.2
-#          allow: |
-#            network.host
           build-args: |
             APP_VERSION=${{ env.APP_VERSION }}
             BUILD_DATE=${{ env.BUILD_DATE }}
