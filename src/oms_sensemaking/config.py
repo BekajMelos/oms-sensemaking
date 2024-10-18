@@ -115,7 +115,7 @@ class Settings(BaseSettings):
     )
     algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
     nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
-    node_tag: str = Field("SENSEMAKING_NLP", description="Tag describing origin of node")
+    nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
 
     # NLP Node IRIs (change once custom model is trained)
     nlp_person_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Person",

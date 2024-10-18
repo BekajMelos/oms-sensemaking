@@ -50,6 +50,8 @@ if not SETTINGS.create_source_if_none:
 if not SETTINGS.create_provider_if_none:
     SETTINGS.create_provider_if_none = True
 
+SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
+
 
 @pytest.fixture
 def db() -> Iterator[Session]:
