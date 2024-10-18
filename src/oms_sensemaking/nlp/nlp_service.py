@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
@@ -25,6 +26,9 @@ load_dotenv()
 
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
+
+    def __init__(self):
+        self.oms_crud_tool = OmsCrudTool()
 
     def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
@@ -104,11 +108,10 @@ class NlpService:
         findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
         return findings_dict
 
-    def validate_source(self, source_id: str):
+    def validate_source(self, source_id: str) -> bool:
         """Validate the source referenced by the source_id"""
-        # TODO: Use this to validate the source
-        # 1. Query OMS_SDK for a source with the given source_id
-        pass
+        # Query OMS_SDK for a source with the given source_id
+        return bool(self.oms_crud_tool.get_source(source_id))
 
 
 # TODO: Delete main once the API is up and running. Do the following in the API call

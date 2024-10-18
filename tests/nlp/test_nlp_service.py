@@ -38,9 +38,9 @@ def mock_db(db: Session) -> Iterator[Session]:
     yield db
 
 
-def test_run_service(mock_db):
+def test_run_service(mock_db, mock_source):
     result = service.run_service(
-        acm=DEFAULT_ACM, nlp_reader=reader, source_id=source_id, corenlp_client=mock_corenlp_client
+        acm=DEFAULT_ACM, nlp_reader=reader, source_id=mock_source.id, corenlp_client=mock_corenlp_client
     )
     assert result
 
@@ -69,8 +69,8 @@ def test_submit_findings_to_postgis(mock_db):
         assert finding.finding_data == mock_findings
 
 
-def test_submit_findings_to_oms(mock_db):
+def test_submit_findings_to_oms(mock_db, mock_source):
     """Not implemented: tests submitting findings to OMS"""
-    service.submit_findings_to_oms(findings=mock_findings, source_id=source_id)
+    service.submit_findings_to_oms(findings=mock_findings, source_id=mock_source.id)
     # TODO: Get the findings from OMS and verify that they are correct
     pytest.skip("Skipping because this function is not completed yet.")

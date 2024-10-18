@@ -3,14 +3,21 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributes,
     CreateAttributeCreateAttribute,
     CreateNodeCreateNode,
+    CreateOriginatorCreateOriginator,
+    CreateOriginatorInput,
     CreateProviderCreateProvider,
     CreateRelationshipCreateRelationship,
     CreateSourceCreateSource,
     DeleteByIdInput,
     NodesNodes,
+    OriginatorQuery,
+    OriginatorsOriginators,
+    ProvidersProviders,
     RelationshipQuery,
     RelationshipsRelationships,
+    SourceQuery,
     SourceSource,
+    SourcesSources,
     UpdateAttributeInput,
     UpdateRelationshipInput,
     UpdateSourceInput,
@@ -25,6 +32,8 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     CreateSourceInput,
     IdQuery,
     NodeQuery,
+    ProviderQuery,
+    StringQuery,
     UpdateNodeInput,
 )
 
@@ -38,33 +47,6 @@ class OmsCrudTool:
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
-
-    # TODO: These go unused, remove them?
-    ### PUBLISH/CREATE ###
-    # def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
-    #     """
-    #     Publish the Nodes to OMS
-    #     :param nodes: a list of CreateNodeInput objects
-    #     """
-    #     # 1. for each node, publish it to OMS
-    #     return [self.oms_client.create_node(node) for node in nodes]
-    #
-    # def publish_relationships(
-    #         self, relationships: list[CreateRelationshipInput]) -> list[CreateRelationshipCreateRelationship]:
-    #     """
-    #     Publish the relationships to OMS
-    #     :param relationships: a list of CreateRelationshipInput objects
-    #     """
-    #     # 1. for each relationship, publish it to OMS
-    #     return [self.oms_client.create_relationship(relationship) for relationship in relationships]
-    #
-    # def publish_attributes(self, attributes: list[CreateAttributeInput]) -> list[CreateAttributeCreateAttribute]:
-    #     """
-    #     Publish the attributes to oms
-    #     :param attributes: a list of CreateAttributeInput objects
-    #     """
-    #     # 1. for each attribute, publish it to OMS
-    #     return [self.oms_client.create_attribute(attribute) for attribute in attributes]
 
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
@@ -104,6 +86,13 @@ class OmsCrudTool:
         """
         return self.oms_client.create_provider(provider_input)
 
+    def create_originator(self, originator_input: CreateOriginatorInput) -> CreateOriginatorCreateOriginator:
+        """
+        Create an Originator in OMS
+        :param originator_input: a CreateOriginatorInput object
+        """
+        return self.oms_client.create_originator(originator_input)
+
     ### GET ###
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Nodes from OMS"""
@@ -125,6 +114,17 @@ class OmsCrudTool:
         source = self.oms_client.source(query=IdQuery(id=source_id))
         return source
 
+    def get_source_by_name(self, source_name: str) -> SourcesSources:
+        return self.oms_client.sources(query=SourceQuery(name=StringQuery(equals=source_name)))
+
+    def get_provider_by_name(self, provider_name: str) -> ProvidersProviders:
+        """Get existing Attributes from OMS"""
+        return self.oms_client.providers(query=ProviderQuery(name=StringQuery(equals=provider_name)))
+
+    def get_originator_by_name(self, originator_name: str) -> OriginatorsOriginators:
+        """Get existing Attributes from OMS"""
+        return self.oms_client.originators(query=OriginatorQuery(name=StringQuery(equals=originator_name)))
+
     ### UPDATE ###
     def update_node(self, update_input: UpdateNodeInput):
         """Update node"""
@@ -143,14 +143,23 @@ class OmsCrudTool:
         self.update_source(update_input)
 
     ### DELETE ###
-    def delete_node(self, node_id):
+    def delete_node(self, node_id: str):
         """Update node"""
         self.oms_client.delete_node(DeleteByIdInput(id=node_id))
 
-    def delete_relationship(self, relationship_id):
+    def delete_relationship(self, relationship_id: str):
         """Update relationship"""
         self.oms_client.delete_relationship(DeleteByIdInput(id=relationship_id))
 
-    def delete_attribute(self, attribute_id):
+    def delete_attribute(self, attribute_id: str):
         """Update attribute"""
         self.oms_client.delete_attribute(DeleteByIdInput(id=attribute_id))
+
+    def delete_provider(self, provider_id: str):
+        self.oms_client.delete_provider(DeleteByIdInput(id=provider_id))
+
+    def delete_originator(self, originator_id: str):
+        self.oms_client.delete_provider(DeleteByIdInput(id=originator_id))
+
+    def delete_source(self, source_id):
+        self.oms_client.delete_provider(DeleteByIdInput(id=source_id))

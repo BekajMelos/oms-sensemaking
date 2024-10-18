@@ -142,7 +142,7 @@ class AnnotationProcessor:
         document_relationships = []
 
         # 1. Create entity for document
-        document_entity = DocumentAsEntity(document_id=data.document_id, text=data.text)
+        document_entity = DocumentAsEntity(document_id=data.document_id, value=data.text)
         doc_rel_index = 1
 
         # 2. Relate each entity in the document to the document's entity

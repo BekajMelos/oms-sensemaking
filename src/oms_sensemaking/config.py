@@ -99,6 +99,11 @@ class Settings(BaseSettings):
 
     oms_version_env: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
 
+    # OMS_SDK-related settings
+    create_source_if_none: bool = Field(False, description="Allow creation of source")
+    create_provider_if_none: bool = Field(False, description="Allow creation of provider")
+
+
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
                               description="Host and port for CoreNLP when running local script.")
