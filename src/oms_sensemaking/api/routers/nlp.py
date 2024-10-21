@@ -34,10 +34,3 @@ def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
         )
 
         return NlpResponse(acm=nlp_req.acm, source_id=nlp_req.source_id, findings=findings)
-
-
-@router.post("/source")
-def create_test_source():
-    nlp: NlpService = NlpService()
-    source = nlp.create_test_source()
-    return {source}

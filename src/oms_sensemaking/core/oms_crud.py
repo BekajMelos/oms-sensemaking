@@ -198,42 +198,47 @@ class OmsCrudTool:
         test_source_name = "nlp_test_source"
 
         # Create test originator if it doesn't already exist
-        if len(self.get_originator_by_name(test_originator_name).data) == 0:
+        if self.get_originator_by_name(test_originator_name).totalSize > 0:
+            originator = self.get_originator_by_name(test_originator_name).data[0]
+        else:
             originator = self.create_originator(
                 CreateOriginatorInput(
                     name=test_originator_name,
                     description="A test originator",
                     acm=DEFAULT_ACM,
-                    tags=["test_nlp_originator"],
+                    tags=SETTINGS.nlp_tags,
                 )
             )
-        else:
-            originator = self.get_originator_by_name(test_originator_name).data[0]
 
         # Create test provider if it doesn't already exist
-        if len(self.get_provider_by_name(test_provider_name).data) == 0:
+        if self.get_provider_by_name(test_provider_name).totalSize > 0:
+            provider = self.get_provider_by_name(test_provider_name).data[0]
+        else:
             provider = self.create_provider(
                 CreateProviderInput(
-                    name=test_provider_name, description="A test provider", originatorId=originator.id, acm=DEFAULT_ACM
+                    name=test_provider_name,
+                    description="A test provider",
+                    originatorId=originator.id,
+                    tags=SETTINGS.nlp_tags,
+                    acm=DEFAULT_ACM,
                 )
             )
-        else:
-            provider = self.get_provider_by_name(test_provider_name).data[0]
 
         # Create test source if it doesn't already exist
-        if len(self.get_source_by_name(test_source_name).data) == 0:
+        if self.get_source_by_name(test_source_name).totalSize > 0:
+            source = self.get_source_by_name(test_source_name).data[0]
+        else:
             source = self.create_source(
                 CreateSourceInput(
                     name="nlp_test_source",
                     dateOfReport="2004-05-23T00:00:00-04:00",
                     dateOfInformation="2004-05-23T00:00:00-04:00",
+                    tags=SETTINGS.nlp_tags,
                     providerId=provider.id,
                     acm=DEFAULT_ACM,
                     identifier="nlp_test_identifier",
                     dataAcm=DEFAULT_ACM,
                 )
             )
-        else:
-            source = self.get_source_by_name(test_source_name).data[0]
 
         return source
