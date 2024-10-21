@@ -2,12 +2,15 @@
 
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import cached_property
 from threading import Lock
 from typing import Any, Iterable, List, Tuple
 
 import httpx
+from geoalchemy2 import WKBElement
+from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import Client
 
 from oms_sensemaking.clients import db_session
@@ -24,6 +27,12 @@ def jsonify(data):
         return {k: jsonify(v) for k, v in data.items()}
     elif isinstance(data, list):
         return [jsonify(item) for item in data]
+    elif isinstance(data, WKBElement):
+        return to_shape(data).wkt
+    elif hasattr(data, 'to_dict'):
+        return jsonify(data.to_dict())
+    elif isinstance(data, (int, float, bool)) or data is None:
+        return data
     else:
         return str(data)
 
@@ -55,12 +64,14 @@ class OmsPublisher(SensemakerPublisher):
         self.oms_client: Client = oms_client
 
 
+@dataclass
 class FindingBase(ABC):
 
     FINDING_TYPE: FindingType
 
     def to_dict(self) -> dict:
-        return jsonify(self.__dict__)
+        """Return a dictionary representation of the object."""
+        return jsonify(asdict(self))
 
     @cached_property
     @abstractmethod

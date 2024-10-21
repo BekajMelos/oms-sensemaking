@@ -1,6 +1,7 @@
 """Loiter Sensemakers."""
 
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import List
@@ -50,30 +51,21 @@ class PotentialLoiter:
         return self.__str__()
 
 
+@dataclass
 class Loiter(FindingBase):
     """Represents a loiter event."""
 
-    FINDING_TYPE = FindingType.GEO_LOITER
-
-    def __init__(
-        self,
-        track_node_id: UUID,
-        geohash_low: str,
-        start_time: datetime,
-        end_time: datetime,
-        processed_points: list[Point],
-        geometry: str,
-    ):
-        """Create a new instance of Loiter."""
-        self.track_node_id = track_node_id
-        self.geohash_low = geohash_low
-        self.start_time = start_time
-        self.end_time = end_time
-        self.processed_points = processed_points
-        self.geometry = geometry
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
+    track_node_id: UUID
+    geohash_low: str
+    start_time: datetime
+    end_time: datetime
+    processed_points: list[Point]
+    geometry: str
 
     @cached_property
     def acm(self) -> dict:
+        """Rollup the acm from the points"""
         return get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
 
     def __str__(self):
@@ -82,7 +74,6 @@ class Loiter(FindingBase):
     def __repr__(self):
         return self.__str__()
 
-    @property
     def to_geojson(self) -> dict:
         """Geojson representation of the loiter geometry"""
 
@@ -152,7 +143,7 @@ class LoiterOmsPublisher(OmsPublisher):
                     tags=tags,
                     sourceId=source_id,
                     geo=GeoInput(
-                        geoJson=loiter.to_geojson,
+                        geoJson=loiter.to_geojson(),
                         startTime=loiter.start_time,
                         endTime=loiter.end_time
                         ),

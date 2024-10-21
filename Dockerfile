@@ -60,7 +60,7 @@ FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
 #       could possibly not be known ahead of running the image.
 ARG USER_NAME=appuser
 
-ARG GROUP_NAME=${GROUP_NAME:-USER_NAME}
+ARG GROUP_NAME="${GROUP_NAME:-USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
@@ -117,7 +117,7 @@ FROM python-base AS app
 
 ARG APP_VERSION="0.0.0"
 
-ARG APP_DATE
+ARG BUILD_DATE
 
 ARG VCS_REF
 
@@ -170,7 +170,7 @@ fi
 apt-get update
 
 # update core Python packaging tools
-python3 -m pip install --upgrade --no-cache pip wheel
+python3 -m pip install --upgrade pip wheel
 
 # install application's system dependencies
 apt-get install -y --no-install-recommends \
@@ -207,9 +207,9 @@ apt-get autoremove -y
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
-LABEL org.label-schema.build-date=${APP_DATE}
+LABEL org.label-schema.build-date=${BUILD_DATE}
 LABEL org.label-schema.name="oms-sensemaking"
-LABEL org.label-schema.description="docker image for oms-sensemaking"
+LABEL org.label-schema.description="Docker image for oms-sensemaking"
 LABEL org.label-schema.vcs-url="https://gitlab.code.dodiis.mil/aio4/services/omsbridge/oms-sensemaking"
 LABEL org.label-schema.vcs-ref=${VCS_REF}
 LABEL org.label-schema.version=${APP_VERSION}
