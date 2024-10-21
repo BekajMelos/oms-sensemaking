@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
@@ -111,7 +112,12 @@ class NlpService:
     def validate_source(self, source_id: str) -> bool:
         """Validate the source referenced by the source_id"""
         # Query OMS_SDK for a source with the given source_id
-        return bool(self.oms_crud_tool.get_source(source_id))
+        validation = bool(self.oms_crud_tool.get_source(source_id))
+        return validation
+
+    def create_test_source(self) -> CreateSourceCreateSource:
+        source = self.oms_crud_tool.create_test_source()
+        return source
 
 
 # TODO: Delete main once the API is up and running. Do the following in the API call
@@ -119,7 +125,8 @@ if __name__ == "__main__":
     text = "This is some sample text relating Entity1 to Entity2"
     acm: dict = {}
     doc_id = "41d83ecb-4c60-4294-9c51-eb4d1e444df6"
-    source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
+    source_id = nlp_service.create_test_source().id
+    if nlp_service.validate_source(source_id=source_id):
+        nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))

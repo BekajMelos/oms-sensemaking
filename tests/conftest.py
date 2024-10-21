@@ -9,12 +9,8 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
-    CreateOriginatorInput,
-    CreateProviderInput,
     CreateSourceCreateSource,
-    CreateSourceInput,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy.orm.session import Session
@@ -86,49 +82,6 @@ def mock_oms_client():
 
 @pytest.fixture(scope="session")
 def mock_source() -> CreateSourceCreateSource:
-    test_originator_name = "nlp_test_originator"
-    test_provider_name = "nlp_test_provider"
-    test_source_name = "nlp_test_source"
-
     oms_crud_tool = OmsCrudTool()
-
-    # Create test originator if it doesn't already exist
-    if len(oms_crud_tool.get_originator_by_name(test_originator_name).data) == 0:
-        originator = oms_crud_tool.create_originator(
-            CreateOriginatorInput(
-                name=test_originator_name,
-                description="A test originator",
-                acm=DEFAULT_ACM,
-                tags=["test_nlp_originator"],
-            )
-        )
-    else:
-        originator = oms_crud_tool.get_originator_by_name(test_originator_name).data[0]
-
-    # Create test provider if it doesn't already exist
-    if len(oms_crud_tool.get_provider_by_name(test_provider_name).data) == 0:
-        provider = oms_crud_tool.create_provider(
-            CreateProviderInput(
-                name=test_provider_name, description="A test provider", originatorId=originator.id, acm=DEFAULT_ACM
-            )
-        )
-    else:
-        provider = oms_crud_tool.get_provider_by_name(test_provider_name).data[0]
-
-    # Create test source if it doesn't already exist
-    if len(oms_crud_tool.get_source_by_name(test_source_name).data) == 0:
-        source = oms_crud_tool.create_source(
-            CreateSourceInput(
-                name="nlp_test_source",
-                dateOfReport="2004-05-23T00:00:00-04:00",
-                dateOfInformation="2004-05-23T00:00:00-04:00",
-                providerId=provider.id,
-                acm=DEFAULT_ACM,
-                identifier="nlp_test_identifier",
-                dataAcm=DEFAULT_ACM,
-            )
-        )
-    else:
-        source = oms_crud_tool.get_source_by_name(test_source_name).data[0]
-
+    source = oms_crud_tool.create_test_source()
     yield source

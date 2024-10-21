@@ -1,4 +1,4 @@
-from oms_sdk import get_generated_graphql_client
+from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributes,
     CreateAttributeCreateAttribute,
@@ -190,3 +190,50 @@ class OmsCrudTool:
 
     def delete_source(self, source_id):
         self.oms_client.delete_provider(DeleteByIdInput(id=source_id))
+
+    ### PIPELINES ###
+    def create_test_source(self) -> CreateSourceCreateSource:
+        test_originator_name = "nlp_test_originator"
+        test_provider_name = "nlp_test_provider"
+        test_source_name = "nlp_test_source"
+
+        # Create test originator if it doesn't already exist
+        if len(self.get_originator_by_name(test_originator_name).data) == 0:
+            originator = self.create_originator(
+                CreateOriginatorInput(
+                    name=test_originator_name,
+                    description="A test originator",
+                    acm=DEFAULT_ACM,
+                    tags=["test_nlp_originator"],
+                )
+            )
+        else:
+            originator = self.get_originator_by_name(test_originator_name).data[0]
+
+        # Create test provider if it doesn't already exist
+        if len(self.get_provider_by_name(test_provider_name).data) == 0:
+            provider = self.create_provider(
+                CreateProviderInput(
+                    name=test_provider_name, description="A test provider", originatorId=originator.id, acm=DEFAULT_ACM
+                )
+            )
+        else:
+            provider = self.get_provider_by_name(test_provider_name).data[0]
+
+        # Create test source if it doesn't already exist
+        if len(self.get_source_by_name(test_source_name).data) == 0:
+            source = self.create_source(
+                CreateSourceInput(
+                    name="nlp_test_source",
+                    dateOfReport="2004-05-23T00:00:00-04:00",
+                    dateOfInformation="2004-05-23T00:00:00-04:00",
+                    providerId=provider.id,
+                    acm=DEFAULT_ACM,
+                    identifier="nlp_test_identifier",
+                    dataAcm=DEFAULT_ACM,
+                )
+            )
+        else:
+            source = self.get_source_by_name(test_source_name).data[0]
+
+        return source

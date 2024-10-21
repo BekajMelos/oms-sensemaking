@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, RelationshipQuery
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import SETTINGS
@@ -72,5 +73,11 @@ def test_submit_findings_to_postgis(mock_db):
 def test_submit_findings_to_oms(mock_db, mock_source):
     """Not implemented: tests submitting findings to OMS"""
     service.submit_findings_to_oms(findings=mock_findings, source_id=mock_source.id)
-    # TODO: Get the findings from OMS and verify that they are correct
-    pytest.skip("Skipping because this function is not completed yet.")
+
+    # Call a get operation to get the nodes, relationships, and attributes
+    nodes = service.oms_crud_tool.get_nodes(node_info=NodeQuery(tags=SETTINGS.nlp_tags))
+    relationships = service.oms_crud_tool.get_relationships(relationship_info=RelationshipQuery(tags=SETTINGS.nlp_tags))
+    attributes = service.oms_crud_tool.get_attributes(attribute_info=AttributeQuery(tags=SETTINGS.nlp_tags))
+    assert nodes
+    assert relationships
+    assert attributes
