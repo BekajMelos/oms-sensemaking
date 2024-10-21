@@ -81,3 +81,8 @@ def test_submit_findings_to_oms(mock_db, mock_source):
     assert nodes
     assert relationships
     assert attributes
+
+
+def test_create_test_source(mock_db, mock_source):
+    source = service.create_test_source()
+    assert source.name == "nlp_test_source"

@@ -24,13 +24,19 @@ def test_publish(mock_db, nlp_publisher):
     assert nodes
     assert relationships
 
+    # Empty findings case
+    nodes, relationships = nlp_publisher.publish(empty_findings)
+    assert not nodes
+    assert not relationships
+
 
 def test_format_and_publish_nodes(nlp_publisher):
-    # Publish the nodes
+    # Empty findings case
     empty_published_nodes = nlp_publisher.format_and_publish_nodes(empty_findings)
-    published_nodes = nlp_publisher.format_and_publish_nodes(large_findings)
-
     assert not empty_published_nodes
+
+    # Regular findings case
+    published_nodes = nlp_publisher.format_and_publish_nodes(large_findings)
     assert published_nodes
 
 
@@ -44,9 +50,9 @@ def test_format_and_publish_relationships(nlp_publisher):
 
     # Publish the relationships
     empty_published_relationships = nlp_publisher.format_and_publish_relationships(empty_findings)
-    published_relationships = nlp_publisher.format_and_publish_relationships(large_findings)
-
     assert not empty_published_relationships
+
+    published_relationships = nlp_publisher.format_and_publish_relationships(large_findings)
     assert published_relationships
 
 
@@ -60,8 +66,10 @@ def test_format_and_publish_attribute(nlp_publisher):
 
     # Test case when nodes have been created
     published_nodes = nlp_publisher.format_and_publish_nodes(large_findings)
-    assert nlp_publisher.format_and_publish_attribute(
+    published_attribute = nlp_publisher.format_and_publish_attribute(
         entity_value=large_findings["ner_entities"][0]["value"],
         entity_id=large_findings["ner_entities"][0]["uuid"],
         published_node_id=published_nodes[0].id,
     )
+    assert published_attribute
+    assert published_attribute.source.id == nlp_publisher.source_id

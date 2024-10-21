@@ -39,3 +39,16 @@ def test_extract_entities_and_relationships(client: TestClient, mock_db: Session
     assert response.source_id == mock_source.id
     assert response.findings["document_entity"]["value"] == test_text
     assert len(response.findings["ner_entities"]) == len(response.findings["document_relationships"])
+
+
+def test_invalid_source_id(client: TestClient, mock_db: Session, mocker, mock_source):
+    mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
+    mock_client.set_response(mock_response_short_text_str)
+    mocker.patch("oms_sensemaking.api.routers.nlp.corenlp_client", mock_client)
+    invalid_uuid = "5cb1dfa5-e1e8-400e-a148-d0df60e3ba9d"
+
+    response: Response = client.post(
+        "/nlp",
+        json=NlpRequest(acm=DEFAULT_ACM, source_id=invalid_uuid, text=test_text).model_dump(),
+    )
+    assert response.status_code == 404
