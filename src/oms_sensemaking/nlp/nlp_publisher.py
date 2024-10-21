@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
@@ -23,7 +25,7 @@ class NlpOmsPublisher:
     def __init__(self, source_id: str):
         self.source_id = source_id
         self.oms_crud_tool = OmsCrudTool()
-        self.node_id_mapping = {}
+        self.node_id_mapping: dict[str, str] = {}
         self.node_iris = {
             "PEOPLE": SETTINGS.nlp_person_iri,
             "ORGANIZATION": SETTINGS.nlp_organization_iri,
@@ -39,7 +41,7 @@ class NlpOmsPublisher:
             "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
         }
 
-    def publish(self, findings: dict) -> (list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship]):
+    def publish(self, findings: dict) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship]]:
         """
         Run the publisher on the findings
         :param findings: The result of the NLP analysis on the body of text

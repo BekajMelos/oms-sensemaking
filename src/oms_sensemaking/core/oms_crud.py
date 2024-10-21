@@ -45,7 +45,7 @@ class OmsCrudTool:
 
     def __init__(self):
         self.oms_client: Client = get_generated_graphql_client(
-            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
+            url=SETTINGS.omsb_url, user_dn=SETTINGS.user_dn, cert_path=SETTINGS.cert_path, key_path=SETTINGS.key_path
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]):
