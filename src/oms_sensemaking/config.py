@@ -187,6 +187,17 @@ class Settings(BaseSettings):
         2700, description="Maximum between Objects in a Track for a Lag/Lead Event"
     )
 
+    cotravel_event_name: str = Field("CotravelEvent", description="Name prefix for OMSB Cotravel Event Nodes")
+    lag_lead_event_name: str = Field("LagLeadEvent", description="Name prefix for OMSB LagLead Event Nodes")
+    cotravel_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+                                   description="OMSB Cotravel Event Node IRI")
+    cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
+                                         description="OMSB Cotravel Event Node to Track Relationship IRI")
+    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+                                                 description="OMSB Cotravel Event Node Geo Attribute IRI")
+    cotravel_track_to_event_relation_name: str = Field("inheres in",
+                                                 description="OMSB Cotravel Event Node to Track Relationship Name")
+
     # Similar Track Settings
     similar_tracks: bool = Field(True, description="Toggle on/off Similar Track Calculations")
     n_tracks: int = Field(5, description="Number of similar tracks to return")

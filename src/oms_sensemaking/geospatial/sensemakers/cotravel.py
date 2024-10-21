@@ -2,19 +2,31 @@
 import logging
 import uuid
 from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, List, Optional
+from functools import cached_property
+from typing import List, Optional
 from uuid import UUID
 
 from geolib import geohash
+from oms_sdk.generated.generated_graphql_client.client import (
+    Client,
+    CreateAttributeInput,
+    CreateNodeInput,
+    CreateRelationshipInput,
+)
+from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
+from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, select
 from sqlalchemy.orm import with_expression
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.core.acm import get_acm_rollup
+from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,8 +44,8 @@ class PotentialMatch:
 
     def __init__(
         self,
-        track1: UUID,
-        track2: UUID,
+        track1_node_id: UUID,
+        track2_node_id: UUID,
         start_time1: datetime,
         start_time2: datetime,
         last_time1: datetime,
@@ -41,8 +53,8 @@ class PotentialMatch:
         true_cotravel: bool,
     ):
         """Create a new instance of PotentialMatch."""
-        self.track1 = track1
-        self.track2 = track2
+        self.track1_node_id = track1_node_id
+        self.track2_node_id = track2_node_id
         self.start_time1 = start_time1
         self.start_time2 = start_time2
         self.last_time1 = last_time1
@@ -80,27 +92,58 @@ class PotentialMatch:
             and self.last_time2 - self.start_time2 >= MIN_COTRAVEL_DURATION_SECONDS
         )
 
-    def calculate_and_set_geometry(self, track1: Track, track2: Track) -> None:
-       """
-       Set the geometry for the cotravel.
 
-       :param track1: First track
-       :param track2: Second track
-       """
-       start_time = min(self.start_time1, self.start_time2)
-       end_time = max(self.last_time1, self.last_time2)
-       ls1 = LineString(CotravelSensemaker.extract_coordinate_track(track1, start_time, end_time))
-       ls2 = LineString(CotravelSensemaker.extract_coordinate_track(track2, start_time, end_time))
-       self.geometry = MultiLineString([ls1, ls2])
+@dataclass
+class Cotravel(FindingBase):
+    """Represents a Cotravel Event"""
+
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_COTRAVEL)
+    track1: Track
+    track2: Track
+    start_time: datetime
+    last_time: datetime
+    true_cotravel: bool
+    geometry: MultiLineString = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Post init for Cotravel"""
+        ls1 = LineString([point.coordinates for point in self.track1.points])
+        ls2 = LineString([point.coordinates for point in self.track2.points])
+        self.geometry = MultiLineString([ls1, ls2])
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    @cached_property
+    def acm(self) -> dict:
+        """Rollup the acm from the points"""
+        track1_acms = [point.acm for point in self.track1.points]
+        track2_acms = [point.acm for point in self.track2.points]
+        return get_acm_rollup([{"ACM": acm} for acm in (track1_acms+track2_acms)])
+
+    def to_geojson(self) -> dict:
+        """Geojson representation of the cotravel geometry"""
+
+        return {
+            "type": "MultiLineString",
+            "coordinates": [
+                [
+                    point.coordinates for point in self.track1.points
+                ],
+                [
+                    point.coordinates for point in self.track2.points
+                ]
+            ]
+        }
 
 
 class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
-    def __init__(self, track1: UUID, track2: UUID, point: Point, db_point: Point):
+    def __init__(self, track1_node_id: UUID, track2_node_id: UUID, point: Point, db_point: Point):
         """Create a new instance of Colocation."""
-        self.track1 = track1
-        self.track2 = track2
+        self.track1_node_id = track1_node_id
+        self.track2_node_id = track2_node_id
         self.point = point
         self.db_point = db_point
 
@@ -109,6 +152,85 @@ class Colocation:
 
     def __repr__(self):
         return self.__str__()
+
+
+class CotravelOmsPublisher(OmsPublisher):
+
+    def publish(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> None:
+        """
+        Write cotravel events to OMSB
+
+        :param track: Track in which the cotravel was found
+        :param cotravels: List of Cotravel events
+        :return: None
+        """
+
+        for cotravel in cotravels:
+
+            name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
+            tags = [SETTINGS.geo_sensemaker_event_tag]
+            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+
+            event_node = self.oms_client.create_node(
+                CreateNodeInput(
+                    acm=cotravel.acm,
+                    name=name,
+                    tier=ObjectTier.DERIVATIVE,
+                    tags=tags,
+                    classIri=SETTINGS.cotravel_event_node_iri,
+                    ifcCodes=set(),
+                    isNso=True
+                )
+            )
+
+            # track 1 relationship
+            _ = self.oms_client.create_relationship(
+                CreateRelationshipInput(
+                    tags=tags,
+                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+                    startNodeId=event_node.id,
+                    endNodeId=cotravel.track1.node_id,
+                    confidence=Confidence.HIGH,
+                    acm=event_node.acm,
+                    objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+                    sourceId=source_id
+                )
+            )
+
+            # track 2 relationship
+            _ = self.oms_client.create_relationship(
+                CreateRelationshipInput(
+                    tags=tags,
+                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+                    startNodeId=event_node.id,
+                    endNodeId=cotravel.track2.node_id,
+                    confidence=Confidence.HIGH,
+                    acm=event_node.acm,
+                    objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+                    sourceId=source_id
+                )
+            )
+
+            _ = self.oms_client.create_attribute(
+                CreateAttributeInput(
+                    attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
+                    attributeValue="geo",
+                    attributeDisplayValue="",
+                    attributeType=AttributeType.SPATIOTEMPORAL,
+                    confidence=Confidence.HIGH,
+                    tags=tags,
+                    sourceId=source_id,
+                    geo=GeoInput(
+                        geoJson=cotravel.to_geojson(),
+                        startTime=cotravel.start_time,
+                        endTime=cotravel.last_time
+                        ),
+                    nodeId=event_node.id,
+                    acm=event_node.acm,
+                    valueStart=cotravel.start_time,
+                    valueEnd=cotravel.last_time
+                )
+            )
 
 
 class CotravelSensemaker(Sensemaker):
@@ -124,16 +246,32 @@ class CotravelSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, oms_client: Client, output_to_oms: bool) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
+        self.config = {
+            'valid_observed_threshold_seconds': SETTINGS.valid_observed_threshold_seconds,
+            'min_cotravel_duration_seconds': SETTINGS.min_cotravel_duration_seconds,
+            'min_lag_lead_duration_seconds': SETTINGS.min_lag_lead_duration_seconds,
+            'max_lag_lead_duration_seconds': SETTINGS.max_lag_lead_duration_seconds,
+            'geohash_low': SETTINGS.geohash_low,
+            'cotravel_event_node_attribute_iri': SETTINGS.cotravel_event_node_attribute_iri,
+            'cotravel_relationship_iri': SETTINGS.cotravel_relationship_iri,
+            'cotravel_track_to_event_relation_name': SETTINGS.cotravel_track_to_event_relation_name,
+            'cotravel_event_node_iri': SETTINGS.cotravel_event_node_iri,
+            'cotravel_event_name': SETTINGS.cotravel_event_name ,
+            'lag_lead_event_name': SETTINGS.lag_lead_event_name,
+            'geo_sensemaker_event_tag': SETTINGS.geo_sensemaker_event_tag
+        }
+        if output_to_oms:
+            self.publisher = CotravelOmsPublisher(oms_client)
 
-    def process_data(self, data: Track) -> list[PotentialMatch]:
+    def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""
         LOGGER.info(f"Detecting Cotravels in {data.node_id}")
 
-        cotravels: list[PotentialMatch] = []
+        cotravels: list[Cotravel] = []
         matches: list[Colocation] = []
 
         # find matching points (colocations) for each point in the track
@@ -167,23 +305,19 @@ class CotravelSensemaker(Sensemaker):
         if not matches:
             return []
 
-        # group points by track2
+        # group points by track2_node_id
         groups = defaultdict(list)
         for entry in matches:
-            groups[entry.track2].append(entry)
+            groups[entry.track2_node_id].append(entry)
 
         # determine cotravels on each list
         for _, colocations in groups.items():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.db_point.detection_time)
-            cotravels.extend(self.determine_cotravels(sorted_entries))
+            cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
         for idx, cotravel in enumerate(cotravels):
-            with db_session() as db:
-                track2: Track = get_track(db, cotravel.track2)
-
-                cotravel.calculate_and_set_geometry(data, track2)
-                LOGGER.info(f"Found Cotravel {idx+1}/{len(cotravels)}: {cotravel}")
-                LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
+            LOGGER.info(f"Found Cotravel {idx+1}/{len(cotravels)}: {cotravel}")
+            LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
 
         return cotravels
 
@@ -234,14 +368,38 @@ class CotravelSensemaker(Sensemaker):
             return list(query.scalars().all())
 
     @staticmethod
-    def determine_cotravels(colocations: list[Colocation]) -> list[PotentialMatch]:
+    def determine_cotravels(track: Track, colocations: list[Colocation]) -> list[Cotravel]:
         """
         Given the list of colocations, that they meet the time requirements.
 
         :param colocations: List of colocations
         :return: List of cotravels
         """
-        completed: list[PotentialMatch] = []
+
+        def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
+            """Helper function to create Cotravel from PotentialMatch"""
+            with db_session() as db:
+                track2: Track = get_track(db, to_add_to.track2_node_id)
+
+            start_time = min(to_add_to.start_time1, to_add_to.start_time2)
+            last_time = max(to_add_to.last_time1, to_add_to.last_time2)
+
+            return Cotravel(
+                track1=Track(
+                    points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
+                    node_id=track.node_id
+                    ),
+                track2=Track(
+                    points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
+                    node_id=track2.node_id
+                    ),
+                start_time=start_time,
+                last_time=last_time,
+                true_cotravel=to_add_to.true_cotravel
+            )
+
+
+        completed: list[Cotravel] = []
         to_add_to: Optional[PotentialMatch] = None
 
         for colocation in colocations:
@@ -254,15 +412,15 @@ class CotravelSensemaker(Sensemaker):
                     # the next colocation point doesn't meet the observation threshold but we still
                     # have a valid cotravel. Add the cotravel to the list and start over with a new
                     # potential match
-
-                    completed.append(to_add_to)
+                    cotravel = create_cotravel_from_match(to_add_to)
+                    completed.append(cotravel)
                     true_cotravel = (
                         abs(colocation.point.detection_time - colocation.db_point.detection_time)
                         <= MIN_LAG_LEAD_DURATION_SECONDS
                     )
                     to_add_to = PotentialMatch(
-                        colocation.track1,
-                        colocation.track2,
+                        colocation.track1_node_id,
+                        colocation.track2_node_id,
                         colocation.point.detection_time,
                         colocation.db_point.detection_time,
                         colocation.point.detection_time,
@@ -277,8 +435,8 @@ class CotravelSensemaker(Sensemaker):
                 )
 
                 to_add_to = PotentialMatch(
-                    colocation.track1,
-                    colocation.track2,
+                    colocation.track1_node_id,
+                    colocation.track2_node_id,
                     colocation.point.detection_time,
                     colocation.db_point.detection_time,
                     colocation.point.detection_time,
@@ -288,13 +446,14 @@ class CotravelSensemaker(Sensemaker):
 
         # check the last point for a valid cotravel
         if to_add_to and to_add_to.check_valid():
-            completed.append(to_add_to)
+            cotravel = create_cotravel_from_match(to_add_to)
+            completed.append(cotravel)
 
         return completed
 
     # TODO maybe move to utility
     @staticmethod
-    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> List[List[float]]:
+    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> List[Point]:
         """
         Return points within provided time bounds.
 
@@ -306,10 +465,6 @@ class CotravelSensemaker(Sensemaker):
         points = []
         for point in track.points:
             if point.detection_time >= start_time and point.detection_time <= end_time:
-                points.append(point.coordinates)
+                points.append(point)
         return points
 
-    def save_findings(self, cotravels: Any) -> None:
-        """Save findings to the database."""
-        # Will Implement in a future Ticket
-        pass
