@@ -19,8 +19,12 @@ from oms_sdk.generated.generated_graphql_client import (
     SourceSource,
     SourcesSources,
     UpdateAttributeInput,
+    UpdateAttributeUpdateAttribute,
+    UpdateNodeUpdateNode,
     UpdateRelationshipInput,
+    UpdateRelationshipUpdateRelationship,
     UpdateSourceInput,
+    UpdateSourceUpdateSource,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.input_types import (
@@ -48,32 +52,31 @@ class OmsCrudTool:
             url=SETTINGS.omsb_url, user_dn=SETTINGS.user_dn, cert_path=SETTINGS.cert_path, key_path=SETTINGS.key_path
         )
 
-    def publish_nodes(self, nodes: list[CreateNodeInput]):
+    def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
         """
         Publish the Nodes to OMS
         :param nodes: a list of CreateNodeInput objects
         """
         # 1. for each node, publish it to OMS
-        for node in nodes:
-            self.oms_client.create_node(node)
+        return [self.oms_client.create_node(node) for node in nodes]
 
-    def publish_relationships(self, relationships: list[CreateRelationshipInput]):
+    def publish_relationships(
+        self, relationships: list[CreateRelationshipInput]
+    ) -> list[CreateRelationshipCreateRelationship]:
         """
         Publish the relationships to OMS
         :param relationships: a list of CreateRelationshipInput objects
         """
         # 1. for each relationship, publish it to OMS
-        for relationship in relationships:
-            self.oms_client.create_relationship(relationship)
+        return [self.oms_client.create_relationship(relationship) for relationship in relationships]
 
-    def publish_attributes(self, attributes: list[CreateAttributeInput]):
+    def publish_attributes(self, attributes: list[CreateAttributeInput]) -> list[CreateAttributeCreateAttribute]:
         """
         Publish the attributes to oms
         :param attributes: a list of CreateAttributeInput objects
         """
         # 1. for each attribute, publish it to OMS
-        for attribute in attributes:
-            self.oms_client.create_attribute(attribute)
+        return [self.oms_client.create_attribute(attribute) for attribute in attributes]
 
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
@@ -153,50 +156,50 @@ class OmsCrudTool:
         return self.oms_client.originators(query=OriginatorQuery(name=StringQuery(equals=originator_name)))
 
     ### UPDATE ###
-    def update_node(self, update_input: UpdateNodeInput):
+    def update_node(self, update_input: UpdateNodeInput) -> UpdateNodeUpdateNode:
         """Update node"""
-        self.oms_client.update_node(update_input)
+        return self.oms_client.update_node(update_input)
 
-    def update_relationship(self, update_input: UpdateRelationshipInput):
+    def update_relationship(self, update_input: UpdateRelationshipInput) -> UpdateRelationshipUpdateRelationship:
         """Update relationship"""
-        self.oms_client.update_relationship(update_input)
+        return self.oms_client.update_relationship(update_input)
 
-    def update_attribute(self, update_input: UpdateAttributeInput):
+    def update_attribute(self, update_input: UpdateAttributeInput) -> UpdateAttributeUpdateAttribute:
         """Update attribute"""
-        self.oms_client.update_attribute(update_input)
+        return self.oms_client.update_attribute(update_input)
 
-    def update_source(self, update_input: UpdateSourceInput):
+    def update_source(self, update_input: UpdateSourceInput) -> UpdateSourceUpdateSource:
         """Update source"""
-        self.update_source(update_input)
+        return self.update_source(update_input)
 
     ### DELETE ###
-    def delete_node(self, node_id: str):
+    def delete_node(self, node_id: str) -> bool:
         """Update node"""
-        self.oms_client.delete_node(DeleteByIdInput(id=node_id))
+        return self.oms_client.delete_node(DeleteByIdInput(id=node_id))
 
-    def delete_relationship(self, relationship_id: str):
+    def delete_relationship(self, relationship_id: str) -> bool:
         """Update relationship"""
-        self.oms_client.delete_relationship(DeleteByIdInput(id=relationship_id))
+        return self.oms_client.delete_relationship(DeleteByIdInput(id=relationship_id))
 
-    def delete_attribute(self, attribute_id: str):
+    def delete_attribute(self, attribute_id: str) -> bool:
         """Update attribute"""
-        self.oms_client.delete_attribute(DeleteByIdInput(id=attribute_id))
+        return self.oms_client.delete_attribute(DeleteByIdInput(id=attribute_id))
 
-    def delete_provider(self, provider_id: str):
-        self.oms_client.delete_provider(DeleteByIdInput(id=provider_id))
+    def delete_provider(self, provider_id: str) -> bool:
+        return self.oms_client.delete_provider(DeleteByIdInput(id=provider_id))
 
-    def delete_originator(self, originator_id: str):
-        self.oms_client.delete_provider(DeleteByIdInput(id=originator_id))
+    def delete_originator(self, originator_id: str) -> bool:
+        return self.oms_client.delete_provider(DeleteByIdInput(id=originator_id))
 
-    def delete_source(self, source_id):
-        self.oms_client.delete_provider(DeleteByIdInput(id=source_id))
+    def delete_source(self, source_id) -> bool:
+        return self.oms_client.delete_provider(DeleteByIdInput(id=source_id))
 
-    ### PIPELINES ###
-    def create_test_source(self) -> CreateSourceCreateSource:
-        test_originator_name = "nlp_test_originator"
-        test_provider_name = "nlp_test_provider"
-        test_source_name = "nlp_test_source"
-
+    def create_test_source(
+        self,
+        test_originator_name: str = "nlp_test_originator",
+        test_provider_name: str = "nlp_test_provider",
+        test_source_name: str = "nlp_test_source",
+    ) -> CreateSourceCreateSource:
         # Create test originator if it doesn't already exist
         if self.get_originator_by_name(test_originator_name).totalSize > 0:
             originator = self.get_originator_by_name(test_originator_name).data[0]
@@ -230,7 +233,7 @@ class OmsCrudTool:
         else:
             source = self.create_source(
                 CreateSourceInput(
-                    name="nlp_test_source",
+                    name=test_source_name,
                     dateOfReport="2004-05-23T00:00:00-04:00",
                     dateOfInformation="2004-05-23T00:00:00-04:00",
                     tags=SETTINGS.nlp_tags,
