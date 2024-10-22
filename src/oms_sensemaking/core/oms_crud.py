@@ -170,7 +170,7 @@ class OmsCrudTool:
 
     def update_source(self, update_input: UpdateSourceInput) -> UpdateSourceUpdateSource:
         """Update source"""
-        return self.update_source(update_input)
+        return self.oms_client.update_source(update_input)
 
     ### DELETE ###
     def delete_node(self, node_id: str) -> bool:
@@ -189,10 +189,10 @@ class OmsCrudTool:
         return self.oms_client.delete_provider(DeleteByIdInput(id=provider_id))
 
     def delete_originator(self, originator_id: str) -> bool:
-        return self.oms_client.delete_provider(DeleteByIdInput(id=originator_id))
+        return self.oms_client.delete_originator(DeleteByIdInput(id=originator_id))
 
     def delete_source(self, source_id) -> bool:
-        return self.oms_client.delete_provider(DeleteByIdInput(id=source_id))
+        return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
     def create_test_source(
         self,
@@ -200,6 +200,7 @@ class OmsCrudTool:
         test_provider_name: str = "nlp_test_provider",
         test_source_name: str = "nlp_test_source",
     ) -> CreateSourceCreateSource:
+        """Creates an originator, a provider, and a source for test purposes"""
         # Create test originator if it doesn't already exist
         if self.get_originator_by_name(test_originator_name).totalSize > 0:
             originator = self.get_originator_by_name(test_originator_name).data[0]

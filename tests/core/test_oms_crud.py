@@ -12,6 +12,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
     UpdateNodeInput,
     UpdateRelationshipInput,
+    UpdateSourceInput,
 )
 
 from oms_sensemaking.api.schemas.oms import ObjectTier
@@ -41,7 +42,24 @@ def test_test_source_creation():
     )
     assert new_test_source
     assert new_test_source.name == new_source_name
-    assert oms_crud_tool.delete_source(new_test_source.id)
+
+    source_id = new_test_source.id
+    provider_id = new_test_source.providerId
+    originator_id = oms_crud_tool.get_originator_by_name(new_originator_name).data[0].id
+
+    # Source update
+    updated_name = "updated_source_name_x"
+    updated_source = oms_crud_tool.update_source(UpdateSourceInput(id=source_id, name=updated_name))
+    assert updated_source.name == updated_name
+
+    # Source get
+    get_source = oms_crud_tool.get_source(source_id)
+    assert get_source.name == updated_source.name
+
+    # Delete source, provider, and originator
+    assert oms_crud_tool.delete_source(source_id)
+    assert oms_crud_tool.delete_provider(provider_id)
+    assert oms_crud_tool.delete_originator(originator_id)
 
 
 def test_multi_crud_operations(mock_source):
