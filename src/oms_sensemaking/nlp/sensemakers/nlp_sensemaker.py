@@ -42,7 +42,7 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> str:
         """Access the CoreNlpService to annotate text."""
-        annotated_doc = self.corenlp_client.annotate_document(text=document)
+        annotated_doc = self.corenlp_client.annotate_document_str(text=document)
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:

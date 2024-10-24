@@ -98,7 +98,7 @@ class TrainingDataProcessor:
         # Go through text, annotate with CoreNLP client, and get sentences
         # The client is used here only for annotation purposes, no NER or relation extraction yet
         corenlp_client = self.corenlp_client
-        annotation = corenlp_client.annotate_document(text)
+        annotation = corenlp_client.annotate_document_xml(text)
 
         # Loop through sentences of the annotation and grab tokens for doccano token map
         global_token_index = 0

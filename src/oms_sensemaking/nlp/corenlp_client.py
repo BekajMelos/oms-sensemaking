@@ -1,7 +1,6 @@
 """Utilities for working with CoreNLP."""
 
 import logging
-from typing import Any
 
 import httpx
 import xmltodict
@@ -25,7 +24,7 @@ class CoreNlpClient:
         self.hostname = hostname
         self.url = f"http://{self.hostname}/?properties={self.props}"
 
-    def annotate_document(self, text: str) -> Any:
+    def annotate_document_str(self, text: str) -> str:
         """
         Annotate the given document text.
 
@@ -35,32 +34,47 @@ class CoreNlpClient:
         :return: The annotated document.
         """
 
-        if self.props["outputFormat"] == "text":
-            # Handling empty text submission case
-            if not text:
-                return ""
+        # Making sure that the CoreNLP output format is appropriate
+        if self.props["outputFormat"] != "text":
+            LOGGER.warning(f"CoreNLP Client 'outputFormat' was set to {self.props["outputFormat"]}, changing to 'text'")
+            self.props["outputFormat"] = "text"
 
-            # Formatting text for submission and sending it to the CoreNLP container
-            data = {"text": text}
-            result = httpx.post(self.url, data=data, content=text, timeout=None)
-            return result.text
+        # Handling empty text submission case
+        if not text:
+            LOGGER.warning("Empty text submission to the CoreNLP Client")
+            return ""
 
-        elif self.props["outputFormat"] == "xml":
-            # Handling empty text submission case
-            if not text:
-                return []
+        # Formatting text for submission and sending it to the CoreNLP container
+        data = {"text": text}
+        result = httpx.post(self.url, data=data, content=text, timeout=None)
+        return result.text
 
-            # Formatting text for submission and sending it to the CoreNLP container
-            data = {"text": text}
-            result = httpx.post(self.url, data=data, content=text, timeout=None)
+    def annotate_document_xml(self, text: str) -> list:
+        """
+        Annotate the given document text.
 
-            # Parsing the xml response to get it as a dictionary for easy indexing later
-            formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
+        Uses the configure properties with CoreNLP and annotate a document.
 
-            # If there is only one sentence it by default returns a dict instead of a list of dicts, this corrects that
-            return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
+        :param text: The document text to annotate.
+        :return: The annotated document.
+        """
 
-        elif self.props["outputFormat"] == "json":
-            data = {"text": text}
-            result = httpx.post(self.url, data=data, content=text, timeout=None)
-            return result.json()
+        # Making sure that the CoreNLP output format is appropriate
+        if self.props["outputFormat"] != "xml":
+            LOGGER.warning(f"CoreNLP Client 'outputFormat' was set to {self.props["outputFormat"]}, changing to 'xml'")
+            self.props["outputFormat"] = "xml"
+
+        # Handling empty text submission case
+        if not text:
+            LOGGER.warning("Empty text submission to the CoreNLP Client")
+            return []
+
+        # Formatting text for submission and sending it to the CoreNLP container
+        data = {"text": text}
+        result = httpx.post(self.url, data=data, content=text, timeout=None)
+
+        # Parsing the xml response to get it as a dictionary for easy indexing later
+        formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
+
+        # If there is only one sentence it by default returns a dict instead of a list of dicts, this corrects that
+        return [formatted_annotations] if isinstance(formatted_annotations, dict) else formatted_annotations
