@@ -1,6 +1,7 @@
 from typing import Iterator
 
 import pytest
+from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.nlp.nlp_publisher import NlpOmsPublisher
@@ -14,7 +15,7 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 @pytest.fixture
 def nlp_publisher(mock_source):
-    publisher = NlpOmsPublisher(source_id=mock_source.id)
+    publisher = NlpOmsPublisher(source_id=mock_source.id, acm=DEFAULT_ACM)
     yield publisher
 
 

@@ -37,7 +37,7 @@ class NlpService:
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
         # Submit the findings to OMS
-        self.submit_findings_to_oms(findings=findings, source_id=source_id)
+        self.submit_findings_to_oms(acm=acm, findings=findings, source_id=source_id)
 
         # Submit findings to postgis
         self.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
@@ -94,13 +94,14 @@ class NlpService:
             result = findings_query.scalars().all()
         return result
 
-    def submit_findings_to_oms(self, findings: dict, source_id: str):
+    def submit_findings_to_oms(self, acm: dict, findings: dict, source_id: str):
         """
         Submit the Entities and Relationships to OMS
+        :param acm: The acm submitted with the API call
         :param findings: found Entities and Relationships
         :param source_id: ID of the text's Source
         """
-        nlp_publisher = NlpOmsPublisher(source_id)
+        nlp_publisher = NlpOmsPublisher(source_id=source_id, acm=acm)
         nlp_publisher.publish(findings)
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:

@@ -72,7 +72,7 @@ def test_submit_findings_to_postgis(mock_db):
 
 def test_submit_findings_to_oms(mock_db, mock_source):
     """Not implemented: tests submitting findings to OMS"""
-    service.submit_findings_to_oms(findings=mock_findings, source_id=mock_source.id)
+    service.submit_findings_to_oms(acm=DEFAULT_ACM, findings=mock_findings, source_id=mock_source.id)
 
     # Call a get operation to get the nodes, relationships, and attributes
     nodes = service.oms_crud_tool.get_nodes(node_info=NodeQuery(tags=SETTINGS.nlp_tags))

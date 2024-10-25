@@ -1,6 +1,5 @@
 from typing import Tuple
 
-from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
     Confidence,
@@ -22,8 +21,9 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 class NlpOmsPublisher:
     """Formats and publishes the NLP Findings"""
 
-    def __init__(self, source_id: str):
+    def __init__(self, source_id: str, acm: dict):
         self.source_id = source_id
+        self.acm = acm
         self.oms_crud_tool = OmsCrudTool()
         self.node_id_mapping: dict[str, str] = {}
         self.node_iris = {
@@ -63,7 +63,7 @@ class NlpOmsPublisher:
             # Format and publish node
             published_node = self.oms_crud_tool.create_node(
                 CreateNodeInput(
-                    acm=DEFAULT_ACM,
+                    acm=self.acm,
                     name=entity["value"],
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
@@ -87,7 +87,7 @@ class NlpOmsPublisher:
             # Format and publish the document node
             published_document_node = self.oms_crud_tool.create_node(
                 CreateNodeInput(
-                    acm=DEFAULT_ACM,
+                    acm=self.acm,
                     name="Document Entity",
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
@@ -133,7 +133,7 @@ class NlpOmsPublisher:
                         endNodeId=self.node_id_mapping[second_ent_id],
                         sourceId=self.source_id,
                         confidence=Confidence.UNKNOWN,
-                        acm=DEFAULT_ACM,
+                        acm=self.acm,
                         objectPropertyIri=self.relationship_iris[relationship_classification],
                     )
                 )
@@ -155,7 +155,7 @@ class NlpOmsPublisher:
                         endNodeId=self.node_id_mapping[ent_id],
                         sourceId=self.source_id,
                         confidence=Confidence.UNKNOWN,
-                        acm=DEFAULT_ACM,
+                        acm=self.acm,
                         objectPropertyIri=self.relationship_iris[rel_type],
                     )
                 )
@@ -174,7 +174,6 @@ class NlpOmsPublisher:
         """
         # First check if the entity has been created as a node
         if entity_id in self.node_id_mapping:
-            entity_value = entity_value
             # Truncate the text if it is too long for an attribute value
             if len(entity_value) > 2048:  # max attribute value length is 2048
                 entity_value = entity_value[:2045] + "..."
@@ -187,7 +186,7 @@ class NlpOmsPublisher:
                     confidence=Confidence.UNKNOWN,
                     sourceId=self.source_id,
                     nodeId=published_node_id,
-                    acm=DEFAULT_ACM,
+                    acm=self.acm,
                 )
             )
         else:
