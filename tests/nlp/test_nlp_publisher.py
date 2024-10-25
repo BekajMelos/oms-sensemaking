@@ -63,7 +63,8 @@ def test_format_and_publish_attribute(nlp_publisher):
 
     # Test case where nodes have not been created beforehand
     assert not nlp_publisher.format_and_publish_attribute(
-        entity_value=entity_value,
+        iri=nlp_publisher.attribute_iris["Text"],
+        value=entity_value,
         entity_id=entity_id,
         published_node_id="test_node_id",
     )
@@ -71,7 +72,8 @@ def test_format_and_publish_attribute(nlp_publisher):
     # Test case when nodes have been created
     published_nodes = nlp_publisher.format_and_publish_nodes(large_findings)
     published_attribute = nlp_publisher.format_and_publish_attribute(
-        entity_value=entity_value,
+        iri=nlp_publisher.attribute_iris["Text"],
+        value=entity_value,
         entity_id=entity_id,
         published_node_id=published_nodes[0].id,
     )

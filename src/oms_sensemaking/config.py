@@ -103,6 +103,9 @@ class Settings(BaseSettings):
     create_source_if_none: bool = Field(False, description="Allow creation of source")
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
 
+    # General IRIs
+    url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
+    identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
 
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
@@ -128,8 +131,8 @@ class Settings(BaseSettings):
                                   description="IRI for Document Entity")
     nlp_date_iri: str = Field("https://foundry.ai.mil/NIEM/v5.2/DateType",
                               description="IRI for Date Entity")
-    nlp_attribute_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object",
-                                   description="Text attribute")
+    nlp_text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object",
+                              description="Text attribute")
     # NLP Relationship IRIs
     nlp_work_for_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
                                   description="Work for")

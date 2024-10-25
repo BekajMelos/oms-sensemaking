@@ -40,6 +40,11 @@ class NlpOmsPublisher:
             "Located_In": SETTINGS.nlp_located_in_iri,
             "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
         }
+        self.attribute_iris = {
+            "URL": SETTINGS.url_iri,
+            "Identifier": SETTINGS.identifier_iri,
+            "Text": SETTINGS.nlp_text_iri,
+        }
 
     def publish(self, findings: dict) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship]]:
         """
@@ -79,16 +84,21 @@ class NlpOmsPublisher:
             self.node_id_mapping[entity["uuid"]] = published_node.id
 
             # Publish attribute containing entity's text
-            self.format_and_publish_attribute(entity["value"], entity["uuid"], published_node.id)
+            self.format_and_publish_attribute(
+                iri=self.attribute_iris["Text"],
+                value=entity["value"],
+                entity_id=entity["uuid"],
+                published_node_id=published_node.id,
+            )
 
         document_entity = findings["document_entity"]
 
         if document_entity:
-            # Format and publish the document node
-            published_document_node = self.oms_crud_tool.create_node(
+            # Format and publish the Report node
+            published_report_node = self.oms_crud_tool.create_node(
                 CreateNodeInput(
                     acm=self.acm,
-                    name="Document Entity",
+                    name="Report",
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
                     classIri=self.node_iris["DOCUMENT"],
@@ -97,14 +107,28 @@ class NlpOmsPublisher:
             )
 
             # Add published document node to list of published document nodes
-            published_nodes.append(published_document_node)
+            published_nodes.append(published_report_node)
 
             # Map document entity ID to the published document Node ID
-            self.node_id_mapping[document_entity["document_id"]] = published_document_node.id
+            self.node_id_mapping[document_entity["document_id"]] = published_report_node.id
 
-            # Publish attribute containing document's text
+            # Grab the source
+            source = self.oms_crud_tool.get_source(source_id=self.source_id)
+
+            # Publish attribute containing Report's URL
             self.format_and_publish_attribute(
-                document_entity["value"], document_entity["document_id"], published_document_node.id
+                iri=self.attribute_iris["URL"],
+                value=source.uri or "No URL",
+                entity_id=document_entity["document_id"],
+                published_node_id=published_report_node.id,
+            )
+
+            # Publish attribute containing Report's Identifier
+            self.format_and_publish_attribute(
+                iri=self.attribute_iris["Identifier"],
+                value=source.identifier or "No Identifier",
+                entity_id=document_entity["document_id"],
+                published_node_id=published_report_node.id,
             )
 
         return published_nodes
@@ -164,24 +188,21 @@ class NlpOmsPublisher:
         return published_relationships
 
     def format_and_publish_attribute(
-        self, entity_value: str, entity_id: str, published_node_id: str
+        self, iri: str, value: str, entity_id: str, published_node_id: str
     ) -> CreateAttributeCreateAttribute | None:
         """
         Format and publish the published Nodes' attributes
-        :param entity_value: Entity text value to create attribute from
+        :param iri: IRI of the attribute to be published
+        :param value: The value of the attribute to be published
         :param entity_id: The entity's unique identifier
         :param published_node_id: Node to relate to attribute
         """
         # First check if the entity has been created as a node
         if entity_id in self.node_id_mapping:
-            # Truncate the text if it is too long for an attribute value
-            if len(entity_value) > 2048:  # max attribute value length is 2048
-                entity_value = entity_value[:2045] + "..."
-
             return self.oms_crud_tool.create_attribute(
                 CreateAttributeInput(
-                    attributeIri=SETTINGS.nlp_attribute_iri,
-                    attributeValue=entity_value,
+                    attributeIri=iri,
+                    attributeValue=value,
                     attributeType=AttributeType.STRING,
                     confidence=Confidence.UNKNOWN,
                     sourceId=self.source_id,
