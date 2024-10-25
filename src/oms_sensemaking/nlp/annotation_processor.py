@@ -1,5 +1,6 @@
 """Annotation Processor."""
 
+import logging
 import re
 from uuid import uuid4
 
@@ -7,6 +8,8 @@ from oms_sensemaking.nlp.models.document_as_entity import DocumentAsEntity
 from oms_sensemaking.nlp.models.document_has_relation import DocumentHasRelation
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class AnnotationProcessor:
@@ -64,13 +67,13 @@ class AnnotationProcessor:
                     "type": match.group("type"),
                     "objectId": match.group("objectId"),
                     "uuid": entity_uuid,
-                    "hstart": int(match.group("hstart")),
-                    "hend": int(match.group("hend")),
-                    "estart": int(match.group("estart")),
-                    "eend": int(match.group("eend")),
-                    "headPosition": int(match.group("headPosition")),
+                    "hstart": match.group("hstart"),
+                    "hend": match.group("hend"),
+                    "estart": match.group("estart"),
+                    "eend": match.group("eend"),
+                    "headPosition": match.group("headPosition"),
                     "value": match.group("value"),
-                    "corefID": int(match.group("corefID")),
+                    "corefID": match.group("corefID"),
                 }
 
                 if match.group("type") != "O":
@@ -92,8 +95,8 @@ class AnnotationProcessor:
                 "type": match.group("type"),
                 "objectId": f"RelationMention-{relation_count}",
                 "uuid": str(uuid4()),
-                "start": int(match.group("start")),
-                "end": int(match.group("end")),
+                "start": match.group("start"),
+                "end": match.group("end"),
                 "relations": match.group("relations").split("; "),
                 "entities": [],
             }
@@ -114,13 +117,13 @@ class AnnotationProcessor:
                         "type": entity_match.group("type"),
                         "objectId": entity_object_id,
                         "uuid": entity_uuid,
-                        "hstart": int(entity_match.group("hstart")),
-                        "hend": int(entity_match.group("hend")),
-                        "estart": int(entity_match.group("estart")),
-                        "eend": int(entity_match.group("eend")),
-                        "headPosition": int(entity_match.group("headPosition")),
+                        "hstart": entity_match.group("hstart"),
+                        "hend": entity_match.group("hend"),
+                        "estart": entity_match.group("estart"),
+                        "eend": entity_match.group("eend"),
+                        "headPosition": entity_match.group("headPosition"),
                         "value": entity_match.group("value"),
-                        "corefID": int(entity_match.group("corefID")),
+                        "corefID": entity_match.group("corefID"),
                     }
                     # Add the entity to the relation's entities
                     relation["entities"].append(entity)
@@ -128,6 +131,8 @@ class AnnotationProcessor:
             # Add the relation to the list of relations IF it has a type AND its entities both have types
             if relation["type"] != "_NR" and len(relation["entities"]) == 2:
                 relationships.append(relation)
+            elif len(relation["entities"]) != 2:
+                LOGGER.warning("Relationship found without exactly two entities.")
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
