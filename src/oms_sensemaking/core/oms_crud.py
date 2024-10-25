@@ -202,8 +202,9 @@ class OmsCrudTool:
     ) -> CreateSourceCreateSource:
         """Creates an originator, a provider, and a source for test purposes"""
         # Create test originator if it doesn't already exist
-        if self.get_originator_by_name(test_originator_name).totalSize > 0:
-            originator = self.get_originator_by_name(test_originator_name).data[0]
+        originator_by_name = self.get_originator_by_name(test_originator_name)
+        if originator_by_name.totalSize > 0:
+            originator = originator_by_name.data[0]
         else:
             originator = self.create_originator(
                 CreateOriginatorInput(
@@ -215,8 +216,9 @@ class OmsCrudTool:
             )
 
         # Create test provider if it doesn't already exist
-        if self.get_provider_by_name(test_provider_name).totalSize > 0:
-            provider = self.get_provider_by_name(test_provider_name).data[0]
+        provider_by_name = self.get_provider_by_name(test_provider_name)
+        if provider_by_name.totalSize > 0:
+            provider = provider_by_name.data[0]
         else:
             provider = self.create_provider(
                 CreateProviderInput(
@@ -229,8 +231,9 @@ class OmsCrudTool:
             )
 
         # Create test source if it doesn't already exist
-        if self.get_source_by_name(test_source_name).totalSize > 0:
-            source = self.get_source_by_name(test_source_name).data[0]
+        source_by_name = self.get_source_by_name(test_source_name)
+        if source_by_name.totalSize > 0:
+            source = source_by_name.data[0]
         else:
             source = self.create_source(
                 CreateSourceInput(
