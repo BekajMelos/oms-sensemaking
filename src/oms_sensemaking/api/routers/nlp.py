@@ -25,10 +25,12 @@ def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
 
     # Validate the source before running the pipeline
     if not nlp.validate_source(nlp_req.source_id):
+        LOGGER.error("Source ID is invalid. Please make sure the source exists.")
         raise HTTPException(status_code=404, detail="Invalid source")
     else:
         # Run the pipeline
         reader = NlpStringReader(nlp_req.text)
+        LOGGER.info("Running the NLP Service pipeline")
         findings = nlp.run_service(
             acm=nlp_req.acm, nlp_reader=reader, source_id=nlp_req.source_id, corenlp_client=corenlp_client
         )

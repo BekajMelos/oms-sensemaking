@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -16,6 +17,8 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class NlpOmsPublisher:
@@ -51,7 +54,9 @@ class NlpOmsPublisher:
         Run the publisher on the findings
         :param findings: The result of the NLP analysis on the body of text
         """
+        LOGGER.info("Publishing nodes to OMS")
         published_nodes = self.format_and_publish_nodes(findings)
+        LOGGER.info("Publishing relationships to OMS")
         published_relationships = self.format_and_publish_relationships(findings)
         return published_nodes, published_relationships
 

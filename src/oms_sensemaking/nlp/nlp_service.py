@@ -33,13 +33,16 @@ class NlpService:
 
     def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
+        LOGGER.info("Starting the NLP Sensemaker process")
         execution_time = utcnow_with_timezone()
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
         # Submit the findings to OMS
+        LOGGER.info("Submitting findings to OMS")
         self.submit_findings_to_oms(acm=acm, findings=findings, source_id=source_id)
 
         # Submit findings to postgis
+        LOGGER.info("Submitting findings to Postgis")
         self.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
 
         return findings
@@ -54,7 +57,9 @@ class NlpService:
         # Use the NLP Sensemaker to process the text data for findings
         submission_data = nlp_reader.read()
         nlp_sensemaker = NlpSensemaker(corenlp_client)
+        LOGGER.info("Starting the NLP Sensemaker")
         findings = nlp_sensemaker.process_data(submission_data)
+        LOGGER.info("Returning NLP Sensemaker findings")
 
         # Return as dictionary to API for response
         return self.findings_to_dict(findings)
@@ -103,6 +108,7 @@ class NlpService:
         """
         nlp_publisher = NlpOmsPublisher(source_id=source_id, acm=acm)
         nlp_publisher.publish(findings)
+        LOGGER.info("Findings submitted to OMS")
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
         # Convert findings data to dicts for serializable FastAPI response

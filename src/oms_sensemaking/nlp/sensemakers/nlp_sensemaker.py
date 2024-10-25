@@ -1,6 +1,7 @@
 """Natural Language Processing (NLP) Sensemaker."""
 
 import argparse
+import logging
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -8,6 +9,8 @@ from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class NlpSensemaker(Sensemaker):
@@ -42,12 +45,16 @@ class NlpSensemaker(Sensemaker):
 
     def use_corenlp_service(self, document: str) -> str:
         """Access the CoreNlpService to annotate text."""
+        LOGGER.info("Calling the CoreNLP Client")
         annotated_doc = self.corenlp_client.annotate_document_str(text=document)
+        LOGGER.debug(f"Annotated document: {annotated_doc}")
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """Use the AnnotationProcessor to get the nodes and relations from the submitted data."""
+        LOGGER.info("Calling the Annotation Processor")
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
+        LOGGER.debug(f"Processed annotation: {nodes_and_relations}")
         return nodes_and_relations
 
 
