@@ -18,11 +18,13 @@ class CoreNlpClient:
         :param props:
         """
         if not props:
-            self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
+            self._props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
         else:
-            self.props = props
+            self._props = props
+        LOGGER.warning(f"CoreNLP Client 'outputFormat' is set to {self._props["outputFormat"]}")
+
         self.hostname = hostname
-        self.url = f"http://{self.hostname}/?properties={self.props}"
+        self.url = f"http://{self.hostname}/?properties={self._props}"
 
     def annotate_document_str(self, text: str) -> str:
         """
@@ -33,11 +35,6 @@ class CoreNlpClient:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
-
-        # Making sure that the CoreNLP output format is appropriate
-        if self.props["outputFormat"] != "text":
-            LOGGER.warning(f"CoreNLP Client 'outputFormat' was set to {self.props["outputFormat"]}, changing to 'text'")
-            self.props["outputFormat"] = "text"
 
         # Handling empty text submission case
         if not text:
@@ -58,11 +55,6 @@ class CoreNlpClient:
         :param text: The document text to annotate.
         :return: The annotated document.
         """
-
-        # Making sure that the CoreNLP output format is appropriate
-        if self.props["outputFormat"] != "xml":
-            LOGGER.warning(f"CoreNLP Client 'outputFormat' was set to {self.props["outputFormat"]}, changing to 'xml'")
-            self.props["outputFormat"] = "xml"
 
         # Handling empty text submission case
         if not text:
