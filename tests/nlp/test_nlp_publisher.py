@@ -78,5 +78,5 @@ def test_format_and_publish_attribute(nlp_publisher):
         published_node_id=published_nodes[0].id,
     )
     assert published_attribute
-    assert published_attribute.source.id == nlp_publisher.source.id
+    assert published_attribute.source.id == nlp_publisher.source_id
     assert published_attribute.attributeValue == entity_value
