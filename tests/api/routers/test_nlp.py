@@ -47,9 +47,8 @@ def test_invalid_source_id(client: TestClient, mock_db: Session, mocker, mock_so
     mocker.patch("oms_sensemaking.api.routers.nlp.corenlp_client", mock_client)
     invalid_uuid = "5cb1dfa5-e1e8-400e-a148-d0df60e3ba9d"
 
-    with pytest.raises(ValueError) as error:
-        client.post(
-            "/nlp",
-            json=NlpRequest(acm=DEFAULT_ACM, source_id=invalid_uuid, text=test_text).model_dump(),
-        )
-    assert str(error.value == f"Source with ID {invalid_uuid} does not exist.")
+    response: Response = client.post(
+        "/nlp",
+        json=NlpRequest(acm=DEFAULT_ACM, source_id=invalid_uuid, text=test_text).model_dump(),
+    )
+    assert response.status_code == 404

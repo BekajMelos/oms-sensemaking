@@ -110,6 +110,12 @@ class NlpService:
         findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
         return findings_dict
 
+    def validate_source(self, source_id: str) -> bool:
+        """Validate the source referenced by the source_id"""
+        # Query OMS_SDK for a source with the given source_id
+        validation = bool(self.oms_crud_tool.get_source(source_id))
+        return validation
+
     def create_test_source(self) -> CreateSourceCreateSource:
         source = self.oms_crud_tool.create_test_source()
         return source
@@ -123,4 +129,5 @@ if __name__ == "__main__":
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
     source_id = nlp_service.create_test_source().id
-    nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
+    if nlp_service.validate_source(source_id=source_id):
+        nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
