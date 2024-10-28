@@ -46,6 +46,11 @@ class NlpOmsPublisher:
             "Text": SETTINGS.nlp_text_iri,
         }
 
+        # Grab and validate the source
+        self.source = self.oms_crud_tool.get_source(source_id=self.source_id)
+        if not self.source:
+            raise ValueError(f"Source with ID {self.source_id} does not exist.")
+
     def publish(self, findings: dict) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship]]:
         """
         Run the publisher on the findings
@@ -113,14 +118,11 @@ class NlpOmsPublisher:
             # Map document entity ID to the published document Node ID
             self.node_id_mapping[document_entity["document_id"]] = published_report_node.id
 
-            # Grab the source
-            source = self.oms_crud_tool.get_source(source_id=self.source_id)
-
             # Publish attribute containing Report's URL
             no_url_value = "No URL"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["URL"],
-                value=source.uri or no_url_value,
+                value=self.source.uri or no_url_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
@@ -129,7 +131,7 @@ class NlpOmsPublisher:
             no_identifier_value = "No Identifier"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["Identifier"],
-                value=source.identifier or no_identifier_value,
+                value=self.source.identifier or no_identifier_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
