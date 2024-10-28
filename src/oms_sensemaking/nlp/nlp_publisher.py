@@ -208,6 +208,7 @@ class NlpOmsPublisher:
                     sourceId=self.source_id,
                     nodeId=published_node_id,
                     acm=self.acm,
+                    tags=SETTINGS.nlp_tags,
                 )
             )
         else:
