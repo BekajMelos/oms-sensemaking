@@ -118,19 +118,19 @@ class NlpOmsPublisher:
             self.node_id_mapping[document_entity["document_id"]] = published_report_node.id
 
             # Publish attribute containing Report's URL
-            url_value = self.source.uri or "No URL"
+            no_url_value = "No URL"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["URL"],
-                value=url_value,
+                value=self.source.uri or no_url_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
 
             # Publish attribute containing Report's Identifier
-            identifier_value = self.source.identifier or "No Identifier"
+            no_identifier_value = "No Identifier"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["Identifier"],
-                value=identifier_value,
+                value=self.source.identifier or no_identifier_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
