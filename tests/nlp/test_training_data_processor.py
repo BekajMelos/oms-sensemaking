@@ -5,13 +5,13 @@ from oms_sensemaking.nlp.models.doccano_result import DoccanoResult
 from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 
 from .mock_corenlp_client import MockCoreNlpClient
-from .mock_responses import mock_response_bunched_text, mock_response_no_text, mock_response_normal_text
+from .mock_responses import mock_response_bunched_text_xml, mock_response_no_text_xml, mock_response_normal_text_xml
 
 mock_client = MockCoreNlpClient(
     props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
 )
 
-mock_client.set_response(mock_response_normal_text)
+mock_client.set_response(mock_response_normal_text_xml)
 
 tdp = TrainingDataProcessor(
     annotated_filepath="",
@@ -23,7 +23,7 @@ tdp = TrainingDataProcessor(
 def test_process_doccano_result():
     """Tests when entities and relations exist."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text)
+    mock_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoEntity
     label = "Thing"
@@ -64,7 +64,7 @@ def test_process_doccano_result():
 def test_process_doccano_result_no_relation():
     """Tests when there are no relations."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text)
+    mock_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoEntity
     label = "Thing"
@@ -99,7 +99,7 @@ def test_process_doccano_result_no_relation():
 def test_process_doccano_result_no_entities_relations():
     """Tests when entities and relations do not exist."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text)
+    mock_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoResult
     result_id = 111
@@ -131,16 +131,16 @@ def test_tokenize_text():
     text4 = "ThisissomesampletextrelatingEntity1toEntity2."
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text)
+    mock_client.set_response(mock_response_normal_text_xml)
     tokenized1 = tdp.tokenize_text(text1)
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_no_text)
+    mock_client.set_response(mock_response_no_text_xml)
     tokenized2 = tdp.tokenize_text(text2)
     tokenized3 = tdp.tokenize_text(text3)
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_bunched_text)
+    mock_client.set_response(mock_response_bunched_text_xml)
     tokenized4 = tdp.tokenize_text(text4)
 
     assert len(tokenized1) == 10
@@ -151,7 +151,7 @@ def test_tokenize_text():
 
 def test_map_entities_to_tokens():
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text)
+    mock_client.set_response(mock_response_normal_text_xml)
 
     """Tests building the mappings between entities and text tokens."""
     # Make a test DoccanoEntity

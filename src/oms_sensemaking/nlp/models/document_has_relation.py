@@ -1,8 +1,6 @@
 """Utilities for working with documents as relations."""
 
 from dataclasses import dataclass
-from typing import Any
-from uuid import UUID
 
 
 @dataclass
@@ -12,12 +10,14 @@ class DocumentHasRelation:
     """
     Create a new instance of DocumentHasRelation.
 
-    :param object_id: The unique identifier of the object.
-    :param document_id: The unique identifier of the document.
-    :param ner_entity: The NER entity.
+    :param doc_obj_id: The  identifier of the document object.
+    :param document_uuid: The unique identifier of the document.
+    :param entity_obj_id: The NER entity object id.
+    :param entity_uuid: The unique id of the entity.
     """
 
-    object_id: str
-    document_id: str | UUID
-    ner_entity: Any
+    doc_obj_id: str
+    document_uuid: str
+    entity_obj_id: str
+    entity_uuid: str
     type: str = "Document_Contains_Entity"

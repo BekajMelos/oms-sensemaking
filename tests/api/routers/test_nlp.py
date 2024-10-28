@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
 from oms_sensemaking.config import SETTINGS
 from tests.nlp.mock_corenlp_client import MockCoreNlpClient
-from tests.nlp.mock_responses import mock_response_short_text
+from tests.nlp.mock_responses import mock_response_short_text_str
 
 test_source_id = "sensemaking-test"
 test_text = "The quick brown fox jumps over the lazy dog."
@@ -17,7 +17,7 @@ test_text = "The quick brown fox jumps over the lazy dog."
 def test_extract_entities_and_relationships(client: TestClient, db: Session, mocker):
     # Creating mock corenlp client and using mocker.patch to put it in place of the real client
     mock_client = MockCoreNlpClient({}, SETTINGS.corenlp_localhost)
-    mock_client.set_response(mock_response_short_text)
+    mock_client.set_response(mock_response_short_text_str)
     mocker.patch("oms_sensemaking.api.routers.nlp.corenlp_client", mock_client)
 
     response: Response = client.post(

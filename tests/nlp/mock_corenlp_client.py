@@ -9,5 +9,8 @@ class MockCoreNlpClient(CoreNlpClient):
     def set_response(self, response):
         self.response = response
 
-    def annotate_document(self, text: str) -> list:
+    def annotate_document_str(self, text: str) -> str:
+        return self.response
+
+    def annotate_document_xml(self, text: str) -> list:
         return self.response
