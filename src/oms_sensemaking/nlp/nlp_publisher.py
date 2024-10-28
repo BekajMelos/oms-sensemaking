@@ -22,7 +22,6 @@ class NlpOmsPublisher:
     """Formats and publishes the NLP Findings"""
 
     def __init__(self, source_id: str, acm: dict):
-        self.source_id = source_id
         self.acm = acm
         self.oms_crud_tool = OmsCrudTool()
         self.node_id_mapping: dict[str, str] = {}
@@ -47,9 +46,9 @@ class NlpOmsPublisher:
         }
 
         # Grab and validate the source
-        self.source = self.oms_crud_tool.get_source(source_id=self.source_id)
+        self.source = self.oms_crud_tool.get_source(source_id=source_id)
         if not self.source:
-            raise ValueError(f"Source with ID {self.source_id} does not exist.")
+            raise ValueError(f"Source with ID {source_id} does not exist.")
 
     def publish(self, findings: dict) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship]]:
         """
@@ -160,7 +159,7 @@ class NlpOmsPublisher:
                         name=self.relationship_iris[relationship_classification],
                         startNodeId=self.node_id_mapping[first_ent_id],
                         endNodeId=self.node_id_mapping[second_ent_id],
-                        sourceId=self.source_id,
+                        sourceId=self.source.id,
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
                         objectPropertyIri=self.relationship_iris[relationship_classification],
@@ -182,7 +181,7 @@ class NlpOmsPublisher:
                         name=self.relationship_iris[rel_type],
                         startNodeId=self.node_id_mapping[doc_id],
                         endNodeId=self.node_id_mapping[ent_id],
-                        sourceId=self.source_id,
+                        sourceId=self.source.id,
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
                         objectPropertyIri=self.relationship_iris[rel_type],
@@ -210,7 +209,7 @@ class NlpOmsPublisher:
                     attributeValue=value,
                     attributeType=AttributeType.STRING,
                     confidence=Confidence.UNKNOWN,
-                    sourceId=self.source_id,
+                    sourceId=self.source.id,
                     nodeId=published_node_id,
                     acm=self.acm,
                     tags=SETTINGS.nlp_tags,
