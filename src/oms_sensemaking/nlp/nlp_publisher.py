@@ -17,10 +17,6 @@ from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
-REPORT_NODE_NAME = "Report"
-NO_URL_VALUE = "No URL"
-NO_IDENTIFIER_VALUE = "No Identifier"
-
 
 class NlpOmsPublisher:
     """Formats and publishes the NLP Findings"""
@@ -103,10 +99,11 @@ class NlpOmsPublisher:
 
         if document_entity:
             # Format and publish the Report node
+            report_name = "Report"
             published_report_node = self.oms_crud_tool.create_node(
                 CreateNodeInput(
                     acm=self.acm,
-                    name=REPORT_NODE_NAME,
+                    name=report_name,
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
                     classIri=self.node_iris["DOCUMENT"],
@@ -121,7 +118,7 @@ class NlpOmsPublisher:
             self.node_id_mapping[document_entity["document_id"]] = published_report_node.id
 
             # Publish attribute containing Report's URL
-            url_value = self.source.uri or NO_URL_VALUE
+            url_value = self.source.uri or "No URL"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["URL"],
                 value=url_value,
@@ -130,7 +127,7 @@ class NlpOmsPublisher:
             )
 
             # Publish attribute containing Report's Identifier
-            identifier_value = self.source.identifier or NO_IDENTIFIER_VALUE
+            identifier_value = self.source.identifier or "No Identifier"
             self.format_and_publish_attribute(
                 iri=self.attribute_iris["Identifier"],
                 value=identifier_value,
