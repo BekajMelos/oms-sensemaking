@@ -40,6 +40,9 @@ if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
 
+# Update OMSB URL
+SETTINGS.omsb_url = "https://localhost:8020/graphql"
+
 # Source and provider creation for tests
 if not SETTINGS.create_source_if_none:
     SETTINGS.create_source_if_none = True
