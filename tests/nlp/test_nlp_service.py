@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, RelationshipQuery
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import SETTINGS
@@ -38,9 +39,9 @@ def mock_db(db: Session) -> Iterator[Session]:
     yield db
 
 
-def test_run_service(mock_db):
+def test_run_service(mock_db, mock_source):
     result = service.run_service(
-        acm=DEFAULT_ACM, nlp_reader=reader, source_id=source_id, corenlp_client=mock_corenlp_client
+        acm=DEFAULT_ACM, nlp_reader=reader, source_id=mock_source.id, corenlp_client=mock_corenlp_client
     )
     assert result
 
@@ -69,8 +70,19 @@ def test_submit_findings_to_postgis(mock_db):
         assert finding.finding_data == mock_findings
 
 
-def test_submit_findings_to_oms(mock_db):
+def test_submit_findings_to_oms(mock_db, mock_source):
     """Not implemented: tests submitting findings to OMS"""
-    service.submit_findings_to_oms(findings=mock_findings, source_id=source_id)
-    # TODO: Get the findings from OMS and verify that they are correct
-    pytest.skip("Skipping because this function is not completed yet.")
+    service.submit_findings_to_oms(acm=DEFAULT_ACM, findings=mock_findings, source_id=mock_source.id)
+
+    # Call a get operation to get the nodes, relationships, and attributes
+    nodes = service.oms_crud_tool.get_nodes(node_info=NodeQuery(tags=SETTINGS.nlp_tags))
+    relationships = service.oms_crud_tool.get_relationships(relationship_info=RelationshipQuery(tags=SETTINGS.nlp_tags))
+    attributes = service.oms_crud_tool.get_attributes(attribute_info=AttributeQuery(tags=SETTINGS.nlp_tags))
+    assert nodes
+    assert relationships
+    assert attributes
+
+
+def test_create_test_source(mock_db, mock_source):
+    source = service.create_test_source()
+    assert source.name == "nlp_test_source"

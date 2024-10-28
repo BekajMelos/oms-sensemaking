@@ -9,10 +9,14 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import (
+    CreateSourceCreateSource,
+)
 from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
@@ -35,6 +39,17 @@ if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
 
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
+
+# Update OMSB URL
+SETTINGS.omsb_url = "https://localhost:8020/graphql"
+
+# Source and provider creation for tests
+if not SETTINGS.create_source_if_none:
+    SETTINGS.create_source_if_none = True
+if not SETTINGS.create_provider_if_none:
+    SETTINGS.create_provider_if_none = True
+
+SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 
 @pytest.fixture
@@ -66,3 +81,10 @@ def db() -> Iterator[Session]:
 @pytest.fixture
 def mock_oms_client():
     return mock.MagicMock(spec=Client)
+
+
+@pytest.fixture(scope="session")
+def mock_source() -> CreateSourceCreateSource:
+    oms_crud_tool = OmsCrudTool()
+    source = oms_crud_tool.create_test_source()
+    yield source

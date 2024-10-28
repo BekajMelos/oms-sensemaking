@@ -6,10 +6,12 @@ from datetime import datetime
 from uuid import uuid4
 
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
@@ -26,13 +28,16 @@ load_dotenv()
 class NlpService:
     """Intermediary between the API and the NLP Business Logic"""
 
+    def __init__(self):
+        self.oms_crud_tool = OmsCrudTool()
+
     def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
         execution_time = utcnow_with_timezone()
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
-        # Submit the findings to OMS (future work)
-        self.submit_findings_to_oms(findings=findings, source_id=source_id)
+        # Submit the findings to OMS
+        self.submit_findings_to_oms(acm=acm, findings=findings, source_id=source_id)
 
         # Submit findings to postgis
         self.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
@@ -89,13 +94,14 @@ class NlpService:
             result = findings_query.scalars().all()
         return result
 
-    def submit_findings_to_oms(self, findings: dict, source_id: str):
+    def submit_findings_to_oms(self, acm: dict, findings: dict, source_id: str):
         """
         Submit the Entities and Relationships to OMS
+        :param acm: The acm submitted with the API call
         :param findings: found Entities and Relationships
         :param source_id: ID of the text's Source
         """
-        nlp_publisher = NlpOmsPublisher(source_id)
+        nlp_publisher = NlpOmsPublisher(source_id=source_id, acm=acm)
         nlp_publisher.publish(findings)
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
@@ -104,11 +110,15 @@ class NlpService:
         findings_dict["document_relationships"] = [dataclasses.asdict(rel) for rel in findings.document_relationships]
         return findings_dict
 
-    def validate_source(self, source_id: str):
+    def validate_source(self, source_id: str) -> bool:
         """Validate the source referenced by the source_id"""
-        # TODO: Use this to validate the source
-        # 1. Query OMS_SDK for a source with the given source_id
-        pass
+        # Query OMS_SDK for a source with the given source_id
+        validation = bool(self.oms_crud_tool.get_source(source_id))
+        return validation
+
+    def create_test_source(self) -> CreateSourceCreateSource:
+        source = self.oms_crud_tool.create_test_source()
+        return source
 
 
 # TODO: Delete main once the API is up and running. Do the following in the API call
@@ -116,7 +126,8 @@ if __name__ == "__main__":
     text = "This is some sample text relating Entity1 to Entity2"
     acm: dict = {}
     doc_id = "41d83ecb-4c60-4294-9c51-eb4d1e444df6"
-    source_id = "1"
     nlp_service = NlpService()
     reader = NlpStringReader(text=text, document_id=doc_id)
-    nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
+    source_id = nlp_service.create_test_source().id
+    if nlp_service.validate_source(source_id=source_id):
+        nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))

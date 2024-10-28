@@ -99,6 +99,14 @@ class Settings(BaseSettings):
 
     oms_version_env: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
 
+    # OMS_SDK-related settings
+    create_source_if_none: bool = Field(False, description="Allow creation of source")
+    create_provider_if_none: bool = Field(False, description="Allow creation of provider")
+
+    # General IRIs
+    url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
+    identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
+
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
                               description="Host and port for CoreNLP when running local script.")
@@ -110,6 +118,29 @@ class Settings(BaseSettings):
     )
     algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
     nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
+    nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
+
+    # NLP Node IRIs (change once custom model is trained)
+    nlp_person_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Person",
+                                description="IRI for Person entity")
+    nlp_organization_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
+                                      description="IRI for Organization Entity")
+    nlp_location_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
+                               description="IRI for Place Entity")
+    nlp_document_iri: str = Field("https://foundry.ai.mil/NIEM/v5.2/DocumentType",
+                                  description="IRI for Document Entity")
+    nlp_date_iri: str = Field("https://foundry.ai.mil/NIEM/v5.2/DateType",
+                              description="IRI for Date Entity")
+    nlp_text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object",
+                              description="Text attribute")
+    # NLP Relationship IRIs
+    nlp_work_for_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
+                                  description="Work for")
+    nlp_live_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000171", description="Live in")
+    nlp_located_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000171", description="Located in")
+    nlp_org_based_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000170", description="Org based in")
+    nlp_document_contains_entity_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/describes",
+                                       description="Document contiains entity")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")

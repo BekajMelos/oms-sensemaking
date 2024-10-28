@@ -16,5 +16,5 @@ class DocumentAsEntity:
     """
 
     document_id: str | UUID
-    text: str
+    value: str
     entity_type: str = "DOCUMENT"
