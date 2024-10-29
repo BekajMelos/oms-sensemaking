@@ -42,13 +42,18 @@ class AnnotationProcessor:
         :param annotation: The annotation.
         :return: An object representing the entities and relationships.
         """
+        LOGGER.info("NLP: Gathering entities and relationships from the annotation")
+
         entities = self.find_entities(annotation)  # Get entities from annotation
         relationships = self.find_relationships(annotation)  # Get relations from annotation
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
+
+        LOGGER.debug(f"NLP: Findings: {entities_and_relationships}")
         return entities_and_relationships
 
     def find_entities(self, annotation: str) -> list:
         """Grab the nodes from the annotation."""
+        LOGGER.debug("NLP: Finding entities in the annotation")
         entities = []
 
         # Apply regex to the annotation to find the entities
@@ -80,10 +85,12 @@ class AnnotationProcessor:
                 if is_object_entity:
                     entities.append(entity)
 
+        LOGGER.debug(f"NLP: Annotation entities: {entities}")
         return entities
 
     def find_relationships(self, annotation: str) -> list:
         """Grab the relationships from the annotation."""
+        LOGGER.debug("NLP: Finding relationships in the annotation")
         relationships = []
 
         # Find relations from the text using the regex pattern
@@ -135,7 +142,9 @@ class AnnotationProcessor:
             if is_relationship and len(relation["entities"]) == 2:
                 relationships.append(relation)
             elif len(relation["entities"]) != 2:
-                LOGGER.warning("Relationship found without exactly two entities.")
+                LOGGER.warning(f"Relationship found without exactly two entities: {relation}")
+
+        LOGGER.debug(f"NLP: Annotation relationships: {relationships}")
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
@@ -147,6 +156,8 @@ class AnnotationProcessor:
         :param relationships:
         :return:
         """
+        LOGGER.debug("NLP: Recording relationship between document/report and found entities.")
+
         document_relationships = []
 
         # 1. Create entity for document
@@ -165,6 +176,9 @@ class AnnotationProcessor:
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
+
+        LOGGER.debug(f"NLP: Document/report relationships: f{document_relationships}")
+
         return EntitiesAndRelationships(
             ner_entities=entities,
             ner_relationships=relationships,

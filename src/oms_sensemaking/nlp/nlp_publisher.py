@@ -58,10 +58,12 @@ class NlpOmsPublisher:
         Run the publisher on the findings
         :param findings: The result of the NLP analysis on the body of text
         """
-        LOGGER.info("Publishing nodes to OMS")
+        LOGGER.info("Publishing nodes and attributes to OMS")
         published_nodes = self.format_and_publish_nodes(findings)
+
         LOGGER.info("Publishing relationships to OMS")
         published_relationships = self.format_and_publish_relationships(findings)
+
         return published_nodes, published_relationships
 
     def format_and_publish_nodes(self, findings: dict) -> list[CreateNodeCreateNode]:
@@ -72,6 +74,7 @@ class NlpOmsPublisher:
         # 1. Get the findings[ner_entities] and findings[document_entity]
         # 2. For each, format as a Node and publish
         published_nodes = []
+        published_attributes = []
 
         for entity in findings["ner_entities"]:
             # Format and publish node
@@ -93,12 +96,13 @@ class NlpOmsPublisher:
             self.node_id_mapping[entity["uuid"]] = published_node.id
 
             # Publish attribute containing entity's text
-            self.format_and_publish_attribute(
+            attribute = self.format_and_publish_attribute(
                 iri=self.attribute_iris["Text"],
                 value=entity["value"],
                 entity_id=entity["uuid"],
                 published_node_id=published_node.id,
             )
+            published_attributes.append(attribute)
 
         document_entity = findings["document_entity"]
 
@@ -126,22 +130,26 @@ class NlpOmsPublisher:
 
             # Publish attribute containing Report's URL
             url_value = source.uri or NO_URL_VALUE
-            self.format_and_publish_attribute(
+            url_attribute = self.format_and_publish_attribute(
                 iri=self.attribute_iris["URL"],
                 value=url_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
+            published_attributes.append(url_attribute)
 
             # Publish attribute containing Report's Identifier
             identifier_value = source.identifier or NO_IDENTIFIER_VALUE
-            self.format_and_publish_attribute(
+            identifier_attribute = self.format_and_publish_attribute(
                 iri=self.attribute_iris["Identifier"],
                 value=identifier_value,
                 entity_id=document_entity["document_id"],
                 published_node_id=published_report_node.id,
             )
+            published_attributes.append(identifier_attribute)
 
+        LOGGER.info(f"Published attributes: {published_attributes}")
+        LOGGER.info(f"Published nodes: {published_nodes}")
         return published_nodes
 
     def format_and_publish_relationships(self, findings: dict) -> list[CreateRelationshipCreateRelationship]:
@@ -196,6 +204,7 @@ class NlpOmsPublisher:
                 )
                 published_relationships.append(published_document_relationship)
 
+        LOGGER.info(f"Published relationships: {published_relationships}")
         return published_relationships
 
     def format_and_publish_attribute(
@@ -223,4 +232,5 @@ class NlpOmsPublisher:
                 )
             )
         else:
+            LOGGER.warning("NLP: Attribute's entity not found. Skipping create.")
             return None

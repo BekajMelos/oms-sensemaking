@@ -19,6 +19,7 @@ corenlp_client = CoreNlpClient(props={}, hostname=SETTINGS.corenlp_host)
 @router.post("/")
 def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     """Run the NLP entities and relationships."""
+    LOGGER.info(f"NLP API Request: {nlp_req}")
 
     # Call NLP Sensemaker via the NlpService to get findings (eventually will also submit to OMS)
     nlp: NlpService = NlpService()
@@ -30,7 +31,6 @@ def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     else:
         # Run the pipeline
         reader = NlpStringReader(nlp_req.text)
-        LOGGER.info("Running the NLP Service pipeline")
         findings = nlp.run_service(
             acm=nlp_req.acm, nlp_reader=reader, source_id=nlp_req.source_id, corenlp_client=corenlp_client
         )

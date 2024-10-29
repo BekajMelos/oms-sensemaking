@@ -33,18 +33,18 @@ class NlpService:
 
     def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
-        LOGGER.info("Starting the NLP Sensemaker process")
+        LOGGER.info("Starting the NLP Service Pipeline: Sensemaker, Submit to OMS, and Submit to Postgis")
+
         execution_time = utcnow_with_timezone()
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
         # Submit the findings to OMS
-        LOGGER.info("Submitting findings to OMS")
         self.submit_findings_to_oms(acm=acm, findings=findings, source_id=source_id)
 
         # Submit findings to postgis
-        LOGGER.info("Submitting findings to Postgis")
         self.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
 
+        LOGGER.info("NLP Sensemaker Service Pipeline done.")
         return findings
 
     def run_nlp(self, nlp_reader: NlpReader, corenlp_client: CoreNlpClient) -> dict:
@@ -57,9 +57,7 @@ class NlpService:
         # Use the NLP Sensemaker to process the text data for findings
         submission_data = nlp_reader.read()
         nlp_sensemaker = NlpSensemaker(corenlp_client)
-        LOGGER.info("Starting the NLP Sensemaker")
         findings = nlp_sensemaker.process_data(submission_data)
-        LOGGER.info("Returning NLP Sensemaker findings")
 
         # Return as dictionary to API for response
         return self.findings_to_dict(findings)
@@ -71,6 +69,8 @@ class NlpService:
         :param findings: the result of running the NLP NER Sensemaker converted to a dictionary
         :param execution_time: the time at which the algorithm was executed
         """
+        LOGGER.info("NLP: Submitting findings to Postgis")
+
         # 1. Turn findings into Finding object
         finding_object = Finding(
             acm=acm,
@@ -85,11 +85,15 @@ class NlpService:
             executed_at=execution_time,
         )
 
+        LOGGER.debug(f"NLP: Submitting finding object to Postgis: {finding_object}")
+
         # 2. Submit Finding object to the Findings table
         with db_session() as db:
             db.add(finding_object)
             db.commit()
             db.refresh(finding_object)
+
+        LOGGER.info("NLP: Findings submitted to Postgis")
 
     def get_all_findings_from_postgis(self):
         """Get the findings from the postgis database"""
@@ -106,9 +110,10 @@ class NlpService:
         :param findings: found Entities and Relationships
         :param source_id: ID of the text's Source
         """
+        LOGGER.info("NLP: Submitting findings to OMS")
         nlp_publisher = NlpOmsPublisher(source_id=source_id, acm=acm)
         nlp_publisher.publish(findings)
-        LOGGER.info("Findings submitted to OMS")
+        LOGGER.info("NLP: Findings submitted to OMS")
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
         # Convert findings data to dicts for serializable FastAPI response

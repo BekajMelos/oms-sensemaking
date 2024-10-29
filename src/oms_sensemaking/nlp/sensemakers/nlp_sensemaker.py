@@ -39,22 +39,20 @@ class NlpSensemaker(Sensemaker):
         The NLP pipeline will first annotate the submitted text, and then
         process it for entities and relationships.
         """
+        LOGGER.info("NLP: Running the NLP Sensemaker")
         annotation = self.use_corenlp_service(data.text)
         processed_annotation = self.process_annotation(data, annotation)
+        LOGGER.info("NLP: Sensemaker done processing data, returning findings.")
         return processed_annotation
 
     def use_corenlp_service(self, document: str) -> str:
         """Access the CoreNlpService to annotate text."""
-        LOGGER.info("Calling the CoreNLP Client")
         annotated_doc = self.corenlp_client.annotate_document_str(text=document)
-        LOGGER.debug(f"Annotated document: {annotated_doc}")
         return annotated_doc
 
     def process_annotation(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """Use the AnnotationProcessor to get the nodes and relations from the submitted data."""
-        LOGGER.info("Calling the Annotation Processor")
         nodes_and_relations = AnnotationProcessor().extract_info(data, annotation)
-        LOGGER.debug(f"Processed annotation: {nodes_and_relations}")
         return nodes_and_relations
 
 
