@@ -76,7 +76,8 @@ class AnnotationProcessor:
                     "corefID": match.group("corefID"),
                 }
 
-                if match.group("type") != "O":
+                is_object_entity = match.group("type") != "O"
+                if is_object_entity:
                     entities.append(entity)
 
         return entities
@@ -108,7 +109,8 @@ class AnnotationProcessor:
             # Build each entity that is found in the relation
             for entity_match in nested_entities:
                 # Exclude typeless entities
-                if entity_match.group("type") != "O":
+                is_object_entity = entity_match.group("type") != "O"
+                if is_object_entity:
                     entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
                     entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
 
@@ -129,7 +131,8 @@ class AnnotationProcessor:
                     relation["entities"].append(entity)
 
             # Add the relation to the list of relations IF it has a type AND its entities both have types
-            if relation["type"] != "_NR" and len(relation["entities"]) == 2:
+            is_relationship = relation["type"] != "_NR"
+            if is_relationship and len(relation["entities"]) == 2:
                 relationships.append(relation)
             elif len(relation["entities"]) != 2:
                 LOGGER.warning("Relationship found without exactly two entities.")
