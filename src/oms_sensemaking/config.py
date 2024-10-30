@@ -58,7 +58,6 @@ class LogConfig(BaseSettings):
     @property
     def loggers(self) -> dict[str, dict]:
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
-        print(self.log_level)
         return {
             "": {  # root logger
                 "handlers": ["default"],
