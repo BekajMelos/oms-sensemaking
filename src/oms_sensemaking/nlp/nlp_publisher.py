@@ -148,8 +148,10 @@ class NlpOmsPublisher:
             )
             published_attributes.append(identifier_attribute)
 
-        LOGGER.info(f"Published attributes: {published_attributes}")
-        LOGGER.info(f"Published nodes: {published_nodes}")
+        LOGGER.info(f"NLP: Published {len(published_attributes)} Attributes to OMS.")
+        LOGGER.debug(f"NLP: Published attributes: {published_attributes}")
+        LOGGER.info(f"NLP: Published {len(published_nodes)} Nodes to OMS.")
+        LOGGER.debug(f"NLP: Published nodes: {published_nodes}")
         return published_nodes
 
     def format_and_publish_relationships(self, findings: dict) -> list[CreateRelationshipCreateRelationship]:
@@ -204,7 +206,8 @@ class NlpOmsPublisher:
                 )
                 published_relationships.append(published_document_relationship)
 
-        LOGGER.info(f"Published relationships: {published_relationships}")
+        LOGGER.info(f"NLP: Published {len(published_relationships)} Relationships to OMS.")
+        LOGGER.debug(f"NLP: Published relationships: {published_relationships}")
         return published_relationships
 
     def format_and_publish_attribute(
