@@ -18,13 +18,14 @@ class CoreNlpClient:
         :param props:
         """
         if not props:
-            self._props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
+            self.props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
         else:
-            self._props = props
-        LOGGER.warning(f"CoreNLP Client 'outputFormat' is set to {self._props["outputFormat"]}")
+            self.props = props
+        LOGGER.warning(f"CoreNLP Client 'outputFormat' is set to {self.props["outputFormat"]}")
+        LOGGER.warning(f"CoreNLP Client 'properties' is set to {self.props}")
 
         self.hostname = hostname
-        self.url = f"http://{self.hostname}/?properties={self._props}"
+        self.url = f"http://{self.hostname}/?properties={self.props}"
 
     def annotate_document_str(self, text: str) -> str:
         """

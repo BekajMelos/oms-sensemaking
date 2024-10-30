@@ -13,7 +13,7 @@ router: APIRouter = APIRouter()
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
-corenlp_client = CoreNlpClient(props={}, hostname=SETTINGS.corenlp_host)
+corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
 
 
 @router.post("/")

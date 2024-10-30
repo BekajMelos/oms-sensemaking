@@ -31,6 +31,10 @@ RUN apk update && apk add openjdk8-jre-base py3-pip && \
 WORKDIR /opt/corenlp
 COPY --from=builder /opt/corenlp .
 
+# Include the custom model(s) --- change to get path from settings
+COPY src/oms_sensemaking/nlp/training/ner-model.ser.gz .
+COPY src/oms_sensemaking/nlp/training/relation-model.ser.gz .
+
 ENV JAVA_XMX 4g
 ENV ANNOTATORS tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation
 ENV TIMEOUT_MILLISECONDS 15000
