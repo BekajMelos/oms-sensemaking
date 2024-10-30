@@ -19,7 +19,7 @@ class LogConfig(BaseSettings):
     disable_existing_loggers: bool = False
     logger_name: str = "oms_sensemaker"
     log_date_format: str = "%Y-%m-%d %H:%M:%S"
-    log_format: str = "{asctime:<20s}{levelname:<8s}{name} {message}"
+    log_format: str = "{asctime:<20s}{levelname:<8s}{threadName:<32s} {name}: {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
     log_level: str = Field("WARNING", alias='app_log_level')
@@ -58,6 +58,7 @@ class LogConfig(BaseSettings):
     @property
     def loggers(self) -> dict[str, dict]:
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
+        print(self.log_level)
         return {
             "": {  # root logger
                 "handlers": ["default"],
@@ -82,7 +83,7 @@ class LogConfig(BaseSettings):
                 "level": "INFO"
             },
             "httpx": {
-                "level": "INFO"
+                "level": "WARNING" if self.log_level == "INFO" else "INFO"
             },
             "urllib3": {
                 "level": "INFO"

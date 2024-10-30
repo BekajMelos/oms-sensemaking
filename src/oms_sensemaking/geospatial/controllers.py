@@ -134,7 +134,6 @@ class GeoSQSListener(SQSListener):
 
                 # Receive message from SQS queue
                 try:
-                    LOGGER.debug("Listening to %s", SETTINGS.sqs_queue_url)
                     response = self.sqs.receive_message(
                         QueueUrl=SETTINGS.sqs_queue_url,
                         AttributeNames=["SentTimestamp"],
@@ -159,6 +158,8 @@ class GeoSQSListener(SQSListener):
                     if ((object_event.objectType != ObjectType.ATTRIBUTE.value)
                             and (object_event.eventType != Action.CREATE.value)):
                         continue
+
+                    LOGGER.info(f"Received Geo Attribute: {object_event.objectId}")
 
                     if self.handle_event(object_event):
                         # Delete received message from queue - required, so you don't get the same message
@@ -299,6 +300,7 @@ class GeospatialSensemakerController(SensemakerController):
                     LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
                     with db_session() as db:
                         try:
+                            LOGGER.info(f"Track completed: {node_id}")
                             track: Track = get_track(db, node_id)
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points

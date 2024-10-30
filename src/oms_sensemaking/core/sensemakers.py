@@ -133,12 +133,16 @@ class Sensemaker(ABC):
             self.setup()
             with self.lock:
                 self.executed_at = datetime.now(tz=timezone.utc)
+                LOGGER.info(f"Running {self.name} {self.version_string}")
                 results: Any = self.process_data(data)
                 self.save_findings(results)
                 try:
-                    self.publisher.publish(data, results)
+                    if results:
+                        self.publisher.publish(data, results)
                 except httpx.RequestError as exc:
                     LOGGER.exception(f"An error occurred while requesting {exc.request.url!r}.")
+
+                LOGGER.info(f"Sensemaker {self.name} {self.version_string} completed")
         finally:
             self.teardown()
 
@@ -150,7 +154,10 @@ class Sensemaker(ABC):
 
         :param finding_objects: List of finding objects to write as findings
         """
-        LOGGER.debug("Saving Findings to DB")
+
+        if finding_objects:
+            LOGGER.info(f"Saving findings from {self.name} {self.version_string} to DB")
+
         findings: List = []
         for finding_object in finding_objects:
             finding = Finding(

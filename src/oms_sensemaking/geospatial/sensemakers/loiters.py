@@ -61,7 +61,7 @@ class Loiter(FindingBase):
     start_time: datetime
     end_time: datetime
     processed_points: list[Point]
-    geometry: str
+    geometry: LineString
 
     @cached_property
     def acm(self) -> dict:
@@ -96,7 +96,7 @@ class LoiterOmsPublisher(OmsPublisher):
         :return: None
         """
 
-        LOGGER.debug("Writing Loiter output to OMS")
+        LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
 
         for loiter in loiters:
 
@@ -197,7 +197,7 @@ class LoiterSensemaker(Sensemaker):
         :param data: The track to analyze.
         :return: List[Loiter] list of loiter events found
         """
-        LOGGER.info(f"Detecting Loiters in {data.node_id}")
+        LOGGER.debug(f"Detecting Loiters in {data.node_id}")
         confirmed_loiters: list[Loiter] = []
         prospective_loiters: dict[str, list[PotentialLoiter]] = self.find_prospective_loiters(data.points)
 
@@ -217,7 +217,7 @@ class LoiterSensemaker(Sensemaker):
                         ):
                             loiter_points.append(point)
 
-                    geometry = LineString([point.coordinates for point in loiter_points]).wkt
+                    geometry = LineString([point.coordinates for point in loiter_points])
                     loiter = Loiter(
                         data.node_id,
                         point_geohash,
@@ -229,7 +229,10 @@ class LoiterSensemaker(Sensemaker):
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}): {confirmed_loiters}")
+            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {data.node_id}")
+
+        for loiter in confirmed_loiters:
+            LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)
 
         return confirmed_loiters
 
