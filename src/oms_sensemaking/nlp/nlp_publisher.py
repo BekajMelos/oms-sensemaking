@@ -58,10 +58,10 @@ class NlpOmsPublisher:
         Run the publisher on the findings
         :param findings: The result of the NLP analysis on the body of text
         """
-        LOGGER.info("NLP: Publishing nodes and attributes to OMS")
+        LOGGER.info("Publishing nodes and attributes to OMS")
         published_nodes = self.format_and_publish_nodes(findings)
 
-        LOGGER.info("NLP: Publishing relationships to OMS")
+        LOGGER.info("Publishing relationships to OMS")
         published_relationships = self.format_and_publish_relationships(findings)
 
         return published_nodes, published_relationships
@@ -148,10 +148,10 @@ class NlpOmsPublisher:
             )
             published_attributes.append(identifier_attribute)
 
-        LOGGER.info(f"NLP: Published {len(published_attributes)} Attributes to OMS.")
-        LOGGER.debug(f"NLP: Published attributes: {published_attributes}")
-        LOGGER.info(f"NLP: Published {len(published_nodes)} Nodes to OMS.")
-        LOGGER.debug(f"NLP: Published nodes: {published_nodes}")
+        LOGGER.info(f"Published {len(published_attributes)} Attributes to OMS.")
+        LOGGER.debug(f"Published attributes: {published_attributes}")
+        LOGGER.info(f"Published {len(published_nodes)} Nodes to OMS.")
+        LOGGER.debug(f"Published nodes: {published_nodes}")
         return published_nodes
 
     def format_and_publish_relationships(self, findings: dict) -> list[CreateRelationshipCreateRelationship]:
@@ -206,8 +206,8 @@ class NlpOmsPublisher:
                 )
                 published_relationships.append(published_document_relationship)
 
-        LOGGER.info(f"NLP: Published {len(published_relationships)} Relationships to OMS.")
-        LOGGER.debug(f"NLP: Published relationships: {published_relationships}")
+        LOGGER.info(f"Published {len(published_relationships)} Relationships to OMS.")
+        LOGGER.debug(f"Published relationships: {published_relationships}")
         return published_relationships
 
     def format_and_publish_attribute(
@@ -235,5 +235,5 @@ class NlpOmsPublisher:
                 )
             )
         else:
-            LOGGER.warning("NLP: Attribute's entity not found. Skipping create.")
+            LOGGER.warning("Attribute's entity not found. Skipping create.")
             return None

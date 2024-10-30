@@ -21,7 +21,7 @@ class CoreNlpClient:
             self._props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
         else:
             self._props = props
-        LOGGER.warning(f"NLP: CoreNLP Client 'outputFormat' is set to {self._props["outputFormat"]}")
+        LOGGER.warning(f"CoreNLP Client 'outputFormat' is set to {self._props["outputFormat"]}")
 
         self.hostname = hostname
         self.url = f"http://{self.hostname}/?properties={self._props}"
@@ -38,18 +38,18 @@ class CoreNlpClient:
 
         # Handling empty text submission case
         if not text:
-            LOGGER.warning("NLP: Empty text submission to the CoreNLP Client")
+            LOGGER.warning("Empty text submission to the CoreNLP Client")
             return ""
 
         # Formatting text for submission and sending it to the CoreNLP container
-        LOGGER.info("NLP: Submitting text to the CoreNLP Client.")
-        LOGGER.debug(f"NLP: Text submitted: {text}")
+        LOGGER.info("Submitting text to the CoreNLP Client.")
+        LOGGER.debug(f"Text submitted: {text}")
 
         data = {"text": text}
         result = httpx.post(self.url, data=data, content=text, timeout=None)
 
-        LOGGER.info("NLP: CoreNLP Client annotation finished.")
-        LOGGER.debug(f"NLP: CoreNLP Client returned result {result.text}")
+        LOGGER.info("CoreNLP Client annotation finished.")
+        LOGGER.debug(f"CoreNLP Client returned result {result.text}")
 
         return result.text
 
@@ -65,18 +65,18 @@ class CoreNlpClient:
 
         # Handling empty text submission case
         if not text:
-            LOGGER.warning("NLP: Empty text submission to the CoreNLP Client")
+            LOGGER.warning("Empty text submission to the CoreNLP Client")
             return []
 
         # Formatting text for submission and sending it to the CoreNLP container
-        LOGGER.info("NLP: Submitting text to the CoreNLP Client.")
-        LOGGER.debug(f"NLP: Text submitted: {text}")
+        LOGGER.info("Submitting text to the CoreNLP Client.")
+        LOGGER.debug(f"Text submitted: {text}")
 
         data = {"text": text}
         result = httpx.post(self.url, data=data, content=text, timeout=None)
 
-        LOGGER.info("NLP: CoreNLP Client annotation finished.")
-        LOGGER.debug(f"NLP: CoreNLP Client returned result {result}")
+        LOGGER.info("CoreNLP Client annotation finished.")
+        LOGGER.debug(f"CoreNLP Client returned result {result}")
 
         # Parsing the xml response to get it as a dictionary for easy indexing later
         formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]
