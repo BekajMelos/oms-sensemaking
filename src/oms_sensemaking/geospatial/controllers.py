@@ -283,7 +283,7 @@ class GeospatialSensemakerController(SensemakerController):
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.debug("Checking buffer expirations")
+        LOGGER.info("Checking Track Buffer Expirations")
         now: datetime = datetime.now(tz=timezone.utc)
 
         with self.lock:
