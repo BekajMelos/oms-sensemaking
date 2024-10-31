@@ -185,7 +185,7 @@ class AnnotationProcessor:
             document_relationships.append(document_relationship)
             doc_rel_index += 1
 
-        LOGGER.debug(f"Document/report relationships: f{document_relationships}")
+        LOGGER.debug(f"Document/report relationships: {document_relationships}")
 
         return EntitiesAndRelationships(
             ner_entities=entities,
