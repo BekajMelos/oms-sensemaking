@@ -119,14 +119,6 @@ class Settings(BaseSettings):
     algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
     nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
     nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
-    ner_model_filepath: str = Field(
-        "ner-model.ser.gz", description="Path to NER model in Sensemaking in Docker Container")
-    relation_extraction_model_filepath: str = Field(
-        "relation-extraction-model.ser.gz", description="Path to Relation Extraction model in Docker Container")
-    corenlp_annotators: str = Field(
-        "tokenize, pos, lemma, ner, depparse, relation", description="List of annotators for CoreNLP client to use")
-    corenlp_output_format: str = Field(
-        "text", description="CoreNLP Client annotation output format. Can be 'json', 'xml', 'text'")
     corenlp_client_props: dict = Field(
         {
             "annotators": "tokenize, pos, lemma, ner, depparse, relation",
