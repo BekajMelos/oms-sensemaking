@@ -21,7 +21,6 @@ class CoreNlpClient:
             self._props = {"annotators": "tokenize, pos, lemma, ner, depparse, relation", "outputFormat": "text"}
         else:
             self._props = props
-        LOGGER.warning(f"CoreNLP Client 'outputFormat' is set to {self._props["outputFormat"]}")
         LOGGER.warning(f"CoreNLP Client 'properties' is set to {self._props}")
 
         self.hostname = hostname

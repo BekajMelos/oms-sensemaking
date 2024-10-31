@@ -36,6 +36,7 @@ class NlpOmsPublisher:
             "LOCATION": SETTINGS.nlp_location_iri,
             "DOCUMENT": SETTINGS.nlp_document_iri,
             "DATE": SETTINGS.nlp_date_iri,
+            "ENTITY": SETTINGS.entity_iri,
         }
         self.relationship_iris = {
             "Work_For": SETTINGS.nlp_work_for_iri,
@@ -43,6 +44,7 @@ class NlpOmsPublisher:
             "OrgBased_In": SETTINGS.nlp_org_based_in_iri,
             "Located_In": SETTINGS.nlp_located_in_iri,
             "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
+            "Relates_To": SETTINGS.relates_to_iri,
         }
         self.attribute_iris = {
             "URL": SETTINGS.url_iri,
@@ -70,13 +72,15 @@ class NlpOmsPublisher:
 
         for entity in findings["ner_entities"]:
             # Format and publish node
+            entity_type = entity["type"]
+            entity_iri = self.node_iris[entity_type] if entity_type in self.node_iris else self.node_iris["ENTITY"]
             published_node = self.oms_crud_tool.create_node(
                 CreateNodeInput(
                     acm=self.acm,
                     name=entity["value"],
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
-                    classIri=self.node_iris[entity["type"]],
+                    classIri=entity_iri,
                     isNso=True,
                 )
             )
@@ -151,20 +155,25 @@ class NlpOmsPublisher:
             # Grab some of the relationship values
             first_ent_id = relationship["entities"][0]["uuid"]
             second_ent_id = relationship["entities"][1]["uuid"]
-            relationship_classification = relationship["type"]
+            relationship_type = relationship["type"]
+            relationship_iri = (
+                self.relationship_iris[relationship_type]
+                if relationship_type in self.relationship_iris
+                else self.relationship_iris["Relates_To"]
+            )
 
             # If there are no nodes for the IDs outlined by the relationship, don't create a relationship
             if first_ent_id in self.node_id_mapping and second_ent_id in self.node_id_mapping:
                 # Format and publish the relationship
                 published_relationship = self.oms_crud_tool.create_relationship(
                     CreateRelationshipInput(
-                        name=self.relationship_iris[relationship_classification],
+                        name=relationship_iri,
                         startNodeId=self.node_id_mapping[first_ent_id],
                         endNodeId=self.node_id_mapping[second_ent_id],
                         sourceId=self.source_id,
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
-                        objectPropertyIri=self.relationship_iris[relationship_classification],
+                        objectPropertyIri=relationship_iri,
                     )
                 )
                 published_relationships.append(published_relationship)
