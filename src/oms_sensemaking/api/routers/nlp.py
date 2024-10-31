@@ -19,12 +19,14 @@ corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SET
 @router.post("/")
 def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     """Run the NLP entities and relationships."""
+    LOGGER.info(f"NLP API Request: {nlp_req}")
 
     # Call NLP Sensemaker via the NlpService to get findings (eventually will also submit to OMS)
     nlp: NlpService = NlpService()
 
     # Validate the source before running the pipeline
     if not nlp.validate_source(nlp_req.source_id):
+        LOGGER.error("Source ID is invalid. Please make sure the source exists.")
         raise HTTPException(status_code=404, detail="Invalid source")
     else:
         # Run the pipeline

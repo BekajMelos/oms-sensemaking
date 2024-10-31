@@ -42,8 +42,15 @@ class CoreNlpClient:
             return ""
 
         # Formatting text for submission and sending it to the CoreNLP container
+        LOGGER.info("Submitting text to the CoreNLP Client.")
+        LOGGER.debug(f"Text submitted is {len(text)} characters long.")
+
         data = {"text": text}
         result = httpx.post(self.url, data=data, content=text, timeout=None)
+
+        LOGGER.info("CoreNLP Client annotation finished.")
+        LOGGER.debug(f"CoreNLP Client returned result {result.text.split("\n")}")
+
         return result.text
 
     def annotate_document_xml(self, text: str) -> list:
@@ -62,8 +69,14 @@ class CoreNlpClient:
             return []
 
         # Formatting text for submission and sending it to the CoreNLP container
+        LOGGER.info("Submitting text to the CoreNLP Client.")
+        LOGGER.debug(f"Text submitted is {len(text)} characters long.")
+
         data = {"text": text}
         result = httpx.post(self.url, data=data, content=text, timeout=None)
+
+        LOGGER.info("CoreNLP Client annotation finished.")
+        LOGGER.debug(f"CoreNLP Client returned result {result.text.split("\n")}")
 
         # Parsing the xml response to get it as a dictionary for easy indexing later
         formatted_annotations = xmltodict.parse(result.text)["root"]["document"]["sentences"]["sentence"]

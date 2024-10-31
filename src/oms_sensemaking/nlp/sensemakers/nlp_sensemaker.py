@@ -1,6 +1,7 @@
 """Natural Language Processing (NLP) Sensemaker."""
 
 import argparse
+import logging
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -8,6 +9,8 @@ from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.models.submission_data import SubmissionData
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class NlpSensemaker(Sensemaker):
@@ -36,8 +39,10 @@ class NlpSensemaker(Sensemaker):
         The NLP pipeline will first annotate the submitted text, and then
         process it for entities and relationships.
         """
+        LOGGER.info("Running the NLP Sensemaker")
         annotation = self.use_corenlp_service(data.text)
         processed_annotation = self.process_annotation(data, annotation)
+        LOGGER.info("Sensemaker done processing data, returning findings.")
         return processed_annotation
 
     def use_corenlp_service(self, document: str) -> str:
