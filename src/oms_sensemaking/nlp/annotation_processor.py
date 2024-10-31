@@ -42,13 +42,18 @@ class AnnotationProcessor:
         :param annotation: The annotation.
         :return: An object representing the entities and relationships.
         """
+        LOGGER.info("Gathering entities and relationships from the annotation")
+
         entities = self.find_entities(annotation)  # Get entities from annotation
         relationships = self.find_relationships(annotation)  # Get relations from annotation
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
+
+        LOGGER.debug(f"Findings: {entities_and_relationships}")
         return entities_and_relationships
 
     def find_entities(self, annotation: str) -> list:
         """Grab the nodes from the annotation."""
+        LOGGER.debug("Finding entities in the annotation")
         entities = []
 
         # Apply regex to the annotation to find the entities
@@ -63,9 +68,10 @@ class AnnotationProcessor:
                 self.uuid_entity_map[entity_obj_id] = entity_uuid
 
                 # Build the entity
+                entity_type = match.group("type")
                 entity = {
-                    "type": match.group("type"),
-                    "objectId": match.group("objectId"),
+                    "type": entity_type,
+                    "objectId": entity_obj_id,
                     "uuid": entity_uuid,
                     "hstart": match.group("hstart"),
                     "hend": match.group("hend"),
@@ -76,14 +82,16 @@ class AnnotationProcessor:
                     "corefID": match.group("corefID"),
                 }
 
-                is_object_entity = match.group("type") != "O"
+                is_object_entity = entity_type != "O"
                 if is_object_entity:
                     entities.append(entity)
 
+        LOGGER.debug(f"Annotation entities: {entities}")
         return entities
 
     def find_relationships(self, annotation: str) -> list:
         """Grab the relationships from the annotation."""
+        LOGGER.debug("Finding relationships in the annotation")
         relationships = []
 
         # Find relations from the text using the regex pattern
@@ -107,35 +115,44 @@ class AnnotationProcessor:
             nested_entities = self.entity_pattern.finditer(match.group("entities"))
 
             # Build each entity that is found in the relation
+            typed_entities = True
             for entity_match in nested_entities:
                 # Exclude typeless entities
-                is_object_entity = entity_match.group("type") != "O"
-                if is_object_entity:
-                    entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
-                    entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
+                entity_type = entity_match.group("type")
+                is_object_entity = entity_type != "O"
 
-                    # Build the entity
-                    entity = {
-                        "type": entity_match.group("type"),
-                        "objectId": entity_object_id,
-                        "uuid": entity_uuid,
-                        "hstart": entity_match.group("hstart"),
-                        "hend": entity_match.group("hend"),
-                        "estart": entity_match.group("estart"),
-                        "eend": entity_match.group("eend"),
-                        "headPosition": entity_match.group("headPosition"),
-                        "value": entity_match.group("value"),
-                        "corefID": entity_match.group("corefID"),
-                    }
-                    # Add the entity to the relation's entities
-                    relation["entities"].append(entity)
+                if not is_object_entity:
+                    typed_entities = False
+
+                entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
+                entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
+
+                # Build the entity
+                entity = {
+                    "type": entity_type,
+                    "objectId": entity_object_id,
+                    "uuid": entity_uuid,
+                    "hstart": entity_match.group("hstart"),
+                    "hend": entity_match.group("hend"),
+                    "estart": entity_match.group("estart"),
+                    "eend": entity_match.group("eend"),
+                    "headPosition": entity_match.group("headPosition"),
+                    "value": entity_match.group("value"),
+                    "corefID": entity_match.group("corefID"),
+                }
+                # Add the entity to the relation's entities
+                relation["entities"].append(entity)
 
             # Add the relation to the list of relations IF it has a type AND its entities both have types
             is_relationship = relation["type"] != "_NR"
-            if is_relationship and len(relation["entities"]) == 2:
+            if is_relationship and typed_entities:
                 relationships.append(relation)
-            elif len(relation["entities"]) != 2:
-                LOGGER.warning("Relationship found without exactly two entities.")
+            elif not is_relationship:
+                LOGGER.warning(f"Typeless relationship found: {relation}")
+            elif not typed_entities:
+                LOGGER.warning(f"Relationship found with an untyped entity: {relation["entities"]}")
+
+        LOGGER.debug(f"Annotation relationships: {relationships}")
         return relationships
 
     def relate_to_document(self, data: SubmissionData, entities: list, relationships: list) -> EntitiesAndRelationships:
@@ -147,6 +164,8 @@ class AnnotationProcessor:
         :param relationships:
         :return:
         """
+        LOGGER.debug("Recording relationship between document/report and found entities.")
+
         document_relationships = []
 
         # 1. Create entity for document
@@ -165,6 +184,9 @@ class AnnotationProcessor:
             )
             document_relationships.append(document_relationship)
             doc_rel_index += 1
+
+        LOGGER.debug(f"Document/report relationships: {document_relationships}")
+
         return EntitiesAndRelationships(
             ner_entities=entities,
             ner_relationships=relationships,
