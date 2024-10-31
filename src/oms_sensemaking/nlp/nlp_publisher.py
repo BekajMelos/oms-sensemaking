@@ -189,6 +189,7 @@ class NlpOmsPublisher:
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
                         objectPropertyIri=relationship_iri,
+                        tags=SETTINGS.nlp_tags,
                     )
                 )
                 published_relationships.append(published_relationship)
@@ -211,6 +212,7 @@ class NlpOmsPublisher:
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
                         objectPropertyIri=self.relationship_iris[rel_type],
+                        tags=SETTINGS.nlp_tags,
                     )
                 )
                 published_relationships.append(published_document_relationship)
