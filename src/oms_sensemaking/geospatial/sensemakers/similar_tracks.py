@@ -97,7 +97,7 @@ class SimilarTracksSensemaker(Sensemaker):
         :param data: Track object to detect cotravels on
         :return: List[PotentialMatch] list of TopSimilar tracks
         """
-        LOGGER.info(f"Looking for similar tracks to {data.node_id}")
+        LOGGER.debug(f"Looking for similar tracks to {data.node_id}")
 
         similar_results: TopSimilar = TopSimilar()
 
