@@ -249,7 +249,7 @@ class CotravelSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client, output_to_oms: bool) -> None:
+    def __init__(self, oms_client: Client) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -267,8 +267,7 @@ class CotravelSensemaker(Sensemaker):
             'lag_lead_event_name': SETTINGS.lag_lead_event_name,
             'geo_sensemaker_event_tag': SETTINGS.geo_sensemaker_event_tag
         }
-        if output_to_oms:
-            self.publisher = CotravelOmsPublisher(oms_client)
+        self.publisher = CotravelOmsPublisher(oms_client)
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""

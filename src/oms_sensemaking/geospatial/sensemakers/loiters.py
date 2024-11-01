@@ -169,7 +169,7 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client, output_to_oms: bool) -> None:
+    def __init__(self, oms_client: Client) -> None:
         """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -182,8 +182,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
             "geohash_low": SETTINGS.geohash_low
         }
-        if output_to_oms:
-            self.publisher = LoiterOmsPublisher(oms_client)
+        self.publisher = LoiterOmsPublisher(oms_client)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """

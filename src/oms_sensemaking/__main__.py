@@ -28,7 +28,7 @@ Run the geospatial algorithms.
 ```
 $ python -m oms_sensemaking geo -h
 usage: oms_sensemaking geo [-h] [-H DB_HOST] [-p DB_PORT] [-u DB_USER] [-P [DB_PASSWORD]] [-s DB_SCHEMA] [-U URL]
-                           [-c CERT] [-k KEY] [-d USER_DN] [-f FILENAME]
+                           [-c CERT] [-k KEY] [-d USER_DN]
 
 options:
   -h, --help            show this help message and exit
@@ -46,8 +46,6 @@ options:
   -k KEY, --key KEY     The path to the user's private key. Defaults to value of the USER_KEY env variable.
   -d USER_DN, --user-dn USER_DN
                         The user's distinguished name. Defaults to value of the USER_DN env variable.
-  -f FILENAME, --filename FILENAME
-                        File to run on.
 ```
 
 Examples
@@ -55,11 +53,6 @@ Examples
 Run and listen for events from SQS::
 
     $ python -m oms_sensemaking geo
-
-
-Run and process events from local file:
-
-    $ python -m oms_sensemaking geo --filename data/N11QN_202212011800.csv
 
 
 Natural Language Processing CLI
@@ -99,7 +92,6 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from oms_sensemaking.core.events import ObjectEventConsumer
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
@@ -217,17 +209,9 @@ def run_geospatial(args: Namespace) -> None:
     # TODO: Handle PKCS12
 
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.geospatial.controllers import CSVFileParser, GeospatialSensemakerController, GeoSQSListener
+    from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
 
-    event_consumer: ObjectEventConsumer
-    controller_kwargs: dict = {}
-    if args.filename is None:
-        event_consumer = GeoSQSListener()
-    else:
-        event_consumer = CSVFileParser(args.filename, DEFAULT_ACM, SETTINGS.user_dn)
-        controller_kwargs = {"output_to_oms": False}
-
-    geo: GeospatialSensemakerController = GeospatialSensemakerController(event_consumer, **controller_kwargs)
+    geo: GeospatialSensemakerController = GeospatialSensemakerController(GeoSQSListener())
 
     start_controller_and_wait(geo)
 
@@ -270,7 +254,6 @@ def get_cli_parser() -> ArgumentParser:
     geo_parser: ArgumentParser = add_omsb_cli_args(
         add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
-    geo_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
     geo_parser.set_defaults(func=run_geospatial)
 
     # natural language processing subcommand

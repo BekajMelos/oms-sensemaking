@@ -132,7 +132,7 @@ def test_cotravel_success(mock_oms_client, tester_db, db):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client, True).execute(track)
+    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client).execute(track)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -245,7 +245,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client, True).execute(track)
+    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client).execute(track)
 
     assert len(cotravels) == 2
     cotravels = sorted(cotravels, key=lambda cotravel: cotravel.true_cotravel)  # check lag_lead first
@@ -420,7 +420,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client, True).execute(track)
+    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client).execute(track)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
@@ -525,7 +525,7 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db):
     # Create Track Object
     track = Track(points=[p1, p2, p3], node_id=node_id)
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client, True).execute(track)
+    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client).execute(track)
 
     assert len(cotravels) == 0
 
@@ -562,7 +562,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client, True).execute(track)
+    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_client).execute(track)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]

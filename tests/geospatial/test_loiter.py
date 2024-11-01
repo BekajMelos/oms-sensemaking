@@ -116,7 +116,7 @@ def test_loiter_success(mock_oms_client, db):
         return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
 
     assert len(loiters) == 1
     loiter: Loiter = loiters[0]
@@ -222,7 +222,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db):
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
     assert len(loiters) == 0
 
 
@@ -262,7 +262,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client):
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
     assert len(loiters) == 0
 
 
@@ -312,7 +312,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -449,7 +449,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
@@ -637,7 +637,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, True).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client).execute(track)
     assert len(loiters) == 2
 
     loiter1: Loiter = loiters[0]
