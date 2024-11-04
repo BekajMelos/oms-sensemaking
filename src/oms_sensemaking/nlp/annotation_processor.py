@@ -108,7 +108,7 @@ class AnnotationProcessor:
                 self.uuid_entity_map[entity_obj_id] = entity_uuid
 
                 # Build the entity if it is typed
-                is_object_entity = entity_type != "0"
+                is_object_entity = "0" not in entity_type
                 if is_object_entity:
                     entity = {
                         "type": entity_type,
@@ -186,7 +186,7 @@ class AnnotationProcessor:
 
             # Add the relation to the list of relations IF it has a type AND its entities both have types
             is_relationship = relation["type"] != "_NR"
-            typed_entities = relation["entities"][0]["type"] != "0" and relation["entities"][1]["type"] != "0"
+            typed_entities = "0" not in relation["entities"][0]["type"] and "0" not in relation["entities"][1]["type"]
             if is_relationship and typed_entities:
                 relationships.append(relation)
             elif not is_relationship:
