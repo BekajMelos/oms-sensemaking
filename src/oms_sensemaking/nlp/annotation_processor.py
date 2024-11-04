@@ -21,6 +21,12 @@ class AnnotationProcessor:
     """
 
     def __init__(self):
+        self.sentence_pattern = re.compile(r"Sentence #\d+.*?(?=\nSentence #|$)", re.DOTALL)
+        self.token_pattern = re.compile(
+            r"\[Text=(?P<text>[^]]+) CharacterOffsetBegin=(?P<char_offset_begin>\d+) "
+            r"CharacterOffsetEnd=(?P<char_offset_end>\d+) PartOfSpeech=(?P<pos>[^]]+) "
+            r"Lemma=(?P<lemma>[^]]+) NamedEntityTag=(?P<ner>[^]]+)]"
+        )
         self.entity_pattern = re.compile(
             r"EntityMention \[type=(?P<type>\w+), objectId=(?P<objectId>EntityMention-\d+), hstart=(?P<hstart>\d+), "
             r"hend=(?P<hend>\d+), estart=(?P<estart>\d+), eend=(?P<eend>\d+), "
@@ -44,20 +50,50 @@ class AnnotationProcessor:
         """
         LOGGER.info("Gathering entities and relationships from the annotation")
 
-        entities = self.find_entities(annotation)  # Get entities from annotation
-        relationships = self.find_relationships(annotation)  # Get relations from annotation
+        sentences = self.find_sentences(annotation)
+
+        # For each sentence in the annotation, identify the tokens, entities, and relationships in it
+        entities, relationships = [], []
+        for sentence in sentences:
+            sentence_tokens = self.find_tokens(sentence)  # Get tokens just for this sentence
+            entities += self.find_entities(sentence, sentence_tokens)  # Get entities from sentence, add to list
+            relationships += self.find_relationships(sentence)  # Get relations from sentence, add to list
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
 
         LOGGER.debug(f"Findings: {entities_and_relationships}")
         return entities_and_relationships
 
-    def find_entities(self, annotation: str) -> list:
-        """Grab the nodes from the annotation."""
+    def find_sentences(self, annotation: str) -> list[str]:
+        """
+        Find all instances of sentences in the corenlp response, and return a list of them
+        :param annotation: CoreNLP annotation response
+        """
+        sentences = self.sentence_pattern.findall(annotation)
+        return sentences
+
+    def find_tokens(self, sentence: str) -> list[dict[str, str]]:
+        """
+        Extract the tokens from the given Annotation
+        :param sentence: A sentence of the CoreNLP annotation response
+        """
+        token_matches = self.token_pattern.finditer(sentence)
+        tokens = []
+        for match in token_matches:
+            token = match.groupdict()
+            tokens.append(token)
+        return tokens
+
+    def find_entities(self, sentence: str, tokens: list[dict[str, str]]) -> list:
+        """
+        Grab the entities from the annotation.
+        :param sentence: A sentence of the CoreNLP annotation response
+        :param tokens: The tokens in the sentence
+        """
         LOGGER.debug("Finding entities in the annotation")
         entities = []
 
         # Apply regex to the annotation to find the entities
-        matches = self.entity_pattern.finditer(annotation)
+        matches = self.entity_pattern.finditer(sentence)
         for match in matches:
             entity_obj_id = match.group("objectId")
 
@@ -67,8 +103,12 @@ class AnnotationProcessor:
                 entity_uuid = str(uuid4())
                 self.uuid_entity_map[entity_obj_id] = entity_uuid
 
+                # Match entity to the corresponding token, and get NER tag from token
+                entity_token_index = int(match.group("estart"))
+                corresponding_token = tokens[entity_token_index]
+                entity_type = corresponding_token["ner"]
+
                 # Build the entity
-                entity_type = match.group("type")
                 entity = {
                     "type": entity_type,
                     "objectId": entity_obj_id,
@@ -82,20 +122,23 @@ class AnnotationProcessor:
                     "corefID": match.group("corefID"),
                 }
 
-                is_object_entity = entity_type != "O"
+                is_object_entity = entity_type != "O" and entity_type != "0"
                 if is_object_entity:
                     entities.append(entity)
 
         LOGGER.debug(f"Annotation entities: {entities}")
         return entities
 
-    def find_relationships(self, annotation: str) -> list:
-        """Grab the relationships from the annotation."""
+    def find_relationships(self, sentence: str) -> list:
+        """
+        Grab the relationships from the annotation.
+        :param sentence: A sentence of the CoreNLP annotation response
+        """
         LOGGER.debug("Finding relationships in the annotation")
         relationships = []
 
         # Find relations from the text using the regex pattern
-        relation_matches = self.relation_pattern.finditer(annotation)
+        relation_matches = self.relation_pattern.finditer(sentence)
 
         relation_count = 1  # For keeping track of the relation object id
         for match in relation_matches:
