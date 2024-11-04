@@ -110,6 +110,14 @@ class AnnotationProcessor:
                 # Build the entity if it is typed
                 is_object_entity = "0" not in entity_type
                 if is_object_entity:
+                    # TODO: check for prefix of multi-token entities
+                    multi_beginning_entity = entity_type[:2] == "B-"
+                    multi_intermediate_entity = entity_type[:2] == "I-"
+                    multi_end_entity = entity_type[:2] == "E-"
+                    multi_token_entity = multi_beginning_entity or multi_intermediate_entity or multi_end_entity
+                    if multi_token_entity:
+                        entity_type = entity_type[2:]
+
                     entity = {
                         "type": entity_type,
                         "objectId": entity_obj_id,
@@ -167,6 +175,14 @@ class AnnotationProcessor:
                 # Get the entity's uuid using its object id
                 entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
                 entity_uuid = self.uuid_entity_map[entity_object_id]
+
+                # TODO: check for prefix of multi-token entities
+                multi_beginning_entity = entity_type[:2] == "B-"
+                multi_intermediate_entity = entity_type[:2] == "I-"
+                multi_end_entity = entity_type[:2] == "E-"
+                multi_token_entity = multi_beginning_entity or multi_intermediate_entity or multi_end_entity
+                if multi_token_entity:
+                    entity_type = entity_type[2:]
 
                 # Build the entity
                 entity = {
