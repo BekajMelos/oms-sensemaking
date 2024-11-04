@@ -55,9 +55,9 @@ class AnnotationProcessor:
         # For each sentence in the annotation, identify the tokens, entities, and relationships in it
         entities, relationships = [], []
         for sentence in sentences:
-            sentence_tokens = self.find_tokens(sentence)  # Get tokens just for this sentence
-            entities += self.find_entities(sentence, sentence_tokens)  # Get entities from sentence, add to list
-            relationships += self.find_relationships(sentence)  # Get relations from sentence, add to list
+            tokens = self.find_tokens(sentence)  # Get tokens just for this sentence
+            entities += self.find_entities(sentence, tokens)  # Get entities from sentence, add to list
+            relationships += self.find_relationships(sentence, tokens)  # Get relations from sentence, add to list
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
 
         LOGGER.debug(f"Findings: {entities_and_relationships}")
@@ -95,44 +95,44 @@ class AnnotationProcessor:
         # Apply regex to the annotation to find the entities
         matches = self.entity_pattern.finditer(sentence)
         for match in matches:
-            entity_obj_id = match.group("objectId")
+            # Match entity to the corresponding token, and get NER tag from token
+            entity_token_index = int(match.group("estart"))
+            corresponding_token = tokens[entity_token_index]
+            entity_type = corresponding_token["ner"]
 
             # Only build entity if not seen before, leave out duplicates
+            entity_obj_id = match.group("objectId")
             if entity_obj_id not in self.uuid_entity_map:
                 # Create unique id for each entity, and add to map
                 entity_uuid = str(uuid4())
                 self.uuid_entity_map[entity_obj_id] = entity_uuid
 
-                # Match entity to the corresponding token, and get NER tag from token
-                entity_token_index = int(match.group("estart"))
-                corresponding_token = tokens[entity_token_index]
-                entity_type = corresponding_token["ner"]
-
-                # Build the entity
-                entity = {
-                    "type": entity_type,
-                    "objectId": entity_obj_id,
-                    "uuid": entity_uuid,
-                    "hstart": match.group("hstart"),
-                    "hend": match.group("hend"),
-                    "estart": match.group("estart"),
-                    "eend": match.group("eend"),
-                    "headPosition": match.group("headPosition"),
-                    "value": match.group("value"),
-                    "corefID": match.group("corefID"),
-                }
-
-                is_object_entity = entity_type != "O" and entity_type != "0"
+                # Build the entity if it is typed
+                is_object_entity = entity_type != "0"
                 if is_object_entity:
+                    entity = {
+                        "type": entity_type,
+                        "objectId": entity_obj_id,
+                        "uuid": entity_uuid,
+                        "hstart": match.group("hstart"),
+                        "hend": match.group("hend"),
+                        "estart": match.group("estart"),
+                        "eend": match.group("eend"),
+                        "headPosition": match.group("headPosition"),
+                        "value": match.group("value"),
+                        "corefID": match.group("corefID"),
+                    }
+
                     entities.append(entity)
 
         LOGGER.debug(f"Annotation entities: {entities}")
         return entities
 
-    def find_relationships(self, sentence: str) -> list:
+    def find_relationships(self, sentence: str, tokens: list[dict[str, str]]) -> list:
         """
         Grab the relationships from the annotation.
         :param sentence: A sentence of the CoreNLP annotation response
+        :param tokens: The tokens in the sentence
         """
         LOGGER.debug("Finding relationships in the annotation")
         relationships = []
@@ -158,17 +158,15 @@ class AnnotationProcessor:
             nested_entities = self.entity_pattern.finditer(match.group("entities"))
 
             # Build each entity that is found in the relation
-            typed_entities = True
             for entity_match in nested_entities:
-                # Exclude typeless entities
-                entity_type = entity_match.group("type")
-                is_object_entity = entity_type != "O"
+                # Match entity to the corresponding token, and get NER tag from token
+                entity_token_index = int(entity_match.group("estart"))
+                corresponding_token = tokens[entity_token_index]
+                entity_type = corresponding_token["ner"]
 
-                if not is_object_entity:
-                    typed_entities = False
-
+                # Get the entity's uuid using its object id
                 entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
-                entity_uuid = self.uuid_entity_map[entity_object_id]  # Get the entity's uuid using its object id
+                entity_uuid = self.uuid_entity_map[entity_object_id]
 
                 # Build the entity
                 entity = {
@@ -188,12 +186,13 @@ class AnnotationProcessor:
 
             # Add the relation to the list of relations IF it has a type AND its entities both have types
             is_relationship = relation["type"] != "_NR"
+            typed_entities = relation["entities"][0]["type"] != "0" and relation["entities"][1]["type"] != "0"
             if is_relationship and typed_entities:
                 relationships.append(relation)
             elif not is_relationship:
                 LOGGER.warning(f"Typeless relationship found: {relation}")
             elif not typed_entities:
-                LOGGER.warning(f"Relationship found with an untyped entity: {relation["entities"]}")
+                LOGGER.warning(f"One or more typeless entity found: {relation["entities"]}")
 
         LOGGER.debug(f"Annotation relationships: {relationships}")
         return relationships
