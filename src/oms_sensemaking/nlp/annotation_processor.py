@@ -58,7 +58,7 @@ class AnnotationProcessor:
         for sentence in sentences:
             tokens = self.find_tokens(sentence)  # Get tokens just for this sentence
             entities += self.find_entities(sentence, tokens)  # Get entities from sentence, add to list
-            entities = self.deduplicate_entities(entities)
+            entities = self.consolidate_entities(entities)
             relationships += self.find_relationships(sentence, tokens)  # Get relations from sentence, add to list
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
 
@@ -130,7 +130,7 @@ class AnnotationProcessor:
         LOGGER.debug(f"Annotation entities: {entities}")
         return entities
 
-    def deduplicate_entities(self, entities: list[dict]) -> list[dict]:
+    def consolidate_entities(self, entities: list[dict]) -> list[dict]:
         """
         Handle entities made up of multiple tokens by updating the list of entities
         :param entities: list of entities

@@ -85,12 +85,16 @@ def test_annotation_processor():
     for sentence in sentences:
         tokens = ann_processor.find_tokens(sentence)
         ents += ann_processor.find_entities(sentence, tokens)
+        ents = ann_processor.consolidate_entities(ents)
         rels += ann_processor.find_relationships(sentence, tokens)
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
-    # Every entity in the annotation should be typed
+    # Every entity in the annotation should be typed, multi-token ents should be consolidated
     for ent in ents:
         assert ent["type"] != "0"
+        assert "B-" not in ent["type"]
+        assert "I-" not in ent["type"]
+        assert "E-" not in ent["type"]
 
     # Every relation in the annotation and its entities must have a type
     for rel in rels:
