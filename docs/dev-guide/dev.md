@@ -118,6 +118,15 @@ To verify that your local configuration is working, you can run the project's un
 make test
 ```
 
+### Step 6: Decrypt Certs
+
+Use `bin/transcrypt` with the following options to decrypt secrets:
+
+- Encryption: `aes-256-cbc`
+- Generate Password: `no`
+- Password: *ask a team member for the password*
+
+
 ## Code Quality
 
 The *oms-sensemaking* project is configured to use [ruff] for code linting and

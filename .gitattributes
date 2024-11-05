@@ -1,0 +1,2 @@
+#pattern  filter=crypt diff=crypt merge=crypt
+etc/pki/* filter=crypt diff=crypt merge=crypt

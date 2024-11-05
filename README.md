@@ -57,6 +57,14 @@ Microservice that provides analytics for OMS data.
    $ pip install -e ".[dev,docs,test,build]"
    ```
 
+6. Decrypt Certs
+
+    Use `bin/transcrypt` with the following options to decrypt secrets:
+
+    - Encryption: `aes-256-cbc`
+    - Generate Password: `no`
+    - Password: *ask a team member for the password*
+
 The project documentation includes a development guide that covers development
 environment configuration, application configuration, and packaging as well as a
 dynamically generated API reference and OMS Sensemaking quickstart guide. Once
