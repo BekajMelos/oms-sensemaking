@@ -39,6 +39,7 @@ class AnnotationProcessor:
             r'eend=\d+, headPosition=\d+, value="[^"]+", corefID=-?\d+]\n)+)]'
         )
         self.uuid_entity_map = {}
+        self.duplicate_entities_map = {}
 
     def extract_info(self, data: SubmissionData, annotation: str) -> EntitiesAndRelationships:
         """
@@ -57,6 +58,7 @@ class AnnotationProcessor:
         for sentence in sentences:
             tokens = self.find_tokens(sentence)  # Get tokens just for this sentence
             entities += self.find_entities(sentence, tokens)  # Get entities from sentence, add to list
+            entities = self.deduplicate_entities(entities)
             relationships += self.find_relationships(sentence, tokens)  # Get relations from sentence, add to list
         entities_and_relationships = self.relate_to_document(data, entities, relationships)
 
@@ -110,14 +112,6 @@ class AnnotationProcessor:
                 # Build the entity if it is typed
                 is_object_entity = "0" not in entity_type
                 if is_object_entity:
-                    # TODO: check for prefix of multi-token entities
-                    multi_beginning_entity = entity_type[:2] == "B-"
-                    multi_intermediate_entity = entity_type[:2] == "I-"
-                    multi_end_entity = entity_type[:2] == "E-"
-                    multi_token_entity = multi_beginning_entity or multi_intermediate_entity or multi_end_entity
-                    if multi_token_entity:
-                        entity_type = entity_type[2:]
-
                     entity = {
                         "type": entity_type,
                         "objectId": entity_obj_id,
@@ -135,6 +129,61 @@ class AnnotationProcessor:
 
         LOGGER.debug(f"Annotation entities: {entities}")
         return entities
+
+    def deduplicate_entities(self, entities: list[dict]) -> list[dict]:
+        """
+        Handle entities made up of multiple tokens by updating the list of entities
+        :param entities: list of entities
+        """
+        multi_token_entities = []
+        consolidated_entities = []
+        for entity in entities:
+            entity_type = entity["type"]
+            is_multi_beginning_entity = entity_type[:2] == "B-"
+            is_multi_intermediate_entity = entity_type[:2] == "I-"
+            is_multi_end_entity = entity_type[:2] == "E-"
+            is_multi_token_entity = is_multi_beginning_entity or is_multi_intermediate_entity or is_multi_end_entity
+
+            # Consolidate to the final entity
+            if is_multi_token_entity:
+                multi_token_entities.append(entity.copy())
+                if is_multi_end_entity:  # On the last entity of the group
+                    # Get each of the entities
+                    beginning_entity = multi_token_entities[0]
+                    intermediate_entities = multi_token_entities[1:-1]  # a list
+                    end_entity = multi_token_entities[-1]
+                    LOGGER.info(f"ENTITIES HERE {beginning_entity, intermediate_entities, end_entity}")
+
+                    values_to_combine = [mult_ent["value"] for mult_ent in multi_token_entities]
+                    combined_values = " ".join(values_to_combine)
+                    LOGGER.info(f"COMBINED {combined_values}")
+                    multi_token_entities = []
+
+                    # Build the entity
+                    consolidated_entity = {
+                        "type": entity_type[2:],
+                        "objectId": end_entity["objectId"],
+                        "uuid": end_entity["uuid"],
+                        "hstart": beginning_entity["hstart"],
+                        "hend": end_entity["hend"],
+                        "estart": beginning_entity["estart"],
+                        "eend": end_entity["eend"],
+                        "headPosition": beginning_entity["headPosition"],
+                        "value": combined_values,
+                        "corefID": entity["corefID"],
+                    }
+                    LOGGER.info(f" CONSOLIDATED ENT {consolidated_entity}")
+                    consolidated_entities.append(consolidated_entity)
+
+                    # Map each entity object id to this entity
+                    self.duplicate_entities_map[beginning_entity["objectId"]] = consolidated_entity.copy()
+                    for int_ent in intermediate_entities:
+                        self.duplicate_entities_map[int_ent["objectId"]] = consolidated_entity.copy()
+                    self.duplicate_entities_map[end_entity["objectId"]] = consolidated_entity.copy()
+            else:
+                consolidated_entities.append(entity.copy())
+
+        return consolidated_entities
 
     def find_relationships(self, sentence: str, tokens: list[dict[str, str]]) -> list:
         """
@@ -176,39 +225,40 @@ class AnnotationProcessor:
                 entity_object_id = entity_match.group("objectId")  # Get the object id from the regex
                 entity_uuid = self.uuid_entity_map[entity_object_id]
 
-                # TODO: check for prefix of multi-token entities
+                # Check for prefix of multi-token entities
+                is_typed_entity = "0" not in entity_type
                 multi_beginning_entity = entity_type[:2] == "B-"
                 multi_intermediate_entity = entity_type[:2] == "I-"
                 multi_end_entity = entity_type[:2] == "E-"
                 multi_token_entity = multi_beginning_entity or multi_intermediate_entity or multi_end_entity
-                if multi_token_entity:
-                    entity_type = entity_type[2:]
+                if multi_end_entity and entity_object_id in self.duplicate_entities_map:
+                    entity = self.duplicate_entities_map[entity_object_id]
+                    # Add the entity to the relation's entities
+                    relation["entities"].append(entity)
+                elif not multi_token_entity and is_typed_entity:
+                    # Build the entity
+                    entity = {
+                        "type": entity_type,
+                        "objectId": entity_object_id,
+                        "uuid": entity_uuid,
+                        "hstart": entity_match.group("hstart"),
+                        "hend": entity_match.group("hend"),
+                        "estart": entity_match.group("estart"),
+                        "eend": entity_match.group("eend"),
+                        "headPosition": entity_match.group("headPosition"),
+                        "value": entity_match.group("value"),
+                        "corefID": entity_match.group("corefID"),
+                    }
+                    # Add the entity to the relation's entities
+                    relation["entities"].append(entity)
 
-                # Build the entity
-                entity = {
-                    "type": entity_type,
-                    "objectId": entity_object_id,
-                    "uuid": entity_uuid,
-                    "hstart": entity_match.group("hstart"),
-                    "hend": entity_match.group("hend"),
-                    "estart": entity_match.group("estart"),
-                    "eend": entity_match.group("eend"),
-                    "headPosition": entity_match.group("headPosition"),
-                    "value": entity_match.group("value"),
-                    "corefID": entity_match.group("corefID"),
-                }
-                # Add the entity to the relation's entities
-                relation["entities"].append(entity)
-
-            # Add the relation to the list of relations IF it has a type AND its entities both have types
+            # Add the relation to the list of relations IF it has a type AND it has two valid typed entities
             is_relationship = relation["type"] != "_NR"
-            typed_entities = "0" not in relation["entities"][0]["type"] and "0" not in relation["entities"][1]["type"]
-            if is_relationship and typed_entities:
+            has_two_entities = len(relation["entities"]) == 2
+            if is_relationship and has_two_entities:
                 relationships.append(relation)
             elif not is_relationship:
                 LOGGER.warning(f"Typeless relationship found: {relation}")
-            elif not typed_entities:
-                LOGGER.warning(f"One or more typeless entity found: {relation["entities"]}")
 
         LOGGER.debug(f"Annotation relationships: {relationships}")
         return relationships
