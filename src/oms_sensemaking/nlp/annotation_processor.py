@@ -135,6 +135,7 @@ class AnnotationProcessor:
         Handle entities made up of multiple tokens by updating the list of entities
         :param entities: list of entities
         """
+        LOGGER.info("Deduplicating entities")
         multi_token_entities = []
         consolidated_entities = []
         for entity in entities:
@@ -152,11 +153,9 @@ class AnnotationProcessor:
                     beginning_entity = multi_token_entities[0]
                     intermediate_entities = multi_token_entities[1:-1]  # a list
                     end_entity = multi_token_entities[-1]
-                    LOGGER.info(f"ENTITIES HERE {beginning_entity, intermediate_entities, end_entity}")
 
                     values_to_combine = [mult_ent["value"] for mult_ent in multi_token_entities]
                     combined_values = " ".join(values_to_combine)
-                    LOGGER.info(f"COMBINED {combined_values}")
                     multi_token_entities = []
 
                     # Build the entity
@@ -172,7 +171,6 @@ class AnnotationProcessor:
                         "value": combined_values,
                         "corefID": entity["corefID"],
                     }
-                    LOGGER.info(f" CONSOLIDATED ENT {consolidated_entity}")
                     consolidated_entities.append(consolidated_entity)
 
                     # Map each entity object id to this entity
