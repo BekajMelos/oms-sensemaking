@@ -22,8 +22,6 @@ services:
       RELOAD_APP: ${RELOAD_APP:-1}
     volumes:
       - .:/app
-      - ./etc/pki/test10.key:/opt/common/pki/service.private
-      - ./etc/pki/test10.pem:/opt/common/pki/service.public
     healthcheck:
       test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 10s
