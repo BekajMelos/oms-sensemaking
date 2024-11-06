@@ -119,6 +119,15 @@ class Settings(BaseSettings):
     algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
     nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
     nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
+    corenlp_client_props: dict = Field(
+        {
+            "annotators": "tokenize, pos, lemma, ner, depparse, relation",
+            "outputFormat": "text",
+            "ner.model": "ner-model.ser.gz",
+            "relation.model": "relation-model.ser.gz"
+        },
+        description="Properties to instantiate the CoreNLP client with."
+    )
 
     # NLP Node IRIs (change once custom model is trained)
     nlp_person_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Person",
@@ -133,6 +142,9 @@ class Settings(BaseSettings):
                               description="IRI for Date Entity")
     nlp_text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object",
                               description="Text attribute")
+    entity_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001",
+                                description="Placeholder for custom node IRIs")
+
     # NLP Relationship IRIs
     nlp_work_for_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
                                   description="Work for")
@@ -141,6 +153,8 @@ class Settings(BaseSettings):
     nlp_org_based_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000170", description="Org based in")
     nlp_document_contains_entity_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/describes",
                                        description="Document contiains entity")
+    relates_to_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+                                        description="Placeholder for custom relationship IRIs")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
