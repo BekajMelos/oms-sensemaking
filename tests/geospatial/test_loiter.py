@@ -128,9 +128,8 @@ def test_loiter_success(mock_oms_client, db):
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points, loiter.processed_points, strict=False)
     )
-    loiter_geometry = shapely.from_wkt(loiter.geometry)
     expected_linestring2 = shapely.LineString([p.coordinates for p in known_loiter_points])
-    assert loiter_geometry.equals_exact(expected_linestring2, 1e-10)
+    assert loiter.geometry.equals_exact(expected_linestring2, 1e-10)
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
@@ -194,7 +193,7 @@ def test_loiter_success(mock_oms_client, db):
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-def test_loiter_invalid_not_long_enough(mock_oms_client):
+def test_loiter_invalid_not_long_enough(mock_oms_client, db):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
     # East London
@@ -324,9 +323,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points, loiter.processed_points, strict=False)
     )
-    loiter_geometry = shapely.from_wkt(loiter.geometry)
     expected_linestring2 = shapely.LineString([p.coordinates for p in known_loiter_points])
-    assert loiter_geometry.equals_exact(expected_linestring2, 1e-10)
+    assert loiter.geometry.equals_exact(expected_linestring2, 1e-10)
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
@@ -462,9 +460,8 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points1, loiter1.processed_points, strict=False)
     )
-    loiter1_geometry = shapely.from_wkt(loiter1.geometry)
     expected_linestring1 = shapely.LineString([p.coordinates for p in known_loiter_points1])
-    assert loiter1_geometry.equals_exact(expected_linestring1, 1e-10)
+    assert loiter1.geometry.equals_exact(expected_linestring1, 1e-10)
     assert loiter1.start_time == p2.detection_time
     assert loiter1.end_time == p6.detection_time
 
@@ -476,9 +473,8 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db):
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points2, loiter2.processed_points, strict=False)
     )
-    loiter2_geometry = shapely.from_wkt(loiter2.geometry)
     expected_linestring2 = shapely.LineString([p.coordinates for p in known_loiter_points2])
-    assert loiter2_geometry.equals_exact(expected_linestring2, 1e-10)
+    assert loiter2.geometry.equals_exact(expected_linestring2, 1e-10)
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
@@ -652,9 +648,8 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points1, loiter1.processed_points, strict=False)
     )
-    loiter1_geometry = shapely.from_wkt(loiter1.geometry)
     expected_linestring1 = shapely.LineString([p.coordinates for p in known_loiter_points1])
-    assert loiter1_geometry.equals_exact(expected_linestring1, 1e-10)
+    assert loiter1.geometry.equals_exact(expected_linestring1, 1e-10)
     assert loiter1.start_time == p2.detection_time
     assert loiter1.end_time == p6.detection_time
 
@@ -666,9 +661,8 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db):
         p.coordinates[0] == point.coordinates[0] and p.coordinates[1] == point.coordinates[1]
         for p, point in zip(known_loiter_points2, loiter2.processed_points, strict=False)
     )
-    loiter2_geometry = shapely.from_wkt(loiter2.geometry)
     expected_linestring2 = shapely.LineString([p.coordinates for p in known_loiter_points2])
-    assert loiter2_geometry.equals_exact(expected_linestring2, 1e-10)
+    assert loiter2.geometry.equals_exact(expected_linestring2, 1e-10)
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 

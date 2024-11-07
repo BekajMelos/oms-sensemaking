@@ -165,6 +165,9 @@ class CotravelOmsPublisher(OmsPublisher):
         :return: None
         """
 
+        # TODO sensemaker id or just track?
+        LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
+
         for cotravel in cotravels:
 
             name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
@@ -269,7 +272,7 @@ class CotravelSensemaker(Sensemaker):
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""
-        LOGGER.info(f"Detecting Cotravels in {data.node_id}")
+        LOGGER.debug(f"Detecting Cotravels in {data.node_id}")
 
         cotravels: list[Cotravel] = []
         matches: list[Colocation] = []
@@ -315,8 +318,10 @@ class CotravelSensemaker(Sensemaker):
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.db_point.detection_time)
             cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
-        for idx, cotravel in enumerate(cotravels):
-            LOGGER.info(f"Found Cotravel {idx+1}/{len(cotravels)}: {cotravel}")
+        if cotravels:
+            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {data.node_id}")
+
+        for cotravel in cotravels:
             LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
 
         return cotravels

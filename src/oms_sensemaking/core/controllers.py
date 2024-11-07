@@ -125,7 +125,7 @@ def run_controller(controller: SensemakerController) -> None:
     :param controller: The controller to run.
     """
     try:
-        LOGGER.info("Starting thread fo %s", controller.__class__.__name__)
+        LOGGER.info("Starting thread for %s", controller.__class__.__name__)
         controller.start()
         controller.stopped.wait()
         LOGGER.info("Done waiting for %s", controller.__class__.__name__)
