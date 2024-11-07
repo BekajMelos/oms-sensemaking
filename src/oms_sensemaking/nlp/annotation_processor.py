@@ -11,6 +11,8 @@ from oms_sensemaking.nlp.models.submission_data import SubmissionData
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+UNRELATED = "NR_"
+
 
 class AnnotationProcessor:
     """
@@ -251,7 +253,7 @@ class AnnotationProcessor:
                     relation["entities"].append(entity)
 
             # Add the relation to the list of relations IF it has a type AND it has two valid typed entities
-            is_relationship = relation["type"] != "_NR"
+            is_relationship = relation["type"] != UNRELATED
             has_two_entities = len(relation["entities"]) == 2
             if is_relationship and has_two_entities:
                 relationships.append(relation)
