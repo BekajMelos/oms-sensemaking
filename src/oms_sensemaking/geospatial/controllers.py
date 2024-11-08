@@ -1,14 +1,12 @@
 """Geospatial sensemaker controller."""
 
-import csv
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from threading import Event, Timer
 from time import sleep
 from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from botocore.exceptions import BotoCoreError
 from dateutil.parser import isoparse
@@ -18,7 +16,6 @@ from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
-from sqlalchemy import select
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -34,82 +31,6 @@ from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSen
 from oms_sensemaking.models.geo import Point, Track, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class CSVFileParser(ObjectEventConsumer):
-    """An ObjectEventConsumer based on a file as the data source."""
-
-    def __init__(
-            self,
-            filename: str,
-            default_acm: dict,
-            default_user_dn: str,
-            handle_event: Optional[EVENT_HANDLER] = None):
-        """
-        Create a new instance of CSVFileParser.
-
-        :param filename: The CSV file to process.
-        :param default_acm: The ACM to apply to all records in the CSV file.
-        :param default_user_dn: The user DN to apply to all records in the CSV file.
-        :param handle_event: A callback that will receive the processed tracks.
-        """
-        super().__init__(handle_event)
-        self.filename: str = filename
-        self.default_acm: dict = default_acm
-        self.default_user_dn: str = default_user_dn
-
-    def process_object_events(self) -> None:
-        """Process a file into ObjectEvents."""
-        input_file: Path = Path(self.filename)
-        node_ids: dict[str, UUID] = {}
-
-        if not callable(self.handle_event):
-            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
-
-        if not input_file.is_file():
-            raise ValueError("%s does not exist", input_file)
-
-        # 1. Initialize data source
-        LOGGER.info("File consumer: %s", self.filename)
-        with input_file.open("r", encoding="utf-8") as csv_file:
-            reader: csv.DictReader = csv.DictReader(csv_file)
-
-            with db_session() as db:
-                for row in reader:
-                    # , r, lat, lon, now, timestamp
-                    try:
-                        node_id: UUID = UUID(row["r"])
-                    except ValueError:
-                        node_id = node_ids.setdefault(row["r"], uuid4())
-
-                    # 2. convert data from data source into a point in the db
-                    #  - this is mimicking extracting the data from OMS and persisting the results
-                    point, is_new = Point.get_or_create(db, defaults=dict(
-                        acm=self.default_acm,
-                        location=f"POINT({row['lon']} {row['lat']})",
-                        altitude=None,
-                        detection_time=datetime.fromtimestamp(float(row["now"]), tz=timezone.utc),
-                        node_version=1,
-                        attribute_version=1
-                    ), node_id=node_id, attribute_id=uuid4(), source_id=uuid4())
-
-                    db.add(point)
-                    db.commit()
-                    db.refresh(point)
-
-                    success: bool = self.handle_event(
-                        ObjectEvent(
-                            self.default_user_dn,
-                            point.attribute_id,
-                            ObjectType.ATTRIBUTE,
-                            Action.CREATE if is_new else Action.UPDATE
-                        )
-                    )
-
-                    if success:
-                        LOGGER.info("File-based attribute event [index=%s] was successfully processed.", row[""])
-                    else:
-                        LOGGER.warning("File-based attribute event [index=%s] was no processed.", row[""])
 
 
 class GeoSQSListener(SQSListener):
@@ -178,7 +99,7 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: ObjectEventConsumer, output_to_oms: bool = True) -> None:
+    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer)
 
@@ -191,15 +112,14 @@ class GeospatialSensemakerController(SensemakerController):
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
-        self.output_to_oms = output_to_oms
 
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client, self.output_to_oms))
+            self.register("cotravel", CotravelSensemaker(self.oms_client))
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client, self.output_to_oms))
+            self.register("loiter", LoiterSensemaker(self.oms_client))
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
@@ -235,14 +155,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if isinstance(self.event_consumer, CSVFileParser):
-            # TODO: revisit this. Should the point be persisted here?
-            with db_session() as db:
-                point = db.execute(
-                    select(Point).where(Point.attribute_id == event.objectId)
-                ).scalars().one_or_none()
-            pass
-        elif isinstance(self.event_consumer, GeoSQSListener):
+        if isinstance(self.event_consumer, GeoSQSListener):
             # extract info from OMS via API calls
             oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
 
@@ -272,6 +185,8 @@ class GeospatialSensemakerController(SensemakerController):
                     LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
                 else:
                     LOGGER.warning("Unable to process point.")
+        else:
+            LOGGER.warning("No ObjectEventConsumer found.")
 
         if point:
             with self.lock:
