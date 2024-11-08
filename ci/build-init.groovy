@@ -17,7 +17,7 @@ pipeline {
     }
 
     environment {
-        SERVICE_ACCOUNT_ID = 'art-svc-aio4-dev-dev'
+        SERVICE_ACCOUNT_ID = 'art-svc-aio4-sirius-dev'
         SERVICE_ACCOUNT = credentials("${SERVICE_ACCOUNT_ID}")
 
         SONARQUBE_URL = 'https://sonarqube.code.dodiis.mil/'
