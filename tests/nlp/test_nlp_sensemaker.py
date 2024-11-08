@@ -79,25 +79,28 @@ def test_annotation_processor():
 
     annotation = nlp_sensemaker.use_corenlp_service(sample_text)
     ann_processor = AnnotationProcessor()
-    ents = ann_processor.find_entities(annotation)
-    rels = ann_processor.find_relationships(annotation)
+    sentences = ann_processor.find_sentences(annotation)
+    assert len(sentences) == 1
+    ents, rels = [], []
+    for sentence in sentences:
+        tokens = ann_processor.find_tokens(sentence)
+        ents += ann_processor.find_entities(sentence, tokens)
+        ents = ann_processor.consolidate_entities(ents)
+        rels += ann_processor.find_relationships(sentence, tokens)
     all_ents_and_rels = ann_processor.relate_to_document(data, ents, rels)
 
-    # Every entity in the annotation must have been extracted
-    ent_matches = ann_processor.entity_pattern.finditer(annotation)
-    all_ents = []
-    for match in ent_matches:
-        ent_id = match.group("objectId")
-        ent_type = match.group("type")
-        if ent_id not in all_ents and ent_type != "O":
-            all_ents.append(ent_id)
-    assert len(all_ents) == len(ents)
+    # Every entity in the annotation should be typed, multi-token ents should be consolidated
+    for ent in ents:
+        assert ent["type"] != "0"
+        assert "B-" not in ent["type"]
+        assert "I-" not in ent["type"]
+        assert "E-" not in ent["type"]
 
     # Every relation in the annotation and its entities must have a type
     for rel in rels:
         assert rel["type"] != "_NR"
         for ent in rel["entities"]:
-            assert ent["type"] != "O"
+            assert ent["type"] != "0"
 
     # There is one document relationship for every NER entity identified
     assert len(all_ents_and_rels.document_relationships) == len(all_ents_and_rels.ner_entities)
