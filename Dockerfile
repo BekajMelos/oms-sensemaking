@@ -60,7 +60,7 @@ FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
 #       could possibly not be known ahead of running the image.
 ARG USER_NAME=appuser
 
-ARG GROUP_NAME="${GROUP_NAME:-USER_NAME}"
+ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
