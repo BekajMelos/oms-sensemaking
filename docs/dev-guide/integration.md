@@ -5,7 +5,7 @@ This may have heavy overlap with the Geospatial Sensemaker.
 
 1. Repos needed: `chronicle-ui`, `dime-local-dev-env`, `oms-sensemaking`
 2. In `oms-sensemaking`
-    1. Comment out the `omsb2` section of the Sensemaking `docker-compose.yml` file and change doccano port to 8001:8001
+    1. Comment out the `omsb2` section of the Sensemaking `docker-compose.yml`
     2. Update the `.env` file to include the desired `OMSB_VERSION` (Grimlock-INC-7 or 8)
     3. Run `make up`
     4. Navigate to the API at http://localhost:5001/docs#/ 
