@@ -182,6 +182,9 @@ apt-get install -y --no-install-recommends \
 BUILD_DEPS="gcc libgeos-dev python3-dev"
 apt-get install -y --no-install-recommends $BUILD_DEPS
 
+# install ps since helm charts' probeCommand will use it on this pod
+apt-get install -y --no-install-recommends procps
+
 # install app
 pip install .
 
