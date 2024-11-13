@@ -130,7 +130,7 @@ services:
   doccano:
     image: doccano/doccano
     ports:
-      - "8000:8000"
+      - "8001:8001"
     environment:
       ADMIN_USERNAME: admin
       ADMIN_EMAIL: admin@example.com
