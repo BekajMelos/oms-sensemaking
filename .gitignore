@@ -25,6 +25,7 @@ pytest.xml
 *.pyo
 *.tsv
 *.gz
+!*ser.gz
 
 
 # --------------------
