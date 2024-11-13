@@ -38,7 +38,7 @@ Microservice that provides analytics for OMS data.
    $ pyenv install
    ```
 
-3. Create a virtual environment using Python's built-in venv module
+2. Create a virtual environment using Python's built-in venv module
 
    ```
    $ python -m venv --prompt sensemaking .venv  # create the virtual environment
