@@ -3,18 +3,19 @@
 Microservice that provides analytics for OMS data.
 
 
-## Quickstart
+## Before You Begin
 
-> ***TIP***: The [Setting up an OMS Sensemaking Development Environment]
-> section of the *OMS Development Guide* covers development environment setup
-> in more detail. This file can also be found locally: `docs/dev-guide/dev.md`. 
+1. Install [Git] and [Git LFS]
 
-1. Install Docker
+    If you are using a Mac, consider installing Git LFS with Homebrew: `brew
+    install git-lfs`
+
+2. Install Docker
 
     See the [Install Docker Engine] section of the Docker Manual for platform 
     specific installation instructions.
 
-2. Install Python
+3. Install Python
 
     It is recommended that you use [pyenv] to install the version of Python
     defined by the projects `.python-version` file.
@@ -23,7 +24,21 @@ Microservice that provides analytics for OMS data.
    $ pyenv install
    ```
 
-3. Create a virtual environment using Python's built-in venv module
+
+## Quickstart
+
+> ***TIP***: The [Setting up an OMS Sensemaking Development Environment]
+> section of the *OMS Development Guide* covers development environment setup
+> in more detail. This file can also be found locally: `docs/dev-guide/dev.md`. 
+
+
+1. Ensure you are using the correct version of Python
+
+   ```
+   $ pyenv install
+   ```
+
+2. Create a virtual environment using Python's built-in venv module
 
    ```
    $ python -m venv --prompt sensemaking .venv  # create the virtual environment
@@ -31,7 +46,7 @@ Microservice that provides analytics for OMS data.
    $ pip install --upgrade pip wheel            # update the core packaging tools
    ```
 
-4. Configure pip to use Gitea's private PyPI
+3. Configure pip to use Gitea's private PyPI
 
     Create a `~/.netrc` file:
 
@@ -51,13 +66,13 @@ Microservice that provides analytics for OMS data.
    extra-index-url = https://pypi.org/simple
    ```
 
-5. Install Project Dependencies
+4. Install Project Dependencies
 
    ```
    $ pip install -e ".[dev,docs,test,build]"
    ```
 
-6. Decrypt Certs
+5. Decrypt Certs
 
     Use `bin/transcrypt` with the following options to decrypt secrets:
 
@@ -79,3 +94,5 @@ static site will be located in the `site` directory).
 [Setting up an OMS Sensemaking Development Environment]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/src/branch/main/docs/dev-guide/dev.md
 [mkdocs]: https://www.mkdocs.org/
 [mkdocstring]: https://mkdocstrings.github.io/
+[Git]: https://git-scm.com/
+[Git LFS]: https://git-lfs.com/

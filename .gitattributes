@@ -1,2 +1,14 @@
+# .gitattributes --- Path attribute configuration.
+
+# ------------------------------
+# Transcrypt
+# ------------------------------
 #pattern  filter=crypt diff=crypt merge=crypt
 etc/pki/* filter=crypt diff=crypt merge=crypt
+
+
+# ------------------------------
+# Git LFS
+# ------------------------------
+*.ser.gz filter=lfs diff=lfs merge=lfs -text
+
