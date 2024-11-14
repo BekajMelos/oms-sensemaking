@@ -137,6 +137,8 @@ services:
       ADMIN_PASSWORD: password
     volumes:
      - doccano-db:/data
+    profiles:
+      - local
 
 #  corenlp:
 #    command: docker buildx build -t corenlp https://github.com/NLPbox/stanford-corenlp-docker.git

@@ -5,10 +5,9 @@ This may have heavy overlap with the Geospatial Sensemaker.
 
 1. Repos needed: `chronicle-ui`, `dime-local-dev-env`, `oms-sensemaking`
 2. In `oms-sensemaking`
-    1. Comment out the `omsb2` and `doccano` sections of the Sensemaking `docker-compose.yml`
-    2. Update the `.env` file to include the desired `OMSB_VERSION` (Grimlock-INC-7 or 8)
-    3. Run `make up`
-    4. Navigate to the API at http://localhost:5001/docs#/ 
+   1. Update the `.env` file to include the desired `OMSB_VERSION` (Grimlock-INC-7 or 8)
+   2. Run `docker compose up`
+   3. Navigate to the API at http://localhost:5001/docs#/ 
 3. In `dime-local-dev-env`
     1. Follow `dime-local-dev-env` setup steps: https://tex.gerbil-cloud.ts.net:3000/DevOps/dime-local-dev-env#quick-start
     2. Run `git checkout omsb-grimlock`
