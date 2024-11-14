@@ -5,7 +5,7 @@ services:
       secrets:
         - mynetrc
     ports:
-      - 5001:80
+      - 5001:${UVICORN_PORT:-443}
     environment:
       # AWS
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -16,12 +16,18 @@ services:
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
       PGHOST: postgis
+      UVICORN_PORT: ${UVICORN_PORT:-443}
+      UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE}
+      UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE}
+      UVICORN_SSL_CERT_REQS: ${UVICORN_SSL_CERT_REQS:-0}  # set this to 1 to request client certs
+      UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL:-info}
 
       # misc.
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
       RELOAD_APP: ${RELOAD_APP:-1}
     volumes:
       - .:/app
+      - ./etc/pki:/opt/common/pki
     healthcheck:
       test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 10s
