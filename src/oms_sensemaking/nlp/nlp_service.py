@@ -6,9 +6,10 @@ from datetime import datetime
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
+from oms_sdk.generated.generated_graphql_client import Client, CreateSourceCreateSource
 from sqlalchemy import select
 
+from oms_sensemaking.api.schemas.nlp import NlpRequest
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -31,7 +32,7 @@ class NlpService:
     def __init__(self):
         self.oms_crud_tool = OmsCrudTool()
 
-    def run_service(self, acm: dict, nlp_reader: NlpReader, source_id: str, corenlp_client: CoreNlpClient):
+    def run_service(self, request: NlpRequest, nlp_reader: NlpReader, corenlp_client: CoreNlpClient):
         """Pipeline called by API to run the NLP Business Logic and report findings back to OMS"""
         LOGGER.info("Starting the NLP Service Pipeline: Sensemaker, Submit to OMS, and Submit to Postgis")
 
@@ -39,10 +40,10 @@ class NlpService:
         findings = self.run_nlp(nlp_reader=nlp_reader, corenlp_client=corenlp_client)
 
         # Submit the findings to OMS
-        self.submit_findings_to_oms(acm=acm, findings=findings, source_id=source_id)
+        self.submit_findings_to_oms(request=request, findings=findings)
 
         # Submit findings to postgis
-        self.submit_findings_to_postgis(acm=acm, findings=findings, execution_time=execution_time)
+        self.submit_findings_to_postgis(acm=request.acm, findings=findings, execution_time=execution_time)
 
         LOGGER.info("NLP Sensemaker Service Pipeline done.")
         return findings
@@ -103,16 +104,15 @@ class NlpService:
             result = findings_query.scalars().all()
         return result
 
-    def submit_findings_to_oms(self, acm: dict, findings: dict, source_id: str):
+    def submit_findings_to_oms(self, request: NlpRequest, findings: dict):
         """
         Submit the Entities and Relationships to OMS
-        :param acm: The acm submitted with the API call
+        :param request: The NLP API request
         :param findings: found Entities and Relationships
-        :param source_id: ID of the text's Source
         """
         LOGGER.info("Submitting findings to OMS")
-        nlp_publisher = NlpOmsPublisher(source_id=source_id, acm=acm)
-        nlp_publisher.publish(findings)
+        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm, oms_client=Client())
+        nlp_publisher.publish(data=request.text, results=findings)
         LOGGER.info("Findings submitted to OMS")
 
     def findings_to_dict(self, findings: EntitiesAndRelationships) -> dict:
