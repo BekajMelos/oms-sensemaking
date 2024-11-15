@@ -11,6 +11,7 @@ db_engine = create_engine(
     SETTINGS.db_uri,  # type: ignore
     pool_pre_ping=True,
     connect_args={
+        'sslmode': 'require' if SETTINGS.db_ssl else 'prefer',
         'options': '-c timezone=utc'
     }
 )
