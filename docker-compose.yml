@@ -47,7 +47,9 @@ services:
       PGDATABASE: ${PGDATABASE:-oms_sensemaking}
     volumes:
       - postgis:/var/lib/postgresql/data
+      - ./etc/pki:/opt/common/pki:ro
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
+      - ./docker/postgis/initdb.d/30_enable-ssl.sql:/docker-entrypoint-initdb.d/30_enable-ssl.sql
 
   pgadmin:
     profiles:
