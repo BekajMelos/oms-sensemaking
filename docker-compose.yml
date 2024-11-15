@@ -15,6 +15,7 @@ services:
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
+      DB_SSL: ${DB_SSL:-true}
       PGHOST: postgis
 
       # misc.

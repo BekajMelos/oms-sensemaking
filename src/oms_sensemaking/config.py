@@ -288,3 +288,6 @@ class Settings(BaseSettings):
 
 
 SETTINGS: Settings = Settings()
+
+import logging
+logging.getLogger(__name__).warning(f">>>>>>>>>>>>>>>>>>>> db_ssl: {SETTINGS.db_ssl}")
