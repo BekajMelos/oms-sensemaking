@@ -34,12 +34,12 @@ class NlpOmsPublisher(OmsPublisher):
         self.oms_crud_tool = OmsCrudTool()
         self.node_id_mapping: dict[str, str] = {}
         self.node_iris = {
-            "PEOPLE": SETTINGS.nlp_person_iri,
-            "ORGANIZATION": SETTINGS.nlp_organization_iri,
-            "LOCATION": SETTINGS.nlp_location_iri,
-            "DOCUMENT": SETTINGS.nlp_document_iri,
-            "DATE": SETTINGS.nlp_date_iri,
-            "ENTITY": SETTINGS.entity_iri,
+            "Person": SETTINGS.nlp_person_iri,
+            "Organization": SETTINGS.nlp_organization_iri,
+            "Location": SETTINGS.nlp_location_iri,
+            "Document": SETTINGS.nlp_document_iri,
+            "Date": SETTINGS.nlp_date_iri,
+            "Entity": SETTINGS.entity_iri,
         }
         self.relationship_iris = {
             "Work_For": SETTINGS.nlp_work_for_iri,
@@ -61,7 +61,7 @@ class NlpOmsPublisher(OmsPublisher):
         for entity in results["ner_entities"]:
             self.node_uuid_list.append(entity["uuid"])
             entity_type = entity["type"]
-            entity_iri = self.node_iris[entity_type] if entity_type in self.node_iris else self.node_iris["ENTITY"]
+            entity_iri = self.node_iris[entity_type] if entity_type in self.node_iris else self.node_iris["Entity"]
 
             formatted_nodes.append(
                 CreateNodeInput(
@@ -84,7 +84,7 @@ class NlpOmsPublisher(OmsPublisher):
                     name=REPORT_NODE_NAME,
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
-                    classIri=self.node_iris["DOCUMENT"],
+                    classIri=self.node_iris["Document"],
                     isNso=True,
                 )
             )
