@@ -17,5 +17,8 @@ def test_engine_execution(mocker: MockerFixture):
     mock = mocker.patch.object(test_rule, "execute")
     engine = Engine()
     engine.add_rule(test_rule)
-    engine.execute_rules({})
-    mock.assert_called_once_with({})
+
+    input = {"attribute": {"id": "abc"}, "node": {"id": "123"}, "relationship": {"id": "def"}}
+
+    engine.execute_rules(input)
+    mock.assert_called_once_with(input)
