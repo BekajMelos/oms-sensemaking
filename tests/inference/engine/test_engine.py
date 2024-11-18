@@ -2,6 +2,7 @@ from pytest_mock import MockerFixture
 
 from oms_sensemaking.inference.engine.engine import Engine
 from oms_sensemaking.inference.rules.base_rule import BaseRule
+from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
 class RuleHelper(BaseRule):
@@ -12,13 +13,18 @@ class RuleHelper(BaseRule):
         return
 
 
+class Data:
+    def __init__(self, id):
+        self.id = id
+
+
 def test_engine_execution(mocker: MockerFixture):
     test_rule = RuleHelper("test rule")
     mock = mocker.patch.object(test_rule, "execute")
     engine = Engine()
     engine.add_rule(test_rule)
 
-    input = {"attribute": {"id": "abc"}, "node": {"id": "123"}, "relationship": {"id": "def"}}
+    input = RuleContext(attribute=Data("abc"), node=Data("123"))
 
     engine.execute_rules(input)
     mock.assert_called_once_with(input)

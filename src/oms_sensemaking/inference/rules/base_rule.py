@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict
+
+from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class BaseRule(ABC):
 
         return self.name
 
-    def execute(self, input: Dict[str, any]):
+    def execute(self, input: RuleContext):
         """
         Execution space for the rule
 
@@ -34,7 +35,7 @@ class BaseRule(ABC):
         return
 
     @abstractmethod
-    def evaluate(self, input: Dict[str, any]) -> bool:
+    def evaluate(self, input: RuleContext) -> bool:
         """
         Determine if the input's properties justify running the action method
 
@@ -44,7 +45,7 @@ class BaseRule(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def action(self, input: Dict[str, any]):
+    def action(self, input: RuleContext):
         """
         The command to run when this rule's conditions are met
 
@@ -53,7 +54,7 @@ class BaseRule(ABC):
 
         raise NotImplementedError
 
-    def _evaluate(self, input: Dict[str, any]) -> bool:
+    def _evaluate(self, input: RuleContext) -> bool:
         """
         Pre running step for the evaluate method
         """
@@ -61,7 +62,7 @@ class BaseRule(ABC):
         LOGGER.info(f"Evaluating Rule {self.get_name()}")
         return self.evaluate(input)
 
-    def _action(self, input: Dict[str, any]) -> bool:
+    def _action(self, input: RuleContext) -> bool:
         """
         Pre running step for the action method
         """

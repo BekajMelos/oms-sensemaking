@@ -1,7 +1,7 @@
 import logging
-from typing import Dict
 
 from oms_sensemaking.inference.rules.base_rule import BaseRule
+from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class Engine:
         LOGGER.debug(f"Adding {rule.get_name()}")
         self._rules.append(rule)
 
-    def execute_rules(self, input: Dict[str, any]):
+    def execute_rules(self, input: RuleContext):
         """
         Execute the set of rules using the given input
 
@@ -40,7 +40,7 @@ class Engine:
         for rule in self._rules:
             rule.execute(input)
 
-    def _log_input_ids(self, input: Dict[str, any]):
+    def _log_input_ids(self, input: RuleContext):
         """
         Determine the ids sent as part of the input
 
@@ -49,7 +49,10 @@ class Engine:
 
         ids = []
 
-        for value in input.values():
-            ids.append(value.get("id"))
+        props = input.get_properties()
+
+        for prop in props.values():
+            if prop and prop.id:
+                ids.append(prop.id)
 
         LOGGER.info(f"Executing rules for input with ids {ids}")
