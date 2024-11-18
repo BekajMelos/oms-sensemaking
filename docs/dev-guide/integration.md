@@ -32,8 +32,8 @@ This may have heavy overlap with the Geospatial Sensemaker.
        6. Now you should be able to run the Sensemaking API endpoints and view the results published to OMS in Chronicle
           1. Make sure to create an Originator, Provider, and Source in Chronicle so that you can copy a valid source ID for the NLP API call
           2. If the CoreNLP container quits unexpectedly with no error message upon API call, allocate more resources to docker and try again
-          3. Check out the Objects, Relationships, and Attributes! The Nodes/Relationships you see in Chronicle should resemble those in the response of the FastAPI call.
-          4. Below is a sample request with the `source_id` and `text` fields filled out. You must change the `source_id` for it to work, but feel free to use this text sample: 
+          3. Check out the Objects, Relationships, and Attributes! The Nodes/Relationships you see in Chronicle should resemble those in the response of the FastAPI call. (See below example)
+* Below is a sample request with the `source_id` and `text` fields filled out. You must change the `source_id` for it to work, but feel free to use this text sample: 
 ```
 {
   "source_id": "2d2a5a4d-b43d-4763-af9e-6369285985be",
@@ -86,3 +86,63 @@ This may have heavy overlap with the Geospatial Sensemaker.
 }
 ```
 
+* The following Entity in the API Response would show up in Chronicle with `Name: Ukraine`, and `Class: Geographical Location` or `Entity`
+```
+    {
+        "type": "Location",
+        "objectId": "EntityMention-71",
+        "uuid": "77d3ee8e-f906-4572-8f80-958486dc92f7",
+        "hstart": "1",
+        "hend": "2",
+        "estart": "1",
+        "eend": "2",
+        "headPosition": "1",
+        "value": "Ukraine",
+        "corefID": "-1"
+    },
+```
+
+* The following Relationship in the API Response would show up in Chronicle with `Start Object: Kyiv`, `Relationship: located in at some time`, `End Object: Ukraine`
+```
+{
+        "type": "Located_In",
+        "objectId": "RelationMention-13",
+        "uuid": "c8ce0562-43e9-4cfb-b8c9-e7eb6c2c61aa",
+        "start": "1",
+        "end": "6",
+        "relations": [
+          "Located_In, 0.4126628720267475",
+          "Has_Job, 0.21216090765746073",
+          "Part_of_Org, 0.1998946200003775",
+          "_NR, 0.17528160031541418"
+        ],
+        "entities": [
+          {
+            "type": "Location",
+            "objectId": "EntityMention-75",
+            "uuid": "31760e4f-7bc4-473f-b2d8-76bfb8ae2c2f",
+            "hstart": "5",
+            "hend": "6",
+            "estart": "5",
+            "eend": "6",
+            "headPosition": "5",
+            "value": "Kyiv",
+            "corefID": "-1"
+          },
+          {
+            "type": "Location",
+            "objectId": "EntityMention-71",
+            "uuid": "77d3ee8e-f906-4572-8f80-958486dc92f7",
+            "hstart": "1",
+            "hend": "2",
+            "estart": "1",
+            "eend": "2",
+            "headPosition": "1",
+            "value": "Ukraine",
+            "corefID": "-1"
+          }
+        ]
+      },
+```
+
+* Additionally, a `Report` Object should exist and have a `Relationship: describes` to every single Entity that it produced.
