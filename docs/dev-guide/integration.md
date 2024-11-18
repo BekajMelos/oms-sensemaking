@@ -33,7 +33,7 @@ This may have heavy overlap with the Geospatial Sensemaker.
           1. Make sure to create an Originator, Provider, and Source in Chronicle so that you can copy a valid source ID for the NLP API call
           2. If the CoreNLP container quits unexpectedly with no error message upon API call, allocate more resources to docker and try again
           3. Check out the Objects, Relationships, and Attributes! The Nodes/Relationships you see in Chronicle should resemble those in the response of the FastAPI call. (See below example)
-* Below is a sample request with the `source_id` and `text` fields filled out. You must change the `source_id` for it to work, but feel free to use this text sample: 
+* Below is a sample request with the `source_id` and `text` fields filled out. You must change the `source_id` for it to work, but feel free to use this text sample, which is an excerpt from `etc/data/russia-ukraine.txt`: 
 ```
 {
   "source_id": "2d2a5a4d-b43d-4763-af9e-6369285985be",
