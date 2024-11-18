@@ -13,6 +13,7 @@ class BaseRule(ABC):
         print(f"Running {self.name}")
         if self.evaluate(input):
             self.action(input)
+        return
 
     @abstractmethod
     def evaluate(self, input) -> bool:
