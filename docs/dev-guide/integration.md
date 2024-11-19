@@ -9,6 +9,14 @@ This may have heavy overlap with the Geospatial Sensemaker.
    1. Update the `.env` file to include the desired `OMSB_VERSION` (Grimlock-INC-7 or 8)
    2. Run `docker compose up`
    3. Navigate to the API at http://localhost:5001/docs
+      1. If you are having issues getting this url to load, ensure the following block is in your `.env`:
+      ```
+      # TLS configuration
+      UVICORN_SSL_KEYFILE=/opt/common/pki/server.private
+      UVICORN_SSL_CERTFILE=/opt/common/pki/server.public
+      UVICORN_SSL_CERT_REQS=0
+      UVICORN_PORT=443
+      ```
 3. In `dime-local-dev-env`
    1. Follow `dime-local-dev-env` setup steps: https://tex.gerbil-cloud.ts.net:3000/DevOps/dime-local-dev-env#quick-start
    2. Run `git checkout omsb-grimlock`
@@ -20,6 +28,12 @@ This may have heavy overlap with the Geospatial Sensemaker.
    2. Git checkout main
    3. Run `npm install` and `npm start`
    4. Navigate to the chronicle page at https://localhost/apps/chronicle
+      1. If you have issues getting the page to load, ensure you have downloaded all certificates from `chronicle-ui/etc/test-certs` and marked them as 'trusted'. To do this:
+         1. Open the 'Keychain Access' app on your Macbook (`CMD+Space --> 'Keychain Access'`)
+         2. Click 'login' on the left sidebar
+         3. The downloaded certificates from the Chronicle repo should be listed
+         4. For each cert, double click the name, click the arrow next to 'Trust', and select 'Always Trust' from the first dropdown next to 'When using this certificate'
+         5. If you are still having issues, try closing/reopening Chrome and/or restarting your Macbook
 5. Connect `dime-local-dev-env` to the sensemaking container
    1. Run `docker network ls`
    2. Copy the NETWORK ID from the result of that command
@@ -31,7 +45,11 @@ This may have heavy overlap with the Geospatial Sensemaker.
       1. It should be `oms-sensemaking-oms_sensemaking-1` or something similar
    4. Run `docker network connect <dime-local-network-ID-here> <sensemaking-container-name-here>`
 6. Now you should be able to run the Sensemaking API endpoints and view the results published to OMS in Chronicle
-   1. Make sure to create an Originator, Provider, and Source in Chronicle so that you can copy a valid source ID for the NLP API call
+   1. Make sure to create an Originator, Provider, and Source in Chronicle so that you can copy a valid source ID for the NLP API call. To do this:
+      1. Click the 'Data Types' icon in the left sidebar
+      2. Select 'Sourcing'
+      3. On the Sourcing page, ensure you are on the 'Sources' tab and click 'Actions' and 'Add Source'
+      4. Work through the creation steps. In creating a Source, you will also be prompted to create a Provider and Originator.
    2. If the CoreNLP container quits unexpectedly with no error message upon API call, allocate more resources to docker and try again
    3. Check out the Objects, Relationships, and Attributes! The Nodes/Relationships you see in Chronicle should resemble those in the response of the FastAPI call. (See below example)
 
