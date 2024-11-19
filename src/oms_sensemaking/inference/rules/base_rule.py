@@ -30,8 +30,8 @@ class BaseRule(ABC):
         """
 
         LOGGER.debug(f"Executing Rule {self.get_name()}")
-        if self.evaluate(input):
-            self.action(input)
+        if self._evaluate(input):
+            self._action(input)
         return
 
     @abstractmethod
