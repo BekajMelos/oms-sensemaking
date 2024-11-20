@@ -4,6 +4,10 @@ from oms_sensemaking.inference.rules.base_rule import BaseRule
 
 
 class BaseRuleHelper(BaseRule):
+    """
+    Helper class to facilitate testing since BaseRule is abstract
+    """
+
     def evaluate(self, input):
         return True
 
@@ -15,6 +19,9 @@ class BaseRuleHelper(BaseRule):
 
 
 def test_has_action_already_ran(mocker: MockerFixture):
+    """
+    Test to make sure when an action has already ran, that we do not run it again
+    """
     test_rule = BaseRuleHelper("already ran true test")
     mocker.patch.object(test_rule, "has_action_already_ran").return_value = True
     test_rule.execute({})
@@ -23,6 +30,9 @@ def test_has_action_already_ran(mocker: MockerFixture):
 
 
 def test_evaluate_true_execution(mocker: MockerFixture):
+    """
+    Test to make sure when conditions are met, that we execute the action
+    """
     test_rule = BaseRuleHelper("evaluate true test")
     mock = mocker.patch.object(test_rule, "action")
     mocker.patch.object(test_rule, "has_action_already_ran").return_value = False
@@ -30,7 +40,11 @@ def test_evaluate_true_execution(mocker: MockerFixture):
     mock.assert_called_once()
 
 
-def test_evaluate_false_execution(mocker: MockerFixture):
+def test_do_not_run_action_execution(mocker: MockerFixture):
+    """
+    Test to make sure when the rule has never ran and conditions are not
+    met, that we don't run the action
+    """
     test_rule = BaseRuleHelper("evaluate false test")
     mocker.patch.object(test_rule, "evaluate").return_value = False
     mocker.patch.object(test_rule, "has_action_already_ran").return_value = False

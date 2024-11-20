@@ -34,17 +34,20 @@ def name_attr(mocker: MockerFixture):
 
 
 def test_evaluate_none_input():
+    """Test to verify we only run the rule against attributes"""
     rule = AddHasNameAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
 
 def test_evaluate_attribute_input(name_attr):
+    """Test to verify valid inputs are recognized as such"""
     rule = AddHasNameAttribute("some name")
 
     assert rule.evaluate(RuleContext(attribute=name_attr)), "expected input to be a valid Name attribute"
 
 
 def test_evaluate_attribute_empty_value(name_attr):
+    """Test to verify emtpy names would not cause a HasName attribute to be created"""
     rule = AddHasNameAttribute("some name")
 
     attr = name_attr
