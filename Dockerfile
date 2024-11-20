@@ -152,6 +152,10 @@ ENV PYTHONUNBUFFERED=1
 # https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/
 ENV PYTHONPATH=${APP_HOME}/src
 
+ENV UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
+
+ENV UVICORN_PORT=${UVICORN_PORT:-${PORT:-443}}
+
 COPY . ${APP_HOME}
 
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
