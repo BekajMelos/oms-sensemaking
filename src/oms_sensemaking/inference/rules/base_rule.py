@@ -30,9 +30,19 @@ class BaseRule(ABC):
         """
 
         LOGGER.debug(f"Executing Rule {self.get_name()}")
-        if self._evaluate(input):
+        if not self._has_action_already_ran(input) and self._evaluate(input):
             self._action(input)
         return
+
+    @abstractmethod
+    def has_action_already_ran(self, input: RuleContext) -> bool:
+        """
+        Determine if the action has already happened in a previous run
+
+        :param input: Generic object used to test conditions
+        """
+
+        raise NotImplementedError
 
     @abstractmethod
     def evaluate(self, input: RuleContext) -> bool:
@@ -53,6 +63,14 @@ class BaseRule(ABC):
         """
 
         raise NotImplementedError
+
+    def _has_action_already_ran(self, input: RuleContext) -> bool:
+        """
+        Pre running step for the action_already_taken method
+        """
+
+        LOGGER.info(f"Determining if action already taken for rule {self.get_name()}")
+        return self.has_action_already_ran(input)
 
     def _evaluate(self, input: RuleContext) -> bool:
         """

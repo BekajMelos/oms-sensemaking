@@ -12,6 +12,9 @@ class RuleHelper(BaseRule):
     def action(self, input):
         return
 
+    def has_action_already_ran(self, input):
+        return False
+
 
 class Data:
     def __init__(self, id):
