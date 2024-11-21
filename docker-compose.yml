@@ -5,7 +5,7 @@ services:
       secrets:
         - mynetrc
     ports:
-      - 5001:${UVICORN_PORT:-443}
+      - 5001:${UVICORN_PORT:-8443}
     environment:
       # AWS
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -17,7 +17,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
       DB_SSL: ${DB_SSL:-true}
       PGHOST: postgis
-      UVICORN_PORT: ${UVICORN_PORT:-443}
+      UVICORN_PORT: ${UVICORN_PORT:-8443}
       UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE}
       UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE}
       UVICORN_SSL_CERT_REQS: ${UVICORN_SSL_CERT_REQS:-0}  # set this to 1 to request client certs
