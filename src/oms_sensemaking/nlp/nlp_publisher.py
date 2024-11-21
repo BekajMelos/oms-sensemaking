@@ -13,7 +13,6 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 
 from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import OmsPublisher
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -31,8 +30,6 @@ class NlpOmsPublisher(OmsPublisher):
         super().__init__(oms_client)
         self.source_id = source_id
         self.acm = acm
-        self.oms_crud_tool = OmsCrudTool()
-        self.node_id_mapping: dict[str, str] = {}
         self.node_iris = {
             "Person": SETTINGS.nlp_person_iri,
             "Organization": SETTINGS.nlp_organization_iri,
