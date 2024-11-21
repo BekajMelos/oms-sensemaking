@@ -5,7 +5,7 @@ services:
       secrets:
         - mynetrc
     ports:
-      - 5001:80
+      - 5001:${UVICORN_PORT:-443}
     environment:
       # AWS
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -15,13 +15,20 @@ services:
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
       DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
+      DB_SSL: ${DB_SSL:-true}
       PGHOST: postgis
+      UVICORN_PORT: ${UVICORN_PORT:-443}
+      UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE}
+      UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE}
+      UVICORN_SSL_CERT_REQS: ${UVICORN_SSL_CERT_REQS:-0}  # set this to 1 to request client certs
+      UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL:-info}
 
       # misc.
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
       RELOAD_APP: ${RELOAD_APP:-1}
     volumes:
       - .:/app
+      - ./etc/pki:/opt/common/pki
     healthcheck:
       test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 10s
@@ -47,7 +54,9 @@ services:
       PGDATABASE: ${PGDATABASE:-oms_sensemaking}
     volumes:
       - postgis:/var/lib/postgresql/data
+      - ./etc/pki:/opt/common/pki:ro
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
+      - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
 
   pgadmin:
     profiles:
@@ -137,6 +146,8 @@ services:
       ADMIN_PASSWORD: password
     volumes:
      - doccano-db:/data
+    profiles:
+      - local
 
 #  corenlp:
 #    command: docker buildx build -t corenlp https://github.com/NLPbox/stanford-corenlp-docker.git

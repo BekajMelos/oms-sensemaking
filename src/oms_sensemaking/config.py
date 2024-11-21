@@ -165,6 +165,7 @@ class Settings(BaseSettings):
     db_uri: Optional[str] = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
     )
+    db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
 
     # Geospatial Sensemaking Settings
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")

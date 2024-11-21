@@ -15,9 +15,9 @@ VARIABLE_NAME=${VARIABLE_NAME:-app}
 export APP_MODULE=${APP_MODULE:-"$MODULE_NAME:$VARIABLE_NAME"}
 
 # configure uvicorn
-HOST=${HOST:-0.0.0.0}
-PORT=${PORT:-80}
-LOG_LEVEL=${LOG_LEVEL:-info}
+UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
+UVICORN_PORT=${UVICORN_PORT:-80}
+UVICORN_LOG_LEVEL=${UVICORN_LOG_LEVEL:-error}
 
 # If there's a prestart.sh script in the /app directory or other path specified, run it before starting
 PRE_START_PATH=${PRE_START_PATH:-$APP_HOME/prestart.sh}
@@ -31,9 +31,9 @@ fi
 
 cat /etc/motd
 
-# Start uvicorn
+# Start uvicorn - relies on env var configuration (see https://www.uvicorn.org/settings/)
 if [ -z "$RELOAD_APP" ]; then
-  exec uvicorn --host $HOST --port $PORT --log-level $LOG_LEVEL $APP_MODULE
+  exec uvicorn --host $UVICORN_HOST $APP_MODULE
 else
-  exec uvicorn --host $HOST --port $PORT --log-level $LOG_LEVEL --reload $APP_MODULE
+  exec uvicorn --host $UVICORN_HOST --reload $APP_MODULE
 fi
