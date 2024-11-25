@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import List
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
@@ -15,7 +15,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput, IdQuery
+from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
@@ -159,7 +159,7 @@ class LoiterOmsPublisher(OmsPublisher):
         """
         formatted_attributes = []
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-        
+
         for loiter in loiters:
             create_attribute_input = CreateAttributeInput(
                     attributeIri=SETTINGS.loiter_event_node_attribute_iri,

@@ -75,6 +75,8 @@ class OmsPublisher(SensemakerPublisher):
     def publish(
         self, data, results
     ) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship], list[CreateAttributeCreateAttribute]]:
+        self.node_uuid_list = []
+        self.node_id_mapping = {}
         published_nodes = self.publish_nodes(self.format_nodes(data, results))
         published_relationships = self.publish_relationships(self.format_relationships(data, results))
         published_attributes = self.publish_attributes(self.format_attributes(data, results))
