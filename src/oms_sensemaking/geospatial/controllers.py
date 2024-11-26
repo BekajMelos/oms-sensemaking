@@ -116,10 +116,10 @@ class GeospatialSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client))
+            self.register("cotravel", CotravelSensemaker())
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client))
+            self.register("loiter", LoiterSensemaker())
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())

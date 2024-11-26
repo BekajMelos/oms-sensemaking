@@ -19,7 +19,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
 )
-from oms_sdk.generated.generated_graphql_client.client import Client
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -64,19 +63,19 @@ class NoOpPublisher(SensemakerPublisher):
 
 
 class OmsPublisher(SensemakerPublisher):
-    def __init__(self, oms_client: Client) -> None:
+    def __init__(self) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
-        self.oms_client = oms_client  # TODO: Replace with crud tool for all uses
         self.oms_crud_tool = OmsCrudTool()
         self.node_uuid_list = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
     def publish(
         self, data, results
-    ) -> Tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship], list[CreateAttributeCreateAttribute]]:
+    ) -> Tuple[
+        list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship], list[CreateAttributeCreateAttribute]]:
         self.node_uuid_list = []
-        self.node_id_mapping = {}
+        self.node_id_mapping: dict[str, str] = {}
         published_nodes = self.publish_nodes(self.format_nodes(data, results))
         published_relationships = self.publish_relationships(self.format_relationships(data, results))
         published_attributes = self.publish_attributes(self.format_attributes(data, results))

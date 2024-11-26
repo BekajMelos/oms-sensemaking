@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import Client, CreateSourceCreateSource
+from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from sqlalchemy import select
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest
@@ -111,7 +111,7 @@ class NlpService:
         :param findings: found Entities and Relationships
         """
         LOGGER.info("Submitting findings to OMS")
-        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm, oms_client=Client())
+        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm)
         nlp_publisher.publish(data=request.text, results=findings)
         LOGGER.info("Findings submitted to OMS")
 

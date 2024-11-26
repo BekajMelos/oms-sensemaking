@@ -10,7 +10,6 @@ from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
-    Client,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
@@ -188,7 +187,8 @@ class CotravelOmsPublisher(OmsPublisher):
 
         return formatted_nodes
 
-    def format_relationships(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> list[CreateRelationshipInput]:
+    def format_relationships(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> list[
+        CreateRelationshipInput]:
         """
         Format Relationships Objects to publish to OMS
 
@@ -282,7 +282,7 @@ class CotravelSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client) -> None:
+    def __init__(self) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -300,7 +300,7 @@ class CotravelSensemaker(Sensemaker):
             'lag_lead_event_name': SETTINGS.lag_lead_event_name,
             'geo_sensemaker_event_tag': SETTINGS.geo_sensemaker_event_tag
         }
-        self.publisher = CotravelOmsPublisher(oms_client)
+        self.publisher = CotravelOmsPublisher()
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""
