@@ -4,7 +4,7 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
-from oms_sensemaking.nlp.NlpOmsPublisher import NlpOmsPublisher
+from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
 from tests.nlp.mock_findings import empty_findings, large_findings
 
 
