@@ -14,8 +14,9 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 
 @pytest.fixture
-def nlp_publisher(mock_source, mock_oms_client):
-    publisher = NlpOmsPublisher(source_id=mock_source.id, acm=DEFAULT_ACM, oms_client=mock_oms_client)
+def nlp_publisher(mock_source, mock_oms_client, oms_crud_tool):
+    publisher = NlpOmsPublisher(
+        source_id=mock_source.id, acm=DEFAULT_ACM, oms_client=mock_oms_client, oms_crud_tool=oms_crud_tool)
     yield publisher
 
 

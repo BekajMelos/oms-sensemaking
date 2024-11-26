@@ -111,7 +111,8 @@ class NlpService:
         :param findings: found Entities and Relationships
         """
         LOGGER.info("Submitting findings to OMS")
-        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm, oms_client=Client())
+        nlp_publisher = NlpOmsPublisher(
+            source_id=request.source_id, acm=request.acm, oms_client=Client(), oms_crud_tool=OmsCrudTool())
         nlp_publisher.publish(data=request.text, results=findings)
         LOGGER.info("Findings submitted to OMS")
 

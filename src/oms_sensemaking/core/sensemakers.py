@@ -64,11 +64,11 @@ class NoOpPublisher(SensemakerPublisher):
 
 
 class OmsPublisher(SensemakerPublisher):
-    def __init__(self, oms_client: Client) -> None:
+    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
         self.oms_client = oms_client  # TODO: Replace with crud tool for all uses
-        self.oms_crud_tool = OmsCrudTool()
+        self.oms_crud_tool = oms_crud_tool
         self.node_uuid_list = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
