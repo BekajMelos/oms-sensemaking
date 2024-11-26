@@ -207,7 +207,7 @@ class CotravelOmsPublisher(OmsPublisher):
             # track 1 relationship
             create_relationship_input1 = CreateRelationshipInput(
                     tags=tags,
-                    name=name,
+                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
                     startNodeId=self.node_id_mapping[cotravel.cotravel_id],
                     endNodeId=cotravel.track1.node_id,
                     confidence=Confidence.HIGH,
@@ -220,7 +220,7 @@ class CotravelOmsPublisher(OmsPublisher):
             # track 2 relationship
             create_relationship_input2 = CreateRelationshipInput(
                     tags=tags,
-                    name=name,
+                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
                     startNodeId=self.node_id_mapping[cotravel.cotravel_id],
                     endNodeId=cotravel.track2.node_id,
                     confidence=Confidence.HIGH,
