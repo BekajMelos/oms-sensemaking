@@ -1,24 +1,22 @@
 """Clients to external services."""
+
 from contextlib import contextmanager
 from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+
 from .config import SETTINGS
 
 db_engine = create_engine(
     SETTINGS.db_uri,  # type: ignore
     pool_pre_ping=True,
-    connect_args={
-        'sslmode': 'require' if SETTINGS.db_ssl else 'prefer',
-        'options': '-c timezone=utc'
-    }
+    connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
 )
 
-SessionLocal = scoped_session(
-    sessionmaker(autocommit=False, autoflush=True, bind=db_engine)
-)
+SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
 
 
 @contextmanager
@@ -56,3 +54,6 @@ def get_db_session() -> Iterator[Session]:
         yield db
     finally:
         db.close()
+
+
+oms_client = OmsCrudTool()
