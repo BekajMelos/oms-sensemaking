@@ -75,6 +75,8 @@ class OmsPublisher(SensemakerPublisher):
     def publish(
         self, data, results
     ) -> tuple[list[CreateNodeCreateNode], list[CreateRelationshipCreateRelationship], list[CreateAttributeCreateAttribute]]:
+        self.node_uuid_list = [] # Make sure old lists doesn't persist on a fresh sensemaker run
+        self.node_id_mapping = {} # Make sure old mappings don't persist on a fresh sensemaker run
         published_nodes = self.publish_nodes(self.format_nodes(data, results))
         published_relationships = self.publish_relationships(self.format_relationships(data, results))
         published_attributes = self.publish_attributes(self.format_attributes(data, results))
