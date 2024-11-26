@@ -534,7 +534,8 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db):
 
 
 @patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client")
-def test_cotravel_valid_before_observation_threshold_exceeded(mock_get_generated_client, mock_oms_client, tester_db, db):
+def test_cotravel_valid_before_observation_threshold_exceeded(
+    mock_get_generated_client, mock_oms_client, tester_db, db):
 
     mock_get_generated_client.return_value = mock_oms_client
     node_id = uuid4()
