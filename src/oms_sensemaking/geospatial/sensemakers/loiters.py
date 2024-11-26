@@ -9,7 +9,6 @@ from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
-    Client,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
@@ -100,24 +99,17 @@ class LoiterOmsPublisher(OmsPublisher):
         formatted_nodes = []
         for loiter in loiters:
 
-            # track_node = self.oms_client.node(query=IdQuery(id=loiter.track_node_id))
-
-            # if not track_node:
-            #     # TODO do we need to do somethign about this?
-            #     LOGGER.error(f"No track node with id {loiter.track_node_id}")
-            #     return
-
             create_event_node = CreateNodeInput(
-                    acm=loiter.acm,
-                    name=SETTINGS.loiter_event_name,
-                    tier=ObjectTier.DERIVATIVE,
-                    tags=[SETTINGS.geo_sensemaker_event_tag],
-                    classIri=SETTINGS.loiter_event_node_iri,
-                    ifcCodes=set(),
-                    isNso=True
-                )
+                acm=loiter.acm,
+                name=SETTINGS.loiter_event_name,
+                tier=ObjectTier.DERIVATIVE,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                classIri=SETTINGS.loiter_event_node_iri,
+                ifcCodes=set(),
+                isNso=True
+            )
 
-            self.node_uuid_list.append(loiter.loiter_id)
+            self.node_uuid_list.append(str(loiter.loiter_id))
             formatted_nodes.append(create_event_node)
 
         return formatted_nodes
@@ -138,7 +130,7 @@ class LoiterOmsPublisher(OmsPublisher):
             create_relationship_input = CreateRelationshipInput(
                 tags=[SETTINGS.geo_sensemaker_event_tag],
                 name=SETTINGS.loiter_event_name,
-                startNodeId=self.node_id_mapping[loiter.loiter_id],
+                startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
                 endNodeId=loiter.track_node_id,
                 confidence=Confidence.HIGH,
                 acm=loiter.acm,
@@ -174,17 +166,14 @@ class LoiterOmsPublisher(OmsPublisher):
                         startTime=loiter.start_time,
                         endTime=loiter.end_time
                         ),
-                    nodeId=self.node_id_mapping[loiter.loiter_id],
+                    nodeId=self.node_id_mapping[str(loiter.loiter_id)],
                     acm=loiter.acm,
                     valueStart=loiter.start_time,
                     valueEnd=loiter.end_time
                 )
-            # _ = self.oms_client.create_attribute(create_attribute_input)
             formatted_attributes.append(create_attribute_input)
 
         return formatted_attributes
-
-
 
 
 class LoiterSensemaker(Sensemaker):
@@ -200,7 +189,7 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client) -> None:
+    def __init__(self) -> None:
         """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -213,7 +202,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
             "geohash_low": SETTINGS.geohash_low
         }
-        self.publisher = LoiterOmsPublisher(oms_client)
+        self.publisher = LoiterOmsPublisher()
 
     def process_data(self, data: Track) -> list[Loiter]:
         """
