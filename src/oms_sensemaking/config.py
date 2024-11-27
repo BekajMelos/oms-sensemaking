@@ -117,6 +117,12 @@ class Settings(BaseSettings):
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
+    inference_add_garrison_attribute_iri: str = Field(
+        "placeholder", description="IRI for geo attribute"
+    )
+    inference_add_garrison_attribute_meta_data_iri: str = Field(
+        "placeholder", description="IRI for generated Out Of Garrison meta data"
+    )
 
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
