@@ -8,6 +8,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, RelationshipQuery
 from sqlalchemy.orm import Session
 
+from oms_sensemaking.api.schemas.nlp import NlpRequest
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
@@ -40,9 +41,9 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 
 def test_run_service(mock_db, mock_source):
-    result = service.run_service(
-        acm=DEFAULT_ACM, nlp_reader=reader, source_id=mock_source.id, corenlp_client=mock_corenlp_client
-    )
+    request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
+
+    result = service.run_service(request=request, nlp_reader=reader, corenlp_client=mock_corenlp_client)
     assert result
 
 
@@ -71,8 +72,10 @@ def test_submit_findings_to_postgis(mock_db):
 
 
 def test_submit_findings_to_oms(mock_db, mock_source):
-    """Not implemented: tests submitting findings to OMS"""
-    service.submit_findings_to_oms(acm=DEFAULT_ACM, findings=mock_findings, source_id=mock_source.id)
+    """Tests submitting findings to OMS"""
+    request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
+
+    service.submit_findings_to_oms(request=request, findings=mock_findings)
 
     # Call a get operation to get the nodes, relationships, and attributes
     nodes = service.oms_crud_tool.get_nodes(node_info=NodeQuery(tags=SETTINGS.nlp_tags))

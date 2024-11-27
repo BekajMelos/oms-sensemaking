@@ -31,8 +31,6 @@ def extract_entities_and_relationships(nlp_req: NlpRequest) -> NlpResponse:
     else:
         # Run the pipeline
         reader = NlpStringReader(nlp_req.text)
-        findings = nlp.run_service(
-            acm=nlp_req.acm, nlp_reader=reader, source_id=nlp_req.source_id, corenlp_client=corenlp_client
-        )
+        findings = nlp.run_service(request=nlp_req, nlp_reader=reader, corenlp_client=corenlp_client)
 
         return NlpResponse(acm=nlp_req.acm, source_id=nlp_req.source_id, findings=findings)

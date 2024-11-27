@@ -11,10 +11,19 @@ from typing import Any, Iterable, List, Tuple
 import httpx
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
+from oms_sdk.generated.generated_graphql_client import (
+    CreateAttributeCreateAttribute,
+    CreateAttributeInput,
+    CreateNodeCreateNode,
+    CreateNodeInput,
+    CreateRelationshipCreateRelationship,
+    CreateRelationshipInput,
+)
 from oms_sdk.generated.generated_graphql_client.client import Client
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -29,7 +38,7 @@ def jsonify(data):
         return [jsonify(item) for item in data]
     elif isinstance(data, WKBElement):
         return to_shape(data).wkt
-    elif hasattr(data, 'to_dict'):
+    elif hasattr(data, "to_dict"):
         return jsonify(data.to_dict())
     elif isinstance(data, (int, float, bool)) or data is None:
         return data
@@ -38,7 +47,6 @@ def jsonify(data):
 
 
 class SensemakerPublisher(ABC):
-
     def __init__(self) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
@@ -50,23 +58,62 @@ class SensemakerPublisher(ABC):
 
 
 class NoOpPublisher(SensemakerPublisher):
-
     def publish(self, *args, **kwargs) -> None:
         """Don't do anything"""
         pass
 
 
 class OmsPublisher(SensemakerPublisher):
-
-    def __init__(self, oms_client: Client) -> None:
+    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
-        self.oms_client: Client = oms_client
+        self.oms_client = oms_client  # TODO: Replace with crud tool for all uses
+        self.oms_crud_tool = oms_crud_tool
+        self.node_uuid_list = []  # in-order list of unpublished node IDs
+        self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
+
+    def publish(
+        self, data, results
+    ) -> tuple[list[CreateNodeCreateNode],
+               list[CreateRelationshipCreateRelationship],
+               list[CreateAttributeCreateAttribute]]:
+        self.node_uuid_list = [] # Make sure old lists doesn't persist between publishes
+        self.node_id_mapping = {} # Make sure old mappings don't persist between publishes
+        published_nodes = self.publish_nodes(self.format_nodes(data, results))
+        published_relationships = self.publish_relationships(self.format_relationships(data, results))
+        published_attributes = self.publish_attributes(self.format_attributes(data, results))
+        return published_nodes, published_relationships, published_attributes
+
+    def format_nodes(self, data, results) -> list[CreateNodeInput]:
+        raise NotImplementedError
+
+    def publish_nodes(self, formatted_nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
+        published_nodes = []
+        for index, node in enumerate(formatted_nodes):
+            published_node = self.oms_crud_tool.create_node(node_input=node)
+            self.node_id_mapping[self.node_uuid_list[index]] = published_node.id
+            published_nodes.append(published_node)
+        return published_nodes
+
+    def format_relationships(self, data, results) -> list[CreateRelationshipInput]:
+        raise NotImplementedError
+
+    def publish_relationships(
+        self, formatted_relationships: list[CreateRelationshipInput]
+    ) -> list[CreateRelationshipCreateRelationship]:
+        return self.oms_crud_tool.publish_relationships(formatted_relationships)
+
+    def format_attributes(self, data, results) -> list[CreateAttributeInput]:
+        raise NotImplementedError
+
+    def publish_attributes(
+        self, formatted_attributes: list[CreateAttributeInput]
+    ) -> list[CreateAttributeCreateAttribute]:
+        return self.oms_crud_tool.publish_attributes(formatted_attributes)
 
 
 @dataclass
 class FindingBase(ABC):
-
     FINDING_TYPE: FindingType
 
     def to_dict(self) -> dict:
@@ -169,14 +216,13 @@ class Sensemaker(ABC):
                 finding_type=finding_object.FINDING_TYPE,
                 finding_data=finding_object.to_dict(),
                 oms_version=SETTINGS.omsb_version,
-                published_at=datetime.now(tz=timezone.utc)
+                published_at=datetime.now(tz=timezone.utc),
             )
             findings.append(finding)
 
         with db_session() as db:
             db.add_all(findings)
             db.commit()
-
 
     @abstractmethod
     def process_data(self, data: Any) -> Any:
