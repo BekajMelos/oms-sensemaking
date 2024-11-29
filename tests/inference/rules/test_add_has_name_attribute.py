@@ -35,6 +35,7 @@ def name_attr(mocker: MockerFixture):
 
 def test_evaluate_none_input():
     """Test to verify we only run the rule against attributes"""
+    print("******************** NAME ATTRIBUTE********************")
     rule = AddHasNameAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 

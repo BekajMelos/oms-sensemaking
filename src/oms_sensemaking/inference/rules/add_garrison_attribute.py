@@ -3,6 +3,9 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 from oms_sdk.generated.generated_graphql_client.input_types import (
     AttributeQuery,
+    NodeQuery,
+    NodeRelationshipQuery,
+    NodeRelationshipSubQuery,
     CreateAttributeInput,
     StringQuery,
 )
@@ -33,6 +36,8 @@ class AddGarrisonAttribute(BaseRule):
         Determine if the Attribute is a geo attribute for a node
         """
 
+        print("**************** EVALUATE START ********************")
+
         return (
             input.attribute
             and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
@@ -53,13 +58,28 @@ class AddGarrisonAttribute(BaseRule):
         Create a metadata attribute for a node that indicates if it is out of garrisoned or not
         """
 
-        # MAKE CHECK HERE FOR GARRISON
+
+
         print("************ACTION START**************")
         attr = input.attribute
-        
+
+        nodeQuery = NodeQuery(
+            id=attr.nodeId
+        )
+
+        nodeRelationships = nodeQuery.relationships
+        nodeRelationshipQuery = NodeRelationshipQuery(
+            hasMatch=NodeRelationshipSubQuery(
+                name="isGarrisonedAt",
+                relatedNodeIds=attr.nodeId
+            )
+        )
+        print(nodeRelationships)
+        print(nodeRelationshipQuery)
+
         print(attr)
         print("************attribute start************")
-        
+
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_garrison_attribute_meta_data_iri,
             attributeValue="Yes",
