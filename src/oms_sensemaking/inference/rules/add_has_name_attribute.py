@@ -39,12 +39,7 @@ class AddHasNameAttribute(BaseRule):
         Create a metadata attribute for a node that indicates that it has a name
         """
 
-        print("************ACTION START**************")
         attr = input.attribute
-
-        print(attr)
-        print("************attribute start************")
-
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue="true",

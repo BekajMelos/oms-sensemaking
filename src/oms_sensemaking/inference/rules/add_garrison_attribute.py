@@ -54,8 +54,12 @@ class AddGarrisonAttribute(BaseRule):
         """
 
         # MAKE CHECK HERE FOR GARRISON
-
+        print("************ACTION START**************")
         attr = input.attribute
+        
+        print(attr)
+        print("************attribute start************")
+        
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_garrison_attribute_meta_data_iri,
             attributeValue="Yes",
