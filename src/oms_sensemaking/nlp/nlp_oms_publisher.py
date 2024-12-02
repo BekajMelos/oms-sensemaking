@@ -31,22 +31,8 @@ class NlpOmsPublisher(OmsPublisher):
         super().__init__(oms_client, oms_crud_tool)
         self.source_id = source_id
         self.acm = acm
-        self.node_iris = {
-            "Person": SETTINGS.nlp_person_iri,
-            "Organization": SETTINGS.nlp_organization_iri,
-            "Location": SETTINGS.nlp_location_iri,
-            "Document": SETTINGS.nlp_document_iri,
-            "Date": SETTINGS.nlp_date_iri,
-            "Entity": SETTINGS.entity_iri,
-        }
-        self.relationship_iris = {
-            "Work_For": SETTINGS.nlp_work_for_iri,
-            "Live_In": SETTINGS.nlp_live_in_iri,
-            "OrgBased_In": SETTINGS.nlp_org_based_in_iri,
-            "Located_In": SETTINGS.nlp_located_in_iri,
-            "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
-            "Relates_To": SETTINGS.relates_to_iri,
-        }
+        self.node_iris = SETTINGS.nlp_node_iris
+        self.relationship_iris = SETTINGS.nlp_relationship_iris
         self.attribute_iris = {
             "URL": SETTINGS.url_iri,
             "Identifier": SETTINGS.identifier_iri,
