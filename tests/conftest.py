@@ -90,5 +90,7 @@ def mock_source() -> CreateSourceCreateSource:
     yield source
 
 @pytest.fixture
-def oms_crud_tool():
-    return OmsCrudTool()
+def mock_oms_crud_tool(mock_oms_client):
+    oms_crud_tool = OmsCrudTool()
+    oms_crud_tool.oms_client = mock_oms_client
+    return oms_crud_tool
