@@ -156,6 +156,17 @@ class Settings(BaseSettings):
     entity_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001",
                                 description="Placeholder for custom node IRIs")
 
+    nlp_node_iris: dict = Field({
+            "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
+            "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
+            "Location": "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
+            "Document": "https://foundry.ai.mil/NIEM/v5.2/DocumentType",
+            "Date": "https://foundry.ai.mil/NIEM/v5.2/DateType",
+            "Entity": "http://purl.obolibrary.org/obo/BFO_0000001",
+        },
+        description="Dictionary of NLP Node IRIs"
+        )
+
     # NLP Relationship IRIs
     nlp_work_for_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
                                   description="Work for")
@@ -166,6 +177,17 @@ class Settings(BaseSettings):
                                        description="Document contiains entity")
     relates_to_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                         description="Placeholder for custom relationship IRIs")
+
+    nlp_relationship_iris: dict = Field({
+            "Work_For": "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
+            "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",
+            "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
+            "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
+            "Document_Contains_Entity": "http://www.ontologyrepository.com/CommonCoreOntologies/describes",
+            "Relates_To": "https://foundry.ai.mil/MIDB/V3.3/relates_to",
+        },
+        description="Dictionary of NLP Relationship IRIs"
+        )
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
