@@ -62,18 +62,25 @@ class AddGarrisonAttribute(BaseRule):
 
         print("************ACTION START**************")
         attr = input.attribute
+        print("test 4")
 
         nodeQuery = NodeQuery(
             id=attr.nodeId
         )
+        print(nodeQuery)
+
+        print("test 5")
 
         nodeRelationships = nodeQuery.relationships
+
+        print("test 6")
         nodeRelationshipQuery = NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
                 name="isGarrisonedAt",
                 relatedNodeIds=attr.nodeId
             )
         )
+        print("test 7")
         print(nodeRelationships)
         print(nodeRelationshipQuery)
 

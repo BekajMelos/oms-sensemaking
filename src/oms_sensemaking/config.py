@@ -118,10 +118,10 @@ class Settings(BaseSettings):
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
     inference_add_garrison_attribute_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Area_of_Influence", description="IRI for geo attribute (placeholder)"
+        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
     )
     inference_add_garrison_attribute_meta_data_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Functional_Production_Area", description="IRI for generated Out Of Garrison meta data (placeholder)"
+        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for generated Out Of Garrison meta data (placeholder)"
     )
 
     # NLP Settings
