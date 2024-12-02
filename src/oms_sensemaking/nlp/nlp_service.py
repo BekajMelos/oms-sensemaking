@@ -17,7 +17,7 @@ from oms_sensemaking.models.base import utcnow_with_timezone
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
-from oms_sensemaking.nlp.nlp_publisher import NlpOmsPublisher
+from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
 from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
@@ -111,7 +111,8 @@ class NlpService:
         :param findings: found Entities and Relationships
         """
         LOGGER.info("Submitting findings to OMS")
-        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm)
+        nlp_publisher = NlpOmsPublisher(
+            source_id=request.source_id, acm=request.acm, oms_crud_tool=OmsCrudTool())
         nlp_publisher.publish(data=request.text, results=findings)
         LOGGER.info("Findings submitted to OMS")
 

@@ -23,6 +23,7 @@ from sqlalchemy.orm import with_expression
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 from oms_sensemaking.models.sensemaking import FindingType
@@ -282,7 +283,7 @@ class CotravelSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -300,7 +301,7 @@ class CotravelSensemaker(Sensemaker):
             'lag_lead_event_name': SETTINGS.lag_lead_event_name,
             'geo_sensemaker_event_tag': SETTINGS.geo_sensemaker_event_tag
         }
-        self.publisher = CotravelOmsPublisher()
+        self.publisher = CotravelOmsPublisher(oms_crud_tool)
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""

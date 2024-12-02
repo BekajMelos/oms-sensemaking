@@ -19,6 +19,7 @@ from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import FindingType
@@ -189,7 +190,7 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -202,7 +203,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
             "geohash_low": SETTINGS.geohash_low
         }
-        self.publisher = LoiterOmsPublisher()
+        self.publisher = LoiterOmsPublisher(oms_crud_tool)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """

@@ -88,3 +88,7 @@ def mock_source() -> CreateSourceCreateSource:
     oms_crud_tool = OmsCrudTool()
     source = oms_crud_tool.create_test_source()
     yield source
+
+@pytest.fixture
+def oms_crud_tool():
+    return OmsCrudTool()

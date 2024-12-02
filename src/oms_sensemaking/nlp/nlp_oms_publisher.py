@@ -12,6 +12,7 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 
 from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import OmsPublisher
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -25,8 +26,8 @@ UNPUBLISHED = "UNPUBLISHED"
 class NlpOmsPublisher(OmsPublisher):
     """Formats and publishes the NLP Findings"""
 
-    def __init__(self, source_id: str, acm: dict):
-        super().__init__()
+    def __init__(self, source_id: str, acm: dict, oms_crud_tool: OmsCrudTool):
+        super().__init__(oms_crud_tool)
         self.source_id = source_id
         self.acm = acm
         self.node_iris = {

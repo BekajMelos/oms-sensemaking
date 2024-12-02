@@ -4,9 +4,14 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
-from oms_sensemaking.nlp.nlp_publisher import NlpOmsPublisher
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
 from tests.nlp.mock_findings import empty_findings, large_findings
 
+
+@pytest.fixture
+def oms_crud_tool():
+    return OmsCrudTool()
 
 @pytest.fixture
 def mock_db(db: Session) -> Iterator[Session]:
@@ -14,8 +19,9 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 
 @pytest.fixture
-def nlp_publisher(mock_source):
-    publisher = NlpOmsPublisher(source_id=mock_source.id, acm=DEFAULT_ACM)
+def nlp_publisher(mock_source, oms_crud_tool):
+    publisher = NlpOmsPublisher(
+        source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=oms_crud_tool)
     yield publisher
 
 

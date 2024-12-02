@@ -107,6 +107,17 @@ class Settings(BaseSettings):
     url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
     identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
 
+    # Inference Settings
+    inference_tags: list[str] = Field(
+        ["Oms Sensemaking", "Infered Attribute"], description="Inference Sensemaker tags"
+    )
+    inference_add_has_name_attribute_iri: str = Field(
+        "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
+    )
+    inference_add_has_name_attribute_meta_data_iri: str = Field(
+        "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
+    )
+
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
                               description="Host and port for CoreNLP when running local script.")
@@ -165,6 +176,7 @@ class Settings(BaseSettings):
     db_uri: Optional[str] = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
     )
+    db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
 
     # Geospatial Sensemaking Settings
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
