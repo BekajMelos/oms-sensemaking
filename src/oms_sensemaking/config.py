@@ -189,6 +189,15 @@ class Settings(BaseSettings):
         description="Dictionary of NLP Relationship IRIs"
         )
 
+    # NLP Attribute IRIs
+    nlp_attribute_iris: dict = Field({
+        "URL": "https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL",
+        "Identifier": "https://foundry.ai.mil/INDOPACOM/v5/ID_Number",
+        "Text": "https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object"
+        },
+        description="Dictionary of NLP Attribute IRIs"
+        )
+
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")

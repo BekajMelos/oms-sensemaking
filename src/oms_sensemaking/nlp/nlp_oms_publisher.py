@@ -33,11 +33,7 @@ class NlpOmsPublisher(OmsPublisher):
         self.acm = acm
         self.node_iris = SETTINGS.nlp_node_iris
         self.relationship_iris = SETTINGS.nlp_relationship_iris
-        self.attribute_iris = {
-            "URL": SETTINGS.url_iri,
-            "Identifier": SETTINGS.identifier_iri,
-            "Text": SETTINGS.nlp_text_iri,
-        }
+        self.attribute_iris = SETTINGS.nlp_attribute_iris
 
     def format_nodes(self, data: str, results: dict) -> list[CreateNodeInput]:
         """ """
