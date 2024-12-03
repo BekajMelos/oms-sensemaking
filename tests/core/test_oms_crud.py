@@ -98,7 +98,7 @@ def test_multi_crud_operations(mock_source):
     for i in range(2):
         attrs_to_publish.append(
             CreateAttributeInput(
-                attributeIri=SETTINGS.nlp_attribute_iris["Text"],
+                attributeIri=SETTINGS.text_iri,
                 attributeValue=test_attribute_name + f"_{i}",
                 attributeType=AttributeType.STRING,
                 confidence=Confidence.UNKNOWN,
@@ -206,7 +206,7 @@ def test_attribute_crud(mock_source):
 
     attribute = oms_crud_tool.create_attribute(
         CreateAttributeInput(
-            attributeIri=SETTINGS.nlp_attribute_iris["Text"],
+            attributeIri=SETTINGS.text_iri,
             attributeValue=test_attribute_name,
             attributeType=AttributeType.STRING,
             confidence=Confidence.UNKNOWN,

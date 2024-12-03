@@ -106,6 +106,7 @@ class Settings(BaseSettings):
     # General IRIs
     url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
     identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
+    text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
 
     # Inference Settings
     inference_tags: list[str] = Field(
@@ -166,15 +167,6 @@ class Settings(BaseSettings):
         )
     nlp_default_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                               description="Default NLP Relationship IRI")
-
-    # NLP Attribute IRIs
-    nlp_attribute_iris: dict = Field({
-        "URL": "https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL",
-        "Identifier": "https://foundry.ai.mil/INDOPACOM/v5/ID_Number",
-        "Text": "https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object"
-        },
-        description="Dictionary of NLP Attribute IRIs"
-        )
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
