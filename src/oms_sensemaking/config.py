@@ -141,21 +141,6 @@ class Settings(BaseSettings):
     )
 
     # NLP Node IRIs (change once custom model is trained)
-    nlp_person_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Person",
-                                description="IRI for Person entity")
-    nlp_organization_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
-                                      description="IRI for Organization Entity")
-    nlp_location_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-                               description="IRI for Place Entity")
-    nlp_document_iri: str = Field("https://foundry.ai.mil/NIEM/v5.2/DocumentType",
-                                  description="IRI for Document Entity")
-    nlp_date_iri: str = Field("https://foundry.ai.mil/NIEM/v5.2/DateType",
-                              description="IRI for Date Entity")
-    nlp_text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object",
-                              description="Text attribute")
-    entity_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001",
-                                description="Placeholder for custom node IRIs")
-
     nlp_node_iris: dict = Field({
             "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
             "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
@@ -168,16 +153,6 @@ class Settings(BaseSettings):
         )
 
     # NLP Relationship IRIs
-    nlp_work_for_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
-                                  description="Work for")
-    nlp_live_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000171", description="Live in")
-    nlp_located_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000171", description="Located in")
-    nlp_org_based_in_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000170", description="Org based in")
-    nlp_document_contains_entity_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/describes",
-                                       description="Document contiains entity")
-    relates_to_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
-                                        description="Placeholder for custom relationship IRIs")
-
     nlp_relationship_iris: dict = Field({
             "Work_For": "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
             "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",

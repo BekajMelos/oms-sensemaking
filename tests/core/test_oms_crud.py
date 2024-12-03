@@ -20,8 +20,8 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 oms_crud_tool = OmsCrudTool()
-person_node_iri = SETTINGS.nlp_person_iri
-work_for_relationship_iri = SETTINGS.nlp_work_for_iri
+person_node_iri = SETTINGS.nlp_node_iris["Person"]
+work_for_relationship_iri = SETTINGS.nlp_relationship_iris["Work_For"]
 test_node_name = "test_node_name"
 test_attribute_name = "test_attribute_name"
 test_relationship_name = "test_relationship_name"
@@ -98,7 +98,7 @@ def test_multi_crud_operations(mock_source):
     for i in range(2):
         attrs_to_publish.append(
             CreateAttributeInput(
-                attributeIri=SETTINGS.nlp_text_iri,
+                attributeIri=SETTINGS.nlp_attribute_iris["Text"],
                 attributeValue=test_attribute_name + f"_{i}",
                 attributeType=AttributeType.STRING,
                 confidence=Confidence.UNKNOWN,
@@ -206,7 +206,7 @@ def test_attribute_crud(mock_source):
 
     attribute = oms_crud_tool.create_attribute(
         CreateAttributeInput(
-            attributeIri=SETTINGS.nlp_text_iri,
+            attributeIri=SETTINGS.nlp_attribute_iris["Text"],
             attributeValue=test_attribute_name,
             attributeType=AttributeType.STRING,
             confidence=Confidence.UNKNOWN,
