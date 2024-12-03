@@ -151,6 +151,7 @@ class Settings(BaseSettings):
         },
         description="Dictionary of NLP Node IRIs"
         )
+    nlp_default_node_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001", description="Default NLP Node IRI")
 
     # NLP Relationship IRIs
     nlp_relationship_iris: dict = Field({
@@ -163,6 +164,8 @@ class Settings(BaseSettings):
         },
         description="Dictionary of NLP Relationship IRIs"
         )
+    nlp_default_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+                                              description="Default NLP Relationship IRI")
 
     # NLP Attribute IRIs
     nlp_attribute_iris: dict = Field({

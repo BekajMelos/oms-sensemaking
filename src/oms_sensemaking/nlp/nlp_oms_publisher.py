@@ -41,7 +41,7 @@ class NlpOmsPublisher(OmsPublisher):
         for entity in results["ner_entities"]:
             self.node_uuid_list.append(entity["uuid"])
             entity_type = entity["type"]
-            entity_iri = self.node_iris[entity_type] if entity_type in self.node_iris else self.node_iris["Entity"]
+            entity_iri = self.node_iris.get(entity_type, SETTINGS.nlp_default_node_iri)
 
             formatted_nodes.append(
                 CreateNodeInput(
@@ -80,9 +80,7 @@ class NlpOmsPublisher(OmsPublisher):
             second_ent_id = relationship["entities"][1]["uuid"]
             relationship_type = relationship["type"]
             relationship_iri = (
-                self.relationship_iris[relationship_type]
-                if relationship_type in self.relationship_iris
-                else self.relationship_iris["Relates_To"]
+                self.relationship_iris.get(relationship_type, SETTINGS.nlp_default_relationship_iri)
             )
 
             if first_ent_id in self.node_id_mapping and second_ent_id in self.node_id_mapping:
