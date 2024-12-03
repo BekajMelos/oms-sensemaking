@@ -51,13 +51,13 @@ class SensemakerPublisher(ABC):
         super().__init__()
 
     @abstractmethod
-    def publish(self, *args, **kwargs) -> None:
+    def publish(self, data: Any, results: Any) -> None:
         """Publish output to OMS"""
         raise NotImplementedError
 
 
 class NoOpPublisher(SensemakerPublisher):
-    def publish(self, *args, **kwargs) -> None:
+    def publish(self, data: Any, results: Any) -> None:
         """Don't do anything"""
         pass
 
@@ -67,7 +67,7 @@ class OmsPublisher(SensemakerPublisher):
         """Create a new instance of the Publisher."""
         super().__init__()
         self.oms_crud_tool = oms_crud_tool
-        self.node_uuid_list = []  # in-order list of unpublished node IDs
+        self.node_uuid_list: List[str] = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
     def publish(
