@@ -31,9 +31,6 @@ class NlpOmsPublisher(OmsPublisher):
         super().__init__(oms_client, oms_crud_tool)
         self.source_id = source_id
         self.acm = acm
-        self.node_iris = SETTINGS.nlp_node_iris
-        self.relationship_iris = SETTINGS.nlp_relationship_iris
-        self.attribute_iris = SETTINGS.nlp_attribute_iris
 
     def format_nodes(self, data: str, results: dict) -> list[CreateNodeInput]:
         """ """
@@ -41,7 +38,7 @@ class NlpOmsPublisher(OmsPublisher):
         for entity in results["ner_entities"]:
             self.node_uuid_list.append(entity["uuid"])
             entity_type = entity["type"]
-            entity_iri = self.node_iris.get(entity_type, SETTINGS.nlp_default_node_iri)
+            entity_iri = SETTINGS.nlp_node_iris.get(entity_type, SETTINGS.nlp_default_node_iri)
 
             formatted_nodes.append(
                 CreateNodeInput(
@@ -64,7 +61,7 @@ class NlpOmsPublisher(OmsPublisher):
                     name=REPORT_NODE_NAME,
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
-                    classIri=self.node_iris["Document"],
+                    classIri=SETTINGS.nlp_node_iris["Document"],
                     isNso=True,
                 )
             )
@@ -80,7 +77,7 @@ class NlpOmsPublisher(OmsPublisher):
             second_ent_id = relationship["entities"][1]["uuid"]
             relationship_type = relationship["type"]
             relationship_iri = (
-                self.relationship_iris.get(relationship_type, SETTINGS.nlp_default_relationship_iri)
+                SETTINGS.nlp_relationship_iris.get(relationship_type, SETTINGS.nlp_default_relationship_iri)
             )
 
             if first_ent_id in self.node_id_mapping and second_ent_id in self.node_id_mapping:
@@ -109,13 +106,13 @@ class NlpOmsPublisher(OmsPublisher):
                 # Format and publish the document relationship
                 formatted_relationships.append(
                     CreateRelationshipInput(
-                        name=self.relationship_iris[rel_type],
+                        name=SETTINGS.nlp_relationship_iris[rel_type],
                         startNodeId=self.node_id_mapping[doc_id],
                         endNodeId=self.node_id_mapping[ent_id],
                         sourceId=self.source_id,
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
-                        objectPropertyIri=self.relationship_iris[rel_type],
+                        objectPropertyIri=SETTINGS.nlp_relationship_iris[rel_type],
                         tags=SETTINGS.nlp_tags,
                     )
                 )
@@ -131,7 +128,7 @@ class NlpOmsPublisher(OmsPublisher):
             if entity_id in self.node_id_mapping:
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["Text"],
+                        attributeIri=SETTINGS.text_iri,
                         attributeValue=entity["value"],
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
@@ -152,7 +149,7 @@ class NlpOmsPublisher(OmsPublisher):
                 url_value = source.uri or NO_URL_VALUE
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["URL"],
+                        attributeIri=SETTINGS.url_iri,
                         attributeValue=url_value,
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
@@ -167,7 +164,7 @@ class NlpOmsPublisher(OmsPublisher):
                 identifier_value = source.identifier or NO_IDENTIFIER_VALUE
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["Identifier"],
+                        attributeIri=SETTINGS.identifier_iri,
                         attributeValue=identifier_value,
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
