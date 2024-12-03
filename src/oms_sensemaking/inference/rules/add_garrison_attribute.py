@@ -58,38 +58,59 @@ class AddGarrisonAttribute(BaseRule):
         Create a metadata attribute for a node that indicates if it is out of garrisoned or not
         """
 
-
-
         print("************ACTION START**************")
         attr = input.attribute
-        print("test 4")
+
+        if attr.geo is None:
+            # YOU CAN USE ATTR.HASGEO HERE
+            print("NOT A GEO")
+
+        base_attribute_geolocation = attr.geo
 
         nodeQuery = NodeQuery(
             id=attr.nodeId
         )
-        print(nodeQuery)
 
-        print("test 5")
+        tankNode = attr.nodeId
 
-        nodeRelationships = nodeQuery.relationships
-
-        print("test 6")
-        nodeRelationshipQuery = NodeRelationshipQuery(
+        if(nodeQuery.tier == "OBSERVATIONAL"):
+            nodeRelationshipObservationQuery = NodeRelationshipQuery(
+                hasMatch=NodeRelationshipSubQuery(
+                    objectPropertyIris=SETTINGS.inference_participated_in_iri,
+                    relatedNodeIds=attr.nodeId
+                )
+            )
+            print("EXTRACT TANK NODE ID'S FROM THIS", nodeRelationshipObservationQuery)
+            # tankNode = whatever the new node is
+        
+        # PD Query stands for Primary/Derivative
+        nodeRelationshipPDQuery = NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
-                name="isGarrisonedAt",
-                relatedNodeIds=attr.nodeId
+                objectPropertyIris=SETTINGS.inference_garrison_location_iri,
+                relatedNodeIds=tankNode
             )
         )
-        print("test 7")
-        print(nodeRelationships)
-        print(nodeRelationshipQuery)
+        print("EXTRACT NODE ID'S FROM HERE", nodeRelationshipPDQuery)
+        # garrisonNode = whatever the new node is
+        garrisonNode = tankNode
 
-        print(attr)
-        print("************attribute start************")
+        newAttributeQuery = AttributeQuery(
+            attributeIris=SETTINGS.inference_garrison_location_iri,
+            nodeIds=garrisonNode
+        )
+        print("NOW WE HAVE THE SECOND ATTRIBUTE", newAttributeQuery)
+
+        new_attribute_geolocation = newAttributeQuery.geoQuery
+
+        #Logic for geolocation distance, going to make it work later
+        if(new_attribute_geolocation == base_attribute_geolocation):
+            finalAttributeValue = "Yes"
+        else:
+            finalAttributeValue = "No"
 
         attribute = CreateAttributeInput(
-            attributeIri=SETTINGS.inference_add_garrison_attribute_meta_data_iri,
-            attributeValue="Yes",
+            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
+            attributeValue=finalAttributeValue,
             attributeType=AttributeType.STRING,
             confidence=attr.confidence,
             sourceId=attr.sourceId,

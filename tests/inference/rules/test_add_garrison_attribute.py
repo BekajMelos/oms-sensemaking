@@ -31,6 +31,19 @@ def garrison_attr(mocker: MockerFixture):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d"
+    attr.geo = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    -2.86242139203938,
+                    18.68484166661493
+            ],
+            "type": "Point"
+        }}]
+    }
 
     return attr
 
@@ -53,7 +66,7 @@ def test_evaluate_none_input():
     rule = AddGarrisonAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
-def test_action_creates_attribute(mocker: MockerFixture, garrison_attr):
+def test_action_creates_attribute(mocker: MockerFixture, garrison_attr, garrison_node):
     print("*********************START ACTION TEST************************")
     mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
     mock2 = mocker.patch("oms_sensemaking.clients.oms_client.create_node")
