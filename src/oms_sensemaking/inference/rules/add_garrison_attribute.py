@@ -43,7 +43,7 @@ class AddGarrisonAttribute(BaseRule):
             and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
             and input.attribute.attributeValue
         )
-        
+    
         # Everything below won't run
         return (
             input.attribute
@@ -67,13 +67,18 @@ class AddGarrisonAttribute(BaseRule):
 
         base_attribute_geolocation = attr.geo
 
-        nodeQuery = NodeQuery(
-            id=attr.nodeId
-        )
+        print("attribute node ID = ", attr.nodeId)
+
+        nodeResponse = oms_client.get_nodes(NodeQuery(
+            ids=[attr.nodeId]
+        ))
+
+        print("Node response 2 = ", nodeResponse)
 
         tankNode = attr.nodeId
 
-        if(nodeQuery.tier == "OBSERVATIONAL"):
+        if(nodeResponse.tier == "OBSERVATIONAL"):
+            print("OBSERVATIONAL NODE")
             nodeRelationshipObservationQuery = NodeRelationshipQuery(
                 hasMatch=NodeRelationshipSubQuery(
                     objectPropertyIris=SETTINGS.inference_participated_in_iri,

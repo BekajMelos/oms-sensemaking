@@ -54,8 +54,10 @@ def garrison_node(mocker: MockerFixture):
     """
     node = mocker.Mock(spec=NodeNode)
     node.id = "0cc17447-b1f8-48e8-ae30-f9031f250b5d"
+    node.name = "TEST"
     node.geoQuery = "some query"
     node.relationships = "another query"
+    node.tier = "OBSERVATIONAL"
 
     return node
 
@@ -70,7 +72,9 @@ def test_action_creates_attribute(mocker: MockerFixture, garrison_attr, garrison
     print("*********************START ACTION TEST************************")
     mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
     mock2 = mocker.patch("oms_sensemaking.clients.oms_client.create_node")
+    mock3 = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
     mock2.return_value = garrison_node
+    mock3.return_value = garrison_node
     print("test 1")
     rule = AddGarrisonAttribute("some name")
     print("test 2")
