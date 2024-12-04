@@ -23,7 +23,6 @@ def nlp_publisher(mock_source, mock_oms_crud_tool):
 
 def test_publish(mock_db, nlp_publisher):
     # Run the publishing pipeline
-    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
     nlp_publisher.publish(data="", results=large_findings)
     assert nlp_publisher.oms_crud_tool.oms_client.create_node.call_count == 24
     assert nlp_publisher.oms_crud_tool.oms_client.create_relationship.call_count == 24
@@ -87,7 +86,6 @@ def test_format_and_publish_attributes(nlp_publisher):
     assert nlp_publisher.oms_crud_tool.oms_client.create_attribute.call_count == 0
 
     # Test case when nodes have been created
-    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
     nlp_publisher.publish_nodes(nlp_publisher.format_nodes(data="", results=large_findings))
     formatted_attributes = nlp_publisher.format_attributes(data="", results=large_findings)
     for attr in formatted_attributes:
