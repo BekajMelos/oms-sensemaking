@@ -1,4 +1,5 @@
 """Tests for geo ORM models."""
+
 from datetime import datetime, timezone
 from typing import Iterator
 from uuid import UUID, uuid4
@@ -25,9 +26,9 @@ def tester_db(db: Session) -> Iterator[Session]:
         datetime.now(timezone.utc),
         FindingType.UNKNOWN,
         {"msg": "yo!"},
-        "Grimlock-INC-5",
+        "Grimlock-INC-10",
         None,
-        FINDING_ID_1
+        FINDING_ID_1,
     )
 
     finding_2: Finding = Finding(
@@ -38,9 +39,9 @@ def tester_db(db: Session) -> Iterator[Session]:
         datetime.now(timezone.utc),
         FindingType.UNKNOWN,
         {"msg": "yo!"},
-        "Grimlock-INC-5",
+        "Grimlock-INC-10",
         None,
-        FINDING_ID_2
+        FINDING_ID_2,
     )
 
     db.add(finding_1)
@@ -54,9 +55,9 @@ def tester_db(db: Session) -> Iterator[Session]:
             datetime.now(timezone.utc),
             FindingType.UNKNOWN,
             {"msg": "yo!"},
-            "Grimlock-INC-5",
+            "Grimlock-INC-10",
             None,
-            uuid4()
+            uuid4(),
         )
     )
 
@@ -67,30 +68,28 @@ def tester_db(db: Session) -> Iterator[Session]:
 
 def test_get_or_create_existing_record(tester_db: Session):
     # get a specific finding
-    finding: Finding = tester_db.execute(
-        select(
-            Finding
-        ).where(
-            Finding.finding_id == FINDING_ID_1
-        )
-    ).scalars().one()
+    finding: Finding = tester_db.execute(select(Finding).where(Finding.finding_id == FINDING_ID_1)).scalars().one()
 
     assert finding
 
 
 def test_get_or_create_new_record(db: Session):
-    finding, is_new = Finding.get_or_create(db, defaults=dict(
-        acm=DEFAULT_ACM,
+    finding, is_new = Finding.get_or_create(
+        db,
+        defaults=dict(
+            acm=DEFAULT_ACM,
+            finding_id=FINDING_ID_1,
+            finding_type=FindingType.UNKNOWN,
+            finding_data={"msg": "Test message"},
+            oms_version="?",
+            published_at=None,
+            algorithm_name="",
+            algorithm_version="1.0.0",
+            algorithm_configuration={},
+            executed_at=datetime.now(timezone.utc),
+        ),
         finding_id=FINDING_ID_1,
-        finding_type=FindingType.UNKNOWN,
-        finding_data={"msg": "Test message"},
-        oms_version="?",
-        published_at=None,
-        algorithm_name="",
-        algorithm_version="1.0.0",
-        algorithm_configuration={},
-        executed_at=datetime.now(timezone.utc)
-    ), finding_id=FINDING_ID_1)
+    )
 
     assert finding
     assert is_new
@@ -99,18 +98,22 @@ def test_get_or_create_new_record(db: Session):
 def test_point_updated_at_no_timezone(tester_db: Session):
     finding_id: UUID = uuid4()
 
-    finding, is_new = Finding.get_or_create(tester_db, defaults=dict(
-        acm=DEFAULT_ACM,
+    finding, is_new = Finding.get_or_create(
+        tester_db,
+        defaults=dict(
+            acm=DEFAULT_ACM,
+            finding_id=finding_id,
+            finding_type=FindingType.UNKNOWN,
+            finding_data={"msg": "Test message"},
+            oms_version="?",
+            published_at=None,
+            algorithm_name="",
+            algorithm_version="1.0.0",
+            algorithm_configuration={},
+            executed_at=datetime.now(timezone.utc),
+        ),
         finding_id=finding_id,
-        finding_type=FindingType.UNKNOWN,
-        finding_data={"msg": "Test message"},
-        oms_version="?",
-        published_at=None,
-        algorithm_name="",
-        algorithm_version="1.0.0",
-        algorithm_configuration={},
-        executed_at=datetime.now(timezone.utc)
-    ), finding_id=finding_id)
+    )
 
     assert finding
     assert is_new
