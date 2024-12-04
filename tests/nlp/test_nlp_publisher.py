@@ -1,17 +1,13 @@
 from typing import Iterator
+from unittest import mock
 
 import pytest
 from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
 from tests.nlp.mock_findings import empty_findings, large_findings
 
-
-@pytest.fixture
-def oms_crud_tool():
-    return OmsCrudTool()
 
 @pytest.fixture
 def mock_db(db: Session) -> Iterator[Session]:
@@ -19,24 +15,26 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 
 @pytest.fixture
-def nlp_publisher(mock_source, oms_crud_tool):
+def nlp_publisher(mock_source, mock_oms_crud_tool):
     publisher = NlpOmsPublisher(
-        source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=oms_crud_tool)
+        source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=mock_oms_crud_tool)
     yield publisher
 
 
 def test_publish(mock_db, nlp_publisher):
     # Run the publishing pipeline
-    nodes, relationships, attributes = nlp_publisher.publish(data="", results=large_findings)
-    assert nodes
-    assert relationships
-    assert attributes
+    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
+    nlp_publisher.publish(data="", results=large_findings)
+    assert nlp_publisher.oms_crud_tool.oms_client.create_node.call_count == 24
+    assert nlp_publisher.oms_crud_tool.oms_client.create_relationship.call_count == 24
+    assert nlp_publisher.oms_crud_tool.oms_client.create_attribute.call_count == 25
 
     # Empty findings case
-    nodes, relationships, attributes = nlp_publisher.publish(data="", results=empty_findings)
-    assert not nodes
-    assert not relationships
-    assert not attributes
+    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
+    nlp_publisher.publish(data="", results=empty_findings)
+    assert nlp_publisher.oms_crud_tool.oms_client.create_node.call_count == 0
+    assert nlp_publisher.oms_crud_tool.oms_client.create_relationship.call_count == 0
+    assert nlp_publisher.oms_crud_tool.oms_client.create_attribute.call_count == 0
 
 
 def test_format_nodes(nlp_publisher):
@@ -86,12 +84,15 @@ def test_format_and_publish_relationships(nlp_publisher):
 def test_format_and_publish_attributes(nlp_publisher):
     # Test case where nodes have not been created beforehand
     assert not nlp_publisher.publish_attributes(nlp_publisher.format_attributes(data="", results=large_findings))
+    assert nlp_publisher.oms_crud_tool.oms_client.create_attribute.call_count == 0
 
     # Test case when nodes have been created
+    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
     nlp_publisher.publish_nodes(nlp_publisher.format_nodes(data="", results=large_findings))
-    published_attributes = nlp_publisher.publish_attributes(
-        nlp_publisher.format_attributes(data="", results=large_findings)
-    )
-    for attr in published_attributes:
-        assert attr
-        assert attr.source.id == nlp_publisher.source_id
+    formatted_attributes = nlp_publisher.format_attributes(data="", results=large_findings)
+    for attr in formatted_attributes:
+        assert attr.sourceId == nlp_publisher.source_id
+
+    nlp_publisher.publish_attributes(formatted_attributes)
+    nlp_publisher.oms_crud_tool.oms_client.create_attribute.assert_has_calls(
+        [mock.call(attr) for attr in formatted_attributes], any_order=True)
