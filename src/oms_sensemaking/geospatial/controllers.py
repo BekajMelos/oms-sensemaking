@@ -16,6 +16,7 @@ from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
+from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -76,7 +77,7 @@ class GeoSQSListener(SQSListener):
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     # ignore if not the right type of event
-                    if ((object_event.objectType != ObjectType.ATTRIBUTE.value)
+                    if ((object_event.objectType != ObjectType.OBSERVATION.value)
                             and (object_event.eventType != Action.CREATE.value)):
                         continue
 
@@ -157,13 +158,13 @@ class GeospatialSensemakerController(SensemakerController):
 
         if isinstance(self.event_consumer, GeoSQSListener):
             # extract info from OMS via API calls
-            oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
+            oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
 
             # we expect an observation node and a track node. If these don't exist, we can ignore the point.
-            if not oms_attr:
+            if not oms_obs:
                 return True
 
-            track_node: Optional[NodeNode] = self.get_track_node(oms_attr)
+            track_node: Optional[NodeNode] = self.get_track_node(oms_obs)
             if not track_node:
                 return True
 
@@ -171,14 +172,14 @@ class GeospatialSensemakerController(SensemakerController):
                 # we're still using the point object for detections, so don't expire it
                 db.expire_on_commit = False
                 point, is_new = Point.get_or_create(db, defaults=dict(
-                    acm=oms_attr.acm,
-                    location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
-                                f'{oms_attr.geo.geoJson["coordinates"][1]})'),
+                    acm=oms_obs.acm,
+                    location=(f'Point({oms_obs.geometry.geoJson["coordinates"][0]} '
+                                f'{oms_obs.geometry.geoJson["coordinates"][1]})'),
                     altitude=None,  # TODO include this
-                    detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(oms_attr.node.version),
-                    attribute_version=int(oms_attr.version)
-                ), node_id=track_node.id, attribute_id=oms_attr.id, source_id=oms_attr.sourceId)
+                    detection_time=isoparse(oms_obs.geometry.startTime).replace(tzinfo=timezone.utc),
+                    node_version=int(oms_obs.node.version),
+                    attribute_version=int(oms_obs.version)
+                ), node_id=track_node.id, attribute_id=oms_obs.id, source_id=oms_obs.sourceId)
 
             if not is_new:
                 if point:
@@ -247,6 +248,28 @@ class GeospatialSensemakerController(SensemakerController):
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
 
+    def get_oms_observation(self, observation_id: UUID) -> Optional[ObservationObservation]:
+        """
+        Given an OMS Observation ID, get the OMS Observation.
+
+        :param observation_id: ID of the observation
+        :return: None if no attribute exists, or the OMS Attribute
+        """
+        # get observation
+        oms_obs: ObservationObservation = self.oms_client.observation(IdQuery(id=observation_id))
+
+        # Filter observations
+        # Only process if there is a nodeId
+        if not oms_obs or oms_obs.nodeId is None:
+            return None
+
+        # TODO: check this is right?
+        if oms_obs.geometry.geoJson["type"].lower() != "point":
+            return None
+
+        return oms_obs
+
+
     def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
         """
         Given an OMS Attribute ID, get the OMS Attribute.
@@ -270,15 +293,15 @@ class GeospatialSensemakerController(SensemakerController):
 
         return oms_attr
 
-    def get_track_node(self, oms_attr: AttributeAttribute) -> Optional[NodeNode]:
+    def get_track_node(self, oms_obs: ObservationObservation) -> Optional[NodeNode]:
         """
-        Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID.
+        Given an OMS Observation, get the associated Flight Activity Node - AKA Track Node ID.
 
-        :param oms_attr: Attribute object
+        :param oms_attr: Observation object
         :return: None if no relationship exists, or the Track Node id
         """
         # get relationship
-        observation_node_id = oms_attr.nodeId
+        observation_node_id = oms_obs.nodeId
         rel = self.oms_client.relationships(
             query=RelationshipQuery(
                 nodes=RelationshipNodeQuery(endNodeIds=[observation_node_id]),
