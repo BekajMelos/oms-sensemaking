@@ -130,7 +130,7 @@ class Settings(BaseSettings):
         "https://blackcape.io/PLACEHOLDER/garrisonedLocation", description="IRI for garrisoned at (Primary/Derivative)"
     )
     inference_add_is_garrison_at_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for garrisoned at (Primary/Derivative)"
+        "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"
     )
 
     # NLP Settings

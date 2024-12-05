@@ -86,7 +86,7 @@ def observational_node_relationship(mocker: MockerFixture):
     An observational node relationship to be evaluated
     """
     relationship = mocker.Mock(spec=RelationshipRelationship)
-    relationship.id = "uuid1" # dunno if this is necessary
+    relationship.id = "uuid1"
     relationship.objectPropertyIri = SETTINGS.inference_participated_in_iri
     relationship.startNodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
     relationship.endNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
@@ -99,7 +99,7 @@ def primary_node_relationship(mocker: MockerFixture):
     A primary node relationship relationship to be evaluated
     """
     relationship = mocker.Mock(spec=RelationshipRelationship)
-    relationship.id = "uuid2" # dunno if this is necessary
+    relationship.id = "uuid2"
     relationship.objectPropertyIri = SETTINGS.inference_garrison_location_iri
     relationship.startNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
     relationship.endNodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
@@ -114,7 +114,7 @@ def observational_node(mocker: MockerFixture):
     """
     node = mocker.Mock(spec=NodeNode)
     node.id = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
-    node.name = "TEST"
+    node.name = "Observational Node"
     node.geoQuery = "some query"
     node.realrelationships = observational_node_relationship
     node.tier = "OBSERVATIONAL"
@@ -128,7 +128,7 @@ def primary_node(mocker: MockerFixture):
     """
     node = mocker.Mock(spec=NodeNode)
     node.id = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
-    node.name = "TEST"
+    node.name = "Primary Node"
     node.geoQuery = "some query"
     node.relationships = primary_node_relationship
     node.tier = "PRIMARY"
@@ -142,10 +142,10 @@ def base_node(mocker: MockerFixture):
     """
     node = mocker.Mock(spec=NodeNode)
     node.id = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
-    node.name = "TEST"
+    node.name = "Base Node"
     node.geoQuery = "some query"
     node.relationships = "another query"
-    node.tier = "PRIMARY" #idk what this should be
+    node.tier = "DERIVATIVE" #idk what this should be
     node.attributes = [final_attr]
 
     return node
@@ -159,43 +159,37 @@ def test_evaluate_none_input():
 def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_attr, observational_node_relationship, primary_node_relationship, observational_node, primary_node, base_node):
     print("*********************START ACTION TEST************************")
     mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
-    
+
     # Mock Final Attribute
-    mock_create_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
     mock_get_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
-    mock_create_final_attr.return_value = final_attr
     mock_get_final_attr.return_value = final_attr
 
-    # Mock Observational Node Relationship
-    mock_create_observational_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.create_relationship")
-    mock_get_observational_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
-    mock_create_observational_node_relationship.return_value = observational_node_relationship
-    mock_get_observational_node_relationship.return_value = observational_node_relationship
+    # Relationship mocks
+    mock_get_relationships = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
+    mock_relationships = {
+        SETTINGS.inference_participated_in_iri: observational_node_relationship,
+        SETTINGS.inference_garrison_location_iri: primary_node_relationship,
+    }
 
-    # Mock Primary Node Relationship
-    mock_create_primary_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.create_relationship")
-    mock_get_primary_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
-    mock_create_primary_node_relationship.return_value = primary_node_relationship
-    mock_get_primary_node_relationship.return_value = primary_node_relationship
+    def get_relationships_side_effect(query):
+        relationship_Iri = query.hasMatch.objectPropertyIris
+        return [mock_relationships[relationship_Iri]] if relationship_Iri in mock_relationships else []
 
-    # Mock Observational Node
-    mock_create_observational_node = mocker.patch("oms_sensemaking.clients.oms_client.create_node")
-    mock_get_observational_node = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
-    mock_create_observational_node.return_value = observational_node
-    mock_get_observational_node.return_value = observational_node
+    mock_get_relationships.side_effect = get_relationships_side_effect
 
-    # Mock Primary Node
-    mock_create_primary_node = mocker.patch("oms_sensemaking.clients.oms_client.create_node")
-    mock_get_primary_node = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
-    mock_create_primary_node.return_value = primary_node
-    mock_get_primary_node.return_value = primary_node
+    # Node mocks
+    mock_get_nodes = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
+    mock_nodes = {
+        "0cc17447-b1f8-48e8-ae30-f9031f250b5d": observational_node,
+        "68e2f92d-125f-42ca-8197-27beda61542f": primary_node,
+        "dd7763a6-dad4-46d7-acfa-d23a648eb143": base_node,
+    }
+    
+    def get_nodes_side_effect(query):
+        node_id = query.ids[0]
+        return mock_nodes.get(node_id, None)
 
-    # Mock Base Node
-    mock_create_base_node = mocker.patch("oms_sensemaking.clients.oms_client.create_node")
-    mock_get_base_node = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
-    mock_create_base_node.return_value = base_node
-    mock_get_base_node.return_value = base_node
-
+    mock_get_nodes.side_effect = get_nodes_side_effect
 
     print("test 1")
     rule = AddGarrisonAttribute("some name")

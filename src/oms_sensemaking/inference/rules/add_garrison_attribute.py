@@ -73,19 +73,23 @@ class AddGarrisonAttribute(BaseRule):
             ids=[attr.nodeId]
         ))
 
-        print("Node response 2 = ", nodeResponse)
+        print("Node response 3 = ", nodeResponse)
+
+        print("Node id = ", nodeResponse.id)
+        print("Node name = ", nodeResponse.name)
+        print("Node tier = ", nodeResponse.tier)
 
         tankNode = attr.nodeId
+        print("Tank Node = ", tankNode)
 
         if(nodeResponse.tier == "OBSERVATIONAL"):
             print("OBSERVATIONAL NODE")
-            nodeRelationshipObservationQuery = NodeRelationshipQuery(
+            nodeRelationshipResponse = NodeRelationshipQuery(
                 hasMatch=NodeRelationshipSubQuery(
-                    objectPropertyIris=SETTINGS.inference_participated_in_iri,
-                    relatedNodeIds=attr.nodeId
+                    objectPropertyIris=[SETTINGS.inference_participated_in_iri],
                 )
             )
-            print("EXTRACT TANK NODE ID'S FROM THIS", nodeRelationshipObservationQuery)
+            print("EXTRACT TANK NODE ID'S FROM THIS", nodeRelationshipResponse)
             # tankNode = whatever the new node is
         
         # PD Query stands for Primary/Derivative
