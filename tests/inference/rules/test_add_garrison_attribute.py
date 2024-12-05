@@ -162,19 +162,19 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
     
     # Mock Final Attribute
     mock_create_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
-    mock_get_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.get_attribute")
+    mock_get_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
     mock_create_final_attr.return_value = final_attr
     mock_get_final_attr.return_value = final_attr
 
     # Mock Observational Node Relationship
     mock_create_observational_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.create_relationship")
-    mock_get_observational_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationship")
+    mock_get_observational_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
     mock_create_observational_node_relationship.return_value = observational_node_relationship
     mock_get_observational_node_relationship.return_value = observational_node_relationship
 
     # Mock Primary Node Relationship
     mock_create_primary_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.create_relationship")
-    mock_get_primary_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationship")
+    mock_get_primary_node_relationship = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
     mock_create_primary_node_relationship.return_value = primary_node_relationship
     mock_get_primary_node_relationship.return_value = primary_node_relationship
 
