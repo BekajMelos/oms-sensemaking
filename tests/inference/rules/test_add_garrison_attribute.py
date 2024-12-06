@@ -86,10 +86,12 @@ def observational_node_relationship(mocker: MockerFixture):
     An observational node relationship to be evaluated
     """
     relationship = mocker.Mock(spec=RelationshipRelationship)
-    relationship.id = "uuid1"
-    relationship.objectPropertyIri = SETTINGS.inference_participated_in_iri
-    relationship.startNodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
-    relationship.endNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
+    relationship.id = "7526268d-b736-4341-b30e-098139d674cd" # Observational Node Relationship
+    relationship.objectPropertyIris = [SETTINGS.inference_participated_in_iri]
+    #relationship.startNodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
+    #relationship.endNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
+    relationship.relatedNodeIds=["68e2f92d-125f-42ca-8197-27beda61542f"] # Primary Node
+    relationship.name = "TEST 1"
 
     return relationship
 
@@ -99,10 +101,12 @@ def primary_node_relationship(mocker: MockerFixture):
     A primary node relationship relationship to be evaluated
     """
     relationship = mocker.Mock(spec=RelationshipRelationship)
-    relationship.id = "uuid2"
-    relationship.objectPropertyIri = SETTINGS.inference_garrison_location_iri
-    relationship.startNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
-    relationship.endNodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
+    relationship.id = "8236af0c-0c7f-432a-a098-80cc10c15ab6" # Primary Node Relationship
+    relationship.objectPropertyIris = [SETTINGS.inference_garrison_location_iri]
+    #relationship.startNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
+    #relationship.endNodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
+    relationship.relatedNodeIds=["dd7763a6-dad4-46d7-acfa-d23a648eb143"] # Base Node
+    relationship.name = "TEST 2"
 
     return relationship
 
@@ -118,6 +122,7 @@ def observational_node(mocker: MockerFixture):
     node.geoQuery = "some query"
     node.realrelationships = observational_node_relationship
     node.tier = "OBSERVATIONAL"
+    
 
     return node
 
@@ -164,20 +169,9 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
     mock_get_final_attr = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
     mock_get_final_attr.return_value = final_attr
 
-    # Relationship mocks
-    mock_get_relationships = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
-    mock_relationships = {
-        SETTINGS.inference_participated_in_iri: observational_node_relationship,
-        SETTINGS.inference_garrison_location_iri: primary_node_relationship,
-    }
-
-    def get_relationships_side_effect(query):
-        relationship_Iri = query.hasMatch.objectPropertyIris
-        return [mock_relationships[relationship_Iri]] if relationship_Iri in mock_relationships else []
-
-    mock_get_relationships.side_effect = get_relationships_side_effect
 
     # Node mocks
+    print("********** NODE MOCK ************")
     mock_get_nodes = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
     mock_nodes = {
         "0cc17447-b1f8-48e8-ae30-f9031f250b5d": observational_node,
@@ -186,10 +180,31 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
     }
     
     def get_nodes_side_effect(query):
+        print("NODE SIDE EFFECT")
         node_id = query.ids[0]
         return mock_nodes.get(node_id, None)
 
     mock_get_nodes.side_effect = get_nodes_side_effect
+
+
+    # Relationship mocks
+    print("********** RELATIONSHIP MOCK ************")
+    mock_get_relationships = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
+    mock_relationships = {
+        SETTINGS.inference_participated_in_iri: observational_node_relationship,
+        SETTINGS.inference_garrison_location_iri: primary_node_relationship
+    }
+
+    # Define the side effect for `get_relationships`
+    def get_relationships_side_effect(query):
+        print("********** INSIDE RELATIONSHIP QUERY ************")
+        object_properties = query.hasMatch.objectPropertyIris
+        matching_relationships = [
+            mock_relationships[prop] for prop in object_properties if prop in mock_relationships
+        ]
+        return matching_relationships
+
+    mock_get_relationships.side_effect = get_relationships_side_effect
 
     print("test 1")
     rule = AddGarrisonAttribute("some name")

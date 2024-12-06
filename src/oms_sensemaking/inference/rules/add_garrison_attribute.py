@@ -84,13 +84,17 @@ class AddGarrisonAttribute(BaseRule):
 
         if(nodeResponse.tier == "OBSERVATIONAL"):
             print("OBSERVATIONAL NODE")
-            nodeRelationshipResponse = NodeRelationshipQuery(
+            nodeRelationshipResponse = oms_client.get_relationships(NodeRelationshipQuery(
                 hasMatch=NodeRelationshipSubQuery(
                     objectPropertyIris=[SETTINGS.inference_participated_in_iri],
                 )
-            )
-            print("EXTRACT TANK NODE ID'S FROM THIS", nodeRelationshipResponse)
-            # tankNode = whatever the new node is
+            ))
+            print("RESPONSE = ", nodeRelationshipResponse)
+            for relationship in nodeRelationshipResponse: 
+                print("RESPONSE NAME = ", relationship.name)
+                print("RELATED NODE ID'S = ", relationship.relatedNodeIds)
+
+            # RECEIVED CORRECT RELATIONSHIP
         
         # PD Query stands for Primary/Derivative
         nodeRelationshipPDQuery = NodeRelationshipQuery(
