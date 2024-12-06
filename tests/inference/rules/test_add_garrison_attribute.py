@@ -171,7 +171,6 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
 
 
     # Node mocks
-    print("********** NODE MOCK ************")
     mock_get_nodes = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
     mock_nodes = {
         "0cc17447-b1f8-48e8-ae30-f9031f250b5d": observational_node,
@@ -180,7 +179,6 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
     }
     
     def get_nodes_side_effect(query):
-        print("NODE SIDE EFFECT")
         node_id = query.ids[0]
         return mock_nodes.get(node_id, None)
 
@@ -188,7 +186,6 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
 
 
     # Relationship mocks
-    print("********** RELATIONSHIP MOCK ************")
     mock_get_relationships = mocker.patch("oms_sensemaking.clients.oms_client.get_relationships")
     mock_relationships = {
         SETTINGS.inference_participated_in_iri: observational_node_relationship,
