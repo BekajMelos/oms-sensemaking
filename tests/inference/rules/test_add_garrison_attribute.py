@@ -90,7 +90,7 @@ def observational_node_relationship(mocker: MockerFixture):
     relationship.objectPropertyIris = [SETTINGS.inference_participated_in_iri]
     #relationship.startNodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
     #relationship.endNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
-    relationship.relatedNodeIds=["68e2f92d-125f-42ca-8197-27beda61542f"] # Primary Node
+    relationship.relatedNodeIds=["0cc17447-b1f8-48e8-ae30-f9031f250b5d", "68e2f92d-125f-42ca-8197-27beda61542f"] # Observational Node + Primary Node
     relationship.name = "TEST 1"
 
     return relationship
@@ -105,7 +105,7 @@ def primary_node_relationship(mocker: MockerFixture):
     relationship.objectPropertyIris = [SETTINGS.inference_garrison_location_iri]
     #relationship.startNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
     #relationship.endNodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
-    relationship.relatedNodeIds=["dd7763a6-dad4-46d7-acfa-d23a648eb143"] # Base Node
+    relationship.relatedNodeIds=["68e2f92d-125f-42ca-8197-27beda61542f", "dd7763a6-dad4-46d7-acfa-d23a648eb143"] # Base Node
     relationship.name = "TEST 2"
 
     return relationship
@@ -195,12 +195,16 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
         SETTINGS.inference_garrison_location_iri: primary_node_relationship
     }
 
-    # Define the side effect for `get_relationships`
     def get_relationships_side_effect(query):
-        print("********** INSIDE RELATIONSHIP QUERY ************")
-        object_properties = query.hasMatch.objectPropertyIris
+        query_object_properties = query.hasMatch.objectPropertyIris
+        query_related_node_ids = query.hasMatch.relatedNodeIds
         matching_relationships = [
-            mock_relationships[prop] for prop in object_properties if prop in mock_relationships
+            relationship
+            for relationship in mock_relationships.values()
+            if (
+                set(query_object_properties).intersection(relationship.objectPropertyIris)
+                and set(query_related_node_ids).intersection(relationship.relatedNodeIds)
+            )
         ]
         return matching_relationships
 

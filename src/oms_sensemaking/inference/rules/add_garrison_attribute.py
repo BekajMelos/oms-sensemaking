@@ -73,8 +73,6 @@ class AddGarrisonAttribute(BaseRule):
             ids=[attr.nodeId]
         ))
 
-        print("Node response 3 = ", nodeResponse)
-
         print("Node id = ", nodeResponse.id)
         print("Node name = ", nodeResponse.name)
         print("Node tier = ", nodeResponse.tier)
@@ -84,28 +82,42 @@ class AddGarrisonAttribute(BaseRule):
 
         if(nodeResponse.tier == "OBSERVATIONAL"):
             print("OBSERVATIONAL NODE")
-            nodeRelationshipResponse = oms_client.get_relationships(NodeRelationshipQuery(
+            nodeRelationshipObservationalResponse = oms_client.get_relationships(NodeRelationshipQuery(
                 hasMatch=NodeRelationshipSubQuery(
                     objectPropertyIris=[SETTINGS.inference_participated_in_iri],
+                    relatedNodeIds=[attr.nodeId]
                 )
             ))
-            print("RESPONSE = ", nodeRelationshipResponse)
-            for relationship in nodeRelationshipResponse: 
-                print("RESPONSE NAME = ", relationship.name)
-                print("RELATED NODE ID'S = ", relationship.relatedNodeIds)
 
-            # RECEIVED CORRECT RELATIONSHIP
+            for observational_relationship in nodeRelationshipObservationalResponse: 
+                print("RESPONSE NAME = ", observational_relationship.name)
+                print("RELATED NODE ID'S = ", observational_relationship.relatedNodeIds)
+                filtered_node_ids = [
+                     node_id for node_id in observational_relationship.relatedNodeIds if node_id != attr.nodeId
+                     ]
+                print("FILTERED RELATED NODE IDS = ", filtered_node_ids)
+                tankNode = filtered_node_ids[0]
+                print(tankNode)
         
         # PD Query stands for Primary/Derivative
-        nodeRelationshipPDQuery = NodeRelationshipQuery(
+        print("PD RELATIONSHIP QUERY")
+        nodeRelationshipPDResponse = oms_client.get_relationships(NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
-                objectPropertyIris=SETTINGS.inference_garrison_location_iri,
-                relatedNodeIds=tankNode
+                objectPropertyIris=[SETTINGS.inference_garrison_location_iri],
+                relatedNodeIds=[tankNode],
             )
-        )
-        print("EXTRACT NODE ID'S FROM HERE", nodeRelationshipPDQuery)
-        # garrisonNode = whatever the new node is
-        garrisonNode = tankNode
+        ))
+        for pd_relationship in nodeRelationshipPDResponse: 
+            print("RESPONSE NAME = ", pd_relationship.name)
+            print("RELATED NODE ID'S = ", pd_relationship.relatedNodeIds)
+            filtered_node_ids = [
+                node_id for node_id in pd_relationship.relatedNodeIds if node_id != tankNode
+                ]
+            garrisonNode = filtered_node_ids[0]
+            print("Garrison Node = ", garrisonNode)
+
+
+        # DONE WITH RELATIONSHIP QUERIES
 
         newAttributeQuery = AttributeQuery(
             attributeIris=SETTINGS.inference_garrison_location_iri,
