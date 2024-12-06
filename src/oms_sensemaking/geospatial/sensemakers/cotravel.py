@@ -1,4 +1,5 @@
 """Cotravel Sensemakers."""
+
 import logging
 import uuid
 from collections import defaultdict
@@ -16,7 +17,6 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, select
 from sqlalchemy.orm import with_expression
@@ -120,7 +120,7 @@ class Cotravel(FindingBase):
         """Rollup the acm from the points"""
         track1_acms = [point.acm for point in self.track1.points]
         track2_acms = [point.acm for point in self.track2.points]
-        return get_acm_rollup([{"ACM": acm} for acm in (track1_acms+track2_acms)])
+        return get_acm_rollup([{"ACM": acm} for acm in (track1_acms + track2_acms)])
 
     def to_geojson(self) -> dict:
         """Geojson representation of the cotravel geometry"""
@@ -128,13 +128,9 @@ class Cotravel(FindingBase):
         return {
             "type": "MultiLineString",
             "coordinates": [
-                [
-                    point.coordinates for point in self.track1.points
-                ],
-                [
-                    point.coordinates for point in self.track2.points
-                ]
-            ]
+                [point.coordinates for point in self.track1.points],
+                [point.coordinates for point in self.track2.points],
+            ],
         }
 
 
@@ -156,7 +152,6 @@ class Colocation:
 
 
 class CotravelOmsPublisher(OmsPublisher):
-
     def publish(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> None:
         """
         Write cotravel events to OMSB
@@ -170,7 +165,6 @@ class CotravelOmsPublisher(OmsPublisher):
         LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
 
         for cotravel in cotravels:
-
             name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
             tags = [SETTINGS.geo_sensemaker_event_tag]
             source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
@@ -183,7 +177,7 @@ class CotravelOmsPublisher(OmsPublisher):
                     tags=tags,
                     classIri=SETTINGS.cotravel_event_node_iri,
                     ifcCodes=set(),
-                    isNso=True
+                    isNso=True,
                 )
             )
 
@@ -197,7 +191,7 @@ class CotravelOmsPublisher(OmsPublisher):
                     confidence=Confidence.HIGH,
                     acm=event_node.acm,
                     objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                    sourceId=source_id
+                    sourceId=source_id,
                 )
             )
 
@@ -211,7 +205,7 @@ class CotravelOmsPublisher(OmsPublisher):
                     confidence=Confidence.HIGH,
                     acm=event_node.acm,
                     objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                    sourceId=source_id
+                    sourceId=source_id,
                 )
             )
 
@@ -224,15 +218,11 @@ class CotravelOmsPublisher(OmsPublisher):
                     confidence=Confidence.HIGH,
                     tags=tags,
                     sourceId=source_id,
-                    geo=GeoInput(
-                        geoJson=cotravel.to_geojson(),
-                        startTime=cotravel.start_time,
-                        endTime=cotravel.last_time
-                        ),
+                    geometry=cotravel.to_geojson(),
                     nodeId=event_node.id,
                     acm=event_node.acm,
                     valueStart=cotravel.start_time,
-                    valueEnd=cotravel.last_time
+                    valueEnd=cotravel.last_time,
                 )
             )
 
@@ -255,18 +245,18 @@ class CotravelSensemaker(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.config = {
-            'valid_observed_threshold_seconds': SETTINGS.valid_observed_threshold_seconds,
-            'min_cotravel_duration_seconds': SETTINGS.min_cotravel_duration_seconds,
-            'min_lag_lead_duration_seconds': SETTINGS.min_lag_lead_duration_seconds,
-            'max_lag_lead_duration_seconds': SETTINGS.max_lag_lead_duration_seconds,
-            'geohash_low': SETTINGS.geohash_low,
-            'cotravel_event_node_attribute_iri': SETTINGS.cotravel_event_node_attribute_iri,
-            'cotravel_relationship_iri': SETTINGS.cotravel_relationship_iri,
-            'cotravel_track_to_event_relation_name': SETTINGS.cotravel_track_to_event_relation_name,
-            'cotravel_event_node_iri': SETTINGS.cotravel_event_node_iri,
-            'cotravel_event_name': SETTINGS.cotravel_event_name ,
-            'lag_lead_event_name': SETTINGS.lag_lead_event_name,
-            'geo_sensemaker_event_tag': SETTINGS.geo_sensemaker_event_tag
+            "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
+            "min_cotravel_duration_seconds": SETTINGS.min_cotravel_duration_seconds,
+            "min_lag_lead_duration_seconds": SETTINGS.min_lag_lead_duration_seconds,
+            "max_lag_lead_duration_seconds": SETTINGS.max_lag_lead_duration_seconds,
+            "geohash_low": SETTINGS.geohash_low,
+            "cotravel_event_node_attribute_iri": SETTINGS.cotravel_event_node_attribute_iri,
+            "cotravel_relationship_iri": SETTINGS.cotravel_relationship_iri,
+            "cotravel_track_to_event_relation_name": SETTINGS.cotravel_track_to_event_relation_name,
+            "cotravel_event_node_iri": SETTINGS.cotravel_event_node_iri,
+            "cotravel_event_name": SETTINGS.cotravel_event_name,
+            "lag_lead_event_name": SETTINGS.lag_lead_event_name,
+            "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
         }
         self.publisher = CotravelOmsPublisher(oms_client, oms_crud_tool)
 
@@ -282,9 +272,7 @@ class CotravelSensemaker(Sensemaker):
             time = point.detection_time
 
             point_geohash_low = geohash.encode(
-                lat=point.coordinates[1],
-                lon=point.coordinates[0],
-                precision=SETTINGS.geohash_low
+                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
             )
 
             db_points: List[Point] = self.get_points(
@@ -355,19 +343,12 @@ class CotravelSensemaker(Sensemaker):
         """
         with db_session() as db:
             query = db.execute(
-                select(
-                    Point
-                ).filter(
-                    Point.location.ST_Geohash().like(f"{geohash_low}%")
-                ).where(
-                    Point.node_id != track_node_id,
-                    Point.detection_time > min_time,
-                    Point.detection_time < max_time
-                ).order_by(
-                    Point.node_id, func.abs(func.extract('epoch', Point.detection_time - target_time))
-                ).options(
-                    with_expression(Point.geohash, func.ST_GeoHash(Point.location))
-                ).distinct(Point.node_id)
+                select(Point)
+                .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
+                .where(Point.node_id != track_node_id, Point.detection_time > min_time, Point.detection_time < max_time)
+                .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
+                .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
+                .distinct(Point.node_id)
             )
 
             return list(query.scalars().all())
@@ -392,17 +373,16 @@ class CotravelSensemaker(Sensemaker):
             return Cotravel(
                 track1=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
-                    node_id=track.node_id
-                    ),
+                    node_id=track.node_id,
+                ),
                 track2=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
-                    node_id=track2.node_id
-                    ),
+                    node_id=track2.node_id,
+                ),
                 start_time=start_time,
                 last_time=last_time,
-                true_cotravel=to_add_to.true_cotravel
+                true_cotravel=to_add_to.true_cotravel,
             )
-
 
         completed: list[Cotravel] = []
         to_add_to: Optional[PotentialMatch] = None
@@ -472,4 +452,3 @@ class CotravelSensemaker(Sensemaker):
             if point.detection_time >= start_time and point.detection_time <= end_time:
                 points.append(point)
         return points
-

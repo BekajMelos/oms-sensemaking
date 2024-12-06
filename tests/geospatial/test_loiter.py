@@ -15,7 +15,6 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from sqlalchemy import select
 
 from oms_sensemaking.config import SETTINGS
@@ -24,33 +23,33 @@ from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 ROLLUP_DEFAULT_ACM = {
-    'version': '3.0',
-    'classif_type': 'US',
-    'classif': 'U',
-    'owner_prod': ['USA'],
-    'non_us_ctrls': [],
-    'sci_ctrls': [],
-    'disponly_to': [''],
-    'dissem_ctrls': [],
-    'non_ic': [],
-    'rel_to': [],
-    'fgi_open': [],
-    'fgi_protect': [],
-    'portion': 'U//DISPLAY ONLY',
-    'banner': 'UNCLASSIFIED//DISPLAY ONLY',
-    'dissem_countries': [],
-    'accms': [],
-    'macs': [],
-    'oc_attribs': [{'orgs': [], 'missions': [], 'regions': []}],
-    'share': {'users': [], 'projects': {}},
-    'f_clearance': ['u'],
-    'f_sci_ctrls': [],
-    'f_accms': [],
-    'f_oc_org': [],
-    'f_regions': [],
-    'f_missions': [],
-    'f_share': [],
-    'f_macs': []
+    "version": "3.0",
+    "classif_type": "US",
+    "classif": "U",
+    "owner_prod": ["USA"],
+    "non_us_ctrls": [],
+    "sci_ctrls": [],
+    "disponly_to": [""],
+    "dissem_ctrls": [],
+    "non_ic": [],
+    "rel_to": [],
+    "fgi_open": [],
+    "fgi_protect": [],
+    "portion": "U//DISPLAY ONLY",
+    "banner": "UNCLASSIFIED//DISPLAY ONLY",
+    "dissem_countries": [],
+    "accms": [],
+    "macs": [],
+    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
+    "share": {"users": [], "projects": {}},
+    "f_clearance": ["u"],
+    "f_sci_ctrls": [],
+    "f_accms": [],
+    "f_oc_org": [],
+    "f_regions": [],
+    "f_missions": [],
+    "f_share": [],
+    "f_macs": [],
 }
 
 
@@ -78,34 +77,90 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     """Simple success track."""
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p6_point = get_random_stamford_bridge_point()
-    p6 = Point(acm=DEFAULT_ACM, location=p6_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p6 = Point(
+        acm=DEFAULT_ACM,
+        location=p6_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # West London way later
-    p7 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.413890, 51.474942).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p7 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.413890, 51.474942).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=node_id)
@@ -113,7 +168,8 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     # Set up mocks
     loiter_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
+        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm)
+    )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
     loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
@@ -133,7 +189,7 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(node_id)
+    event_name = SETTINGS.loiter_event_name + "-" + str(node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     mock_oms_client.create_node.assert_called_with(
@@ -144,8 +200,9 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
-            isNso=True
-        ))
+            isNso=True,
+        )
+    )
 
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
@@ -156,8 +213,9 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
-        ))
+            sourceId=p1.source_id,
+        )
+    )
 
     mock_oms_client.create_attribute.assert_called_with(
         CreateAttributeInput(
@@ -168,56 +226,86 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter.to_geojson(),
-                startTime=p2.detection_time,
-                endTime=p6.detection_time
-                ),
+            geometry=loiter.to_geojson(),
             nodeId=loiter_node_id,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p2.detection_time,
-            valueEnd=p6.detection_time
+            valueEnd=p6.detection_time,
         )
     )
 
     # check that loiters exist in Findings table
-    findings = db.execute(
-        select(
-            Finding
-        ).filter(
-            Finding.finding_type == FindingType.GEO_LOITER.value
-        )
-    ).scalars().all()
+    findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
 
     assert len(findings) == 1
-    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
+    assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
 def test_loiter_invalid_not_long_enough(mock_oms_client, db, oms_crud_tool):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Still within stamford bridge but past the observation time
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid4())
@@ -230,34 +318,90 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:40:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:40:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T13:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T13:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T13:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T13:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p6_point = get_random_stamford_bridge_point()
-    p6 = Point(acm=DEFAULT_ACM, location=p6_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T13:40:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p6 = Point(
+        acm=DEFAULT_ACM,
+        location=p6_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T13:40:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # West London
-    p7 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.413890, 51.474942).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p7 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.413890, 51.474942).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
@@ -272,35 +416,91 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
 
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p6_point = get_random_stamford_bridge_point()
-    p6 = Point(acm=DEFAULT_ACM, location=p6_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p6 = Point(
+        acm=DEFAULT_ACM,
+        location=p6_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Still within stamford bridge but past the observation time
     p7_point = get_random_stamford_bridge_point()
-    p7 = Point(acm=DEFAULT_ACM, location=p7_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p7 = Point(
+        acm=DEFAULT_ACM,
+        location=p7_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
@@ -308,7 +508,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     # Set up mocks
     loiter_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
+        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm)
+    )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
@@ -328,7 +529,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
+    event_name = SETTINGS.loiter_event_name + "-" + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     mock_oms_client.create_node.assert_called_with(
@@ -339,8 +540,9 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
-            isNso=True
-        ))
+            isNso=True,
+        )
+    )
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
@@ -350,8 +552,9 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
-        ))
+            sourceId=p1.source_id,
+        )
+    )
     mock_oms_client.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
@@ -361,80 +564,158 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter.to_geojson(),
-                startTime=p2.detection_time,
-                endTime=p6.detection_time
-                ),
+            geometry=loiter.to_geojson(),
             nodeId=loiter_node_id,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p2.detection_time,
-            valueEnd=p6.detection_time
+            valueEnd=p6.detection_time,
         )
     )
 
     # check that loiters exist in Findings table
-    findings = db.execute(
-        select(
-            Finding
-        ).filter(
-            Finding.finding_type == FindingType.GEO_LOITER.value
-        )
-    ).scalars().all()
+    findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
 
     assert len(findings) == 1
-    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
+    assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
 def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_tool):
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p6_point = get_random_stamford_bridge_point()
-    p6 = Point(acm=DEFAULT_ACM, location=p6_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p6 = Point(
+        acm=DEFAULT_ACM,
+        location=p6_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # West London way later
-    p7 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.413890, 51.474942).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p7 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.413890, 51.474942).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter 2 Points
     p8_point = get_random_stamford_bridge_point()
-    p8 = Point(acm=DEFAULT_ACM, location=p8_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p8 = Point(
+        acm=DEFAULT_ACM,
+        location=p8_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p9_point = get_random_stamford_bridge_point()
-    p9 = Point(acm=DEFAULT_ACM, location=p9_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p9 = Point(
+        acm=DEFAULT_ACM,
+        location=p9_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p10_point = get_random_stamford_bridge_point()
-    p10 = Point(acm=DEFAULT_ACM, location=p10_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p10 = Point(
+        acm=DEFAULT_ACM,
+        location=p10_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p11_point = get_random_stamford_bridge_point()
-    p11 = Point(acm=DEFAULT_ACM, location=p11_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p11 = Point(
+        acm=DEFAULT_ACM,
+        location=p11_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid4())
@@ -444,7 +725,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     loiter_node_id2 = uuid4()
     mock_oms_client.create_node.side_effect = [
         CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
-        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm)
+        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm),
     ]
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -478,7 +759,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
+    event_name = SETTINGS.loiter_event_name + "-" + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     assert mock_oms_client.create_node.call_count == 2
@@ -490,7 +771,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
-            isNso=True
+            isNso=True,
         )
     )
     assert mock_oms_client.create_relationship.call_count == 2
@@ -503,7 +784,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
+            sourceId=p1.source_id,
         )
     )
     mock_oms_client.create_relationship.assert_any_call(
@@ -515,7 +796,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
+            sourceId=p1.source_id,
         )
     )
     assert mock_oms_client.create_attribute.call_count == 2
@@ -528,15 +809,11 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter1.to_geojson(),
-                startTime=p2.detection_time,
-                endTime=p6.detection_time
-                ),
+            geometry=loiter1.to_geojson(),
             nodeId=loiter_node_id1,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p2.detection_time,
-            valueEnd=p6.detection_time
+            valueEnd=p6.detection_time,
         )
     )
     mock_oms_client.create_attribute.assert_any_call(
@@ -549,80 +826,158 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter2.to_geojson(),
-                startTime=p8.detection_time,
-                endTime=p11.detection_time
-                ),
+            geometry=loiter2.to_geojson(),
             nodeId=loiter_node_id2,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p8.detection_time,
-            valueEnd=p11.detection_time
+            valueEnd=p11.detection_time,
         )
     )
 
     # check that loiters exist in Findings table
-    findings = db.execute(
-        select(
-            Finding
-        ).filter(
-            Finding.finding_type == FindingType.GEO_LOITER.value
-        )
-    ).scalars().all()
+    findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
 
     assert len(findings) == 2
-    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
+    assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
 def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_crud_tool):
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
     # East London
-    p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.030890, 51.509420).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
-    p2 = Point(acm=DEFAULT_ACM, location=p2_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=p2_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p3_point = get_random_stamford_bridge_point()
-    p3 = Point(acm=DEFAULT_ACM, location=p3_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=p3_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p4_point = get_random_stamford_bridge_point()
-    p4 = Point(acm=DEFAULT_ACM, location=p4_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p4 = Point(
+        acm=DEFAULT_ACM,
+        location=p4_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p5_point = get_random_stamford_bridge_point()
-    p5 = Point(acm=DEFAULT_ACM, location=p5_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p5 = Point(
+        acm=DEFAULT_ACM,
+        location=p5_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p6_point = get_random_stamford_bridge_point()
-    p6 = Point(acm=DEFAULT_ACM, location=p6_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p6 = Point(
+        acm=DEFAULT_ACM,
+        location=p6_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # West London way later
-    p7 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.413890, 51.474942).wkt, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p7 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-0.413890, 51.474942).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     # Loiter 2 Points
     p8_point = get_random_emirates_stadium_point()
-    p8 = Point(acm=DEFAULT_ACM, location=p8_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p8 = Point(
+        acm=DEFAULT_ACM,
+        location=p8_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p9_point = get_random_emirates_stadium_point()
-    p9 = Point(acm=DEFAULT_ACM, location=p9_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p9 = Point(
+        acm=DEFAULT_ACM,
+        location=p9_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p10_point = get_random_emirates_stadium_point()
-    p10 = Point(acm=DEFAULT_ACM, location=p10_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p10 = Point(
+        acm=DEFAULT_ACM,
+        location=p10_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
     p11_point = get_random_emirates_stadium_point()
-    p11 = Point(acm=DEFAULT_ACM, location=p11_point, altitude=None,
-               detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"), node_id=node_id, node_version=1,
-               attribute_id=uuid4(), attribute_version=1, source_id=uuid4())
+    p11 = Point(
+        acm=DEFAULT_ACM,
+        location=p11_point,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        attribute_id=uuid4(),
+        attribute_version=1,
+        source_id=uuid4(),
+    )
 
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid4())
@@ -632,7 +987,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     loiter_node_id2 = uuid4()
     mock_oms_client.create_node.side_effect = [
         CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
-        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm)
+        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm),
     ]
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -666,7 +1021,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
+    event_name = SETTINGS.loiter_event_name + "-" + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     assert mock_oms_client.create_node.call_count == 2
@@ -678,7 +1033,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
-            isNso=True
+            isNso=True,
         )
     )
     assert mock_oms_client.create_relationship.call_count == 2
@@ -691,7 +1046,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
+            sourceId=p1.source_id,
         )
     )
     mock_oms_client.create_relationship.assert_any_call(
@@ -703,7 +1058,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
             confidence=Confidence.HIGH,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id
+            sourceId=p1.source_id,
         )
     )
     assert mock_oms_client.create_attribute.call_count == 2
@@ -716,15 +1071,11 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter1.to_geojson(),
-                startTime=p2.detection_time,
-                endTime=p6.detection_time
-                ),
+            geometry=loiter1.to_geojson(),
             nodeId=loiter_node_id1,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p2.detection_time,
-            valueEnd=p6.detection_time
+            valueEnd=p6.detection_time,
         )
     )
     mock_oms_client.create_attribute.assert_any_call(
@@ -736,11 +1087,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
-            geo=GeoInput(
-                geoJson=loiter2.to_geojson(),
-                startTime=p8.detection_time,
-                endTime=p11.detection_time
-                ),
+            geometry=loiter2.to_geojson(),
             nodeId=loiter_node_id2,
             acm=ROLLUP_DEFAULT_ACM,
             valueStart=p8.detection_time,
@@ -749,13 +1096,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     )
 
     # check that loiters exist in Findings table
-    findings = db.execute(
-        select(
-            Finding
-        ).filter(
-            Finding.finding_type == FindingType.GEO_LOITER.value
-        )
-    ).scalars().all()
+    findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
 
     assert len(findings) == 2
-    assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
+    assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt

@@ -15,7 +15,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput, IdQuery
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
@@ -78,16 +78,10 @@ class Loiter(FindingBase):
     def to_geojson(self) -> dict:
         """Geojson representation of the loiter geometry"""
 
-        return {
-            "type": "LineString",
-            "coordinates": [
-                    point.coordinates for point in self.processed_points
-                ]
-        }
+        return {"type": "LineString", "coordinates": [point.coordinates for point in self.processed_points]}
 
 
 class LoiterOmsPublisher(OmsPublisher):
-
     def publish(self, track: Track, loiters: List[Loiter]) -> None:
         """
         Write loiter events to OMSB
@@ -100,7 +94,6 @@ class LoiterOmsPublisher(OmsPublisher):
         LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
 
         for loiter in loiters:
-
             track_node = self.oms_client.node(query=IdQuery(id=loiter.track_node_id))
 
             if not track_node:
@@ -113,48 +106,44 @@ class LoiterOmsPublisher(OmsPublisher):
             source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
             create_event_node = CreateNodeInput(
-                    acm=loiter.acm,
-                    name=name,
-                    tier=ObjectTier.DERIVATIVE,
-                    tags=tags,
-                    classIri=SETTINGS.loiter_event_node_iri,
-                    ifcCodes=set(),
-                    isNso=True
-                )
+                acm=loiter.acm,
+                name=name,
+                tier=ObjectTier.DERIVATIVE,
+                tags=tags,
+                classIri=SETTINGS.loiter_event_node_iri,
+                ifcCodes=set(),
+                isNso=True,
+            )
             event_node = self.oms_client.create_node(create_event_node)
 
             create_relationship_input = CreateRelationshipInput(
-                    tags=tags,
-                    name=name,
-                    startNodeId=event_node.id,
-                    endNodeId=loiter.track_node_id,
-                    confidence=Confidence.HIGH,
-                    acm=loiter.acm,
-                    objectPropertyIri=SETTINGS.loiter_relationship_iri,
-                    sourceId=source_id
-                )
+                tags=tags,
+                name=name,
+                startNodeId=event_node.id,
+                endNodeId=loiter.track_node_id,
+                confidence=Confidence.HIGH,
+                acm=loiter.acm,
+                objectPropertyIri=SETTINGS.loiter_relationship_iri,
+                sourceId=source_id,
+            )
             _ = self.oms_client.create_relationship(create_relationship_input)
 
             create_attribute_input = CreateAttributeInput(
-                    attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-                    attributeValue="geo",
-                    attributeDisplayValue="",
-                    attributeType=AttributeType.SPATIOTEMPORAL.value,
-                    confidence=Confidence.HIGH.value,
-                    tags=tags,
-                    sourceId=source_id,
-                    geo=GeoInput(
-                        geoJson=loiter.to_geojson(),
-                        startTime=loiter.start_time,
-                        endTime=loiter.end_time
-                        ),
-                    nodeId=event_node.id,
-                    acm=loiter.acm,
-                    valueStart=loiter.start_time,
-                    valueEnd=loiter.end_time
-                )
+                attributeIri=SETTINGS.loiter_event_node_attribute_iri,
+                attributeValue="geo",
+                attributeDisplayValue="",
+                attributeType=AttributeType.SPATIOTEMPORAL.value,
+                confidence=Confidence.HIGH.value,
+                tags=tags,
+                sourceId=source_id,
+                geometry=loiter.to_geojson(),
+                nodeId=event_node.id,
+                acm=loiter.acm,
+                valueStart=loiter.start_time,
+                valueEnd=loiter.end_time,
+            )
             _ = self.oms_client.create_attribute(create_attribute_input)
-            LOGGER.debug('Done writing output to OMS')
+            LOGGER.debug("Done writing output to OMS")
 
 
 class LoiterSensemaker(Sensemaker):
@@ -181,7 +170,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
             "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
-            "geohash_low": SETTINGS.geohash_low
+            "geohash_low": SETTINGS.geohash_low,
         }
         self.publisher = LoiterOmsPublisher(oms_client, oms_crud_tool)
 
@@ -212,8 +201,9 @@ class LoiterSensemaker(Sensemaker):
                     loiter_points: list[Point] = []
                     for point in data.points:
                         # check for points within the loiter time window
-                        if (point.detection_time >= potential_loiter.start_time
-                                and point.detection_time <= potential_loiter.latest_time
+                        if (
+                            point.detection_time >= potential_loiter.start_time
+                            and point.detection_time <= potential_loiter.latest_time
                         ):
                             loiter_points.append(point)
 
@@ -252,11 +242,8 @@ class LoiterSensemaker(Sensemaker):
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-
             point_geohash_low = geohash.encode(
-                lat=point.coordinates[1],
-                lon=point.coordinates[0],
-                precision=SETTINGS.geohash_low
+                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
             )
 
             if point_geohash_low in prospective_loiters:
