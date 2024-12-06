@@ -47,7 +47,7 @@ from oms_sensemaking.config import SETTINGS
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url, user_dn=SETTINGS.user_dn, cert_path=SETTINGS.cert_path, key_path=SETTINGS.key_path
         )
