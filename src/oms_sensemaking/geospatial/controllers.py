@@ -81,7 +81,7 @@ class GeoSQSListener(SQSListener):
                             and (object_event.eventType != Action.CREATE.value)):
                         continue
 
-                    LOGGER.info(f"Received Geo Attribute: {object_event.objectId}")
+                    LOGGER.info(f"Received Observation: {object_event.objectId}")
 
                     if self.handle_event(object_event):
                         # Delete received message from queue - required, so you don't get the same message
