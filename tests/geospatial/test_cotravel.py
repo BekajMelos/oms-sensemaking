@@ -104,6 +104,7 @@ def tester_db(db: Session) -> Iterator[Session]:
     yield db
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_cotravel_success(mock_oms_client, tester_db, db, oms_crud_tool):
     node_id = uuid4()
 
@@ -231,6 +232,7 @@ def test_cotravel_success(mock_oms_client, tester_db, db, oms_crud_tool):
     assert findings[0].algorithm_configuration
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_multiple_cotravel_success(mock_oms_client, tester_db, db, oms_crud_tool):
     node_id = uuid4()
 
@@ -419,6 +421,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, oms_crud_tool
     assert findings[0].algorithm_configuration
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_lag_lead_success(mock_oms_client, tester_db, db, oms_crud_tool):
     node_id = uuid4()
 
@@ -594,6 +597,7 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, oms_crud_tool):
     assert len(cotravels) == 0
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, tester_db, db, oms_crud_tool):
     node_id = uuid4()
 

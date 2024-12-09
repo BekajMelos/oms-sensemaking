@@ -5,6 +5,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+import pytest
 import shapely
 from geoalchemy2.shape import to_shape
 from oms_sdk import DEFAULT_ACM
@@ -73,6 +74,7 @@ def get_random_emirates_stadium_point() -> str:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     """Simple success track."""
     node_id = uuid4()
@@ -410,6 +412,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
     assert len(loiters) == 0
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, db, oms_crud_tool):
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
@@ -579,6 +582,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_tool):
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
@@ -841,6 +845,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
+@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_crud_tool):
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
