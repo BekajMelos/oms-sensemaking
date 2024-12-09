@@ -47,8 +47,7 @@ class AddGarrisonAttribute(BaseRule):
         attr = input.attribute
 
         if attr.geo is None:
-            # YOU CAN USE ATTR.HASGEO HERE
-            print("NOT A GEO")
+            return
 
         base_attribute_geolocation = attr.geo
 
