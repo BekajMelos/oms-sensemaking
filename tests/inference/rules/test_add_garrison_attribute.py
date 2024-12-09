@@ -56,8 +56,8 @@ def final_attr(mocker: MockerFixture):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "uuid2"
     attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_add_garrison_attribute_iri
-    attr.attributeName = SETTINGS.inference_add_garrison_attribute_iri.split("/")[-1]
+    attr.attributeIri = SETTINGS.inference_garrison_location_iri
+    attr.attributeName = SETTINGS.inference_garrison_location_iri.split("/")[-1]
     attr.attributeValue = "some attr name"
     attr.attributeType = AttributeType.BOOLEAN
     attr.confidence = Confidence.MODERATE
@@ -214,13 +214,12 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
     print("test 3")
     mock.assert_called_once_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
-            attributeValue="true",
-            attributeType=AttributeType.BOOLEAN,
+            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
+            attributeValue="Yes",
+            attributeType=AttributeType.STRING,
             confidence=initial_attr.confidence,
             sourceId=initial_attr.sourceId,
-            nodeId=initial_attr.nodeId,
             acm=initial_attr.acm,
-            tags=SETTINGS.inference_tags,
+            isMutable="false"
         )
     )

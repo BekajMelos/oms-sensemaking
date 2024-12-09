@@ -50,6 +50,17 @@ class AddGarrisonAttribute(BaseRule):
             and input.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
             and input.attribute.attributeValue
         )
+    
+    def geo_compare(geojson1, geojson2): 
+        print("*******GEO COMPARE********")
+        print(geojson1)
+        print(geojson2)
+        geo_coordinates_1 = geojson1["features"][0]["geometry"]["coordinates"]
+        geo_coordinates_2 = geojson2["features"][0]["geometry"]["coordinates"]
+        print(geo_coordinates_1)
+        print(geo_coordinates_2)
+
+        return "Yes"
 
     def action(self, input: RuleContext):
         """
@@ -100,7 +111,6 @@ class AddGarrisonAttribute(BaseRule):
                 print(tankNode)
         
         # PD Query stands for Primary/Derivative
-        print("PD RELATIONSHIP QUERY")
         nodeRelationshipPDResponse = oms_client.get_relationships(NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
                 objectPropertyIris=[SETTINGS.inference_garrison_location_iri],
@@ -116,22 +126,13 @@ class AddGarrisonAttribute(BaseRule):
             garrisonNode = filtered_node_ids[0]
             print("Garrison Node = ", garrisonNode)
 
+        finalAttributeResponse = oms_client.get_attributes(AttributeQuery(
+            attributeIris=[SETTINGS.inference_garrison_location_iri],
+            nodeId=garrisonNode
+        ))
 
-        # DONE WITH RELATIONSHIP QUERIES
-
-        newAttributeQuery = AttributeQuery(
-            attributeIris=SETTINGS.inference_garrison_location_iri,
-            nodeIds=garrisonNode
-        )
-        print("NOW WE HAVE THE SECOND ATTRIBUTE", newAttributeQuery)
-
-        new_attribute_geolocation = newAttributeQuery.geoQuery
-
-        #Logic for geolocation distance, going to make it work later
-        if(new_attribute_geolocation == base_attribute_geolocation):
-            finalAttributeValue = "Yes"
-        else:
-            finalAttributeValue = "No"
+        new_attribute_geolocation = finalAttributeResponse.geo
+        finalAttributeValue = AddGarrisonAttribute.geo_compare(base_attribute_geolocation, new_attribute_geolocation)
 
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
@@ -142,21 +143,6 @@ class AddGarrisonAttribute(BaseRule):
             acm=attr.acm,
             isMutable="false"
         )
-
-        """
-        attr = input.attribute
-        attribute = CreateAttributeInput(
-            attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
-            attributeValue="true",
-            attributeType=AttributeType.BOOLEAN,
-            confidence=attr.confidence,
-            sourceId=attr.sourceId,
-            nodeId=attr.nodeId,
-            acm=attr.acm,
-            tags=SETTINGS.inference_tags,
-        )
-        """
-
         oms_client.create_attribute(attribute)
 
     def has_action_already_ran(self, input: RuleContext):
