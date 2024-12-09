@@ -122,7 +122,7 @@ class Settings(BaseSettings):
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
     )
     inference_add_garrison_attribute_meta_data_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for generated Out Of Garrison meta data (placeholder)"
+        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for Garrison meta data (placeholder)"
     )
     inference_participated_in_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"

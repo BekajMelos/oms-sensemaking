@@ -1,7 +1,8 @@
 import math
 
+
 class Helper():
-    def compare_geo(geojson1, geojson2):
+    def compare_geo(self, geojson1, geojson2):
         geo_coordinates_1 = geojson1["features"][0]["geometry"]["coordinates"]
         geo_coordinates_2 = geojson2["features"][0]["geometry"]["coordinates"]
 

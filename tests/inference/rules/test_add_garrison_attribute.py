@@ -88,7 +88,8 @@ def observational_node_relationship(mocker: MockerFixture):
     relationship.objectPropertyIris = [SETTINGS.inference_participated_in_iri]
     #relationship.startNodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
     #relationship.endNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
-    relationship.relatedNodeIds=["0cc17447-b1f8-48e8-ae30-f9031f250b5d", "68e2f92d-125f-42ca-8197-27beda61542f"] # Observational Node + Primary Node
+    # Observational Node + Primary Node
+    relationship.relatedNodeIds=["0cc17447-b1f8-48e8-ae30-f9031f250b5d", "68e2f92d-125f-42ca-8197-27beda61542f"]
     relationship.name = "TEST 1"
 
     return relationship
@@ -103,7 +104,8 @@ def primary_node_relationship(mocker: MockerFixture):
     relationship.objectPropertyIris = [SETTINGS.inference_garrison_location_iri]
     #relationship.startNodeId = "68e2f92d-125f-42ca-8197-27beda61542f" # Primary Node
     #relationship.endNodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
-    relationship.relatedNodeIds=["68e2f92d-125f-42ca-8197-27beda61542f", "dd7763a6-dad4-46d7-acfa-d23a648eb143"] # Base Node
+    # Base Node
+    relationship.relatedNodeIds=["68e2f92d-125f-42ca-8197-27beda61542f", "dd7763a6-dad4-46d7-acfa-d23a648eb143"]
     relationship.name = "TEST 2"
 
     return relationship
@@ -157,13 +159,13 @@ def test_evaluate_none_input():
     rule = AddGarrisonAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
-def test_action_creates_attribute(mocker: MockerFixture, 
-                                  initial_attr, 
-                                  final_attr, 
-                                  observational_node_relationship, 
-                                  primary_node_relationship, 
-                                  observational_node, 
-                                  primary_node, 
+def test_action_creates_attribute(mocker: MockerFixture,
+                                  initial_attr,
+                                  final_attr,
+                                  observational_node_relationship,
+                                  primary_node_relationship,
+                                  observational_node,
+                                  primary_node,
                                   base_node):
     mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
 
@@ -208,7 +210,7 @@ def test_action_creates_attribute(mocker: MockerFixture,
         return matching_relationships
 
     mock_get_relationships.side_effect = get_relationships_side_effect
-    
+
     rule = AddGarrisonAttribute("some name")
     rule.action(RuleContext(attribute=initial_attr))
     mock.assert_called_once_with(
