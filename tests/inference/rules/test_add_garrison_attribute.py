@@ -154,12 +154,17 @@ def base_node(mocker: MockerFixture):
 
 def test_evaluate_none_input():
     """Test to verify we only run the rule against attributes"""
-    print("********************START TEST********************")
     rule = AddGarrisonAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
-def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_attr, observational_node_relationship, primary_node_relationship, observational_node, primary_node, base_node):
-    print("*********************START ACTION TEST************************")
+def test_action_creates_attribute(mocker: MockerFixture, 
+                                  initial_attr, 
+                                  final_attr, 
+                                  observational_node_relationship, 
+                                  primary_node_relationship, 
+                                  observational_node, 
+                                  primary_node, 
+                                  base_node):
     mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
 
     # Mock Final Attribute
@@ -203,12 +208,9 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
         return matching_relationships
 
     mock_get_relationships.side_effect = get_relationships_side_effect
-
-    print("test 1")
+    
     rule = AddGarrisonAttribute("some name")
-    print("test 2")
     rule.action(RuleContext(attribute=initial_attr))
-    print("test 3")
     mock.assert_called_once_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
