@@ -166,9 +166,6 @@ class CotravelOmsPublisher(OmsPublisher):
         :return: None
         """
 
-        # # TODO sensemaker id or just track?
-        # LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
-
         formatted_nodes = []
         for cotravel in cotravels:
 
