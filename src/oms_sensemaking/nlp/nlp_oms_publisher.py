@@ -31,27 +31,6 @@ class NlpOmsPublisher(OmsPublisher):
         super().__init__(oms_client, oms_crud_tool)
         self.source_id = source_id
         self.acm = acm
-        self.node_iris = {
-            "Person": SETTINGS.nlp_person_iri,
-            "Organization": SETTINGS.nlp_organization_iri,
-            "Location": SETTINGS.nlp_location_iri,
-            "Document": SETTINGS.nlp_document_iri,
-            "Date": SETTINGS.nlp_date_iri,
-            "Entity": SETTINGS.entity_iri,
-        }
-        self.relationship_iris = {
-            "Work_For": SETTINGS.nlp_work_for_iri,
-            "Live_In": SETTINGS.nlp_live_in_iri,
-            "OrgBased_In": SETTINGS.nlp_org_based_in_iri,
-            "Located_In": SETTINGS.nlp_located_in_iri,
-            "Document_Contains_Entity": SETTINGS.nlp_document_contains_entity_iri,
-            "Relates_To": SETTINGS.relates_to_iri,
-        }
-        self.attribute_iris = {
-            "URL": SETTINGS.url_iri,
-            "Identifier": SETTINGS.identifier_iri,
-            "Text": SETTINGS.nlp_text_iri,
-        }
 
     def format_nodes(self, data: str, results: dict) -> list[CreateNodeInput]:
         """ """
@@ -59,7 +38,7 @@ class NlpOmsPublisher(OmsPublisher):
         for entity in results["ner_entities"]:
             self.node_uuid_list.append(entity["uuid"])
             entity_type = entity["type"]
-            entity_iri = self.node_iris[entity_type] if entity_type in self.node_iris else self.node_iris["Entity"]
+            entity_iri = SETTINGS.nlp_node_iris.get(entity_type, SETTINGS.nlp_default_node_iri)
 
             formatted_nodes.append(
                 CreateNodeInput(
@@ -82,7 +61,7 @@ class NlpOmsPublisher(OmsPublisher):
                     name=REPORT_NODE_NAME,
                     tier=ObjectTier.DERIVATIVE,
                     tags=SETTINGS.nlp_tags,
-                    classIri=self.node_iris["Document"],
+                    classIri=SETTINGS.nlp_node_iris["Document"],
                     isNso=True,
                 )
             )
@@ -98,9 +77,7 @@ class NlpOmsPublisher(OmsPublisher):
             second_ent_id = relationship["entities"][1]["uuid"]
             relationship_type = relationship["type"]
             relationship_iri = (
-                self.relationship_iris[relationship_type]
-                if relationship_type in self.relationship_iris
-                else self.relationship_iris["Relates_To"]
+                SETTINGS.nlp_relationship_iris.get(relationship_type, SETTINGS.nlp_default_relationship_iri)
             )
 
             if first_ent_id in self.node_id_mapping and second_ent_id in self.node_id_mapping:
@@ -129,13 +106,13 @@ class NlpOmsPublisher(OmsPublisher):
                 # Format and publish the document relationship
                 formatted_relationships.append(
                     CreateRelationshipInput(
-                        name=self.relationship_iris[rel_type],
+                        name=SETTINGS.nlp_relationship_iris[rel_type],
                         startNodeId=self.node_id_mapping[doc_id],
                         endNodeId=self.node_id_mapping[ent_id],
                         sourceId=self.source_id,
                         confidence=Confidence.UNKNOWN,
                         acm=self.acm,
-                        objectPropertyIri=self.relationship_iris[rel_type],
+                        objectPropertyIri=SETTINGS.nlp_relationship_iris[rel_type],
                         tags=SETTINGS.nlp_tags,
                     )
                 )
@@ -151,7 +128,7 @@ class NlpOmsPublisher(OmsPublisher):
             if entity_id in self.node_id_mapping:
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["Text"],
+                        attributeIri=SETTINGS.text_iri,
                         attributeValue=entity["value"],
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
@@ -172,7 +149,7 @@ class NlpOmsPublisher(OmsPublisher):
                 url_value = source.uri or NO_URL_VALUE
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["URL"],
+                        attributeIri=SETTINGS.url_iri,
                         attributeValue=url_value,
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
@@ -187,7 +164,7 @@ class NlpOmsPublisher(OmsPublisher):
                 identifier_value = source.identifier or NO_IDENTIFIER_VALUE
                 formatted_attributes.append(
                     CreateAttributeInput(
-                        attributeIri=self.attribute_iris["Identifier"],
+                        attributeIri=SETTINGS.identifier_iri,
                         attributeValue=identifier_value,
                         attributeType=AttributeType.STRING,
                         confidence=Confidence.UNKNOWN,
