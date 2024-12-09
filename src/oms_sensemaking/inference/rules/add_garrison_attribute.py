@@ -1,12 +1,14 @@
+import math
+
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
 )
 from oms_sdk.generated.generated_graphql_client.input_types import (
     AttributeQuery,
+    CreateAttributeInput,
     NodeQuery,
     NodeRelationshipQuery,
     NodeRelationshipSubQuery,
-    CreateAttributeInput,
     StringQuery,
 )
 
@@ -14,7 +16,7 @@ from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-import math
+
 
 class AddGarrisonAttribute(BaseRule):
     """
@@ -44,15 +46,15 @@ class AddGarrisonAttribute(BaseRule):
             and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
             and input.attribute.attributeValue
         )
-    
+
         # Everything below won't run
         return (
             input.attribute
             and input.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
             and input.attribute.attributeValue
         )
-    
-    def compare_geo(geojson1, geojson2): 
+
+    def compare_geo(geojson1, geojson2):
         geo_coordinates_1 = geojson1["features"][0]["geometry"]["coordinates"]
         geo_coordinates_2 = geojson2["features"][0]["geometry"]["coordinates"]
 
@@ -62,17 +64,17 @@ class AddGarrisonAttribute(BaseRule):
         # Convert latitude and longitude from degrees to radians
         lat1, lon1 = map(math.radians, geo_coordinates_1)
         lat2, lon2 = map(math.radians, geo_coordinates_2)
-        
+
         # Differences in coordinates
         dlat = lat2 - lat1
         dlon = lon2 - lon1
-        
+
         # Haversine formula
         a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = radius * c
 
-        if(distance < 2000): 
+        if(distance < 2000):
             return "Yes"
         else:
             return "No"
@@ -115,7 +117,7 @@ class AddGarrisonAttribute(BaseRule):
                 )
             ))
 
-            for observational_relationship in nodeRelationshipObservationalResponse: 
+            for observational_relationship in nodeRelationshipObservationalResponse:
                 print("RESPONSE NAME = ", observational_relationship.name)
                 print("RELATED NODE ID'S = ", observational_relationship.relatedNodeIds)
                 filtered_node_ids = [
@@ -124,7 +126,7 @@ class AddGarrisonAttribute(BaseRule):
                 print("FILTERED RELATED NODE IDS = ", filtered_node_ids)
                 tankNode = filtered_node_ids[0]
                 print(tankNode)
-        
+
         # PD Query stands for Primary/Derivative
         nodeRelationshipPDResponse = oms_client.get_relationships(NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
@@ -132,7 +134,7 @@ class AddGarrisonAttribute(BaseRule):
                 relatedNodeIds=[tankNode],
             )
         ))
-        for pd_relationship in nodeRelationshipPDResponse: 
+        for pd_relationship in nodeRelationshipPDResponse:
             print("RESPONSE NAME = ", pd_relationship.name)
             print("RELATED NODE ID'S = ", pd_relationship.relatedNodeIds)
             filtered_node_ids = [
@@ -184,9 +186,9 @@ class AddGarrisonAttribute(BaseRule):
         res = oms_client.get_attributes(attribute_query)
 
         return len(res.data) > 0
-        
+
         # Everything below won't run
-        
+
         attr = input.attribute
         if not attr:
             return False

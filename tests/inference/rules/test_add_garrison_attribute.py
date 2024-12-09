@@ -1,20 +1,18 @@
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
-from oms_sdk.generated.generated_graphql_client.node import NodeNode
-from oms_sdk.generated.generated_graphql_client.relationship import RelationshipRelationship
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence
 from oms_sdk.generated.generated_graphql_client.input_types import (
-    AttributeQuery,
     CreateAttributeInput,
-    StringQuery,
 )
+from oms_sdk.generated.generated_graphql_client.node import NodeNode
+from oms_sdk.generated.generated_graphql_client.relationship import RelationshipRelationship
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
 from oms_sensemaking.inference.rules.add_garrison_attribute import AddGarrisonAttribute
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+
 
 # Sample Attributes
 @pytest.fixture
@@ -122,7 +120,6 @@ def observational_node(mocker: MockerFixture):
     node.geoQuery = "some query"
     node.realrelationships = observational_node_relationship
     node.tier = "OBSERVATIONAL"
-    
 
     return node
 
@@ -177,10 +174,10 @@ def test_action_creates_attribute(mocker: MockerFixture, initial_attr, final_att
         "68e2f92d-125f-42ca-8197-27beda61542f": primary_node,
         "dd7763a6-dad4-46d7-acfa-d23a648eb143": base_node,
     }
-    
+
     def get_nodes_side_effect(query):
         node_id = query.ids[0]
-        return mock_nodes.get(node_id, None)
+        return mock_nodes.get(node_id)
 
     mock_get_nodes.side_effect = get_nodes_side_effect
 
