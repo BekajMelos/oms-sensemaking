@@ -39,15 +39,6 @@ class AddGarrisonAttribute(BaseRule):
             and input.attribute.attributeValue
         )
 
-        # Everything below won't run
-        """
-        return (
-            input.attribute
-            and input.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
-            and input.attribute.attributeValue
-        )
-        """
-
     def action(self, input: RuleContext):
         """
         Create an attribute that indicates if a node is garrisoned at a base or not
@@ -136,26 +127,3 @@ class AddGarrisonAttribute(BaseRule):
         res = oms_client.get_attributes(attribute_query)
 
         return len(res.data) > 0
-
-        # Everything below won't run
-        """
-        attr = input.attribute
-        if not attr:
-            return False
-
-        attribute_query = AttributeQuery(
-            attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
-            attributeValue=StringQuery(equals="true"),
-            attributeType={
-                "is": AttributeType.BOOLEAN,
-            },
-            confidence={"is": (attr.confidence)},
-            sourceId=attr.sourceId,
-            nodeIds=[attr.nodeId],
-            tags=SETTINGS.inference_tags,
-        )
-
-        res = oms_client.get_attributes(attribute_query)
-
-        return len(res.data) > 0
-        """
