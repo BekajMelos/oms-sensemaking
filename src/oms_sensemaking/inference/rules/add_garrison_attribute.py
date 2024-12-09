@@ -14,6 +14,7 @@ from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+import math
 
 class AddGarrisonAttribute(BaseRule):
     """
@@ -51,16 +52,30 @@ class AddGarrisonAttribute(BaseRule):
             and input.attribute.attributeValue
         )
     
-    def geo_compare(geojson1, geojson2): 
-        print("*******GEO COMPARE********")
-        print(geojson1)
-        print(geojson2)
+    def compare_geo(geojson1, geojson2): 
         geo_coordinates_1 = geojson1["features"][0]["geometry"]["coordinates"]
         geo_coordinates_2 = geojson2["features"][0]["geometry"]["coordinates"]
-        print(geo_coordinates_1)
-        print(geo_coordinates_2)
 
-        return "Yes"
+        # Radius of Earth in km
+        radius = 6371.0
+
+        # Convert latitude and longitude from degrees to radians
+        lat1, lon1 = map(math.radians, geo_coordinates_1)
+        lat2, lon2 = map(math.radians, geo_coordinates_2)
+        
+        # Differences in coordinates
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        # Haversine formula
+        a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance = radius * c
+
+        if(distance < 2000): 
+            return "Yes"
+        else:
+            return "No"
 
     def action(self, input: RuleContext):
         """
@@ -132,7 +147,7 @@ class AddGarrisonAttribute(BaseRule):
         ))
 
         new_attribute_geolocation = finalAttributeResponse.geo
-        finalAttributeValue = AddGarrisonAttribute.geo_compare(base_attribute_geolocation, new_attribute_geolocation)
+        finalAttributeValue = AddGarrisonAttribute.compare_geo(base_attribute_geolocation, new_attribute_geolocation)
 
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
