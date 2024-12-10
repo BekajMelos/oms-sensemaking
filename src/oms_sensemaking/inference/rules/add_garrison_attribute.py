@@ -98,7 +98,8 @@ class AddOutOfGarrisonAttribute(BaseRule):
             confidence=attr.confidence,
             sourceId=attr.sourceId,
             acm=attr.acm,
-            isMutable=False
+            isMutable=False,
+            tags=SETTINGS.inference_tags
         )
         oms_client.create_attribute(attribute_out_of_garrison)
 

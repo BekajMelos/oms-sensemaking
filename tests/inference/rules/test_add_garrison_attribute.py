@@ -222,6 +222,7 @@ def test_action_creates_attribute(mocker: MockerFixture,
             confidence=initial_attr.confidence,
             sourceId=initial_attr.sourceId,
             acm=initial_attr.acm,
-            isMutable=False
+            isMutable=False,
+            tags=SETTINGS.inference_tags
         )
     )
