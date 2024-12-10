@@ -30,7 +30,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
     def evaluate(self, input: RuleContext) -> bool:
         """
-        Determine if the Attribute is a geo attribute for a node
+        Determine if the Attribute has a geo
         """
         return (
             input.attribute.geo

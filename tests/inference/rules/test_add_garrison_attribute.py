@@ -156,7 +156,7 @@ def base_node(mocker: MockerFixture):
 
 # Tests
 def test_evaluate_input(initial_attr):
-    """Test to verify we only run the rule against attributes"""
+    """Test to verify the attribute has a geo"""
     rule = AddOutOfGarrisonAttribute("some name")
     assert rule.evaluate(RuleContext(attribute=initial_attr)) is True
 
