@@ -1,4 +1,5 @@
 
+from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
 )
@@ -14,7 +15,6 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
-from oms_sensemaking.inference.rules.helper import Helper
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
@@ -43,7 +43,6 @@ class AddOutOfGarrisonAttribute(BaseRule):
         """
         Create an attribute that indicates if a node is garrisoned at a base or not
         """
-        helper = Helper()
         attr = input.attribute
 
         if attr.geo is None:
@@ -89,7 +88,13 @@ class AddOutOfGarrisonAttribute(BaseRule):
         ))
 
         new_attribute_geolocation = final_attribute_response.geo
-        final_attribute_value = helper.compare_geo(base_attribute_geolocation, new_attribute_geolocation)
+        geo_coordinates_1 = base_attribute_geolocation["features"][0]["geometry"]["coordinates"]
+        geo_coordinates_2 = new_attribute_geolocation["features"][0]["geometry"]["coordinates"]
+
+        # Library to calculate distances between coordinates
+        distance = geodesic(geo_coordinates_1, geo_coordinates_2).kilometers
+
+        final_attribute_value = "Yes" if distance < 2000 else "No"
 
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
