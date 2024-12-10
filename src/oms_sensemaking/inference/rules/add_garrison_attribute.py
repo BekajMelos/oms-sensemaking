@@ -45,8 +45,12 @@ class AddOutOfGarrisonAttribute(BaseRule):
         """
         attr = input.attribute
 
-        if attr.geo is None:
-            return
+        try:
+            if attr.geo is None:
+                raise AttributeError("The attribute does not have a geo")
+        except AttributeError as e:
+            # Need some clarification on how we want to handle scenarios where attributes don't have geos
+            print(f"Error: {e}")
 
         base_attribute_geolocation = attr.geo
 
@@ -96,7 +100,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
         final_attribute_value = "Yes" if distance < SETTINGS.garrison_distance_kilometers else "No"
 
-        attribute = CreateAttributeInput(
+        attribute_out_of_garrison = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
             attributeValue=final_attribute_value,
             attributeType=AttributeType.STRING,
@@ -105,7 +109,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
             acm=attr.acm,
             isMutable=False
         )
-        oms_client.create_attribute(attribute)
+        oms_client.create_attribute(attribute_out_of_garrison)
 
     def has_action_already_ran(self, input: RuleContext):
         """
