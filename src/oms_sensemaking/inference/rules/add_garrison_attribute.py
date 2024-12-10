@@ -91,10 +91,10 @@ class AddOutOfGarrisonAttribute(BaseRule):
         geo_coordinates_1 = base_attribute_geolocation["features"][0]["geometry"]["coordinates"]
         geo_coordinates_2 = new_attribute_geolocation["features"][0]["geometry"]["coordinates"]
 
-        # Library to calculate distances between coordinates
+        # Library to calculate distances between coordinates in kilometers
         distance = geodesic(geo_coordinates_1, geo_coordinates_2).kilometers
 
-        final_attribute_value = "Yes" if distance < 2000 else "No"
+        final_attribute_value = "Yes" if distance < SETTINGS.garrison_distance_kilometers else "No"
 
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
