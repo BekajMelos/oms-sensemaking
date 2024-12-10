@@ -55,19 +55,6 @@ Run and listen for events from SQS::
     $ python -m oms_sensemaking geo
 
 
-Natural Language Processing CLI
-===============================
-
-| **WARNING**: Not fully implemented
-
-```
-$python -m oms_sensemaking nlp -h
-usage: oms_sensemaking nlp [-h]
-
-options:
-  -h, --help  show this help message and exit
-```
-
 Semantic CLI
 ============
 
@@ -92,12 +79,8 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
-from oms_sensemaking.nlp.nlp_reader import NlpFileReader
-
 load_dotenv()
 
-from oms_sdk import DEFAULT_ACM
 
 from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.controllers import start_controller_and_wait
@@ -216,21 +199,6 @@ def run_geospatial(args: Namespace) -> None:
     start_controller_and_wait(geo)
 
 
-def run_nlp(args: Namespace) -> None:
-    """Run the NLP algorithms."""
-    # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.nlp.nlp_service import NlpService
-
-    nlp_service = NlpService()
-    nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_service(
-        acm=DEFAULT_ACM,
-        nlp_reader=nlp_reader,
-        source_id=args.source_id,
-        corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
-    )
-
-
 def run_semantic() -> None:
     """Run the semantic algorithms."""
     # lazy load controller to allow CLI args to override app config
@@ -255,12 +223,6 @@ def get_cli_parser() -> ArgumentParser:
         add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
     geo_parser.set_defaults(func=run_geospatial)
-
-    # natural language processing subcommand
-    nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
-    nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
-    nlp_parser.add_argument("-id", "--source-id", type=str, help="Source ID of the text.")
-    nlp_parser.set_defaults(func=run_nlp)
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
     semantic_parser.set_defaults(func=lambda args: run_semantic())
