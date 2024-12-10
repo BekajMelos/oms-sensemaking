@@ -18,7 +18,7 @@ from oms_sensemaking.inference.rules.helper import Helper
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
-class AddGarrisonAttribute(BaseRule):
+class AddOutOfGarrisonAttribute(BaseRule):
     """
     Detect when a node has a geolocation attribute,
     when a node has a geolocation attribute, compare it to garrison and add/update a new OutOfGarrison attribute

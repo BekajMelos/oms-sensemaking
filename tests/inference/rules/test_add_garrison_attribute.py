@@ -10,7 +10,7 @@ from oms_sdk.generated.generated_graphql_client.relationship import Relationship
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.rules.add_garrison_attribute import AddGarrisonAttribute
+from oms_sensemaking.inference.rules.add_garrison_attribute import AddOutOfGarrisonAttribute
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
@@ -156,7 +156,7 @@ def base_node(mocker: MockerFixture):
 
 def test_evaluate_none_input():
     """Test to verify we only run the rule against attributes"""
-    rule = AddGarrisonAttribute("some name")
+    rule = AddOutOfGarrisonAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
 def test_action_creates_attribute(mocker: MockerFixture,
@@ -211,7 +211,7 @@ def test_action_creates_attribute(mocker: MockerFixture,
 
     mock_get_relationships.side_effect = get_relationships_side_effect
 
-    rule = AddGarrisonAttribute("some name")
+    rule = AddOutOfGarrisonAttribute("some name")
     rule.action(RuleContext(attribute=initial_attr))
     mock.assert_called_once_with(
         CreateAttributeInput(
