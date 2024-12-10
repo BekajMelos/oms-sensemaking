@@ -98,7 +98,7 @@ class AddGarrisonAttribute(BaseRule):
             confidence=attr.confidence,
             sourceId=attr.sourceId,
             acm=attr.acm,
-            isMutable="false"
+            isMutable=False
         )
         oms_client.create_attribute(attribute)
 
