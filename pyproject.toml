@@ -96,7 +96,8 @@ plugins = 'pydantic.mypy'
 minversion = '8.2'
 addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
 testpaths = [
-    'tests'
+    'tests',
+    'tests_int'
 ]
 #log_cli = True
 required_plugins = [
