@@ -32,11 +32,9 @@ class AddOutOfGarrisonAttribute(BaseRule):
         """
         Determine if the Attribute is a geo attribute for a node
         """
-
         return (
-            input.attribute
+            input.attribute.geo
             and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
-            and input.attribute.attributeValue
         )
 
     def action(self, input: RuleContext):
@@ -44,13 +42,6 @@ class AddOutOfGarrisonAttribute(BaseRule):
         Create an attribute that indicates if a node is garrisoned at a base or not
         """
         attr = input.attribute
-
-        try:
-            if attr.geo is None:
-                raise AttributeError("The attribute does not have a geo")
-        except AttributeError as e:
-            # Need some clarification on how we want to handle scenarios where attributes don't have geos
-            print(f"Error: {e}")
 
         base_attribute_geolocation = attr.geo
 

@@ -154,10 +154,11 @@ def base_node(mocker: MockerFixture):
 
     return node
 
-def test_evaluate_none_input():
+# Tests
+def test_evaluate_input(initial_attr):
     """Test to verify we only run the rule against attributes"""
     rule = AddOutOfGarrisonAttribute("some name")
-    assert not rule.evaluate(RuleContext()), "should only run for attributes"
+    assert rule.evaluate(RuleContext(attribute=initial_attr)) is True
 
 def test_action_creates_attribute(mocker: MockerFixture,
                                   initial_attr,
