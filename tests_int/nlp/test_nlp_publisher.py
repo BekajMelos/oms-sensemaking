@@ -5,7 +5,7 @@ from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
-from tests.nlp.mock_findings import empty_findings, large_findings
+from tests_int.nlp.mock_findings import empty_findings, large_findings
 
 
 @pytest.fixture
@@ -16,7 +16,8 @@ def mock_db(db: Session) -> Iterator[Session]:
 @pytest.fixture
 def nlp_publisher(mock_source, mock_oms_client, oms_crud_tool):
     publisher = NlpOmsPublisher(
-        source_id=mock_source.id, acm=DEFAULT_ACM, oms_client=mock_oms_client, oms_crud_tool=oms_crud_tool)
+        source_id=mock_source.id, acm=DEFAULT_ACM, oms_client=mock_oms_client, oms_crud_tool=oms_crud_tool
+    )
     yield publisher
 
 
