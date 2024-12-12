@@ -15,7 +15,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput, IdQuery
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
@@ -143,11 +143,7 @@ class LoiterOmsPublisher(OmsPublisher):
                     confidence=Confidence.HIGH.value,
                     tags=tags,
                     sourceId=source_id,
-                    geo=GeoInput(
-                        geoJson=loiter.to_geojson(),
-                        startTime=loiter.start_time,
-                        endTime=loiter.end_time
-                        ),
+                    geometry=loiter.to_geojson(),
                     nodeId=event_node.id,
                     acm=loiter.acm,
                     valueStart=loiter.start_time,

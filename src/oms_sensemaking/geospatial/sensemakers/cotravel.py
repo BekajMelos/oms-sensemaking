@@ -16,7 +16,6 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, select
 from sqlalchemy.orm import with_expression
@@ -224,11 +223,7 @@ class CotravelOmsPublisher(OmsPublisher):
                     confidence=Confidence.HIGH,
                     tags=tags,
                     sourceId=source_id,
-                    geo=GeoInput(
-                        geoJson=cotravel.to_geojson(),
-                        startTime=cotravel.start_time,
-                        endTime=cotravel.last_time
-                        ),
+                    geometry=cotravel.to_geojson(),
                     nodeId=event_node.id,
                     acm=event_node.acm,
                     valueStart=cotravel.start_time,
