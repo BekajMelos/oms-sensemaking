@@ -12,6 +12,7 @@ import httpx
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client import (
+    Client,
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
     CreateNodeCreateNode,
@@ -19,7 +20,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
 )
-from oms_sdk.generated.generated_graphql_client.client import Client
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -52,37 +52,33 @@ class SensemakerPublisher(ABC):
         super().__init__()
 
     @abstractmethod
-    def publish(self, *args, **kwargs) -> None:
+    def publish(self, data: Any, results: Any) -> Any:
         """Publish output to OMS"""
         raise NotImplementedError
 
 
 class NoOpPublisher(SensemakerPublisher):
-    def publish(self, *args, **kwargs) -> None:
+    def publish(self, data: Any, results: Any) -> Any:
         """Don't do anything"""
         pass
 
 
 class OmsPublisher(SensemakerPublisher):
+
     def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
         self.oms_client = oms_client  # TODO: Replace with crud tool for all uses
         self.oms_crud_tool = oms_crud_tool
-        self.node_uuid_list = []  # in-order list of unpublished node IDs
+        self.node_uuid_list: List[str] = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
-    def publish(
-        self, data, results
-    ) -> tuple[list[CreateNodeCreateNode],
-               list[CreateRelationshipCreateRelationship],
-               list[CreateAttributeCreateAttribute]]:
+    def publish(self, data: Any, results: Any) -> None:
         self.node_uuid_list = [] # Make sure old lists doesn't persist between publishes
         self.node_id_mapping = {} # Make sure old mappings don't persist between publishes
-        published_nodes = self.publish_nodes(self.format_nodes(data, results))
-        published_relationships = self.publish_relationships(self.format_relationships(data, results))
-        published_attributes = self.publish_attributes(self.format_attributes(data, results))
-        return published_nodes, published_relationships, published_attributes
+        self.publish_nodes(self.format_nodes(data, results))
+        self.publish_relationships(self.format_relationships(data, results))
+        self.publish_attributes(self.format_attributes(data, results))
 
     def format_nodes(self, data, results) -> list[CreateNodeInput]:
         raise NotImplementedError

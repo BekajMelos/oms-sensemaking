@@ -2,7 +2,7 @@
 
 import random
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import shapely
@@ -73,8 +73,7 @@ def get_random_emirates_stadium_point() -> str:
 
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
-
-def test_loiter_success(mock_oms_client, db, oms_crud_tool):
+def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
     """Simple success track."""
     node_id = uuid4()
     # East London
@@ -116,7 +115,7 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
         return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
 
     assert len(loiters) == 1
     loiter: Loiter = loiters[0]
@@ -133,13 +132,12 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     mock_oms_client.create_node.assert_called_with(
         CreateNodeInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
@@ -150,7 +148,7 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id,
             endNodeId=node_id,
             confidence=Confidence.HIGH,
@@ -193,7 +191,7 @@ def test_loiter_success(mock_oms_client, db, oms_crud_tool):
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-def test_loiter_invalid_not_long_enough(mock_oms_client, db, oms_crud_tool):
+def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
     # East London
@@ -222,11 +220,11 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, oms_crud_tool):
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
-def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
+def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_tool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
     # East London
@@ -262,11 +260,11 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
-def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, db, oms_crud_tool):
+def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
 
@@ -312,7 +310,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -328,13 +326,12 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     mock_oms_client.create_node.assert_called_with(
         CreateNodeInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
@@ -344,7 +341,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id,
             endNodeId=track.node_id,
             confidence=Confidence.HIGH,
@@ -386,8 +383,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_tool):
+@patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client")
+def test_loiter_success_multiple_in_same_geohash(mock_oms_client_getter, mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in the same geohash."""
+    mock_oms_client_getter.return_value = mock_oms_client
     node_id = uuid4()
     # East London
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
@@ -449,7 +448,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
@@ -478,14 +477,13 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     assert mock_oms_client.create_node.call_count == 2
     mock_oms_client.create_node.assert_any_call(
         CreateNodeInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
@@ -497,7 +495,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id1,
             endNodeId=track.node_id,
             confidence=Confidence.HIGH,
@@ -509,7 +507,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id2,
             endNodeId=track.node_id,
             confidence=Confidence.HIGH,
@@ -574,8 +572,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, oms_crud_t
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_crud_tool):
+@patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client")
+def test_loiter_success_multiple_in_different_geohash(mock_oms_client_getter, mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in different geohashes."""
+    mock_oms_client_getter.return_value = mock_oms_client
     node_id = uuid4()
     # East London
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
@@ -637,7 +637,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
     assert len(loiters) == 2
 
     loiter1: Loiter = loiters[0]
@@ -666,14 +666,13 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    event_name = SETTINGS.loiter_event_name + '-' + str(track.node_id)
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
     assert mock_oms_client.create_node.call_count == 2
     mock_oms_client.create_node.assert_any_call(
         CreateNodeInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
             classIri=SETTINGS.loiter_event_node_iri,
@@ -685,7 +684,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id1,
             endNodeId=track.node_id,
             confidence=Confidence.HIGH,
@@ -697,7 +696,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, oms_c
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            name=event_name,
+            name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id2,
             endNodeId=track.node_id,
             confidence=Confidence.HIGH,
