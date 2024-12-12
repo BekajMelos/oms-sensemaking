@@ -27,6 +27,7 @@ from oms_sensemaking.core.events import (
     ObjectType,
     SQSListener,
 )
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
@@ -112,14 +113,15 @@ class GeospatialSensemakerController(SensemakerController):
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
+        self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client))
+            self.register("cotravel", CotravelSensemaker(self.oms_client, self.oms_crud_tool))
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client))
+            self.register("loiter", LoiterSensemaker(self.oms_client, self.oms_crud_tool))
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())

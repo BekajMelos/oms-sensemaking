@@ -157,7 +157,7 @@ class Colocation:
 
 class CotravelOmsPublisher(OmsPublisher):
 
-    def publish(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> None:
+    def publish(self, track: Track, cotravels: List[Cotravel]) -> None:
         """
         Write cotravel events to OMSB
 
