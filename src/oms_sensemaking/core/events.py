@@ -50,7 +50,7 @@ class ObjectEvent:
         return ObjectEvent(
             str(data.get("userDn")),
             UUID(data.get("objectId", "")),
-            ObjectType(data.get("objectType", "ATTRIBUTE")),
+            ObjectType(data.get("objectType", "OBSERVATION")),
             Action(data.get("eventType", ""))
         )
 
