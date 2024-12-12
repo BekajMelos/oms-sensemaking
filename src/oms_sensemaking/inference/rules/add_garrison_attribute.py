@@ -1,4 +1,3 @@
-
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
@@ -42,14 +41,16 @@ class AddOutOfGarrisonAttribute(BaseRule):
         Create an attribute that indicates if a node is garrisoned at a base or not
         """
         attr = input.attribute
-
+        # Extracts the initial attribute coordinates
         base_attribute_geolocation = attr.geo
 
+        # Runs a query to get the affiliated node
         node_response = oms_client.get_nodes(NodeQuery(
             ids=[attr.nodeId]
         ))
-        tank_node = attr.nodeId
+        dynamic_node = attr.nodeId
 
+        # Check if the node is an Observational Node
         if(node_response.tier == "OBSERVATIONAL"):
             node_relationship_observational_response = oms_client.get_relationships(NodeRelationshipQuery(
                 hasMatch=NodeRelationshipSubQuery(
@@ -57,31 +58,34 @@ class AddOutOfGarrisonAttribute(BaseRule):
                     relatedNodeIds=[attr.nodeId]
                 )
             ))
-
+            # Gets the nodes that are related nodes from the Relationship Query
             for observational_relationship in node_relationship_observational_response:
                 filtered_node_ids = [
                      node_id for node_id in observational_relationship.relatedNodeIds if node_id != attr.nodeId
                      ]
-                tank_node = filtered_node_ids[0]
+                dynamic_node = filtered_node_ids[0]
 
-        # PD Query stands for Primary/Derivative
+        # Runs a query on the PD (Primary/Derivative) Node
         node_relationship_pd_response = oms_client.get_relationships(NodeRelationshipQuery(
             hasMatch=NodeRelationshipSubQuery(
                 objectPropertyIris=[SETTINGS.inference_garrison_location_iri],
-                relatedNodeIds=[tank_node],
+                relatedNodeIds=[dynamic_node],
             )
         ))
+        # Gets the nodes that are related nodes from the Relationship Query
         for pd_relationship in node_relationship_pd_response:
             filtered_node_ids = [
-                node_id for node_id in pd_relationship.relatedNodeIds if node_id != tank_node
+                node_id for node_id in pd_relationship.relatedNodeIds if node_id != dynamic_node
                 ]
             garrison_node = filtered_node_ids[0]
 
+        # Runs an Attribute Query to get the related Attribute
         final_attribute_response = oms_client.get_attributes(AttributeQuery(
             attributeIris=[SETTINGS.inference_garrison_location_iri],
             nodeId=garrison_node
         ))
 
+        # Extracts the new attribute coordinates
         new_attribute_geolocation = final_attribute_response.geo
         geo_coordinates_1 = base_attribute_geolocation["features"][0]["geometry"]["coordinates"]
         geo_coordinates_2 = new_attribute_geolocation["features"][0]["geometry"]["coordinates"]
@@ -89,8 +93,10 @@ class AddOutOfGarrisonAttribute(BaseRule):
         # Library to calculate distances between coordinates in kilometers
         distance = geodesic(geo_coordinates_1, geo_coordinates_2).kilometers
 
+        # Checks if the distance between coordinates is smaller than the requested distance 
         final_attribute_value = "Yes" if distance < SETTINGS.garrison_distance_kilometers else "No"
 
+        # Creates a new attribute with the correct Attribute Value 
         attribute_out_of_garrison = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
             attributeValue=final_attribute_value,
@@ -113,7 +119,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
             return False
 
         attribute_query = AttributeQuery(
-            attributeIri=SETTINGS.inference_add_garrison_attribute_meta_data_iri,
+            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
             attributeValue=StringQuery(equals="Yes"), # Yes or No, will check if this works
             attributeType={
                 "is": AttributeType.STRING,

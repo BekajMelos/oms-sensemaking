@@ -28,7 +28,7 @@ def initial_attr(mocker: MockerFixture):
     attr.attributeValue = "Initial Attribute"
     attr.attributeType = AttributeType.BOOLEAN
     attr.confidence = Confidence.MODERATE
-    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd" # Dunno what this is
+    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "0cc17447-b1f8-48e8-ae30-f9031f250b5d" # Observational Node
     attr.geo = {
         "type": "FeatureCollection",
@@ -59,7 +59,7 @@ def final_attr(mocker: MockerFixture):
     attr.attributeValue = "some attr name"
     attr.attributeType = AttributeType.BOOLEAN
     attr.confidence = Confidence.MODERATE
-    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd" # Dunno what this is
+    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "dd7763a6-dad4-46d7-acfa-d23a648eb143" # Base Node
     attr.geo = {
         "type": "FeatureCollection",
