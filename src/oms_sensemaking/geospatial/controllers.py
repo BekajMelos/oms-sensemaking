@@ -65,7 +65,7 @@ class GeoSQSListener(SQSListener):
                         VisibilityTimeout=0,
                         WaitTimeSeconds=0,
                     )
-                    LOGGER.info(f"Response: {response["Messages"]}")
+                    # LOGGER.info(f"Response: {response}")
                 except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
                     LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
                     break
@@ -77,6 +77,7 @@ class GeoSQSListener(SQSListener):
 
                 for message in response["Messages"]:
                     LOGGER.info("CHECKING MESSAGE!")
+                    LOGGER.info(message)
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     # ignore if not the right type of event
