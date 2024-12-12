@@ -28,6 +28,7 @@ from oms_sensemaking.core.events import (
     ObjectType,
     SQSListener,
 )
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
@@ -64,6 +65,7 @@ class GeoSQSListener(SQSListener):
                         VisibilityTimeout=0,
                         WaitTimeSeconds=0,
                     )
+                    LOGGER.info(f"Response: {response["Messages"]}")
                 except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
                     LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
                     break
@@ -74,6 +76,7 @@ class GeoSQSListener(SQSListener):
                     continue
 
                 for message in response["Messages"]:
+                    LOGGER.info("CHECKING MESSAGE!")
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     # ignore if not the right type of event
@@ -113,14 +116,15 @@ class GeospatialSensemakerController(SensemakerController):
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
+        self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client))
+            self.register("cotravel", CotravelSensemaker(self.oms_client, self.oms_crud_tool))
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client))
+            self.register("loiter", LoiterSensemaker(self.oms_client, self.oms_crud_tool))
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
@@ -173,10 +177,10 @@ class GeospatialSensemakerController(SensemakerController):
                 db.expire_on_commit = False
                 point, is_new = Point.get_or_create(db, defaults=dict(
                     acm=oms_obs.acm,
-                    location=(f'Point({oms_obs.geometry.geoJson["coordinates"][0]} '
-                                f'{oms_obs.geometry.geoJson["coordinates"][1]})'),
+                    location=(f'Point({oms_obs.geometry["coordinates"][0]} '
+                                f'{oms_obs.geometry["coordinates"][1]})'),
                     altitude=None,  # TODO include this
-                    detection_time=isoparse(oms_obs.geometry.startTime).replace(tzinfo=timezone.utc),
+                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                     node_version=int(oms_obs.node.version),
                     attribute_version=int(oms_obs.version)
                 ), node_id=track_node.id, attribute_id=oms_obs.id, source_id=oms_obs.sourceId)
