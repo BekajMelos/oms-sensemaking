@@ -269,7 +269,7 @@ class GeospatialSensemakerController(SensemakerController):
             return None
 
         # TODO: check this is right?
-        if oms_obs.geometry.geoJson["type"].lower() != "point":
+        if oms_obs.geometry["type"].lower() != "point":
             return None
 
         return oms_obs
@@ -293,7 +293,7 @@ class GeospatialSensemakerController(SensemakerController):
         if oms_attr.attributeType != AttributeType.SPATIOTEMPORAL.value:
             return None
 
-        if oms_attr.geo.geoJson["type"].lower() != "point":
+        if oms_attr.geometry["type"].lower() != "point":
             return None
 
         return oms_attr
