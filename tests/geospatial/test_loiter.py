@@ -73,7 +73,6 @@ def get_random_emirates_stadium_point() -> str:
 
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
-
 def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
     """Simple success track."""
     node_id = uuid4()

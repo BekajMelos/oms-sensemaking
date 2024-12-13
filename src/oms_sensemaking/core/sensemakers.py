@@ -51,13 +51,13 @@ class SensemakerPublisher(ABC):
         super().__init__()
 
     @abstractmethod
-    def publish(self, data: Any, results: Any) -> None:
+    def publish(self, data: Any, results: Any) -> Any:
         """Publish output to OMS"""
         raise NotImplementedError
 
 
 class NoOpPublisher(SensemakerPublisher):
-    def publish(self, data: Any, results: Any) -> None:
+    def publish(self, data: Any, results: Any) -> Any:
         """Don't do anything"""
         pass
 
@@ -70,17 +70,12 @@ class OmsPublisher(SensemakerPublisher):
         self.node_uuid_list: List[str] = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
-    def publish(
-        self, data, results
-    ) -> tuple[list[CreateNodeCreateNode],
-               list[CreateRelationshipCreateRelationship],
-               list[CreateAttributeCreateAttribute]]:
+    def publish(self, data: Any, results: Any) -> None:
         self.node_uuid_list = [] # Make sure old lists doesn't persist between publishes
         self.node_id_mapping = {} # Make sure old mappings don't persist between publishes
-        published_nodes = self.publish_nodes(self.format_nodes(data, results))
-        published_relationships = self.publish_relationships(self.format_relationships(data, results))
-        published_attributes = self.publish_attributes(self.format_attributes(data, results))
-        return published_nodes, published_relationships, published_attributes
+        self.publish_nodes(self.format_nodes(data, results))
+        self.publish_relationships(self.format_relationships(data, results))
+        self.publish_attributes(self.format_attributes(data, results))
 
     def format_nodes(self, data, results) -> list[CreateNodeInput]:
         raise NotImplementedError

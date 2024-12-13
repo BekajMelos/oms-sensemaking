@@ -157,7 +157,7 @@ class Colocation:
 
 class CotravelOmsPublisher(OmsPublisher):
 
-    def format_nodes(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> list[CreateNodeInput]:
+    def format_nodes(self, track: Track, cotravels: List[Cotravel]) -> list[CreateNodeInput]:
         """
         Format Node Objects to publish to OMS
 

@@ -25,5 +25,5 @@ ALTER SYSTEM SET ssl_key_file TO '/var/lib/postgresql/server.key';
 ALTER SYSTEM SET ssl TO 'ON';
 EOF
 else
-  echo "Both service /opt/pki/server.public and /opt/pki/server.private are required for SSL" 1>&2;
+  echo "Both service /opt/common/pki/server.public and /opt/common/pki/server.private are required for SSL" 1>&2;
 fi
