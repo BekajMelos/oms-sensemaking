@@ -10,7 +10,9 @@ from uuid import UUID
 
 from botocore.exceptions import BotoCoreError
 from dateutil.parser import isoparse
+from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
@@ -106,6 +108,9 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
+        self.oms_client: Client = get_generated_graphql_client(
+            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
+        )
         self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
