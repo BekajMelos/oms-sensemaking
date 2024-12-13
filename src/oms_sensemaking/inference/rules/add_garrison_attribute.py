@@ -98,7 +98,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
         # Creates a new attribute with the correct Attribute Value 
         attribute_out_of_garrison = CreateAttributeInput(
-            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
+            attributeIri=SETTINGS.inference_add_in_garrison_iri,
             attributeValue=final_attribute_value,
             attributeType=AttributeType.STRING,
             confidence=attr.confidence,
@@ -119,7 +119,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
             return False
 
         attribute_query = AttributeQuery(
-            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
+            attributeIri=SETTINGS.inference_add_in_garrison_iri,
             attributeValue=StringQuery(equals="Yes"), # Yes or No, will check if this works
             attributeType={
                 "is": AttributeType.STRING,

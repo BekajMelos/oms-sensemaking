@@ -216,7 +216,7 @@ def test_action_creates_attribute(mocker: MockerFixture,
     rule.action(RuleContext(attribute=initial_attr))
     mock.assert_called_once_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_add_is_garrison_at_iri,
+            attributeIri=SETTINGS.inference_add_in_garrison_iri,
             attributeValue="Yes",
             attributeType=AttributeType.STRING,
             confidence=initial_attr.confidence,

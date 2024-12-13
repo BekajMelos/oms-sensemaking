@@ -127,7 +127,7 @@ class Settings(BaseSettings):
     inference_garrison_location_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/garrisonedLocation", description="IRI for garrisoned at (Primary/Derivative)"
     )
-    inference_add_is_garrison_at_iri: str = Field(
+    inference_add_in_garrison_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"
     )
     garrison_distance_kilometers: int = 2000
