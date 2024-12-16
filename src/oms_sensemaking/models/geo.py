@@ -23,7 +23,7 @@ from sqlalchemy.orm import (
 
 from oms_sensemaking.config import SETTINGS
 
-from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
+from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, UtcDateTime
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -91,7 +91,7 @@ class OmsGeoMixin(MappedAsDataclass):
         }
 
 
-class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
+class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
     """
     Represents a geolocation in OMS.
 
@@ -104,8 +104,8 @@ class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, Audit
     - detection_time
     - node_id
     - node_version
-    - attribute_id
-    - attribute_version
+    - observation_id
+    - observation_version
     """
 
     __tablename__: str = 'points'
