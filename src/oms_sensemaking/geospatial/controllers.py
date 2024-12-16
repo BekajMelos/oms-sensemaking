@@ -29,8 +29,8 @@ from oms_sensemaking.core.events import (
     SQSListener,
 )
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker
+from oms_sensemaking.models.geo import Point, Track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class GeoSQSListener(SQSListener):
                     continue
 
                 for message in response["Messages"]:
-                    LOGGER.info(message)
+                    # LOGGER.info(message)
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     # ignore if not the right type of event
@@ -111,6 +111,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
+        self.track: dict[UUID, Optional[list[Point]]] = {}
 
         #: OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(
@@ -126,8 +127,8 @@ class GeospatialSensemakerController(SensemakerController):
         if SETTINGS.detect_loiters:
             self.register("loiter", LoiterSensemaker(self.oms_client, self.oms_crud_tool))
 
-        if SETTINGS.similar_tracks:
-            self.register("similar_tracks", SimilarTracksSensemaker())
+        # if SETTINGS.similar_tracks:
+        #     self.register("similar_tracks", SimilarTracksSensemaker())
 
         self.autoflush_enabled.set()
         self.buffer_autoflush.start()
@@ -166,11 +167,13 @@ class GeospatialSensemakerController(SensemakerController):
 
             # we expect an observation node and a track node. If these don't exist, we can ignore the point.
             if not oms_obs:
+                LOGGER.info("NO OBSERVATION FOUND")
                 return True
 
-            track_node: Optional[NodeNode] = self.get_track_node(oms_obs)
-            if not track_node:
-                return True
+            # track_node: Optional[NodeNode] = self.get_track_node(oms_obs)
+            # if not track_node:
+            #     LOGGER.info("NO TRACK NODE FOUND")
+            #     return True
 
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
@@ -182,20 +185,26 @@ class GeospatialSensemakerController(SensemakerController):
                     altitude=None,  # TODO include this
                     detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                     node_version=int(oms_obs.node.version),
-                    attribute_version=int(oms_obs.version)
-                ), node_id=track_node.id, attribute_id=oms_obs.id, source_id=oms_obs.sourceId)
+                    observation_version=int(oms_obs.version)
+                ), node_id=oms_obs.nodeId, observation_id=oms_obs.id, source_id=oms_obs.sourceId)
 
             if not is_new:
                 if point:
-                    LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
+                    LOGGER.debug("Processing existing point: attribute_id=%s", point.observation_id)
                 else:
                     LOGGER.warning("Unable to process point.")
         else:
             LOGGER.warning("No ObjectEventConsumer found.")
 
         if point:
+            if oms_obs.nodeId in self.track:
+                self.track[oms_obs.nodeId].append(point)
+            else:
+                self.track[oms_obs.nodeId] = [point]
+            # LOGGER.info(f"TRACK: {self.track}")
             with self.lock:
-                self.buffer[point.node_id] = now
+                # LOGGER.info(f"BUFFER: {self.buffer}")
+                self.buffer[oms_obs.nodeId] = now
 
             return True
 
@@ -221,7 +230,11 @@ class GeospatialSensemakerController(SensemakerController):
                     with db_session() as db:
                         try:
                             LOGGER.info(f"Track completed: {node_id}")
-                            track: Track = get_track(db, node_id)
+                            # track: Track = get_track(db, node_id)
+                            track = Track(
+                                points=self.track[node_id],
+                                node_id=node_id
+                            )
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warn(e)
@@ -245,6 +258,7 @@ class GeospatialSensemakerController(SensemakerController):
                         LOGGER.exception("Error encountered while processing %s from buffer", node_id)
                     finally:
                         self.buffer[node_id] = None  # mark for removal
+                        self.track[node_id] = []
                 else:
                     LOGGER.debug("node_id %s is still active in the buffer", node_id)
 
