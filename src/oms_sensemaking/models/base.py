@@ -218,3 +218,38 @@ class OmsAttributeMixin(MappedAsDataclass):
         nullable=False,
         comment='The ID of the source associated with the object.'
     )
+
+class OmsObservationMixin(MappedAsDataclass):
+    """Declare OMS Observation Metadata."""
+
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        comment="The ID of the node associated with the object."
+    )
+
+    node_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment='The version of the node associated with this object.'
+    )
+
+    observation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        comment='The ID of the observation associated with the object.'
+    )
+
+    observation_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment='The version of the observation associated with the object.'
+    )
+
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        comment='The ID of the source associated with the object.'
+    )
