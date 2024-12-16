@@ -26,7 +26,7 @@ if [ "${AWS_ENDPOINT_URL}" ]; then
 fi
 
 OMSB_EVENTS_TOPIC=${OMSB_EVENTS_TOPIC:-"omsbEvents"}
-OMSB_SQS_QUEUES=${OMSB_SQS_QUEUE_CONFIG:-resolutionTrigger,guideTrigger,essTrigger,aorTrigger,geoSensemakerTrigger}
+OMSB_SQS_QUEUES=${OMSB_SQS_QUEUE_CONFIG:-resolutionTrigger,guideTrigger,essTrigger,aorTrigger,geoSensemakerTrigger,attributeTrigger}
 OMSB_TEST_MESSAGE=${OMSB_TEST_MESSAGE}
 
 # Create the SNS Topic
