@@ -266,6 +266,12 @@ class Settings(BaseSettings):
         description="the SQS Geo Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
     )
+    sqs_attribute_sensemaker_queue: str = Field("getAttributeTrigger", description="The attribute sensemaker queue.")
+    sqs_attribute_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/attributeTrigger",
+        description="the SQS Attribute Sensemaker Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/attributeTrigger"]
+    )
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-10", description="OMSB Version")
