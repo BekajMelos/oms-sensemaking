@@ -93,10 +93,10 @@ class AddOutOfGarrisonAttribute(BaseRule):
         # Library to calculate distances between coordinates in kilometers
         distance = geodesic(geo_coordinates_1, geo_coordinates_2).kilometers
 
-        # Checks if the distance between coordinates is smaller than the requested distance 
+        # Checks if the distance between coordinates is smaller than the requested distance
         final_attribute_value = "Yes" if distance < SETTINGS.garrison_distance_kilometers else "No"
 
-        # Creates a new attribute with the correct Attribute Value 
+        # Creates a new attribute with the correct Attribute Value
         attribute_out_of_garrison = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_in_garrison_iri,
             attributeValue=final_attribute_value,
