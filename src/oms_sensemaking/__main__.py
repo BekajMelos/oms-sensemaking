@@ -198,6 +198,16 @@ def run_geospatial(args: Namespace) -> None:
     start_controller_and_wait(geo)
 
 
+def run_attribute() -> None:
+    """Run the attribute algorithms."""
+    # lazy load controller to allow CLI args to override app config
+    from oms_sensemaking.inference.controllers import AttributeSensemakerController, AttributeSQSListener
+
+    attribute: AttributeSensemakerController = AttributeSensemakerController(AttributeSQSListener())
+
+    start_controller_and_wait(attribute)
+
+
 def run_semantic() -> None:
     """Run the semantic algorithms."""
     # lazy load controller to allow CLI args to override app config

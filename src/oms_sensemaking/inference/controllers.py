@@ -1,11 +1,18 @@
 """Attribute sensemaker controller."""
 
 import logging
+from datetime import datetime, timedelta, timezone
 from oms_sensemaking.config import SETTINGS
 from typing import Optional
 from time import sleep
+from threading import Event, Timer
 from botocore.exceptions import BotoCoreError
+from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
+from oms_sensemaking.core.controllers import SensemakerController
+from oms_sdk.generated.generated_graphql_client.client import Client
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from uuid import UUID
 from oms_sensemaking.core.events import (
     EVENT_HANDLER,
     ObjectEvent,
@@ -32,7 +39,7 @@ class AttributeSQSListener(SQSListener):
 
             for _ in range(0, SETTINGS.sqs_read_loops):
                 if self.stopped.is_set():
-                    LOGGER.debug("Shutting down GeoSQSListener")
+                    LOGGER.debug("Shutting down AttributeSQSListener")
                     break
 
                 # Receive message from SQS queue
@@ -62,6 +69,7 @@ class AttributeSQSListener(SQSListener):
                             and (object_event.eventType != Action.CREATE.value)):
                         continue
 
+                    # Modify this
                     LOGGER.info(f"Received Geo Attribute: {object_event.objectId}")
 
                     if self.handle_event(object_event):
@@ -72,3 +80,19 @@ class AttributeSQSListener(SQSListener):
                         )
                     else:
                         LOGGER.warning("object event was not processed successfully.")
+
+class AttributeSensemakerController(SensemakerController):
+    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
+        """Create a new instance of AttributeSensemakerController."""
+        super().__init__(event_consumer)
+
+        # initialize buffer
+        self.buffer: dict[UUID, Optional[datetime]] = {}
+        self.autoflush_enabled: Event = Event()
+        self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
+
+        #: OMS GraphQL client
+        self.oms_client: Client = get_generated_graphql_client(
+            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
+        )
+        self.oms_crud_tool = OmsCrudTool()
