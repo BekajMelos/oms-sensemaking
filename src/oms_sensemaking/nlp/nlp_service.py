@@ -142,4 +142,6 @@ if __name__ == "__main__":
     reader = NlpStringReader(text=text, document_id=doc_id)
     source_id = nlp_service.create_test_source().id
     if nlp_service.validate_source(source_id=source_id):
-        nlp_service.run_service(acm, reader, source_id, CoreNlpClient({}, SETTINGS.corenlp_localhost))
+        nlp_service.run_service(
+            NlpRequest(text=text, source_id=source_id, acm=acm), reader, CoreNlpClient({}, SETTINGS.corenlp_localhost)
+        )
