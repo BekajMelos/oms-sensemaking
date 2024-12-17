@@ -118,6 +118,19 @@ class Settings(BaseSettings):
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
+    inference_add_garrison_attribute_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
+    )
+    inference_participated_in_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
+    )
+    inference_garrison_location_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/garrisonedLocation", description="IRI for garrisoned at (Primary/Derivative)"
+    )
+    inference_add_in_garrison_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"
+    )
+    garrison_distance_kilometers: int = 2000
 
     # NLP Settings
     corenlp_localhost: str = Field("localhost:9000",
