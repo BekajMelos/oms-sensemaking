@@ -34,7 +34,7 @@ dependencies = [
     'rdflib~=7.0.0',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
-    'oms_sdk==1.2.3',
+    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/oms/oms-sdk-python.git@grimlock-inc-10-full',
     'xmltodict==0.13.0'
 ]
 
