@@ -51,7 +51,7 @@ def get_random_stamford_bridge_point() -> str:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
 
-def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
+def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_tool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
     # East London
@@ -143,5 +143,5 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, oms_crud_tool):
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0

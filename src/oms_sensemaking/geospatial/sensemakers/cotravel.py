@@ -7,11 +7,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
-    Client,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
@@ -99,6 +98,7 @@ class Cotravel(FindingBase):
     """Represents a Cotravel Event"""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_COTRAVEL)
+    cotravel_id: UUID = field(init=False, default_factory=uuid4)
     track1: Track
     track2: Track
     start_time: datetime
@@ -152,79 +152,106 @@ class Colocation:
 
 
 class CotravelOmsPublisher(OmsPublisher):
-    def publish(self, track: Track, cotravels: List[Cotravel], *args, **kwargs) -> None:
+    def format_nodes(self, track: Track, cotravels: List[Cotravel]) -> list[CreateNodeInput]:
         """
-        Write cotravel events to OMSB
+        Format Node Objects to publish to OMS
 
         :param track: Track in which the cotravel was found
         :param cotravels: List of Cotravel events
         :return: None
         """
 
-        # TODO sensemaker id or just track?
-        LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
-
+        formatted_nodes = []
         for cotravel in cotravels:
             name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
-            tags = [SETTINGS.geo_sensemaker_event_tag]
-            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
-            event_node = self.oms_client.create_node(
-                CreateNodeInput(
-                    acm=cotravel.acm,
-                    name=name,
-                    tier=ObjectTier.DERIVATIVE,
-                    tags=tags,
-                    classIri=SETTINGS.cotravel_event_node_iri,
-                    ifcCodes=set(),
-                    isNso=True,
-                )
+            create_node_input = CreateNodeInput(
+                acm=cotravel.acm,
+                name=name,
+                tier=ObjectTier.DERIVATIVE,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                classIri=SETTINGS.cotravel_event_node_iri,
+                ifcCodes=set(),
+                isNso=True,
             )
+            self.node_uuid_list.append(str(cotravel.cotravel_id))
+            formatted_nodes.append(create_node_input)
+
+        return formatted_nodes
+
+    def format_relationships(self, track: Track, cotravels: List[Cotravel]) -> list[CreateRelationshipInput]:
+        """
+        Format Relationships Objects to publish to OMS
+
+        :param track: Track in which the cotravel was found
+        :param cotravels: List of Cotravel events
+        :return: None
+        """
+
+        formatted_relationships = []
+        for cotravel in cotravels:
+            name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
+            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+            tags = [SETTINGS.geo_sensemaker_event_tag]
 
             # track 1 relationship
-            _ = self.oms_client.create_relationship(
-                CreateRelationshipInput(
-                    tags=tags,
-                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-                    startNodeId=event_node.id,
-                    endNodeId=cotravel.track1.node_id,
-                    confidence=Confidence.HIGH,
-                    acm=event_node.acm,
-                    objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                    sourceId=source_id,
-                )
+            create_relationship_input1 = CreateRelationshipInput(
+                tags=tags,
+                name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+                startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
+                endNodeId=cotravel.track1.node_id,
+                confidence=Confidence.HIGH,
+                acm=cotravel.acm,
+                objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+                sourceId=source_id,
             )
+            formatted_relationships.append(create_relationship_input1)
 
             # track 2 relationship
-            _ = self.oms_client.create_relationship(
-                CreateRelationshipInput(
-                    tags=tags,
-                    name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-                    startNodeId=event_node.id,
-                    endNodeId=cotravel.track2.node_id,
-                    confidence=Confidence.HIGH,
-                    acm=event_node.acm,
-                    objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                    sourceId=source_id,
-                )
+            create_relationship_input2 = CreateRelationshipInput(
+                tags=tags,
+                name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+                startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
+                endNodeId=cotravel.track2.node_id,
+                confidence=Confidence.HIGH,
+                acm=cotravel.acm,
+                objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+                sourceId=source_id,
             )
+            formatted_relationships.append(create_relationship_input2)
 
-            _ = self.oms_client.create_attribute(
-                CreateAttributeInput(
-                    attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-                    attributeValue="geo",
-                    attributeDisplayValue="",
-                    attributeType=AttributeType.SPATIOTEMPORAL,
-                    confidence=Confidence.HIGH,
-                    tags=tags,
-                    sourceId=source_id,
-                    geometry=cotravel.to_geojson(),
-                    nodeId=event_node.id,
-                    acm=event_node.acm,
-                    valueStart=cotravel.start_time,
-                    valueEnd=cotravel.last_time,
-                )
+        return formatted_relationships
+
+    def format_attributes(self, track: Track, cotravels: List[Cotravel]) -> list[CreateAttributeInput]:
+        """
+        Format Attribute Objects to publish to OMS
+
+        :param track: Track in which the cotravel was found
+        :param cotravels: List of Cotravel events
+        :return: None
+        """
+
+        formatted_attributes = []
+        for cotravel in cotravels:
+            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+
+            created_attribute_input = CreateAttributeInput(
+                attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
+                attributeValue="geo",
+                attributeDisplayValue="",
+                attributeType=AttributeType.SPATIOTEMPORAL,
+                confidence=Confidence.HIGH,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                sourceId=source_id,
+                geometry=cotravel.to_geojson(),
+                nodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
+                acm=cotravel.acm,
+                valueStart=cotravel.start_time,
+                valueEnd=cotravel.last_time,
             )
+            formatted_attributes.append(created_attribute_input)
+
+        return formatted_attributes
 
 
 class CotravelSensemaker(Sensemaker):
@@ -240,7 +267,7 @@ class CotravelSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of CotravelSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -258,7 +285,7 @@ class CotravelSensemaker(Sensemaker):
             "lag_lead_event_name": SETTINGS.lag_lead_event_name,
             "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
         }
-        self.publisher = CotravelOmsPublisher(oms_client, oms_crud_tool)
+        self.publisher = CotravelOmsPublisher(oms_crud_tool)
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""

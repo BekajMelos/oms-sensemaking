@@ -91,5 +91,14 @@ def mock_source() -> CreateSourceCreateSource:
 
 
 @pytest.fixture
-def oms_crud_tool():
-    return OmsCrudTool()
+def mock_oms_crud_tool(mock_oms_client, mock_source):
+    def get_source_side_effect(source_id):
+        if source_id == mock_source.id:
+            return mock_source
+        return mock.MagicMock(spec=CreateSourceCreateSource)
+
+    oms_crud_tool = OmsCrudTool()
+    oms_crud_tool.get_source = mock.MagicMock(side_effect=get_source_side_effect)
+    oms_crud_tool.oms_client = mock_oms_client
+
+    return oms_crud_tool
