@@ -9,7 +9,6 @@ from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
-    Client,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
@@ -191,7 +190,7 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -204,7 +203,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
             "geohash_low": SETTINGS.geohash_low
         }
-        self.publisher = LoiterOmsPublisher(oms_client, oms_crud_tool)
+        self.publisher = LoiterOmsPublisher(oms_crud_tool)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """

@@ -2,7 +2,7 @@
 
 import random
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import shapely
@@ -115,7 +115,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm))
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(loiters) == 1
     loiter: Loiter = loiters[0]
@@ -220,7 +220,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
@@ -260,7 +260,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
     # Create Track Object
     track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
 
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
@@ -310,7 +310,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 1
     loiter = loiters[0]
 
@@ -383,10 +383,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-@patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client")
-def test_loiter_success_multiple_in_same_geohash(mock_oms_client_getter, mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in the same geohash."""
-    mock_oms_client_getter.return_value = mock_oms_client
     node_id = uuid4()
     # East London
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
@@ -448,7 +446,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client_getter, mock_om
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
@@ -572,10 +570,8 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client_getter, mock_om
     assert findings[0].finding_data['processed_points'][0]['location'] == to_shape(p2.location).wkt
 
 
-@patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client")
-def test_loiter_success_multiple_in_different_geohash(mock_oms_client_getter, mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in different geohashes."""
-    mock_oms_client_getter.return_value = mock_oms_client
     node_id = uuid4()
     # East London
     p1 = Point(acm=DEFAULT_ACM, location=shapely.Point(-0.030890, 51.509420).wkt, altitude=None,
@@ -637,7 +633,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client_getter, mo
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    loiters = LoiterSensemaker(mock_oms_client, mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 2
 
     loiter1: Loiter = loiters[0]

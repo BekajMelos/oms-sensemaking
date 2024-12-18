@@ -12,7 +12,6 @@ import httpx
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client import (
-    Client,
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
     CreateNodeCreateNode,
@@ -64,11 +63,9 @@ class NoOpPublisher(SensemakerPublisher):
 
 
 class OmsPublisher(SensemakerPublisher):
-
-    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of the Publisher."""
         super().__init__()
-        self.oms_client = oms_client  # TODO: Replace with crud tool for all uses
         self.oms_crud_tool = oms_crud_tool
         self.node_uuid_list: List[str] = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs

@@ -2,7 +2,6 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
-    Client,
     Confidence,
 )
 from oms_sdk.generated.generated_graphql_client.input_types import (
@@ -27,8 +26,8 @@ UNPUBLISHED = "UNPUBLISHED"
 class NlpOmsPublisher(OmsPublisher):
     """Formats and publishes the NLP Findings"""
 
-    def __init__(self, source_id: str, acm: dict, oms_client: Client, oms_crud_tool: OmsCrudTool):
-        super().__init__(oms_client, oms_crud_tool)
+    def __init__(self, source_id: str, acm: dict, oms_crud_tool: OmsCrudTool):
+        super().__init__(oms_crud_tool)
         self.source_id = source_id
         self.acm = acm
 

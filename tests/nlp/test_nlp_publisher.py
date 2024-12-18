@@ -15,21 +15,21 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 
 @pytest.fixture
-def nlp_publisher(mock_source, mock_oms_client, mock_oms_crud_tool):
+def nlp_publisher(mock_source, mock_oms_crud_tool):
     publisher = NlpOmsPublisher(
-        source_id=mock_source.id, acm=DEFAULT_ACM, oms_client=mock_oms_client, oms_crud_tool=mock_oms_crud_tool)
+        source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=mock_oms_crud_tool)
     yield publisher
 
 
 def test_publish(mock_db, nlp_publisher):
     # Run the publishing pipeline
     nlp_publisher.publish(data="", results=large_findings)
-    assert nlp_publisher.oms_client.create_node.call_count == 24
-    assert nlp_publisher.oms_client.create_relationship.call_count == 24
-    assert nlp_publisher.oms_client.create_attribute.call_count == 25
+    assert nlp_publisher.oms_crud_tool.oms_client.create_node.call_count == 24
+    assert nlp_publisher.oms_crud_tool.oms_client.create_relationship.call_count == 24
+    assert nlp_publisher.oms_crud_tool.oms_client.create_attribute.call_count == 25
 
     # Empty findings case
-    nlp_publisher.oms_client.reset_mock()
+    nlp_publisher.oms_crud_tool.oms_client.reset_mock()
     nlp_publisher.publish(data="", results=empty_findings)
     assert nlp_publisher.oms_crud_tool.oms_client.create_node.call_count == 0
     assert nlp_publisher.oms_crud_tool.oms_client.create_relationship.call_count == 0
@@ -92,5 +92,5 @@ def test_format_and_publish_attributes(nlp_publisher):
         assert attr.sourceId == nlp_publisher.source_id
 
     nlp_publisher.publish_attributes(formatted_attributes)
-    nlp_publisher.oms_client.create_attribute.assert_has_calls([mock.call(attr) for attr in formatted_attributes],
-                                                               any_order=True)
+    nlp_publisher.oms_crud_tool.oms_client.create_attribute.assert_has_calls(
+        [mock.call(attr) for attr in formatted_attributes], any_order=True)

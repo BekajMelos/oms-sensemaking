@@ -92,6 +92,7 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.api.schemas.nlp import NlpRequest
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.nlp_reader import NlpFileReader
 
@@ -224,9 +225,12 @@ def run_nlp(args: Namespace) -> None:
     nlp_service = NlpService()
     nlp_reader = NlpFileReader(args.filename)
     nlp_service.run_service(
-        acm=DEFAULT_ACM,
+        NlpRequest(
+            text=args.text,
+            source_id=args.source_id,
+            acm=DEFAULT_ACM,
+        ),
         nlp_reader=nlp_reader,
-        source_id=args.source_id,
         corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
     )
 

@@ -108,8 +108,6 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-
-        #: OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
@@ -118,10 +116,10 @@ class GeospatialSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client, self.oms_crud_tool))
+            self.register("cotravel", CotravelSensemaker(self.oms_crud_tool))
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client, self.oms_crud_tool))
+            self.register("loiter", LoiterSensemaker(self.oms_crud_tool))
 
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
