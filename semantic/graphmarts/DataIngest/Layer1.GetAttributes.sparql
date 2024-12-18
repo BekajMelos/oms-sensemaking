@@ -1,0 +1,103 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX oms_latest_new: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/>
+PREFIX public: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/OMS_Latest_New/public/>
+PREFIX s: <http://cambridgesemantics.com/ontologies/DataToolkit#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ont: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+ 
+INSERT { 
+    GRAPH ${targetGraph} { 
+        ?attribute_obj a ?attribute_class ;
+          rdfs:label ?attribute_name ;
+          rdfs:id ?attribute_id ;
+          .
+         # John was doing this I think.  Should I as well?
+         ?node_obj ?attribute_class ?attribute_value ;
+         .
+         # OR should I actually be doing this?  Answer:nope
+         # per JG & MM: we want line 16 instead of below
+         #?node_obj ?attribute_class ?attribute_obj ;
+         #.
+         # below section is what makesAServer display "Attribute" in its model 
+         # under "Explore" for this Graphmart
+         ?attribute_obj a ont:Attribute ;
+           ont:Attribute.id ?attribute_id ;
+           ont:Attribute.acm_string ?acm_string ;
+           ont:Attribute.Tags ?tags ;
+           ont:Attribute.labels ?labels ;
+           ont:Attribute.acm_string ?acm_string ;
+           ont:Attribute.attribute_value ?attribute_value ;
+           ont:Attribute.attribute_iri ?attribute_iri ;
+           ont:Attribute.attribute_name ?attribute_name ;
+           ont:Attribute.attribute_display_value ?attribute_display_value ;
+           ont:Attribute.attribute_normalized_value ?attribute_normalized_value ;
+           ont:Attribute.attribute_type ?attribute_type ;
+           ont:Attribute.geometry ?geometry ;
+           ont:Attribute.confidence ?confidence ;
+           ont:Attribute.source_type ?source_type ;
+           ont:Attribute.authority_value ?authority_value ;
+           ont:Attribute.authority_set_by ?authority_set_by  ; 
+           ont:Attribute.authority_set_at_time ?authority_set_at_time  ;
+           ont:Attribute.value_start ?value_start  ; 
+           ont:Attribute.value_end ?value_end  ; 
+           ont:Attribute.is_mutable ?is_mutable  ;
+           ont:Attribute.is_reviewed ?is_reviewed  ;
+           ont:Attribute.reviewed_by ?reviewed_by  ;
+           ont:Attribute.reviewed_at ?reviewed_at  ;
+           ont:Attribute.node_id ?node_id  ;
+           ont:Attribute.observation_id ?observation_id  ;
+           ont:Attribute.activity_id ?activity_id  ;
+           .
+  }
+}
+WHERE {
+    SERVICE <http://cambridgesemantics.com/services/DataToolkit> {
+        ?generator a s:RdfGenerator, s:OntologyGenerator ;
+            s:as (?subject ?predicate ?object) ;
+            s:base ${targetGraph} ;
+            .
+        oms_latest_new:OMS_Latest_New a s:DbSource ;
+            s:url "{{@db.cbd5ec538476e3efb7264e3825565c2a.url}}" ;
+            s:username "{{@db.cbd5ec538476e3efb7264e3825565c2a.user}}" ;
+            s:password "{{@db.cbd5ec538476e3efb7264e3825565c2a.password}}" ;
+            s:database "{{@db.cbd5ec538476e3efb7264e3825565c2a.database}}" ;
+            .
+        public:attribute a s:DbSource ;
+            s:using oms_latest_new:OMS_Latest_New ;
+            s:table "public.attribute" ;
+            s:model "attribute" ;
+            s:query "select t.id as attribute_id,a.acm_string as acm_string,t.tags as tags,t.labels as labels,t.attribute_iri as attribute_iri,t.attribute_name as attribute_name,t.attribute_value as attribute_value,t.attribute_display_value as attribute_display_value,t.attribute_normalized_value as attribute_normalized_value,t.attribute_type as attribute_type,t.geometry as geometry,t.confidence as confidence,t.source_type as source_type,t.authority_value as authority_value,t.authority_set_by as authority_set_by,t.authority_set_at_time as authority_set_at_time,t.value_start as value_start,t.value_end as value_end,t.is_mutable as is_mutable,t.is_reviewed as is_reviewed,t.reviewed_by as reviewed_by,t.reviewed_at as reviewed_at,t.node_id as node_id,t.observation_id as observation_id,t.activity_id as activity_id from attribute t left join public.acm_container a on t.acm_id=a.id" ;
+                ?attribute_id (xsd:string) ;
+                ?acm_string (xsd:string) ;
+                ?tags (xsd:list) ;
+                ?labels (xsd:list) ;
+                ?attribute_iri (xsd:string) ;
+                ?attribute_name (xsd:string) ;
+                ?attribute_value (xsd:string) ; 
+                ?attribute_display_value (xsd:string) ;
+                ?attribute_normalized_value (xsd:string) ;
+                ?attribute_type (xsd:string) ; 
+                ?geometry (xsd:string) ; # may need different type here.  Revisit.
+                ?confidence (xsd:string) ;
+                ?source_type (xsd:string) ;
+                ?authority_value (xsd:string) ;
+                ?authority_set_by (xsd:string) ;
+                ?authority_set_at_time (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ;
+                ?value_start (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ; 
+                ?value_end (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ; 
+                ?is_mutable (xsd:boolean) ;
+                ?is_reviewed (xsd:string) ;
+                ?reviewed_by (xsd:boolean) ;
+                ?reviewed_at (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ;
+                ?node_id (xsd:string) ;
+                ?observation_id (xsd:string) ;
+                ?activity_id (xsd:string) ;
+                 .
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?attribute_id}}") AS ?attribute_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?node_id}}") AS ?node_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?observation_id}}") AS ?observation_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?activity_id}}") AS ?activity_obj)
+                BIND(IRI("{{?attribute_iri}}") AS ?attribute_class)
+    }
+}
