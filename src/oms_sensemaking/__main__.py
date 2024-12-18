@@ -3,7 +3,7 @@ Provides a CLI for oms-sensemaking.
 
 ```
 $ python -m oms_sensemaking -h
-usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
+usage: oms_sensemaking [-h] [-V] {geo,semantic} ...
 
 A utility for analysing OMS data.
 
@@ -14,9 +14,8 @@ options:
 commands:
   Run 'python -m oms_sensemaking COMMAND -h' for more information.
 
-  {geo,nlp,semantic}
+  {geo,semantic}
     geo               Run geospatial analytics.
-    nlp               Run NLP analytics.
     semantic          Run semantic workflow.
 ```
 
