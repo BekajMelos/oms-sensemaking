@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 
 import boto3
 from botocore.client import BaseClient
+from botocore.exceptions import BotoCoreError
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
 from oms_sensemaking.config import SETTINGS
@@ -51,7 +52,7 @@ class ObjectEvent:
             str(data.get("userDn")),
             UUID(data.get("objectId", "")),
             ObjectType(data.get("objectType", "ATTRIBUTE")),
-            Action(data.get("eventType", ""))
+            Action(data.get("eventType", "")),
         )
 
     @classmethod
@@ -117,12 +118,14 @@ class ObjectEventConsumer(ABC):
         raise NotImplementedError()
 
 
-class SQSListener(ObjectEventConsumer):
+class BaseSQSListener(ObjectEventConsumer):
     """An abstract base class for SQS object event consumers."""
 
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(self, name: str, queue_url: str, handle_event: Optional[EVENT_HANDLER] = None):
         """Create a new instance of SQSListener."""
         super().__init__(handle_event)
+        self._name = name
+        self._queue_url = queue_url
 
         #: SQS client.
         self.sqs: BaseClient = boto3.client(
@@ -146,6 +149,63 @@ class SQSListener(ObjectEventConsumer):
         raise NotImplementedError()
 
 
+class SQSListener(BaseSQSListener):
+    """An SQS ObjectEventConsumer that consumes OMS events."""
+
+    def __init__(self, name: str, queue_url: str, handle_event: Optional[EVENT_HANDLER] = None):
+        """Create a new instance of SqsObjectEventConsumer."""
+        super().__init__(name, queue_url, handle_event)
+
+    def process_object_events(self) -> None:
+        """Process object events from OMS."""
+        if not callable(self.handle_event):
+            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
+
+        while not self.stopped.is_set():
+            LOGGER.info("Waiting for events in SQS")
+
+            for _ in range(0, SETTINGS.sqs_read_loops):
+                if self.stopped.is_set():
+                    LOGGER.debug(f"Shutting down {self._name}")
+                    break
+
+                # Receive message from SQS queue
+                try:
+                    response = self.sqs.receive_message(
+                        QueueUrl=self._queue_url,
+                        AttributeNames=["SentTimestamp"],
+                        MaxNumberOfMessages=10,
+                        MessageAttributeNames=["All"],
+                        VisibilityTimeout=0,
+                        WaitTimeSeconds=0,
+                    )
+                except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
+                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
+                    break
+
+                if "Messages" not in response:
+                    LOGGER.debug("No Messages in response.")
+                    sleep(SETTINGS.sqs_read_wait_seconds)
+                    continue
+
+                for message in response["Messages"]:
+                    object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
+
+                    # ignore if not the right type of event
+                    if (object_event.objectType != ObjectType.ATTRIBUTE.value) and (
+                        object_event.eventType != Action.CREATE.value
+                    ):
+                        continue
+
+                    LOGGER.info(f"{self._name} Received Attribute: {object_event.objectId}")
+
+                    if self.handle_event(object_event):
+                        # Delete received message from queue - required, so you don't get the same message
+                        self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
+                    else:
+                        LOGGER.warning("object event was not processed successfully.")
+
+
 class DummyObjectEventConsumer(ObjectEventConsumer):
     """A simple object event consumer for testing purposes."""
 
@@ -156,7 +216,7 @@ class DummyObjectEventConsumer(ObjectEventConsumer):
     def process_object_events(self) -> None:
         """Mimics event processing."""
         count: int = 0
-        LOGGER.info('subscribing to SQS events')
+        LOGGER.info("subscribing to SQS events")
 
         while not self.stopped.is_set():
             sleep(5)

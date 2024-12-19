@@ -4,93 +4,26 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
-from time import sleep
 from typing import Optional
 from uuid import UUID
 
-from botocore.exceptions import BotoCoreError
 from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
+from oms_sdk.generated.generated_graphql_client.enums import AttributeType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import (
-    EVENT_HANDLER,
-    ObjectEvent,
-    ObjectEventConsumer,
-    ObjectType,
-    SQSListener,
-)
+from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer, SQSListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class GeoSQSListener(SQSListener):
-    """An SQS ObjectEventConsumer that consumes geo-temporal OMS events."""
-
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
-        """Create a new instance of GeoSqsObjectEventConsumer."""
-        super().__init__(handle_event)
-
-    def process_object_events(self) -> None:
-        """Process geo-temporal object events from OMS."""
-        if not callable(self.handle_event):
-            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
-
-        while not self.stopped.is_set():
-            LOGGER.info("Waiting for events in SQS")
-
-            for _ in range(0, SETTINGS.sqs_read_loops):
-                if self.stopped.is_set():
-                    LOGGER.debug("Shutting down GeoSQSListener")
-                    break
-
-                # Receive message from SQS queue
-                try:
-                    response = self.sqs.receive_message(
-                        QueueUrl=SETTINGS.sqs_queue_url,
-                        AttributeNames=["SentTimestamp"],
-                        MaxNumberOfMessages=10,
-                        MessageAttributeNames=["All"],
-                        VisibilityTimeout=0,
-                        WaitTimeSeconds=0,
-                    )
-                except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
-                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
-                    break
-
-                if "Messages" not in response:
-                    LOGGER.debug("No Messages in response.")
-                    sleep(SETTINGS.sqs_read_wait_seconds)
-                    continue
-
-                for message in response["Messages"]:
-                    object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
-
-                    # ignore if not the right type of event
-                    if ((object_event.objectType != ObjectType.ATTRIBUTE.value)
-                            and (object_event.eventType != Action.CREATE.value)):
-                        continue
-
-                    LOGGER.info(f"Received Geo Attribute: {object_event.objectId}")
-
-                    if self.handle_event(object_event):
-                        # Delete received message from queue - required, so you don't get the same message
-                        self.sqs.delete_message(
-                            QueueUrl=SETTINGS.sqs_queue_url,
-                            ReceiptHandle=message["ReceiptHandle"]
-                        )
-                    else:
-                        LOGGER.warning("object event was not processed successfully.")
 
 
 class GeospatialSensemakerController(SensemakerController):
@@ -155,7 +88,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if isinstance(self.event_consumer, GeoSQSListener):
+        if isinstance(self.event_consumer, SQSListener):
             # extract info from OMS via API calls
             oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
 
@@ -170,15 +103,23 @@ class GeospatialSensemakerController(SensemakerController):
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
                 db.expire_on_commit = False
-                point, is_new = Point.get_or_create(db, defaults=dict(
-                    acm=oms_attr.acm,
-                    location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
-                                f'{oms_attr.geo.geoJson["coordinates"][1]})'),
-                    altitude=None,  # TODO include this
-                    detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(oms_attr.node.version),
-                    attribute_version=int(oms_attr.version)
-                ), node_id=track_node.id, attribute_id=oms_attr.id, source_id=oms_attr.sourceId)
+                point, is_new = Point.get_or_create(
+                    db,
+                    defaults=dict(
+                        acm=oms_attr.acm,
+                        location=(
+                            f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
+                            f'{oms_attr.geo.geoJson["coordinates"][1]})'
+                        ),
+                        altitude=None,  # TODO include this
+                        detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
+                        node_version=int(oms_attr.node.version),
+                        attribute_version=int(oms_attr.version),
+                    ),
+                    node_id=track_node.id,
+                    attribute_id=oms_attr.id,
+                    source_id=oms_attr.sourceId,
+                )
 
             if not is_new:
                 if point:

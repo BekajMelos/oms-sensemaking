@@ -191,9 +191,10 @@ def run_geospatial(args: Namespace) -> None:
     # TODO: Handle PKCS12
 
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
+    from oms_sensemaking.core.events import SQSListener
+    from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
-    geo: GeospatialSensemakerController = GeospatialSensemakerController(GeoSQSListener())
+    geo = GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_queue_url))
 
     start_controller_and_wait(geo)
 
@@ -201,11 +202,12 @@ def run_geospatial(args: Namespace) -> None:
 def run_attribute() -> None:
     """Run the attribute algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.inference.controllers import AttributeSensemakerController, AttributeSQSListener
+    from oms_sensemaking.core.events import SQSListener
+    from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
-    attribute: AttributeSensemakerController = AttributeSensemakerController(AttributeSQSListener())
+    inference = InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_attribute_queue_url))
 
-    start_controller_and_wait(attribute)
+    start_controller_and_wait(inference)
 
 
 def run_semantic() -> None:
