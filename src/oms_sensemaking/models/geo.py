@@ -104,6 +104,7 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - detection_time
     - node_id
     - node_version
+    - track_id
     - observation_id
     - observation_version
     """
@@ -160,12 +161,12 @@ class Track:
         return asdict(self)
 
 
-def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]:
+def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
     """
-    Get track for a given node id.
+    Get track points for a given track id.
 
     :param db: A database session.
-    :param node_id: The Node's unique identifier.
+    :param track_id: The Track's unique identifier.
     """
     # NOTE: this a naive implementation.
     #
@@ -174,7 +175,7 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
         select(
             Point
         ).where(
-            Point.node_id == node_id
+            Point.track_id == track_id
         ).order_by(
             Point.detection_time.asc()
         ).options(
@@ -182,16 +183,57 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
         )
     ).scalars().all())
 
-
-def get_track(db: Session, node_id: Union[str, uuid.UUID]) -> Track:
+def get_node_id_by_track_id(db: Session, track_id: Union[str, uuid.UUID]) -> uuid.UUID:
     """
-    Get track for a given Node.
+    Get node id for a given track id
+
+    ::param db: A database session
+    ::param track_id: The Track's unique identifier.
+    """
+    return db.execute(
+        select(
+            Point.node_id
+        ).where(
+            Point.track_id == track_id
+        ).order_by(
+            Point.detection_time.asc()
+        )
+    ).scalar()
+
+def get_track_id_by_node_id(
+        db: Session, node_id: Union[str, uuid.UUID], start_time: datetime, end_time: datetime) -> uuid.UUID:
+    """
+    Get track id for a given node id and start and end times
+
+    ::param db: A database session
+    ::param node_id: The Node's unique identifier.
+    ::param start_time: The time the track began
+    ::param end_time: The time the track ended
+    """
+    return db.execute(
+        select(
+            Point.track_id
+        ).where(
+            Point.node_id == node_id,
+            Point.detection_time > start_time,
+            Point.detection_time < end_time
+        ).order_by(
+            Point.detection_time.asc()
+        )
+    ).scalar()
+
+
+def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
+    """
+    Get track for a given track id.
 
     :param db: A database session.
-    :param node_id: The Node's unique identifier.
+    :param track_id: The Track's unique identifier.
     :return: A Track.
     """
+    node_id = get_node_id_by_track_id(db, track_id)
+
     if isinstance(node_id, str):
         node_id = uuid.UUID(node_id)
 
-    return Track(points=get_track_points(db, node_id), node_id=node_id)
+    return Track(points=get_track_points(db, track_id), node_id=node_id)
