@@ -113,15 +113,12 @@ will rely on the default values set in the applicaton's configuraton:
 
 ### Step 5: Decrypt Certs
 
-Use `bin/transcrypt` with the following options to decrypt secrets:
+Run `bin/transcrypt` with the following options to decrypt secrets:
 
 - Encryption: `aes-256-cbc`
 - Generate Password: `no`
 - Password: *ask a team member for the password*
-via
-```
-bin/transcrypt -y -p <password>
-```
+
 
 ### Step 6: Verify Your Local Configuration
 Run `make up` to start the containers. To verify that your local configuration is working, you can run the project's unit tests:
