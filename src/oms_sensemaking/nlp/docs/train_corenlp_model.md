@@ -62,6 +62,6 @@ python src/oms_sensemaking/nlp/training_data_processor.py --annotated-filepath <
     * OMS-Bridge/Originator/Create Originator > click Send
     * OMS-Bridge/Provider/Create Provider > click Send
     * OMS-Bridge/Source/Create Source > click Send > copy source ID
-5. Navigate to the [NLP endpoint](http://localhost:5001/docs#/NLP/extract_entities_and_relationships_nlp__post), paste in the source ID and the text you wish to analyze. Click execute
+5. Navigate to the [NLP endpoint](https://localhost:5001/docs#/NLP/extract_entities_and_relationships_nlp__post), paste in the source ID and the text you wish to analyze. Click execute
 
 [ner.prop]: ../training/ner.prop

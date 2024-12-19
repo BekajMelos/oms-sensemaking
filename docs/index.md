@@ -37,11 +37,12 @@
         docker compose up -d
 
     This will start the OMS Sensemaking service on port 5001. The REST API
-    docs can be found at http://localhost:5001/docs
+    docs can be found [here].
 
     > To stop the OMS Sensemaking Docker environment, run `docker compose down`
 
 Alternatively, there is also a [command line interface] to the individual
 sensemaker categories.
 
+[here]: https://localhost:5001/docs
 [command line interface]: dev-guide/cli.md
