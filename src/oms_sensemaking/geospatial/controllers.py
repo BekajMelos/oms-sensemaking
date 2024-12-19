@@ -29,7 +29,7 @@ from oms_sensemaking.core.events import (
     SQSListener,
 )
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker
+from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -122,13 +122,13 @@ class GeospatialSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.detect_cotravels:
-            self.register("cotravel", CotravelSensemaker(self.oms_client, self.oms_crud_tool))
+            self.register("cotravel", CotravelSensemaker(self.oms_crud_tool))
 
         if SETTINGS.detect_loiters:
-            self.register("loiter", LoiterSensemaker(self.oms_client, self.oms_crud_tool))
+            self.register("loiter", LoiterSensemaker(self.oms_crud_tool))
 
-        # if SETTINGS.similar_tracks:
-        #     self.register("similar_tracks", SimilarTracksSensemaker())
+        if SETTINGS.similar_tracks:
+            self.register("similar_tracks", SimilarTracksSensemaker())
 
         self.autoflush_enabled.set()
         self.buffer_autoflush.start()

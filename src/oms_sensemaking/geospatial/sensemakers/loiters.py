@@ -5,17 +5,15 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
-    Client,
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
@@ -57,7 +55,8 @@ class Loiter(FindingBase):
     """Represents a loiter event."""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
-    vehicle_node_id: UUID
+    loiter_id: UUID = field(init=False, default_factory=uuid4)
+    track_node_id: UUID
     geohash_low: str
     start_time: datetime
     end_time: datetime
@@ -87,71 +86,86 @@ class Loiter(FindingBase):
 
 
 class LoiterOmsPublisher(OmsPublisher):
-
-    def publish(self, track: Track, loiters: List[Loiter]) -> None:
+    def format_nodes(self, track: Track, loiters: List[Loiter]) -> list[CreateNodeInput]:
         """
-        Write loiter events to OMSB
+        Format Node Objects to publish to OMS
 
         :param track: Track in which the loiter was found
         :param loiters: List of Loiter events
-        :return: None
+        :return: CreateNodeInput objects
+        """
+        formatted_nodes = []
+        for loiter in loiters:
+            create_event_node = CreateNodeInput(
+                acm=loiter.acm,
+                name=SETTINGS.loiter_event_name,
+                tier=ObjectTier.DERIVATIVE,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                classIri=SETTINGS.loiter_event_node_iri,
+                ifcCodes=set(),
+                isNso=True,
+            )
+
+            self.node_uuid_list.append(str(loiter.loiter_id))
+            formatted_nodes.append(create_event_node)
+
+        return formatted_nodes
+
+    def format_relationships(self, track: Track, loiters: List[Loiter]) -> list[CreateRelationshipInput]:
+        """
+        Format Relationship Objects to publish to OMS
+
+        :param track: Track in which the loiter was found
+        :param loiters: List of Loiter events
+        :return: CreateRelationshipInput objects
         """
 
-        LOGGER.info(f"Publishing findings from {track.node_id} to OMS")
+        formatted_relationships = []
+        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
         for loiter in loiters:
-
-            vehicle_node = self.oms_client.node(query=IdQuery(id=loiter.vehicle_node_id))
-
-            if not vehicle_node:
-                # TODO do we need to do somethign about this?
-                LOGGER.error(f"No vehicle node with id {loiter.vehicle_node_id}")
-                return
-
-            # TODO: Update naming so there aren't duplicates for the same vehicle?
-            name = SETTINGS.loiter_event_name + "-" + str(loiter.vehicle_node_id)
-            tags = [SETTINGS.geo_sensemaker_event_tag]
-            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-
-            create_event_node = CreateNodeInput(
-                    acm=loiter.acm,
-                    name=name,
-                    tier=ObjectTier.DERIVATIVE,
-                    tags=tags,
-                    classIri=SETTINGS.loiter_event_node_iri,
-                    ifcCodes=set(),
-                    isNso=True
-                )
-            event_node = self.oms_client.create_node(create_event_node)
-
             create_relationship_input = CreateRelationshipInput(
-                    tags=tags,
-                    name=name,
-                    startNodeId=event_node.id,
-                    endNodeId=loiter.vehicle_node_id,
-                    confidence=Confidence.HIGH,
-                    acm=loiter.acm,
-                    objectPropertyIri=SETTINGS.loiter_relationship_iri,
-                    sourceId=source_id
-                )
-            _ = self.oms_client.create_relationship(create_relationship_input)
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                name=SETTINGS.loiter_event_name,
+                startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
+                endNodeId=loiter.track_node_id,
+                confidence=Confidence.HIGH,
+                acm=loiter.acm,
+                objectPropertyIri=SETTINGS.loiter_relationship_iri,
+                sourceId=source_id,
+            )
+            formatted_relationships.append(create_relationship_input)
 
+        return formatted_relationships
+
+    def format_attributes(self, track: Track, loiters: List[Loiter]) -> list[CreateAttributeInput]:
+        """
+        Format Attribute Objects to publish to OMS
+
+        :param track: Track in which the loiter was found
+        :param loiters: List of Loiter events
+        :return: CreateAttributeInput objects
+        """
+        formatted_attributes = []
+        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+
+        for loiter in loiters:
             create_attribute_input = CreateAttributeInput(
-                    attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-                    attributeValue="geo",
-                    attributeDisplayValue="",
-                    attributeType=AttributeType.GEOSPATIAL.value,
-                    confidence=Confidence.HIGH.value,
-                    tags=tags,
-                    sourceId=source_id,
-                    geometry=loiter.to_geojson(),
-                    nodeId=event_node.id,
-                    acm=loiter.acm,
-                    valueStart=loiter.start_time,
-                    valueEnd=loiter.end_time
-                )
-            _ = self.oms_client.create_attribute(create_attribute_input)
-            LOGGER.debug('Done writing output to OMS')
+                attributeIri=SETTINGS.loiter_event_node_attribute_iri,
+                attributeValue="geo",
+                attributeDisplayValue="",
+                attributeType=AttributeType.GEOSPATIAL.value,
+                confidence=Confidence.HIGH.value,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                sourceId=source_id,
+                geometry=loiter.to_geojson(),
+                nodeId=self.node_id_mapping[str(loiter.loiter_id)],
+                acm=loiter.acm,
+                valueStart=loiter.start_time,
+                valueEnd=loiter.end_time,
+            )
+            formatted_attributes.append(create_attribute_input)
+        return formatted_attributes
 
 
 class LoiterSensemaker(Sensemaker):
@@ -167,7 +181,7 @@ class LoiterSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_client: Client, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of LoiterSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -180,7 +194,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
             "geohash_low": SETTINGS.geohash_low
         }
-        self.publisher = LoiterOmsPublisher(oms_client, oms_crud_tool)
+        self.publisher = LoiterOmsPublisher(oms_crud_tool)
 
     def process_data(self, data: Track) -> list[Loiter]:
         """

@@ -22,6 +22,7 @@ dependencies = [
     'fastapi-offline==1.7.2',
     'geoalchemy2==0.15.2',
     'geolib==1.0.7',
+    'geopy==2.4.1',
     'numpy==1.26.4',
     'pandas==2.2.2',
     'psycopg[binary,pool]==3.2.1',
@@ -96,7 +97,8 @@ plugins = 'pydantic.mypy'
 minversion = '8.2'
 addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
 testpaths = [
-    'tests'
+    'tests',
+    'tests_int'
 ]
 #log_cli = True
 required_plugins = [

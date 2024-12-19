@@ -47,7 +47,7 @@ from oms_sensemaking.config import SETTINGS
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url, user_dn=SETTINGS.user_dn, cert_path=SETTINGS.cert_path, key_path=SETTINGS.key_path
         )
@@ -203,7 +203,7 @@ class OmsCrudTool:
         """Creates an originator, a provider, and a source for test purposes"""
         # Create test originator if it doesn't already exist
         originator_by_name = self.get_originator_by_name(test_originator_name)
-        if originator_by_name.totalSize > 0:
+        if len(originator_by_name.data) > 0:
             originator = originator_by_name.data[0]
         else:
             originator = self.create_originator(
@@ -217,7 +217,7 @@ class OmsCrudTool:
 
         # Create test provider if it doesn't already exist
         provider_by_name = self.get_provider_by_name(test_provider_name)
-        if provider_by_name.totalSize > 0:
+        if len(provider_by_name.data) > 0:
             provider = provider_by_name.data[0]
         else:
             provider = self.create_provider(
@@ -232,7 +232,7 @@ class OmsCrudTool:
 
         # Create test source if it doesn't already exist
         source_by_name = self.get_source_by_name(test_source_name)
-        if source_by_name.totalSize > 0:
+        if len(source_by_name.data) > 0:
             source = source_by_name.data[0]
         else:
             source = self.create_source(

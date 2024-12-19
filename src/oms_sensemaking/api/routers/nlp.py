@@ -7,7 +7,8 @@ from fastapi import APIRouter, HTTPException
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
-from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
+from oms_sensemaking.nlp.nlp_reader import NlpStringReader
+from oms_sensemaking.nlp.nlp_service import NlpService
 
 router: APIRouter = APIRouter()
 

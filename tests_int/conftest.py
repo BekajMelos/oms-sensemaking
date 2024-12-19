@@ -89,9 +89,9 @@ def mock_source() -> CreateSourceCreateSource:
     source = oms_crud_tool.create_test_source()
     yield source
 
+
 @pytest.fixture
 def mock_oms_crud_tool(mock_oms_client, mock_source):
-
     def get_source_side_effect(source_id):
         if source_id == mock_source.id:
             return mock_source
