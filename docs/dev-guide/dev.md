@@ -124,8 +124,7 @@ bin/transcrypt -y -p <password>
 ```
 
 ### Step 6: Verify Your Local Configuration
-
-To verify that your local configuration is working, you can run the project's unit tests:
+Run `make up` to start the containers. To verify that your local configuration is working, you can run the project's unit tests:
 
 ```
 make test
