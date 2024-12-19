@@ -110,23 +110,26 @@ will rely on the default values set in the applicaton's configuraton:
 | `CERT_PATH`         | `./pki/test10.pem`               | Path to User PEM                                      |
 | `KEY_PATH`          | `./pki/test10.key`               | Path to User Key                                      |
 
-### Step 5: Verify Your Local Configuration
 
-To verify that your local configuration is working, you can run the project's unit tests:
-
-```
-make test
-```
-
-### Step 6: Decrypt Certs
+### Step 5: Decrypt Certs
 
 Use `bin/transcrypt` with the following options to decrypt secrets:
 
 - Encryption: `aes-256-cbc`
 - Generate Password: `no`
 - Password: *ask a team member for the password*
+via
+```
+bin/transcrypt -y -p <password>
+```
 
+### Step 6: Verify Your Local Configuration
 
+To verify that your local configuration is working, you can run the project's unit tests:
+
+```
+make test
+```
 ## Code Quality
 
 The *oms-sensemaking* project is configured to use [ruff] for code linting and

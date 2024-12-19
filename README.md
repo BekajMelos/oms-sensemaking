@@ -76,9 +76,14 @@ Microservice that provides analytics for OMS data.
 
     Use `bin/transcrypt` with the following options to decrypt secrets:
 
-    - Encryption: `aes-256-cbc`
-    - Generate Password: `no`
-    - Password: *ask a team member for the password*
+   - Encryption: `aes-256-cbc`
+   - Generate Password: `no`
+   - Password: *ask a team member for the password*
+   via
+
+   ```
+   bin/transcrypt -y -p <password>
+   ```
 
 The project documentation includes a development guide that covers development
 environment configuration, application configuration, and packaging as well as a
