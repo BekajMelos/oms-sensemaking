@@ -79,4 +79,4 @@
 | `SIMILAR_TRACKS`                   | `True`                                                             | Toggle on/off Similar Track Calculations                       | No             |
 | `N_TRACKS`                         | `5`                                                                | Number of similar tracks to return                             | No             |
 | `WITHIN_METERS`                    | `3000.0`                                                           | Used to define the search space for potential similar tracks   | No             |
-| `SQS_QUEUE_URL`                    | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger` | SQS Queue URL                            | Yes            |
+| `SQS_GEO_QUEUE_URL`                    | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger` | SQS Queue URL                            | Yes            |

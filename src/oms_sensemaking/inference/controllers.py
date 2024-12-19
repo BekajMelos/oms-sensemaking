@@ -19,7 +19,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 class InferenceSensemakerController(SensemakerController):
     def __init__(self, event_consumer: ObjectEventConsumer) -> None:
-        """Create a new instance of AttributeSensemakerController."""
+        """Create a new instance of InferenceSensemakerController."""
         super().__init__(event_consumer)
 
         # initialize buffer

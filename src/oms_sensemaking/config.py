@@ -110,7 +110,7 @@ class Settings(BaseSettings):
 
     # Inference Settings
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Infered Attribute"], description="Inference Sensemaker tags"
+        ["Oms Sensemaking", "Inferred Attribute"], description="Inference Sensemaker tags"
     )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
@@ -261,16 +261,18 @@ class Settings(BaseSettings):
     )
     sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
     sqs_geo_sensemaker_queue: str = Field("getSensemakerTrigger", description="The geo sensemaker queue.")
-    sqs_queue_url: str = Field(
+    sqs_geo_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
         description="the SQS Geo Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
     )
-    sqs_attribute_sensemaker_queue: str = Field("getAttributeTrigger", description="The attribute sensemaker queue.")
-    sqs_attribute_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/attributeTrigger",
-        description="the SQS Attribute Sensemaker Queue URL",
-        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/attributeTrigger"]
+    sqs_inference_sensemaker_queue: str = Field("getInferenceSensemakerTrigger",
+        description="The inference sensemaker queue."
+    )
+    sqs_inference_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger",
+        description="the SQS Inference Sensemaker Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger"]
     )
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")

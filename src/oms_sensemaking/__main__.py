@@ -194,7 +194,7 @@ def run_geospatial(args: Namespace) -> None:
     from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
-    geo = GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_queue_url))
+    geo = GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url))
 
     start_controller_and_wait(geo)
 
@@ -205,7 +205,7 @@ def run_attribute() -> None:
     from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
-    inference = InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_attribute_queue_url))
+    inference = InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url))
 
     start_controller_and_wait(inference)
 

@@ -29,8 +29,8 @@ def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
     controllers: list[SensemakerController] = [
         # TODO: set queue names independently
-        GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_queue_url)),
-        InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_attribute_queue_url)),
+        GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url)),
+        InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url)),
         SemanticSensemakerController(NoOpEventConsumer()),
     ]
 
