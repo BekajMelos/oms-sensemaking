@@ -212,27 +212,27 @@ class SimilarTracksSensemaker(Sensemaker):
         The distance is the range from the point to include in the results.
 
         E.g. Query for the end "bookends". Note the DESC column
-        SELECT points.node_id, array_agg(
+        SELECT points.track_id, array_agg(
             ST_AsGeoJSON(ST_Transform(points.location, 4326), 9, 2) ORDER BY points.detection_time) AS bookend
         FROM points
         JOIN (
-            SELECT anon_2.node_id AS node_id, anon_2.attribute_id AS attribute_id,
+            SELECT anon_2.track_id AS track_id, anon_2.observation_id AS observation_id,
             anon_2.detection_time AS detection_time
             FROM (
-                SELECT points.node_id AS node_id, points.node_version AS node_version,
-                points.attribute_id AS attribute_id, points.attribute_version AS attribute_version,
+                SELECT points.track_id AS track_id, points.node_version AS node_version,
+                points.observation_id AS observation_id, points.observation_version AS observation_version,
                 points.location AS location, points.altitude AS altitude, points.detection_time AS detection_time,
                 points.acm AS acm, points.created_at AS created_at, points.updated_at AS updated_at,
-                ROW_NUMBER() OVER (PARTITION BY points.node_id ORDER BY points.detection_time DESC) AS row_number
+                ROW_NUMBER() OVER (PARTITION BY points.track_id ORDER BY points.detection_time DESC) AS row_number
                     FROM points
             ) AS anon_2
             WHERE anon_2.row_number = 1
-        ) AS anon_1 ON points.node_id = anon_1.node_id AND points.attribute_id = anon_1.attribute_id
+        ) AS anon_1 ON points.track_id = anon_1.track_id AND points.observation_id = anon_1.observation_id
         WHERE ST_DWithin(
             CAST(points.location AS geography(GEOMETRY,-1)),
             CAST(ST_Transform(ST_GeomFromGeoJSON('{''type'': ''Point'', ''coordinates'': [2.183748, 41.356069]}'), 4326)
                  AS geography(GEOMETRY,-1)), 3000.0)
-        GROUP BY points.node_id
+        GROUP BY points.track_id
 
         :param first: Point of the first point in the track
         :return: List of GroupByTrackNodeIdProjections
@@ -249,7 +249,7 @@ class SimilarTracksSensemaker(Sensemaker):
             # use the row number to find the first value. This subquery gives us either the set of starting track
             # points or the set of ending track points depending on the order_col order (desc or not)
             subquery = select(
-                sub_subquery.c.node_id, sub_subquery.c.attribute_id, sub_subquery.c.detection_time
+                sub_subquery.c.track_id, sub_subquery.c.observation_id, sub_subquery.c.detection_time
             ).where(sub_subquery.c.row_number == 1).subquery()
 
             # This query will join the original Point table with the sorted start or end table in order to look at the
@@ -259,7 +259,7 @@ class SimilarTracksSensemaker(Sensemaker):
             # given track. Then with the end query, it will find tracks that end within the query distance of the given
             # track.
             query = select(
-                    Point.node_id,
+                    Point.track_id,
                     func.array_agg(  # the array_agg will return the point as a geojson
                         aggregate_order_by(
                             func.ST_asGeoJSON(
@@ -271,14 +271,14 @@ class SimilarTracksSensemaker(Sensemaker):
                         )
                     ).label('bookend')
                 ).join(
-                    subquery, and_(Point.node_id == subquery.c.node_id, Point.attribute_id == subquery.c.attribute_id)
+                    subquery, and_(Point.track_id == subquery.c.track_id, Point.observation_id == subquery.c.observation_id)
                 ).where(
                     func.ST_DWithin(
                         cast(Point.location, Geography(srid=-1)),
                         cast(func.ST_Transform(
                                 func.ST_GeomFromGeoJSON(str(geojson)), SETTINGS.srid), Geography(srid=-1)),
                              query_distance)
-                ).group_by(Point.node_id)
+                ).group_by(Point.track_id)
 
             return query
 
