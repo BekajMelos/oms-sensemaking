@@ -235,6 +235,11 @@ class OmsObservationMixin(MappedAsDataclass):
         comment='The version of the node associated with this object.'
     )
 
+    track_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        comment="The ID of the track associated with the object."
+    )
+
     observation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
