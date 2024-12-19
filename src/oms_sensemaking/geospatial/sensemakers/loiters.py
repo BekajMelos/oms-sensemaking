@@ -57,7 +57,7 @@ class Loiter(FindingBase):
     """Represents a loiter event."""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
-    track_node_id: UUID
+    vehicle_node_id: UUID
     geohash_low: str
     start_time: datetime
     end_time: datetime
@@ -101,14 +101,15 @@ class LoiterOmsPublisher(OmsPublisher):
 
         for loiter in loiters:
 
-            track_node = self.oms_client.node(query=IdQuery(id=loiter.track_node_id))
+            vehicle_node = self.oms_client.node(query=IdQuery(id=loiter.vehicle_node_id))
 
-            if not track_node:
+            if not vehicle_node:
                 # TODO do we need to do somethign about this?
-                LOGGER.error(f"No track node with id {loiter.track_node_id}")
+                LOGGER.error(f"No vehicle node with id {loiter.vehicle_node_id}")
                 return
 
-            name = SETTINGS.loiter_event_name + "-" + str(loiter.track_node_id)
+            # TODO: Update naming so there aren't duplicates for the same vehicle?
+            name = SETTINGS.loiter_event_name + "-" + str(loiter.vehicle_node_id)
             tags = [SETTINGS.geo_sensemaker_event_tag]
             source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
@@ -127,7 +128,7 @@ class LoiterOmsPublisher(OmsPublisher):
                     tags=tags,
                     name=name,
                     startNodeId=event_node.id,
-                    endNodeId=loiter.track_node_id,
+                    endNodeId=loiter.vehicle_node_id,
                     confidence=Confidence.HIGH,
                     acm=loiter.acm,
                     objectPropertyIri=SETTINGS.loiter_relationship_iri,
@@ -139,7 +140,7 @@ class LoiterOmsPublisher(OmsPublisher):
                     attributeIri=SETTINGS.loiter_event_node_attribute_iri,
                     attributeValue="geo",
                     attributeDisplayValue="",
-                    attributeType=AttributeType.SPATIOTEMPORAL.value,
+                    attributeType=AttributeType.GEOSPATIAL.value,
                     confidence=Confidence.HIGH.value,
                     tags=tags,
                     sourceId=source_id,

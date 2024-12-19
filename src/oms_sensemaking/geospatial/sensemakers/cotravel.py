@@ -25,7 +25,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.geo import Point, Track, get_track, get_track_id_by_node_id
 from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
@@ -219,7 +219,7 @@ class CotravelOmsPublisher(OmsPublisher):
                     attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
                     attributeValue="geo",
                     attributeDisplayValue="",
-                    attributeType=AttributeType.SPATIOTEMPORAL,
+                    attributeType=AttributeType.GEOSPATIAL,
                     confidence=Confidence.HIGH,
                     tags=tags,
                     sourceId=source_id,
@@ -379,7 +379,9 @@ class CotravelSensemaker(Sensemaker):
         def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
             """Helper function to create Cotravel from PotentialMatch"""
             with db_session() as db:
-                track2: Track = get_track(db, to_add_to.track2_node_id)
+                track2_id = get_track_id_by_node_id(
+                    db, to_add_to.track2_node_id, to_add_to.start_time2, to_add_to.last_time2)
+                track2: Track = get_track(db, track2_id)
 
             start_time = min(to_add_to.start_time1, to_add_to.start_time2)
             last_time = max(to_add_to.last_time1, to_add_to.last_time2)
