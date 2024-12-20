@@ -6,7 +6,7 @@ from oms_sdk import DEFAULT_ACM
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
-from tests.nlp.mock_findings import empty_findings, large_findings
+from tests_int.nlp.mock_findings import empty_findings, large_findings
 
 
 @pytest.fixture
@@ -16,8 +16,7 @@ def mock_db(db: Session) -> Iterator[Session]:
 
 @pytest.fixture
 def nlp_publisher(mock_source, mock_oms_crud_tool):
-    publisher = NlpOmsPublisher(
-        source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=mock_oms_crud_tool)
+    publisher = NlpOmsPublisher(source_id=mock_source.id, acm=DEFAULT_ACM, oms_crud_tool=mock_oms_crud_tool)
     yield publisher
 
 
@@ -93,4 +92,5 @@ def test_format_and_publish_attributes(nlp_publisher):
 
     nlp_publisher.publish_attributes(formatted_attributes)
     nlp_publisher.oms_crud_tool.oms_client.create_attribute.assert_has_calls(
-        [mock.call(attr) for attr in formatted_attributes], any_order=True)
+        [mock.call(attr) for attr in formatted_attributes], any_order=True
+    )

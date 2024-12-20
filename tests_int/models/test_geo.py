@@ -1,4 +1,5 @@
 """Tests for geo ORM models."""
+
 from datetime import datetime, timezone
 from typing import Iterator
 from uuid import UUID, uuid4
@@ -30,7 +31,7 @@ DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr 
     [34.060000, -118.261000, 140, "Residential area", NODE_ID, uuid4()],
     [34.061000, -118.263000, 110, "End of the route, nearby school", NODE_ID, uuid4()],
     [34.062000, -118.265000, 90, "Final point, local marketplace", NODE_ID, uuid4()],
-    [38.846224, -77.306373, None, "Fairfax, VA", NODE_ID_FFX, ATTR_ID_FFX]
+    [38.846224, -77.306373, None, "Fairfax, VA", NODE_ID_FFX, ATTR_ID_FFX],
 ]
 
 
@@ -46,7 +47,7 @@ def tester_db(db: Session) -> Iterator[Session]:
             altitude=row[2],
             detection_time=datetime.now(tz=timezone.utc),
             acm=DEFAULT_ACM,
-            source_id=SOURCE_ID
+            source_id=SOURCE_ID,
         )
 
         db.add(point)
@@ -57,12 +58,7 @@ def tester_db(db: Session) -> Iterator[Session]:
 
 
 def test_points_2d_and_3d(tester_db: Session):
-
-    count: int = tester_db.scalar(
-        select(
-            func.count()
-        ).select_from(Point)
-    )
+    count: int = tester_db.scalar(select(func.count()).select_from(Point))
 
     # ensure all data made it into the database
     assert count == len(DATA)
@@ -81,18 +77,17 @@ def test_points_2d_and_3d(tester_db: Session):
     # check to_dict
     assert point.location == point.to_dict()["location"]
     assert point.location == point.to_dict()["location"]
-    assert 'coordinates' not in point.to_dict()
+    assert "coordinates" not in point.to_dict()
 
-    point = tester_db.execute(
-        select(
-            Point
-        ).where(
-            Point.altitude.is_(None)
-        ).where(
-            Point.node_id == NODE_ID_FFX,
-            Point.attribute_id == ATTR_ID_FFX
+    point = (
+        tester_db.execute(
+            select(Point)
+            .where(Point.altitude.is_(None))
+            .where(Point.node_id == NODE_ID_FFX, Point.attribute_id == ATTR_ID_FFX)
         )
-    ).scalars().one()
+        .scalars()
+        .one()
+    )
 
     assert point
     coords: list[float] = point.coordinates
@@ -103,16 +98,15 @@ def test_points_2d_and_3d(tester_db: Session):
 
 def test_get_or_create_existing_record(tester_db: Session):
     # get a specific point
-    point: Point = tester_db.execute(
-        select(
-            Point
-        ).where(
-            Point.altitude.is_(None)
-        ).where(
-            Point.node_id == NODE_ID_FFX,
-            Point.attribute_id == ATTR_ID_FFX
+    point: Point = (
+        tester_db.execute(
+            select(Point)
+            .where(Point.altitude.is_(None))
+            .where(Point.node_id == NODE_ID_FFX, Point.attribute_id == ATTR_ID_FFX)
         )
-    ).scalars().one()
+        .scalars()
+        .one()
+    )
 
     assert point
     coords: list[float] = point.coordinates
@@ -127,34 +121,44 @@ def test_get_or_create_existing_record(tester_db: Session):
 
 
 def test_get_or_create_new_record(db: Session):
-    point, is_new = Point.get_or_create(db, defaults=dict(
+    point, is_new = Point.get_or_create(
+        db,
+        defaults=dict(
+            node_id=NODE_ID_FFX,
+            node_version=1,
+            attribute_id=uuid4(),
+            attribute_version=1,
+            location="POINT(-77.306373 38.846224)",  # lng lat
+            altitude=None,
+            detection_time=datetime.now(timezone.utc),
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID,
+        ),
         node_id=NODE_ID_FFX,
-        node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
-        location="POINT(-77.306373 38.846224)",  # lng lat
-        altitude=None,
-        detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM,
-        source_id=SOURCE_ID
-    ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
+        attribute_id=ATTR_ID_FFX,
+    )
 
     assert point
     assert is_new
 
 
 def test_point_updated_at_no_timezone(tester_db: Session):
-    point, is_new = Point.get_or_create(tester_db, defaults=dict(
+    point, is_new = Point.get_or_create(
+        tester_db,
+        defaults=dict(
+            node_id=NODE_ID_FFX,
+            node_version=1,
+            attribute_id=uuid4(),
+            attribute_version=1,
+            location="POINT(-77.306373 38.846224)",  # lng lat
+            altitude=None,
+            detection_time=datetime.now(tz=timezone.utc),
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID,
+        ),
         node_id=NODE_ID_FFX,
-        node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
-        location="POINT(-77.306373 38.846224)",  # lng lat
-        altitude=None,
-        detection_time=datetime.now(tz=timezone.utc),
-        acm=DEFAULT_ACM,
-        source_id=SOURCE_ID
-    ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
+        attribute_id=ATTR_ID_FFX,
+    )
 
     tester_db.add(point)
     tester_db.commit()
@@ -168,18 +172,16 @@ def test_point_updated_at_no_timezone(tester_db: Session):
 
 
 def test_geohash(tester_db: Session):
-    point = tester_db.execute(  # fairfax query
-        select(
-            Point
-        ).where(
-            Point.altitude.is_(None)
-        ).where(
-            Point.node_id == NODE_ID_FFX,
-            Point.attribute_id == ATTR_ID_FFX
-        ).options(
-            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+    point = (
+        tester_db.execute(  # fairfax query
+            select(Point)
+            .where(Point.altitude.is_(None))
+            .where(Point.node_id == NODE_ID_FFX, Point.attribute_id == ATTR_ID_FFX)
+            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
-    ).scalars().one()
+        .scalars()
+        .one()
+    )
 
     assert point
     assert point.geohash == geohash.encode(38.846224, -77.306373, 20)
@@ -188,53 +190,69 @@ def test_geohash(tester_db: Session):
 def test_geohash_nearby_query(db: Session):
     point1_node_id: UUID = uuid4()
     point1_attr_id: UUID = uuid4()
-    point1, is_new = Point.get_or_create(db, defaults=dict(
+    point1, is_new = Point.get_or_create(
+        db,
+        defaults=dict(
+            node_id=point1_node_id,
+            node_version=1,
+            attribute_id=point1_attr_id,
+            attribute_version=1,
+            location="POINT(-73.8456 40.7246)",
+            altitude=None,
+            detection_time=datetime.now(timezone.utc),
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID,
+        ),
         node_id=point1_node_id,
-        node_version=1,
         attribute_id=point1_attr_id,
-        attribute_version=1,
-        location="POINT(-73.8456 40.7246)",
-        altitude=None,
-        detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM,
-        source_id=SOURCE_ID
-    ), node_id=point1_node_id, attribute_id=point1_attr_id)
+    )
     point2_node_id: UUID = uuid4()
     point2_attr_id: UUID = uuid4()
-    point2, is_new = Point.get_or_create(db, defaults=dict(
+    point2, is_new = Point.get_or_create(
+        db,
+        defaults=dict(
+            node_id=point2_node_id,
+            node_version=1,
+            attribute_id=point2_attr_id,
+            attribute_version=1,
+            location="POINT(-73.8456 40.7246)",
+            altitude=None,
+            detection_time=datetime.now(timezone.utc),
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID,
+        ),
         node_id=point2_node_id,
-        node_version=1,
         attribute_id=point2_attr_id,
-        attribute_version=1,
-        location="POINT(-73.8456 40.7246)",
-        altitude=None,
-        detection_time=datetime.now(timezone.utc),
-        acm=DEFAULT_ACM,
-        source_id=SOURCE_ID
-    ), node_id=point2_node_id, attribute_id=point2_attr_id)
-    point3, is_new = Point.get_or_create(db, defaults=dict(
+    )
+    point3, is_new = Point.get_or_create(
+        db,
+        defaults=dict(
+            node_id=NODE_ID_FFX,
+            node_version=1,
+            attribute_id=uuid4(),
+            attribute_version=1,
+            location="POINT(-77.306373 38.846224)",  # lng lat
+            altitude=None,
+            detection_time=datetime.now(tz=timezone.utc),
+            acm=DEFAULT_ACM,
+            source_id=SOURCE_ID,
+        ),
         node_id=NODE_ID_FFX,
-        node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
-        location="POINT(-77.306373 38.846224)",  # lng lat
-        altitude=None,
-        detection_time=datetime.now(tz=timezone.utc),
-        acm=DEFAULT_ACM,
-        source_id=SOURCE_ID
-    ), node_id=NODE_ID_FFX, attribute_id=ATTR_ID_FFX)
+        attribute_id=ATTR_ID_FFX,
+    )
 
-    nearby_points = db.execute(
-        select(
-            Point
-        ).filter(
-            Point.location.ST_Geohash().like("dr5rxtembz9t%")  # full value should be dr5rxtembz9tw6b30s9w
-        ).order_by(
-            Point.detection_time.asc()
-        ).options(
-            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+    nearby_points = (
+        db.execute(
+            select(Point)
+            .filter(
+                Point.location.ST_Geohash().like("dr5rxtembz9t%")  # full value should be dr5rxtembz9tw6b30s9w
+            )
+            .order_by(Point.detection_time.asc())
+            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     assert len(nearby_points) == 2
 

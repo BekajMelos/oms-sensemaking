@@ -1,13 +1,13 @@
 """Tests for the "semantic" API."""
+
 from typing import Optional
 from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 from httpx import Response
 from oms_sdk import DEFAULT_ACM
-from sqlalchemy.orm import Session
 
-from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Node, Relationship
+from oms_sensemaking.api.schemas.oms import Attribute, CreateObjectResponse, DeleteObjectResponse, Relationship
 
 
 def test_create_attribute(client: TestClient):
@@ -24,20 +24,6 @@ def test_delete_attribute(client: TestClient):
     assert DeleteObjectResponse(**response.json()).success
 
 
-def test_create_node(client: TestClient, db: Session):
-    create_node(client)
-
-
-def test_delete_node(client: TestClient, db: Session):
-    # create the node
-    node_id: UUID = create_node(client)
-
-    # delete the node
-    response = client.delete(f"/semantic/node/{node_id}")
-    assert response.status_code == 200
-    assert DeleteObjectResponse(**response.json()).success
-
-
 def test_create_relationship(client: TestClient):
     create_relationship(client)
 
@@ -45,9 +31,7 @@ def test_create_relationship(client: TestClient):
 def test_delete_relationship(client: TestClient):
     # create the relationship
     relationship_id: UUID = create_relationship(
-        client,
-        UUID("63a17206-8d4d-4825-9b0e-958cf54fa639"),
-        UUID("4d93fac7-5659-4ca9-b735-84aad702cee0")
+        client, UUID("63a17206-8d4d-4825-9b0e-958cf54fa639"), UUID("4d93fac7-5659-4ca9-b735-84aad702cee0")
     )
 
     # delete the relationship
@@ -74,8 +58,8 @@ def create_attribute(client: TestClient) -> UUID:
             acm=DEFAULT_ACM,
             attribute_iri="https://foundry.ai.mil/DICO/v3.1.0/Common_Name",
             attribute_name="Common Name",
-            attribute_value="test value"
-        ).model_dump()
+            attribute_value="test value",
+        ).model_dump(),
     )
     assert response.status_code == 200
     assert CreateObjectResponse(**response.json()).success
@@ -83,44 +67,9 @@ def create_attribute(client: TestClient) -> UUID:
     return attribute_id
 
 
-def create_node(client: TestClient) -> UUID:
-    """
-    Create and validate a Node.
-
-    :param client: A ReST test client for FastAPI.
-    :return: The node ID.
-    """
-    node_id: UUID = uuid4()
-
-    response: Response = client.post(
-        '/semantic/node',
-        json=Node(
-            id=node_id,
-            version=1,
-            acm=DEFAULT_ACM,
-            tags=["tag1", "tag2"],
-            guide_id="guideID",
-            name="TestNode",
-            tier="PRIMARY",
-            class_iri="http://purl.obolibrary.org/obo/BFO_0000030",
-            class_name="Object",
-            ifc_codes=["ifcCode1", "ifcCode2"],
-            allegiance="allegiance",
-            allegiance_aor="allegianceAor",
-            current_aor="currentAor",
-            is_nso=True
-        ).model_dump()
-    )
-    assert response.status_code == 200
-    assert CreateObjectResponse(**response.json()).success
-
-    return node_id
-
-
 def create_relationship(
-        client: TestClient,
-        start_node_id: Optional[UUID] = None,
-        end_node_id: Optional[UUID] = None) -> UUID:
+    client: TestClient, start_node_id: Optional[UUID] = None, end_node_id: Optional[UUID] = None
+) -> UUID:
     """
     Create and validate a Relationship.
 
@@ -147,8 +96,8 @@ def create_relationship(
             start_node_id=start_node_id,
             end_node_id=end_node_id,
             object_property_iri="http://schema.dia.mil/DefenseIntelligenceCoreOntology/objectCreator",
-            object_property_name="Object Creator"
-        ).model_dump()
+            object_property_name="Object Creator",
+        ).model_dump(),
     )
     assert response.status_code == 200
     assert CreateObjectResponse(**response.json()).success
