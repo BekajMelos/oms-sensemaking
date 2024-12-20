@@ -58,27 +58,31 @@ NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
 SOURCE_ID = uuid4()
-DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Attr ID, detection_time,
+TRACK_UUID1 = uuid4()
+TRACK_UUID2 = uuid4()
+TRACK_UUID3 = uuid4()
+TRACK_UUID4 = uuid4()
+DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, detection_time, track_id
     # Track 1
-    [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00")],
-    [51.466103, -0.210562, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:10:00-04:00")],
-    [51.487613, -0.229466, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:20:00-04:00")],
+    [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), TRACK_UUID1],
+    [51.466103, -0.210562, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:10:00-04:00"), TRACK_UUID1],
+    [51.487613, -0.229466, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:20:00-04:00"), TRACK_UUID1],
     # point that shouldn't be included in the cotravel
-    [50, 0, None, "English Channel", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:30:00-04:00")],
+    [50, 0, None, "English Channel", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:30:00-04:00"), TRACK_UUID1],
     # Track 2
-    [41.467810, 2.289575, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:00:00-04:00")],
-    [41.399953, 2.217167, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:10:00-04:00")],
-    [41.356069, 2.183748, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:20:00-04:00")],
-    [41.296465, 2.130487, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:30:00-04:00")],
+    [41.399953, 2.217167, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:10:00-04:00"), TRACK_UUID2],
+    [41.467810, 2.289575, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:00:00-04:00"), TRACK_UUID2],
+    [41.356069, 2.183748, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:20:00-04:00"), TRACK_UUID2],
+    [41.296465, 2.130487, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:30:00-04:00"), TRACK_UUID2],
     # Track 3
-    [41.467811, 2.289576, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:19:00-04:00")],
-    [41.399954, 2.217168, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:29:00-04:00")],
-    [41.356070, 2.183749, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:39:00-04:00")],
+    [41.467811, 2.289576, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:19:00-04:00"), TRACK_UUID3],
+    [41.399954, 2.217168, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:29:00-04:00"), TRACK_UUID3],
+    [41.356070, 2.183749, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:39:00-04:00"), TRACK_UUID3],
     # Track 4
-    [38.252533, 15.650729, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:00:00-04:00")],
-    [38.228556, 15.610534, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:10:00-04:00")],
-    [38.185378, 15.594253, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:20:00-04:00")],
-    [38.142175, 15.578989, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:30:00-04:00")],
+    [38.252533, 15.650729, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:00:00-04:00"), TRACK_UUID4],
+    [38.228556, 15.610534, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:10:00-04:00"), TRACK_UUID4],
+    [38.185378, 15.594253, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:20:00-04:00"), TRACK_UUID4],
+    [38.142175, 15.578989, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:30:00-04:00"), TRACK_UUID4],
 ]
 
 
@@ -88,13 +92,14 @@ def tester_db(db: Session) -> Iterator[Session]:
         point: Point = Point(
             node_id=row[4],
             node_version=1,
-            attribute_id=row[5],
-            attribute_version=1,
+            observation_id=row[5],
+            observation_version=1,
             location=f"POINT({row[1]} {row[0]})",  # lng lat
             altitude=row[2],
             detection_time=row[6],
             acm=DEFAULT_ACM,
             source_id=SOURCE_ID,
+            track_id=row[7]
         )
 
         db.add(point)
@@ -104,9 +109,9 @@ def tester_db(db: Session) -> Iterator[Session]:
     yield db
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     node_id = uuid4()
+    track_id = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -116,9 +121,10 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p2 = Point(
@@ -128,9 +134,10 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p3 = Point(
@@ -140,9 +147,10 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -210,7 +218,7 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
             attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -232,9 +240,9 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     assert findings[0].algorithm_configuration
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     node_id = uuid4()
+    track_id = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -244,9 +252,10 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         detection_time=datetime.fromisoformat("2024-08-20T16:39:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p2 = Point(
@@ -256,9 +265,10 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         detection_time=datetime.fromisoformat("2024-08-20T16:49:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p3 = Point(
@@ -268,9 +278,10 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         detection_time=datetime.fromisoformat("2024-08-20T16:59:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -383,7 +394,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
             attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -399,7 +410,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
             attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -421,9 +432,9 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
     assert findings[0].algorithm_configuration
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     node_id = uuid4()
+    track_id = uuid4()
 
     # 35 minutes behind fixture track
     p1 = Point(
@@ -433,9 +444,10 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:35:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p2 = Point(
@@ -445,9 +457,10 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:45:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p3 = Point(
@@ -457,9 +470,10 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:55:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -527,7 +541,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
             attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -551,6 +565,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
 
 def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool):
     node_id = uuid4()
+    track_id = uuid4()
 
     # 95 minutes behind fixture track
     p1 = Point(
@@ -560,9 +575,10 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T13:35:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p2 = Point(
@@ -572,9 +588,10 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T13:45:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p3 = Point(
@@ -584,9 +601,10 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T13:55:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -597,9 +615,9 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
     assert len(cotravels) == 0
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     node_id = uuid4()
+    track_id = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -609,9 +627,10 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         detection_time=datetime.fromisoformat("2024-09-10T05:10:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p2 = Point(
@@ -621,9 +640,10 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         detection_time=datetime.fromisoformat("2024-09-10T05:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     p3 = Point(
@@ -633,9 +653,10 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         detection_time=datetime.fromisoformat("2024-09-10T05:30:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # past observational threshold so shouldn't be added
@@ -646,9 +667,10 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         detection_time=datetime.fromisoformat("2024-09-10T05:46:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -716,7 +738,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
             attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,

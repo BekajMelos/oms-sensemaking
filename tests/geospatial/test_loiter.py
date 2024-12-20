@@ -54,6 +54,7 @@ def get_random_stamford_bridge_point() -> str:
 def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_tool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -62,9 +63,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -75,9 +77,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -87,9 +90,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T12:40:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -99,9 +103,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T13:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -111,9 +116,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T13:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -123,9 +129,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T13:40:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # West London
     p7 = Point(
@@ -135,9 +142,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_client, mock_oms_crud_to
         detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
