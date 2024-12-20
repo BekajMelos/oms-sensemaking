@@ -54,7 +54,7 @@ def downgrade() -> None:
             "attribute_version",
             sa.INTEGER(),
             autoincrement=False,
-            nullable=True,
+            nullable=True, # TODO: This is a temp solution to avoid NotNullViolation
             comment="The version of the attribute associated with the object.",
         ),
     )
@@ -64,7 +64,7 @@ def downgrade() -> None:
             "attribute_id",
             sa.UUID(),
             autoincrement=False,
-            nullable=True,
+            nullable=True, # TODO: This is a temp solution to avoid NotNullViolation
             comment="The ID of the attribute associated with the object.",
         ),
     )
