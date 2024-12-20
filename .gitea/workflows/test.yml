@@ -45,7 +45,7 @@ jobs:
         run: |
           source .venv/bin/activate
           mypy src
-        continue-on-error: true
+        continue-on-error: false
 
   test:
     runs-on: ubuntu-latest
