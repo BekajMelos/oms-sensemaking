@@ -8,13 +8,8 @@ Create Date: 2024-12-18 11:31:02.103122
 
 from typing import Sequence, Union
 
-import geoalchemy2
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
-
-import oms_sensemaking
-
 
 # revision identifiers, used by Alembic.
 revision: str = "202412181131"
@@ -59,7 +54,7 @@ def downgrade() -> None:
             "attribute_version",
             sa.INTEGER(),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
             comment="The version of the attribute associated with the object.",
         ),
     )
@@ -69,7 +64,7 @@ def downgrade() -> None:
             "attribute_id",
             sa.UUID(),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
             comment="The ID of the attribute associated with the object.",
         ),
     )
