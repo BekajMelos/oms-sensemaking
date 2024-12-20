@@ -1,10 +1,6 @@
 """Attribute sensemaker controller."""
 
 import logging
-from datetime import datetime
-from threading import Event, Timer
-from typing import Optional
-from uuid import UUID
 
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.client import Client
@@ -22,11 +18,6 @@ class InferenceSensemakerController(SensemakerController):
         """Create a new instance of InferenceSensemakerController."""
         super().__init__(event_consumer)
 
-        # initialize buffer
-        self.buffer: dict[UUID, Optional[datetime]] = {}
-        self.autoflush_enabled: Event = Event()
-        self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-
         #: OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
@@ -42,7 +33,3 @@ class InferenceSensemakerController(SensemakerController):
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
         return True
-
-    def flush_buffer(self) -> None:
-        """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.info("Checking Track Buffer Expirations")
