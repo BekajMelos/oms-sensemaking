@@ -64,25 +64,40 @@ TRACK_UUID3 = uuid4()
 TRACK_UUID4 = uuid4()
 DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, detection_time, track_id
     # Track 1
-    [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00"), TRACK_UUID1],
-    [51.466103, -0.210562, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:10:00-04:00"), TRACK_UUID1],
-    [51.487613, -0.229466, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:20:00-04:00"), TRACK_UUID1],
+    [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+    TRACK_UUID1],
+    [51.466103, -0.210562, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+    TRACK_UUID1],
+    [51.487613, -0.229466, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+    TRACK_UUID1],
     # point that shouldn't be included in the cotravel
-    [50, 0, None, "English Channel", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:30:00-04:00"), TRACK_UUID1],
+    [50, 0, None, "English Channel", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:30:00-04:00"),
+     TRACK_UUID1],
     # Track 2
-    [41.399953, 2.217167, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:10:00-04:00"), TRACK_UUID2],
-    [41.467810, 2.289575, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:00:00-04:00"), TRACK_UUID2],
-    [41.356069, 2.183748, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:20:00-04:00"), TRACK_UUID2],
-    [41.296465, 2.130487, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:30:00-04:00"), TRACK_UUID2],
+    [41.399953, 2.217167, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:10:00-04:00"),
+    TRACK_UUID2],
+    [41.467810, 2.289575, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:00:00-04:00"),
+    TRACK_UUID2],
+    [41.356069, 2.183748, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:20:00-04:00"),
+    TRACK_UUID2],
+    [41.296465, 2.130487, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:30:00-04:00"),
+    TRACK_UUID2],
     # Track 3
-    [41.467811, 2.289576, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:19:00-04:00"), TRACK_UUID3],
-    [41.399954, 2.217168, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:29:00-04:00"), TRACK_UUID3],
-    [41.356070, 2.183749, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:39:00-04:00"), TRACK_UUID3],
+    [41.467811, 2.289576, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:19:00-04:00"),
+    TRACK_UUID3],
+    [41.399954, 2.217168, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:29:00-04:00"),
+    TRACK_UUID3],
+    [41.356070, 2.183749, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:39:00-04:00"),
+    TRACK_UUID3],
     # Track 4
-    [38.252533, 15.650729, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:00:00-04:00"), TRACK_UUID4],
-    [38.228556, 15.610534, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:10:00-04:00"), TRACK_UUID4],
-    [38.185378, 15.594253, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:20:00-04:00"), TRACK_UUID4],
-    [38.142175, 15.578989, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:30:00-04:00"), TRACK_UUID4],
+    [38.252533, 15.650729, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:00:00-04:00"),
+    TRACK_UUID4],
+    [38.228556, 15.610534, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:10:00-04:00"),
+    TRACK_UUID4],
+    [38.185378, 15.594253, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:20:00-04:00"),
+    TRACK_UUID4],
+    [38.142175, 15.578989, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:30:00-04:00"),
+    TRACK_UUID4],
 ]
 
 

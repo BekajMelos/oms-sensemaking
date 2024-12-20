@@ -271,7 +271,8 @@ class SimilarTracksSensemaker(Sensemaker):
                         )
                     ).label('bookend')
                 ).join(
-                    subquery, and_(Point.track_id == subquery.c.track_id, Point.observation_id == subquery.c.observation_id)
+                    subquery, and_(
+                        Point.track_id == subquery.c.track_id, Point.observation_id == subquery.c.observation_id)
                 ).where(
                     func.ST_DWithin(
                         cast(Point.location, Geography(srid=-1)),
