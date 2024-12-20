@@ -18,7 +18,7 @@ from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from oms_sensemaking.nlp.models.entities_and_relationships import EntitiesAndRelationships
 from oms_sensemaking.nlp.nlp_oms_publisher import NlpOmsPublisher
-from oms_sensemaking.nlp.nlp_reader import NlpReader, NlpStringReader
+from oms_sensemaking.nlp.nlp_reader import NlpReader
 from oms_sensemaking.nlp.sensemakers.nlp_sensemaker import NlpSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -111,8 +111,7 @@ class NlpService:
         :param findings: found Entities and Relationships
         """
         LOGGER.info("Submitting findings to OMS")
-        nlp_publisher = NlpOmsPublisher(
-            source_id=request.source_id, acm=request.acm, oms_crud_tool=OmsCrudTool())
+        nlp_publisher = NlpOmsPublisher(source_id=request.source_id, acm=request.acm, oms_crud_tool=OmsCrudTool())
         nlp_publisher.publish(data=request.text, results=findings)
         LOGGER.info("Findings submitted to OMS")
 
@@ -131,17 +130,3 @@ class NlpService:
     def create_test_source(self) -> CreateSourceCreateSource:
         source = self.oms_crud_tool.create_test_source()
         return source
-
-
-# TODO: Delete main once the API is up and running. Do the following in the API call
-if __name__ == "__main__":
-    text = "This is some sample text relating Entity1 to Entity2"
-    acm: dict = {}
-    doc_id = "41d83ecb-4c60-4294-9c51-eb4d1e444df6"
-    nlp_service = NlpService()
-    reader = NlpStringReader(text=text, document_id=doc_id)
-    source_id = nlp_service.create_test_source().id
-    if nlp_service.validate_source(source_id=source_id):
-        nlp_service.run_service(
-            NlpRequest(text=text, source_id=source_id, acm=acm), reader, CoreNlpClient({}, SETTINGS.corenlp_localhost)
-        )

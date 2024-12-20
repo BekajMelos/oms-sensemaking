@@ -20,13 +20,13 @@ jobs:
           machine tex.gerbil-cloud.ts.net
           login ${{ gitea.repository_owner }}
           password ${{ secrets.pypi_token }}
-          
+
           EOF
           chmod 600 ~/.netrc
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: '.python-version'
+          python-version-file: ".python-version"
       - name: Install dependencies
         env:
           PIP_INDEX_URL: https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
@@ -40,6 +40,11 @@ jobs:
         run: |
           source .venv/bin/activate
           ruff check --output-format=github
+        continue-on-error: false
+      - name: Lint with mypy
+        run: |
+          source .venv/bin/activate
+          mypy src
         continue-on-error: false
 
   test:
@@ -64,7 +69,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: '.python-version'
+          python-version-file: ".python-version"
       - name: Install dependencies
         env:
           PIP_INDEX_URL: https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple

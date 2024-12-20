@@ -10,7 +10,7 @@ class RuleContext:
     to properties in the rules for a variety of object types
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.attribute: AttributeAttribute = kwargs.get("attribute")
         self.relationship: RelationshipRelationship = kwargs.get("relationship")
         self.source: SourceSource = kwargs.get("source")

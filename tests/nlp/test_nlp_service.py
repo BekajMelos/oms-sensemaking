@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.api.schemas.nlp import NlpRequest
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.base import utcnow_with_timezone
-from oms_sensemaking.nlp.nlp_service import NlpService, NlpStringReader
+from oms_sensemaking.nlp.nlp_reader import NlpStringReader
+from oms_sensemaking.nlp.nlp_service import NlpService
 
 from .mock_corenlp_client import MockCoreNlpClient
 from .mock_responses import mock_response_long_text_str
