@@ -351,7 +351,7 @@ class CotravelSensemaker(Sensemaker):
         This query:
 
         SELECT DISTINCT ST_GeoHash(points.location) AS "ST_GeoHash_1", points.node_id, points.node_version,
-            points.attribute_id, points.attribute_version, ST_AsEWKB(points.location) AS location,
+            points.observation_id, points.observation_version, ST_AsEWKB(points.location) AS location,
             points.altitude, points.detection_time, points.acm, points.created_at, points.updated_at
         FROM points
         WHERE ST_GeoHash(points.location) LIKE :ST_GeoHash_2
