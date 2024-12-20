@@ -76,7 +76,6 @@ class GeoSQSListener(SQSListener):
                     continue
 
                 for message in response["Messages"]:
-                    # LOGGER.info(message)
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     # ignore if not the right type of event
