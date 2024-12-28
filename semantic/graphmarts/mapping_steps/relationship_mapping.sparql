@@ -1,0 +1,52 @@
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX oms_latest_new: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/>
+PREFIX public: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/OMS_Latest_New/public/>
+PREFIX s: <http://cambridgesemantics.com/ontologies/DataToolkit#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ont: <http://blackcape.io/Model/>
+PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
+ 
+INSERT { 
+    GRAPH ${targetGraph} { 
+    	?relationship_object_property a owl:ObjectProperty . 
+        ?start_node_obj ?relationship_object_property ?end_node_obj .
+  }
+}
+WHERE {
+    SERVICE <http://cambridgesemantics.com/services/DataToolkit> {
+        ?generator a s:RdfGenerator, s:OntologyGenerator ;
+            s:as (?subject ?predicate ?object) ;
+            s:base ${targetGraph} ;
+            .
+        oms_latest_new:OMS_Latest_New a s:DbSource ;
+            s:url "{{@db.cbd5ec538476e3efb7264e3825565c2a.url}}" ;
+            s:username "{{@db.cbd5ec538476e3efb7264e3825565c2a.user}}" ;
+            s:password "{{@db.cbd5ec538476e3efb7264e3825565c2a.password}}" ;
+            s:database "{{@db.cbd5ec538476e3efb7264e3825565c2a.database}}" ;
+            .
+        public:node a s:DbSource ;
+            s:using oms_latest_new:OMS_Latest_New ;
+            s:table "public.relationship" ;
+            s:model "relationship" ;
+            s:query "select r.id as relationship_id, r.start_node_id as start_node_id, r.object_property_iri as object_property_iri, r.end_node_id as end_node_id, r.tags as tags, r.labels as labels, r.name as relationship_name, r.confidence as confidence, r.object_property_name as object_property_name, r.source_id as source_id from public.relationship r LEFT JOIN public.acm_container a ON r.acm_id = a.id" ;
+                ?relationship_id (xsd:string) ;
+                ?start_node_id (xsd:string) ;
+                ?object_property_iri (xsd:string) ;
+                ?end_node_id (xsd:string) 
+                #?acm_string (xsd:string) ;
+                #?tags (xsd:list) ;
+                #?labels (xsd:list) ;
+                #?relationship_name (xsd:string) ;
+                #?confidence (xsd:string) ;
+                #?object_property_name (xsd:string) ;
+                #?source_id (xsd:string) ;
+                 .
+            BIND(IRI("http://blackcape.io/Model/{{?start_node_id}}") AS ?start_node_obj)
+            BIND(IRI("http://blackcape.io/Model/{{?end_node_id}}") AS ?end_node_obj)
+            BIND(IRI("{{?object_property_iri}}") AS ?relationship_object_property)
+            BIND(IRI("http://blackcape.io/Model/{{?relationship_id}}") AS ?relationship_obj)
+
+    }
+}
