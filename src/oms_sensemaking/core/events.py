@@ -197,7 +197,10 @@ class SQSListener(BaseSQSListener):
                     ):
                         continue
 
-                    LOGGER.info(f"{self._name} Received Attribute: {object_event.objectId}")
+                    LOGGER.info(
+                        f"{self._name} Received {object_event.eventType} {object_event.objectType}:"
+                        + f"{object_event.objectId}"
+                    )
 
                     if self.handle_event(object_event):
                         # Delete received message from queue - required, so you don't get the same message
