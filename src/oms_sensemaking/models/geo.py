@@ -183,7 +183,7 @@ def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point
         )
     ).scalars().all())
 
-def get_node_id_by_track_id(db: Session, track_id: Union[str, uuid.UUID]) -> uuid.UUID:
+def get_node_id_by_track_id(db: Session, track_id: Union[str, uuid.UUID]):
     """
     Get node id for a given track id
 
@@ -201,7 +201,7 @@ def get_node_id_by_track_id(db: Session, track_id: Union[str, uuid.UUID]) -> uui
     ).scalar()
 
 def get_track_id_by_node_id(
-        db: Session, node_id: Union[str, uuid.UUID], start_time: datetime, end_time: datetime) -> uuid.UUID:
+        db: Session, node_id: Union[str, uuid.UUID], start_time: datetime, end_time: datetime):
     """
     Get track id for a given node id and start and end times
 
