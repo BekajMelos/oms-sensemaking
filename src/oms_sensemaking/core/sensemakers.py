@@ -71,8 +71,8 @@ class OmsPublisher(SensemakerPublisher):
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
     def publish(self, data: Any, results: Any) -> None:
-        self.node_uuid_list = [] # Make sure old lists doesn't persist between publishes
-        self.node_id_mapping = {} # Make sure old mappings don't persist between publishes
+        self.node_uuid_list = []  # Make sure old lists doesn't persist between publishes
+        self.node_id_mapping = {}  # Make sure old mappings don't persist between publishes
         self.publish_nodes(self.format_nodes(data, results))
         self.publish_relationships(self.format_relationships(data, results))
         self.publish_attributes(self.format_attributes(data, results))
@@ -218,7 +218,7 @@ class Sensemaker(ABC):
             db.commit()
 
     @abstractmethod
-    def process_data(self, data: Any) -> Any:
+    def process_data(self, data: Any) -> Iterable[FindingBase]:
         """
         Process data.
 

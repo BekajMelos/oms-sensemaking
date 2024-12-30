@@ -82,6 +82,7 @@ class GeospatialSensemakerController(SensemakerController):
         Handle inbound OMS event.
 
         :param event: The event to process.
+        :return: True if the object event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
         point: Optional[Point] = None
@@ -160,7 +161,7 @@ class GeospatialSensemakerController(SensemakerController):
                             track: Track = get_track(db, node_id)
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.warn(e)
+                            LOGGER.warning(e)
                             self.buffer[node_id] = None
                             continue
                         LOGGER.debug(track.to_linestring())

@@ -109,6 +109,7 @@ class Settings(BaseSettings):
     text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
 
     # Inference Settings
+    generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Attribute"], description="Inference Sensemaker tags"
     )
