@@ -10,25 +10,12 @@ PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
  
 INSERT { 
     GRAPH ${targetGraph} { 
-        #?attribute_obj a ?attribute_class ;
-        #  rdfs:label ?attribute_name ;
-        #  rdfs:id ?attribute_id ;
-          .
-         # John was doing this I think.  Should I as well?
-         #?node_obj ?attribute_class ?attribute_value ;
-         .
-         # OR should I actually be doing this?  Answer:nope
-         # per JG & MM: we want line 16 instead of below
-         #?node_obj ?attribute_class ?attribute_obj ;
-         #.
-         # below section is what makesAServer display "Attribute" in its model 
-         # under "Explore" for this Graphmar
-    
-           ?datatype_property a owl:DatatypeProperty ;
-                    rdfs:comment ?attribute_type ; 
-    				rdfs:label ?attribute_name. 
-           ?node_obj ?datatype_property ?literal_attribute_value . 
-           ?node_obj rdfs:comment ?node_object_comment.
+
+    	?datatype_property a owl:DatatypeProperty ;
+        	rdfs:comment ?attribute_type ; 
+    		rdfs:label ?attribute_name. 
+        ?node_obj ?datatype_property ?literal_attribute_value . 
+        ?node_obj rdfs:comment ?node_object_comment.
   }
 }
 WHERE {
