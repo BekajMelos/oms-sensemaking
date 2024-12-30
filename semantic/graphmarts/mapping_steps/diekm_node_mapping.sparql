@@ -1,3 +1,4 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX oms_latest_new: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/>
@@ -7,6 +8,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ont: <http://blackcape.io/Model/>
 PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
 PREFIX dico: <http://schema.dia.mil/DefenseIntelligenceCoreOntology/>
+
 
 
 INSERT { 
@@ -30,13 +32,18 @@ INSERT {
         ?designates a owl:ObjectProperty.
         ?country_of_allegiance a ?country_class. 
         ?node_name_bnode a ?designative_name_class; 
-
       			?is_tokenized_by ?node_name_literal; 
       			?designates ?node_obj.
         ?allegiance_aor_org a ?aor_class.
         ?allegiance_aor_bnode a ?designative_name_class; 
       				?is_tokenized_by ?allegiance_aor_token; 
       				?designates ?allegiance_aor_org.
+        ?node_obj rdfs:label ?node_name_literal;
+      				rdfs:comment "created in Node step"^^xsd:string .
+        ?node_obj dico:hasAllegianceTo ?country_of_allegiance.
+        ?allegiance_aor_org cco:delimits ?node_obj.
+        cco:delimits a owl:ObjectProperty.
+        dico:hasAllegianceTo a owl:ObjectProperty.    
     
         
     
@@ -90,6 +97,7 @@ WHERE {
   			BIND(IRI("http://blackcape.io/Model/{{?allegiance_aor}}") AS ?allegiance_aor_org) 
             BIND(STRDT(STR(?allegiance_aor), xsd:string) AS ?allegiance_aor_token)
             BIND(IRI(CONCAT("http://blackcape.io/Model/", MD5("{{?allegiance_aor}}"))) AS ?allegiance_aor_bnode)
+            
             
     
 	}
