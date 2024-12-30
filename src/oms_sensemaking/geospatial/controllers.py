@@ -272,7 +272,7 @@ class GeospatialSensemakerController(SensemakerController):
         Given an OMS Observation ID, get the OMS Observation.
 
         :param observation_id: ID of the observation
-        :return: None if no attribute exists, or the OMS Attribute
+        :return: None if no observation exists, or the OMS Observation
         """
         # get observation
         oms_obs: ObservationObservation = self.oms_client.observation(IdQuery(id=observation_id))
@@ -289,6 +289,7 @@ class GeospatialSensemakerController(SensemakerController):
         return oms_obs
 
 
+    # TODO: This is no longer used. Delete it
     def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
         """
         Given an OMS Attribute ID, get the OMS Attribute.
@@ -312,6 +313,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         return oms_attr
 
+    # TODO: This is no longer used. Delete it
     def get_track_node(self, oms_obs: ObservationObservation) -> Optional[NodeNode]:
         """
         Given an OMS Observation, get the associated Flight Activity Node - AKA Track Node ID.
