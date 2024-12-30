@@ -11,11 +11,9 @@ from uuid import UUID, uuid4
 from botocore.exceptions import BotoCoreError
 from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
-from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
-from oms_sdk.generated.generated_graphql_client.node import NodeNode
+from oms_sdk.generated.generated_graphql_client.enums import Action
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients import db_session
@@ -164,23 +162,16 @@ class GeospatialSensemakerController(SensemakerController):
             # extract info from OMS via API calls
             oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
 
-            # we expect an observation node. If one doesn't exist, we can ignore the point.
+            # we expect an observation. If one doesn't exist, we can ignore the point.
             if not oms_obs:
                 return True
 
-            # check if the node_id (vehicle) currently has a track linked to it in the node_track_mapping
-            # if it doesn't, create a track_id and map it to that node
+            # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
+            # we need to create a track_id for it so we can add future points for that vehicle/track
             if oms_obs.nodeId not in self.node_track_mapping:
                 self.node_track_mapping[oms_obs.nodeId] = uuid4()
             # set the current track_id to the track linked to the node (vehicle) in question
             track_id = self.node_track_mapping[oms_obs.nodeId]
-
-            ## NOTE: We do not expect track nodes, only observations
-            ## TODO: Delete code below and delete self.get_track_node()
-            # track_node: Optional[NodeNode] = self.get_track_node(oms_obs)
-            # if not track_node:
-            #     LOGGER.info("NO TRACK NODE FOUND")
-            #     return True
 
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
@@ -279,7 +270,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         # Filter observations
         # Only process if there is a nodeId
-        if not oms_obs or oms_obs.nodeId is None:
+        if not oms_obs:
             return None
 
         # TODO: check this is right?
@@ -287,58 +278,3 @@ class GeospatialSensemakerController(SensemakerController):
             return None
 
         return oms_obs
-
-
-    # TODO: This is no longer used. Delete it
-    def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
-        """
-        Given an OMS Attribute ID, get the OMS Attribute.
-
-        :param attribute_id: ID of the attribute
-        :return: None if no attribute exists, or the OMS Attribute
-        """
-        # get attribute
-        oms_attr: AttributeAttribute = self.oms_client.attribute(IdQuery(id=attribute_id))
-
-        # Filter Attributes
-        # Only process if there is a node ID
-        if not oms_attr or oms_attr.nodeId is None:
-            return None
-
-        if oms_attr.attributeType != AttributeType.SPATIOTEMPORAL.value:
-            return None
-
-        if oms_attr.geometry["type"].lower() != "point":
-            return None
-
-        return oms_attr
-
-    # TODO: This is no longer used. Delete it
-    def get_track_node(self, oms_obs: ObservationObservation) -> Optional[NodeNode]:
-        """
-        Given an OMS Observation, get the associated Flight Activity Node - AKA Track Node ID.
-
-        :param oms_attr: Observation object
-        :return: None if no relationship exists, or the Track Node id
-        """
-        # get relationship
-        observation_node_id = oms_obs.nodeId
-        rel = self.oms_client.relationships(
-            query=RelationshipQuery(
-                nodes=RelationshipNodeQuery(endNodeIds=[observation_node_id]),
-                objectPropertyIris=[SETTINGS.operated_by_iri],
-            )
-        )
-
-        if not len(rel.data) > 0:
-            return None
-
-        # ADSB Flight Activity Node. AKA Track Node ID
-        track_node_id = rel.data[0].startNodeId
-
-        node = self.oms_client.node(query=IdQuery(id=track_node_id))
-
-        if not node:
-            return None
-
-        return node
