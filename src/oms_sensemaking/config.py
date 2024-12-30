@@ -261,14 +261,10 @@ class Settings(BaseSettings):
         "messages can be received per poll",
     )
     sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
-    sqs_geo_sensemaker_queue: str = Field("getSensemakerTrigger", description="The geo sensemaker queue.")
     sqs_geo_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
         description="the SQS Geo Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
-    )
-    sqs_inference_sensemaker_queue: str = Field("getInferenceSensemakerTrigger",
-        description="The inference sensemaker queue."
     )
     sqs_inference_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger",
