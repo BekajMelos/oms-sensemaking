@@ -1,0 +1,25 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+PREFIX ingest_omsb_graphmart: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+
+INSERT {
+    GRAPH ${targetGraph} {
+      ?subject a ?equip_class
+    }
+}
+WHERE {
+  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+    ?subject ingest_omsb_graphmart:Node.class_iri ?object .
+    # The list below is based on whatever IRIs we have in omsb-latest's node table right now.
+    FILTER (?object IN (
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem", 
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+        "http://omsb/test/Tank",
+        "http://omsb/test/Plane",
+        "http://omsb/test/Helicopter"
+      ) )
+    # This EquipmentItem IRI came from the OBI spreadsheet, verified to be completely U
+    BIND(IRI("https://foundry.ai.mil/ontology/4901-001/EquipmentItem") AS ?equip_class)
+  }
+}
