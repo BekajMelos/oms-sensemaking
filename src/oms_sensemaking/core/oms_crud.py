@@ -1,5 +1,8 @@
+from uuid import UUID
+
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
     AttributesAttributes,
     CreateAttributeCreateAttribute,
     CreateNodeCreateNode,
@@ -124,6 +127,11 @@ class OmsCrudTool:
         return self.oms_client.create_originator(originator_input)
 
     ### GET ###
+    def get_attribute(self, id: UUID) -> AttributeAttribute:
+        """Get existing Attribute from OMS"""
+        attribute = self.oms_client.attribute(IdQuery(id=id))
+        return attribute
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Nodes from OMS"""
         nodes = self.oms_client.nodes(query=node_info)

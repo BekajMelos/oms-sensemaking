@@ -4,10 +4,7 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
-from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
@@ -22,11 +19,6 @@ class InferenceSensemakerController(SensemakerController):
     def __init__(self, event_consumer: ObjectEventConsumer) -> None:
         """Create a new instance of InferenceSensemakerController."""
         super().__init__(event_consumer)
-
-        #: OMS GraphQL client
-        self.oms_client: Client = get_generated_graphql_client(
-            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
-        )
         self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
@@ -73,7 +65,7 @@ class InferenceSensemakerController(SensemakerController):
         :return: None if no attribute exists, or the OMS Attribute
         """
         # get attribute
-        oms_attr: AttributeAttribute = self.oms_client.attribute(IdQuery(id=attribute_id))
+        oms_attr = self.oms_crud_tool.get_attribute(attribute_id)
 
         # Only process if we got an attibute back
         # TODO:  Is this necessary? attribute query already return Attribute or None
