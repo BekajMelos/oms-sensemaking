@@ -218,7 +218,9 @@ class Sensemaker(ABC):
             db.commit()
 
     @abstractmethod
-    def process_data(self, data: Any) -> Iterable[FindingBase]:
+    # TODO: enforce common return format
+    # def process_data(self, data: Any) -> Iterable[FindingBase]:
+    def process_data(self, data: Any) -> Any:
         """
         Process data.
 
