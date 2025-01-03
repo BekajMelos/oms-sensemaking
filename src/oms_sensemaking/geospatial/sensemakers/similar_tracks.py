@@ -243,7 +243,7 @@ class SimilarTracksSensemaker(Sensemaker):
             # sub-subquery to label the rows in the Point table after ordering by order_col
             sub_subquery = select(
                 Point,
-                func.ROW_NUMBER().over(partition_by=Point.node_id, order_by=order_col).label('row_number')
+                func.ROW_NUMBER().over(partition_by=Point.track_id, order_by=order_col).label('row_number')
             ).subquery()
 
             # use the row number to find the first value. This subquery gives us either the set of starting track
