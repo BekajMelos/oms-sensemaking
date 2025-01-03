@@ -183,46 +183,6 @@ def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point
         )
     ).scalars().all())
 
-def get_node_id_by_track_id(db: Session, track_id: Union[str, uuid.UUID]):
-    """
-    Get node id for a given track id
-
-    ::param db: A database session
-    ::param track_id: The Track's unique identifier.
-    """
-    return db.execute(
-        select(
-            Point.node_id
-        ).where(
-            Point.track_id == track_id
-        ).order_by(
-            Point.detection_time.asc()
-        )
-    ).scalar()
-
-def get_track_id_by_node_id(
-        db: Session, node_id: Union[str, uuid.UUID], start_time: datetime, end_time: datetime):
-    """
-    Get track id for a given node id and start and end times
-
-    ::param db: A database session
-    ::param node_id: The Node's unique identifier.
-    ::param start_time: The time the track began
-    ::param end_time: The time the track ended
-    """
-    return db.execute(
-        select(
-            Point.track_id
-        ).where(
-            Point.node_id == node_id,
-            Point.detection_time > start_time,
-            Point.detection_time < end_time
-        ).order_by(
-            Point.detection_time.asc()
-        )
-    ).scalar()
-
-
 def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     """
     Get track for a given track id.
@@ -231,9 +191,7 @@ def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     :param track_id: The Track's unique identifier.
     :return: A Track.
     """
-    node_id = get_node_id_by_track_id(db, track_id)
+    points = get_track_points(db, track_id)
+    node_id = points[0].node_id
 
-    if isinstance(node_id, str):
-        node_id = uuid.UUID(node_id)
-
-    return Track(points=get_track_points(db, track_id), node_id=node_id)
+    return Track(points=points, node_id=node_id)
