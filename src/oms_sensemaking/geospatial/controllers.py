@@ -274,7 +274,8 @@ class GeospatialSensemakerController(SensemakerController):
             return None
 
         # TODO: check this is right?
-        if oms_obs.geometry["type"].lower() != "point":
+        can_handle_geometry = oms_obs.geometry["type"].lower() != "point"
+        if can_handle_geometry:
             return None
 
         return oms_obs
