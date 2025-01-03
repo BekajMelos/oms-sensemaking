@@ -13,7 +13,7 @@ from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, NodeQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients import db_session
@@ -173,6 +173,8 @@ class GeospatialSensemakerController(SensemakerController):
             # set the current track_id to the track linked to the node (vehicle) in question
             track_id = self.node_track_mapping[oms_obs.nodeId]
 
+            node_version = (self.oms_crud_tool.get_nodes(node_info=NodeQuery(ids=[oms_obs.nodeId]))).data[0].version
+
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
                 db.expire_on_commit = False
@@ -183,7 +185,7 @@ class GeospatialSensemakerController(SensemakerController):
                                 f'{oms_obs.geometry["coordinates"][1]})'),
                     altitude=None,  # TODO include this
                     detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(oms_obs.node.version),
+                    node_version=int(node_version),
                     observation_version=int(oms_obs.version)
                 ), node_id=oms_obs.nodeId, observation_id=oms_obs.id, source_id=oms_obs.sourceId, track_id=track_id)
 
