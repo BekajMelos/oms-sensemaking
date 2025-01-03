@@ -17,7 +17,7 @@ class InferenceSensemaker(Sensemaker):
         self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute")]}
         self.engine = Engine()
 
-        for rule in self.config.get("rules"):
+        for rule in self.config.get("rules", []):
             self.engine.add_rule(rule)
 
     def process_data(self, data: Any) -> Iterable[FindingBase]:
@@ -28,7 +28,7 @@ class InferenceSensemaker(Sensemaker):
         logic. Subclasses must override this method.
         """
         LOGGER.info("Running the Inference Sensemaker")
-        LOGGER.warning(f"processing data {data}")
+        LOGGER.debug(f"processing data {data}")
 
         # TODO Properly build out RuleContext args
         self.engine.execute_rules(RuleContext(attribute=data))
@@ -39,5 +39,5 @@ class InferenceSensemaker(Sensemaker):
 
         # return data
         # purposefully do not return any results for now
-        LOGGER.warning(f"finished processing data {data}")
+        LOGGER.debug(f"finished processing data {data}")
         return []
