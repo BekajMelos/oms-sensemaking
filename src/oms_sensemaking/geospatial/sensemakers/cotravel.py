@@ -25,7 +25,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track, get_track_id_by_node_id
+from oms_sensemaking.models.geo import Point, Track, get_track
 from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +50,8 @@ class PotentialMatch:
         start_time2: datetime,
         last_time1: datetime,
         last_time2: datetime,
+        track1_track_id: UUID,
+        track2_track_id: UUID,
         true_cotravel: bool,
     ):
         """Create a new instance of PotentialMatch."""
@@ -59,6 +61,8 @@ class PotentialMatch:
         self.start_time2 = start_time2
         self.last_time1 = last_time1
         self.last_time2 = last_time2
+        self.track1_track_id = track1_track_id
+        self.track2_track_id = track2_track_id
         self.true_cotravel = true_cotravel
 
     def __str__(self):
@@ -289,7 +293,7 @@ class CotravelSensemaker(Sensemaker):
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""
-        LOGGER.debug(f"Detecting Cotravels in {data.node_id}")
+        LOGGER.debug(f"Detecting Cotravels for {data.node_id}")
 
         cotravels: list[Cotravel] = []
         matches: list[Colocation] = []
@@ -350,15 +354,16 @@ class CotravelSensemaker(Sensemaker):
 
         This query:
 
-        SELECT DISTINCT ST_GeoHash(points.location) AS "ST_GeoHash_1", points.node_id, points.node_version,
-            points.observation_id, points.observation_version, ST_AsEWKB(points.location) AS location,
-            points.altitude, points.detection_time, points.acm, points.created_at, points.updated_at
+        SELECT DISTINCT ON (points.node_id) ST_GeoHash(points.location) AS "ST_GeoHash_1", points.track_id, 
+            points.observation_id, points.observation_version, points.node_id, points.node_version, points.source_id, 
+            ST_AsEWKB(points.location) AS location, points.altitude, points.detection_time, points.acm, 
+            points.created_at,points.updated_at
         FROM points
-        WHERE ST_GeoHash(points.location) LIKE :ST_GeoHash_2
-            AND points.node_id != :node_id_1
-            AND points.detection_time > :detection_time_1
-            AND points.detection_time < :detection_time_2
-        ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - :detection_time_3))
+        WHERE ST_GeoHash(points.location) LIKE $1::VARCHAR
+            AND points.node_id != $2::UUID
+            AND points.detection_time > $3::TIMESTAMP WITHOUT TIME ZONE
+            AND points.detection_time < $4::TIMESTAMP WITHOUT TIME ZONE
+        ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - $5::TIMESTAMP WITHOUT TIME ZONE))
 
         :param geohash_low: Geohash to match in the DB
         :param track_node_id: Track node to ignore
@@ -392,8 +397,7 @@ class CotravelSensemaker(Sensemaker):
         def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
             """Helper function to create Cotravel from PotentialMatch"""
             with db_session() as db:
-                track2_id = get_track_id_by_node_id(
-                    db, to_add_to.track2_node_id, to_add_to.start_time2, to_add_to.last_time2)
+                track2_id = to_add_to.track2_track_id
                 track2: Track = get_track(db, track2_id)
 
             start_time = min(to_add_to.start_time1, to_add_to.start_time2)
@@ -439,6 +443,8 @@ class CotravelSensemaker(Sensemaker):
                         colocation.db_point.detection_time,
                         colocation.point.detection_time,
                         colocation.db_point.detection_time,
+                        colocation.point.track_id,
+                        colocation.db_point.track_id,
                         true_cotravel,
                     )
             else:
@@ -455,6 +461,8 @@ class CotravelSensemaker(Sensemaker):
                     colocation.db_point.detection_time,
                     colocation.point.detection_time,
                     colocation.db_point.detection_time,
+                    colocation.point.track_id,
+                    colocation.db_point.track_id,
                     true_cotravel,
                 )
 
