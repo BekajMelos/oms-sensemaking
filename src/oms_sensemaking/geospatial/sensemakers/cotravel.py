@@ -347,7 +347,8 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, track_vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
+        cls, geohash_low: str, track_vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime,
+        target_time: datetime
     ) -> List[Point]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
@@ -377,7 +378,8 @@ class CotravelSensemaker(Sensemaker):
             query = db.execute(
                 select(Point)
                 .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
-                .where(Point.node_id != track_vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
+                .where(Point.node_id != track_vehicle_id, Point.detection_time > min_time,
+                       Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
                 .distinct(Point.node_id)
