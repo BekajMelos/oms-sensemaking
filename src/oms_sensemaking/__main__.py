@@ -213,10 +213,10 @@ def run_attribute() -> None:
 def run_semantic() -> None:
     """Run the semantic algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import DummyObjectEventConsumer
+    from oms_sensemaking.core.events import NoOpEventConsumer
     from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
-    start_controller_and_wait(SemanticSensemakerController(DummyObjectEventConsumer()))
+    start_controller_and_wait(SemanticSensemakerController(NoOpEventConsumer()))
 
 
 def get_cli_parser() -> ArgumentParser:
