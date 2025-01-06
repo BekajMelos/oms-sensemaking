@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Iterable
+from typing import Iterable
 
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.inference.engine.engine import Engine
@@ -20,18 +20,15 @@ class InferenceSensemaker(Sensemaker):
         for rule in self.config.get("rules", []):
             self.engine.add_rule(rule)
 
-    def process_data(self, data: Any) -> Iterable[FindingBase]:
+    def process_data(self, data: RuleContext) -> Iterable[FindingBase]:
         """
         Process data.
 
         This method provides the implementation of the sensemaker's business
         logic. Subclasses must override this method.
         """
-        LOGGER.info("Running the Inference Sensemaker")
-        LOGGER.debug(f"processing data {data}")
 
-        # TODO Properly build out RuleContext args
-        self.engine.execute_rules(RuleContext(attribute=data))
+        self.engine.execute_rules(data)
 
         # TODO Figure out what to do with findings, process_data is called in
         # the base class and is expected to return findings, but the important
@@ -39,5 +36,4 @@ class InferenceSensemaker(Sensemaker):
 
         # return data
         # purposefully do not return any results for now
-        LOGGER.debug(f"finished processing data {data}")
         return []

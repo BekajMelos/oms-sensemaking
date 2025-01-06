@@ -1,15 +1,14 @@
 """Attribute sensemaker controller."""
 
 import logging
-from typing import Optional
-from uuid import UUID
 
-from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client.enums import ObjectType
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.sensemakers.inference import InferenceSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -37,19 +36,17 @@ class InferenceSensemakerController(SensemakerController):
         :return: True if the object event was successfully processed, False otherwise.
         """
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
-        LOGGER.warning(f"{vars(event)}")
 
         if isinstance(self.event_consumer, ObjectEventConsumer):
             # extract info from OMS via API calls
-            oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
+            oms_data = self.get_oms_data(event)
 
-            # right now we only expect attributes, skip if it's not an attribute
-            if not oms_attr:
+            # skip if we can't rehydrate the data
+            if not oms_data:
                 return True
 
             for sensemaker in self._registry.values():
-                sensemaker.execute(oms_attr)
-
+                sensemaker.execute(oms_data)
             return True
 
         else:
@@ -57,19 +54,21 @@ class InferenceSensemakerController(SensemakerController):
 
         return False
 
-    def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
+    def get_oms_data(self, event: ObjectEvent) -> RuleContext | None:
         """
-        Given an OMS Attribute ID, get the OMS Attribute.
+        Given an OMS data object's ID, get the object we'll pass to the sensemaker
 
-        :param attribute_id: ID of the attribute
-        :return: None if no attribute exists, or the OMS Attribute
+        :param event: the object whose creation, update, or deletion we need to process
+        :return: None if no object exists, or the OMS Object if it's a type we handle
         """
-        # get attribute
-        oms_attr = self.oms_crud_tool.get_attribute(attribute_id)
 
-        # Only process if we got an attibute back
-        # TODO:  Is this necessary? attribute query already return Attribute or None
-        if not oms_attr:
-            return None
-
-        return oms_attr
+        if event.objectType == ObjectType.ATTRIBUTE:
+            attribute = self.oms_crud_tool.get_attribute(event.objectId)
+            return RuleContext(attribute=attribute) if attribute else None
+        elif event.objectType == ObjectType.OBSERVATION:
+            observation = self.oms_crud_tool.get_observation(event.objectId)
+            return RuleContext(observation=observation) if observation else None
+        elif event.objectType == ObjectType.ACTIVITY:
+            activity = self.oms_crud_tool.get_activity(event.objectId)
+            return RuleContext(activity=activity) if activity else None
+        return None
