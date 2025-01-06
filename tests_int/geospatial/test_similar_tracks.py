@@ -121,9 +121,9 @@ def test_most_similar_tracks_success_exact_same_path(tester_db):
 
     assert len(similar_tracks.top_similarities.queue) == 2
     assert similar_tracks.top_similarities.queue[0][0] == 0.75
-    assert similar_tracks.top_similarities.queue[0][1] == NODE_UUID2
+    assert similar_tracks.top_similarities.queue[0][1] == TRACK_UUID2
     assert similar_tracks.top_similarities.queue[1][0] == 1
-    assert similar_tracks.top_similarities.queue[1][1] == NODE_UUID3
+    assert similar_tracks.top_similarities.queue[1][1] == TRACK_UUID3
 
 
 def test_most_similar_tracks_success_start(tester_db):
