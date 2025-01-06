@@ -44,8 +44,8 @@ class PotentialMatch:
 
     def __init__(
         self,
-        track1_node_id: UUID,
-        track2_node_id: UUID,
+        track1_vehicle_id: UUID,
+        track2_vehicle_id: UUID,
         start_time1: datetime,
         start_time2: datetime,
         last_time1: datetime,
@@ -55,8 +55,8 @@ class PotentialMatch:
         true_cotravel: bool,
     ):
         """Create a new instance of PotentialMatch."""
-        self.track1_node_id = track1_node_id
-        self.track2_node_id = track2_node_id
+        self.track1_vehicle_id = track1_vehicle_id
+        self.track2_vehicle_id = track2_vehicle_id
         self.start_time1 = start_time1
         self.start_time2 = start_time2
         self.last_time1 = last_time1
@@ -347,7 +347,7 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, track_node_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
+        cls, geohash_low: str, track_vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> List[Point]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
@@ -366,7 +366,7 @@ class CotravelSensemaker(Sensemaker):
         ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - $5::TIMESTAMP WITHOUT TIME ZONE))
 
         :param geohash_low: Geohash to match in the DB
-        :param track_node_id: Track node to ignore
+        :param track_vehicle_id: Track node to ignore
         :param min_time: Min allowed time to lag by
         :param max_time: Max allowed time to lag by
         :param target_time: time to sort the response by
@@ -377,7 +377,7 @@ class CotravelSensemaker(Sensemaker):
             query = db.execute(
                 select(Point)
                 .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
-                .where(Point.node_id != track_node_id, Point.detection_time > min_time, Point.detection_time < max_time)
+                .where(Point.node_id != track_vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
                 .distinct(Point.node_id)
