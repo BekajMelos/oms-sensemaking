@@ -23,7 +23,7 @@ from sqlalchemy.orm import (
 
 from oms_sensemaking.config import SETTINGS
 
-from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, UtcDateTime
+from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -91,22 +91,23 @@ class OmsGeoMixin(MappedAsDataclass):
         }
 
 
-class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
+class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin, TrackMixin):
     """
     Represents a geolocation in OMS.
 
     This model is also a dataclass. The order of the positional parameters in
     the generated ``__init__()`` method are:
 
-    - acm
+    - node_id
+    - node_version
+    - source_id
+    - observation_id
+    - observation_version
     - location
     - altitude
     - detection_time
-    - node_id
-    - node_version
+    - acm
     - track_id
-    - observation_id
-    - observation_version
     """
 
     __tablename__: str = 'points'
