@@ -11,10 +11,13 @@ PREFIX cco: <http://www.ontologyrepository.com/CommonCoreOntologies/>
 INSERT { 
     GRAPH ${targetGraph} { 
 
+        # assert that the IRI ?datatype_property is of type owl:DatatypeProperty
     	?datatype_property a owl:DatatypeProperty ;
         	rdfs:comment ?attribute_type ; 
-    		rdfs:label ?attribute_name. 
+    		rdfs:label ?attribute_name.  # add the datatype's name to th edefinition
+        # use the datatype property in teh statement that adds knowledge to the model.
         ?node_obj ?datatype_property ?literal_attribute_value . 
+        # tag this assertion woth a comment
         ?node_obj rdfs:comment ?node_object_comment.
   }
 }
@@ -61,12 +64,27 @@ WHERE {
                 #?observation_id (xsd:string) ;
                 #?activity_id (xsd:string) ;
                  .
+
+                # treat attribute_iri's as owl:DatatypeProperties
                 BIND(IRI("{{?attribute_iri}}") AS ?datatype_property)
+        
+                # We do this the same in all tables - 
+                #   - concatenate the baseuri with the nodeid
+                #   - cast as an IRI
+                #   - bind to a variable ?node_obj
                 BIND(IRI("http://blackcape.io/Model/{{?node_id}}") AS ?node_obj)
+        
+                # making a note that this node object was 'touched' in the attribute mapping step
                 BIND(STRDT("Formed from Attribute Mapping", xsd:string) AS ?node_object_comment)
+        
+                # apply a conditional here:  
+                #      if the attribute's attribute_type = 'STRING' 
+                #           then create a literal with a datatype of XSD.string
     			OPTIONAL {
-                    FILTER (?attribute_type = "STRING")
-				    BIND (xsd:string as ?attribute_xsd_type)
+                    FILTER (?attribute_type = "STRING")  # criteria to enter this conditional
+                    # unnecessary as we can use the xsd:string  directly in the projection 
+				    BIND (xsd:string as ?attribute_xsd_type) 
+                    # use strdt to bind a literal to a datatype
 				    BIND ( STRDT(?attribute_value,  xsd:string )  as ?literal_attribute_value) 
   				}
     }
