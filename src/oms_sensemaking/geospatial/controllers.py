@@ -173,7 +173,12 @@ class GeospatialSensemakerController(SensemakerController):
             # set the current track_id to the track linked to the node (vehicle) in question
             track_id = self.node_track_mapping[oms_obs.nodeId]
 
-            node_version = (self.oms_crud_tool.get_nodes(node_info=NodeQuery(ids=[oms_obs.nodeId]))).data[0].version
+            try:
+                node_version = (self.oms_crud_tool.get_nodes(node_info=NodeQuery(ids=[oms_obs.nodeId]))).data[0].version
+            except IndexError:
+                LOGGER.warning("No node_version found. Unable to process observation.")
+                return False
+
 
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
