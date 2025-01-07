@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Event, Thread
 from time import sleep
-from typing import Optional
+from typing import Optional, Protocol
 from uuid import UUID, uuid4
 
 import boto3
@@ -69,6 +69,10 @@ class ObjectEvent:
 EVENT_HANDLER = Callable[[ObjectEvent], bool]
 
 
+class EventFilter(Protocol):
+    def passes_filter(self, object_event: ObjectEvent) -> bool: ...
+
+
 class ObjectEventConsumer(ABC):
     """Provides a client interface to a data source (i.e. a data producer)."""
 
@@ -121,11 +125,18 @@ class ObjectEventConsumer(ABC):
 class BaseSQSListener(ObjectEventConsumer):
     """An abstract base class for SQS object event consumers."""
 
-    def __init__(self, name: str, queue_url: str, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(
+        self,
+        name: str,
+        queue_url: str,
+        handle_event: Optional[EVENT_HANDLER] = None,
+        event_filter: Optional[EventFilter] = None,
+    ):
         """Create a new instance of SQSListener."""
         super().__init__(handle_event)
         self._name = name
         self._queue_url = queue_url
+        self._event_filter = event_filter
 
         #: SQS client.
         self.sqs: BaseClient = boto3.client(
@@ -152,9 +163,15 @@ class BaseSQSListener(ObjectEventConsumer):
 class SQSListener(BaseSQSListener):
     """An SQS ObjectEventConsumer that consumes OMS events."""
 
-    def __init__(self, name: str, queue_url: str, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(
+        self,
+        name: str,
+        queue_url: str,
+        handle_event: Optional[EVENT_HANDLER] = None,
+        event_filter: Optional[EventFilter] = None,
+    ):
         """Create a new instance of SqsObjectEventConsumer."""
-        super().__init__(name, queue_url, handle_event)
+        super().__init__(name, queue_url, handle_event, event_filter)
 
     def process_object_events(self) -> None:
         """Process object events from OMS."""
@@ -191,10 +208,7 @@ class SQSListener(BaseSQSListener):
                 for message in response["Messages"]:
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
-                    # ignore if not the right type of event
-                    if (object_event.objectType != ObjectType.ATTRIBUTE.value) and (
-                        object_event.eventType != Action.CREATE.value
-                    ):
+                    if self._event_filter and not self._event_filter.passes_filter(object_event):
                         continue
 
                     LOGGER.info(

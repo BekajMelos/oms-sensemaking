@@ -78,6 +78,9 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.geospatial.controllers import GeoQueueFilter
+from oms_sensemaking.inference.controllers import InferenceQueueFilter
+
 load_dotenv()
 
 
@@ -194,18 +197,22 @@ def run_geospatial(args: Namespace) -> None:
     from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
-    geo = GeospatialSensemakerController(SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url))
+    geo = GeospatialSensemakerController(
+        SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+    )
 
     start_controller_and_wait(geo)
 
 
-def run_attribute() -> None:
-    """Run the attribute algorithms."""
+def run_inference() -> None:
+    """Run the inference algorithms."""
     # lazy load controller to allow CLI args to override app config
     from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
-    inference = InferenceSensemakerController(SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url))
+    inference = InferenceSensemakerController(
+        SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url, event_filter=InferenceQueueFilter())
+    )
 
     start_controller_and_wait(inference)
 

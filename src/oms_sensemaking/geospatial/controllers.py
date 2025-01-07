@@ -11,14 +11,14 @@ from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.enums import AttributeType
+from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType, ObjectType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer, SQSListener
+from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
@@ -240,3 +240,8 @@ class GeospatialSensemakerController(SensemakerController):
             return None
 
         return node
+
+
+class GeoQueueFilter(EventFilter):
+    def passes_filter(self, object_event: ObjectEvent):
+        return object_event.objectType == ObjectType.ATTRIBUTE.value and object_event.eventType == Action.CREATE.value
