@@ -209,6 +209,11 @@ class SQSListener(BaseSQSListener):
                     object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
 
                     if self._event_filter and not self._event_filter.passes_filter(object_event):
+                        LOGGER.warning(
+                            f"{self._name} Filtered {object_event.eventType} {object_event.objectType}:"
+                            + f"{object_event.objectId} from queue"
+                        )
+                        self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
                         continue
 
                     LOGGER.info(
