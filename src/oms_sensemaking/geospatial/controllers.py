@@ -13,7 +13,7 @@ from dateutil.parser import isoparse
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, NodeQuery
+from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients import db_session
@@ -174,9 +174,10 @@ class GeospatialSensemakerController(SensemakerController):
             track_id = self.node_track_mapping[oms_obs.nodeId]
 
             try:
-                node_version = (self.oms_crud_tool.get_nodes(node_info=NodeQuery(ids=[oms_obs.nodeId]))).data[0].version
+                node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
+                node_version = node.version
             except IndexError:
-                LOGGER.warning("No node_version found. Unable to process observation.")
+                LOGGER.warning("No node found. Unable to process observation.")
                 return False
 
 
@@ -276,11 +277,10 @@ class GeospatialSensemakerController(SensemakerController):
         oms_obs: ObservationObservation = self.oms_client.observation(IdQuery(id=observation_id))
 
         # Filter observations
-        # Only process if there is a nodeId
+        # Only process if there is an observation and it has a geojson point
         if not oms_obs:
             return None
 
-        # TODO: check this is right?
         can_handle_geometry = oms_obs.geometry["type"].lower() != "point"
         if can_handle_geometry:
             return None
