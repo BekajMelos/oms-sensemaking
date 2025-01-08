@@ -44,25 +44,25 @@ class PotentialMatch:
 
     def __init__(
         self,
-        track1_vehicle_id: UUID,
-        track2_vehicle_id: UUID,
+        vehicle_id1: UUID,
+        vehicle_id2: UUID,
         start_time1: datetime,
         start_time2: datetime,
         last_time1: datetime,
         last_time2: datetime,
-        track1_track_id: UUID,
-        track2_track_id: UUID,
+        track_id1: UUID,
+        track_id2: UUID,
         true_cotravel: bool,
     ):
         """Create a new instance of PotentialMatch."""
-        self.track1_vehicle_id = track1_vehicle_id
-        self.track2_vehicle_id = track2_vehicle_id
+        self.vehicle_id1 = vehicle_id1
+        self.vehicle_id2 = vehicle_id2
         self.start_time1 = start_time1
         self.start_time2 = start_time2
         self.last_time1 = last_time1
         self.last_time2 = last_time2
-        self.track1_track_id = track1_track_id
-        self.track2_track_id = track2_track_id
+        self.track_id1 = track_id1
+        self.track_id2 = track_id2
         self.true_cotravel = true_cotravel
 
     def __str__(self):
@@ -347,7 +347,7 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, track_vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime,
+        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime,
         target_time: datetime
     ) -> List[Point]:
         """
@@ -367,7 +367,7 @@ class CotravelSensemaker(Sensemaker):
         ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - $5::TIMESTAMP WITHOUT TIME ZONE))
 
         :param geohash_low: Geohash to match in the DB
-        :param track_vehicle_id: Track node to ignore
+        :param vehicle_id: Track node to ignore
         :param min_time: Min allowed time to lag by
         :param max_time: Max allowed time to lag by
         :param target_time: time to sort the response by
@@ -378,7 +378,7 @@ class CotravelSensemaker(Sensemaker):
             query = db.execute(
                 select(Point)
                 .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
-                .where(Point.node_id != track_vehicle_id, Point.detection_time > min_time,
+                .where(Point.node_id != vehicle_id, Point.detection_time > min_time,
                        Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
@@ -399,7 +399,7 @@ class CotravelSensemaker(Sensemaker):
         def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
             """Helper function to create Cotravel from PotentialMatch"""
             with db_session() as db:
-                track2_id = to_add_to.track2_track_id
+                track2_id = to_add_to.track_id2
                 track2: Track = get_track(db, track2_id)
 
             start_time = min(to_add_to.start_time1, to_add_to.start_time2)

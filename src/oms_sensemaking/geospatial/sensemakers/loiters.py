@@ -56,7 +56,7 @@ class Loiter(FindingBase):
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
     loiter_id: UUID = field(init=False, default_factory=uuid4)
-    track_vehicle_id: UUID
+    vehicle_id: UUID
     geohash_low: str
     start_time: datetime
     end_time: datetime
@@ -128,7 +128,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 tags=[SETTINGS.geo_sensemaker_event_tag],
                 name=SETTINGS.loiter_event_name,
                 startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                endNodeId=loiter.track_vehicle_id,
+                endNodeId=loiter.vehicle_id,
                 confidence=Confidence.HIGH,
                 acm=loiter.acm,
                 objectPropertyIri=SETTINGS.loiter_relationship_iri,
