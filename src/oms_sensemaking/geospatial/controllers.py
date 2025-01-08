@@ -176,7 +176,7 @@ class GeospatialSensemakerController(SensemakerController):
             try:
                 node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
                 node_version = node.version
-            except IndexError:
+            except AttributeError:
                 LOGGER.warning("No node found. Unable to process observation.")
                 return False
 
