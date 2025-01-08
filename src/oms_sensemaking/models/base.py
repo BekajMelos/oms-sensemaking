@@ -183,8 +183,8 @@ class SecurityMarkingMixin(MappedAsDataclass):
         comment='The ACM representing the classification of the data.'
     )
 
-class OmsBaseObjectMixin(MappedAsDataclass):
-    """Declare Common OMS Object Metadata."""
+class RelatedNodeMixin(MappedAsDataclass):
+    """Declare OMS Node Metadata."""
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
@@ -198,13 +198,15 @@ class OmsBaseObjectMixin(MappedAsDataclass):
         comment='The version of the node associated with this object.'
     )
 
+class SourceMixin(MappedAsDataclass):
+    """Declare OMS Source Metadata."""
     source_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
         comment='The ID of the source associated with the object.'
     )
 
-class OmsAttributeMixin(OmsBaseObjectMixin, MappedAsDataclass):
+class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
     """Declare OMS Attribute Metdata."""
 
     attribute_id: Mapped[uuid.UUID] = mapped_column(
@@ -220,7 +222,7 @@ class OmsAttributeMixin(OmsBaseObjectMixin, MappedAsDataclass):
         comment='The version of the attribute associated with the object.'
     )
 
-class OmsObservationMixin(OmsBaseObjectMixin, MappedAsDataclass):
+class OmsObservationMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
     """Declare OMS Observation Metadata."""
 
     observation_id: Mapped[uuid.UUID] = mapped_column(
