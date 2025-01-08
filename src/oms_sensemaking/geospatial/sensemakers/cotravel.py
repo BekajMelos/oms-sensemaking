@@ -5,7 +5,6 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from functools import cached_property
 from typing import List, Optional
 from uuid import UUID, uuid4
 
@@ -119,8 +118,7 @@ class Cotravel(FindingBase):
     def __str__(self):
         return str(self.to_dict())
 
-    @cached_property
-    def acm(self) -> dict:
+    def get_acm(self) -> dict:
         """Rollup the acm from the points"""
         track1_acms = [point.acm for point in self.track1.points]
         track2_acms = [point.acm for point in self.track2.points]
@@ -170,7 +168,7 @@ class CotravelOmsPublisher(OmsPublisher):
             name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
 
             create_node_input = CreateNodeInput(
-                acm=cotravel.acm,
+                acm=cotravel.get_acm(),
                 name=name,
                 tier=ObjectTier.DERIVATIVE,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
@@ -205,7 +203,7 @@ class CotravelOmsPublisher(OmsPublisher):
                 startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
                 endNodeId=cotravel.track1.node_id,
                 confidence=Confidence.HIGH,
-                acm=cotravel.acm,
+                acm=cotravel.get_acm(),
                 objectPropertyIri=SETTINGS.cotravel_relationship_iri,
                 sourceId=source_id,
             )
@@ -218,7 +216,7 @@ class CotravelOmsPublisher(OmsPublisher):
                 startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
                 endNodeId=cotravel.track2.node_id,
                 confidence=Confidence.HIGH,
-                acm=cotravel.acm,
+                acm=cotravel.get_acm(),
                 objectPropertyIri=SETTINGS.cotravel_relationship_iri,
                 sourceId=source_id,
             )
@@ -249,7 +247,7 @@ class CotravelOmsPublisher(OmsPublisher):
                 sourceId=source_id,
                 geometry=cotravel.to_geojson(),
                 nodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
-                acm=cotravel.acm,
+                acm=cotravel.get_acm(),
                 valueStart=cotravel.start_time,
                 valueEnd=cotravel.last_time,
             )

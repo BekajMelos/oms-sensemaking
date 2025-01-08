@@ -111,7 +111,7 @@ services:
     environment:
       - DEBUG=${DEBUG-}
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger,inferenceSensemakerTrigger
+      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger,inferenceSensemakerTrigger,resolutionTrigger
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"

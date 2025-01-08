@@ -4,7 +4,6 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from functools import cached_property
 from threading import Lock
 from typing import Any, Iterable, List, Tuple
 
@@ -113,9 +112,7 @@ class FindingBase(ABC):
         """Return a dictionary representation of the object."""
         return jsonify(asdict(self))
 
-    @cached_property
-    @abstractmethod
-    def acm(self) -> dict:
+    def get_acm(self) -> dict:
         """Return the acm for this object"""
         raise NotImplementedError
 
@@ -201,7 +198,7 @@ class Sensemaker(ABC):
         findings: List = []
         for finding_object in finding_objects:
             finding = Finding(
-                acm=finding_object.acm,
+                acm=finding_object.get_acm(),
                 algorithm_name=self.name,
                 algorithm_version=f"{self.version[0]}.{self.version[1]}.{self.version[2]}",
                 algorithm_configuration=self.config,

@@ -91,3 +91,9 @@
 | `INFERENCE_GARRISON_LOCATION_IRI`  | `https://blackcape.io/PLACEHOLDER/garrisonedLocation`              | Iri for relationship between an object and its garrison        | No             |
 | `INFERENCE_ADD_IN_GARRISON_IRI`    | `https://blackcape.io/PLACEHOLDER/isgarrisonedAt`                  | Iri for attribute showing that an object is out of garrison    | No             |
 | `GARRISON_DISTANCE_KILOMETERS`     | `2000`                                                             | Distance to use for the Out of Garrison Rule                   | No             |
+| `SQS_RES_QUEUE_URL`                | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger` | Resolution SQS Queue URL                 | Yes            |
+| `ENABLE_RESOLUTION_SENSEMAKER`                | `True` | Toggle on/off Entity Resolution                 | No            |
+| `RESOLUTION_SENSEMAKER_TAG`                | `resolution_tag` | Tag for OMSB objects from the resolution sensemaker                 | No            |
+| `RESOLUTION_RELATIONSHIP_NAME`                | `Same As` | Relationship IRI for resolution sensemaker suggestions                 | No            |
+| `RESOLUTION_RELATIONSHIP_IRI`                | `https://foundry.ai.mil/MIDB/V3.3/relates_to` | Iri to set for the Resolution Finding URL                 | No            |
+| `DUPLICATE_FACILITY_IRIS`                | `'["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"]'` | Iris to match on when looking for duplicate facilities                 | No            |
