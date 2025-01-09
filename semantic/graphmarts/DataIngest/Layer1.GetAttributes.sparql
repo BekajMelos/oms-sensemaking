@@ -94,10 +94,10 @@ WHERE {
                 ?observation_id (xsd:string) ;
                 ?activity_id (xsd:string) ;
                  .
-                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?attribute_id}}") AS ?attribute_obj)
-                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?node_id}}") AS ?node_obj)
-                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?observation_id}}") AS ?observation_obj)
-                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?activity_id}}") AS ?activity_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Attribute/{{?attribute_id}}") AS ?attribute_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/{{?node_id}}") AS ?node_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Observation/{{?observation_id}}") AS ?observation_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Activity/{{?activity_id}}") AS ?activity_obj)
                 BIND(IRI("{{?attribute_iri}}") AS ?attribute_class)
     }
 }

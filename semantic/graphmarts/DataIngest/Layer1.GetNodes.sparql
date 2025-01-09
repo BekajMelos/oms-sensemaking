@@ -60,6 +60,6 @@ WHERE {
             ?class_iri_chain (xsd:list);
             ?name (xsd:string);
             .  
-            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?node_id}}") AS ?node_obj)
+            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/{{?node_id}}") AS ?node_obj)
 	}
 }

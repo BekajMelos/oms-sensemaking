@@ -59,10 +59,10 @@ WHERE {
                 ?object_property_name (xsd:string) ;
                 ?source_id (xsd:string) ;
                  .
-            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?start_node_id}}") AS ?start_node_obj)
-            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?end_node_id}}") AS ?end_node_obj)
+            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/{{?start_node_id}}") AS ?start_node_obj)
+            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/{{?end_node_id}}") AS ?end_node_obj)
             BIND(IRI("{{?object_property_iri}}") AS ?relationship_class)
-            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/{{?relationship_id}}") AS ?relationship_obj)
+            BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Relationship/{{?relationship_id}}") AS ?relationship_obj)
     
     }
 }
