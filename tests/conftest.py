@@ -102,3 +102,10 @@ def mock_oms_crud_tool(mock_oms_client, mock_source):
     oms_crud_tool.oms_client = mock_oms_client
 
     return oms_crud_tool
+
+# @pytest.fixture
+# def mock_geo_controller(mock_oms_client, mock_oms_crud_tool):
+#     controller = GeospatialSensemakerController(GeoSQSListener())
+#     controller.oms_client = mock_oms_client
+#     controller.oms_crud_tool = mock_oms_crud_tool
+#     return controller
