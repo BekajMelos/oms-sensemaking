@@ -9,27 +9,45 @@ INSERT {
       # make obj an instance of the class OBI specified for EQP
       ?node_obj a ?equip_class ;
       # effectively create a data property (as opposed to an obj property) for the name
-      	rdfs:label ?node_name .
+      	rdfs:label ?node_name ;
+        ?located_at ?observed_geometry .
     }
 }
 WHERE {
   GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
 	?node_obj ingest_omsb_graphmart:Node.class_iri ?object  ;
+        # flagging for viewers that I don't have to use OPTIONAL below
+        # bc I know that both name & id are NOT NULL fields in the node table 
+        # from which these objects were created.
 		ingest_omsb_graphmart:Node.name ?node_name ;
+        ingest_omsb_graphmart:Node.id ?node_id ;
+
         # The list below is based on whatever IRIs we have in omsb-latest's node table right now.
     FILTER (?object IN (
         "http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem", 
         "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
         "http://omsb/test/Tank",
-        "http://omsb/test/Plane",
-        "http://omsb/test/Helicopter",
-        "https://foundry.ai.mil/NIEM/v5.2/AircraftType",
-        "https://foundry.ai.mil/NIEM/v5.2/VesselType",
-        "https://foundry.ai.mil/NIEM/v5.2/PleasureCraftCodeType"
-    ) ) 
-  
-    # Using a tex-latest OMSB2 IRI for now (see spreadsheet at
+        "http://omsb/test/Plane"
+        
+        # commenting these out temporarily so I can test on fewer triples for now
+        #,
+        #"http://omsb/test/Helicopter",
+        #"https://foundry.ai.mil/NIEM/v5.2/AircraftType",
+        #"https://foundry.ai.mil/NIEM/v5.2/VesselType",
+        #"https://foundry.ai.mil/NIEM/v5.2/PleasureCraftCodeType"
+    ) ) .
+
+    # the OPTIONAL is because not all nodes have an observation assoc'd w/ them in OMSB2
+	OPTIONAL {    ?observation_obj ingest_omsb_graphmart:Observation.node_id ?node_id  ;
+		ingest_omsb_graphmart:Observation.geometry ?observed_geometry .
+    }   
+    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
     # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem") AS ?equip_class)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000196") AS ?bearer_of)
+    BIND(IRI("https://foundry.ai.mil/MIDB_GST/v1/Located_At") AS ?located_at)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000176") AS ?continuant_part_of_at_some_time)
+
   }
 }
