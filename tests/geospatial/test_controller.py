@@ -10,12 +10,10 @@ from oms_sensemaking.geospatial.controllers import GeospatialSensemakerControlle
 
 
 @pytest.fixture
-def mock_geo_controller(mock_oms_client, mock_oms_crud_tool):
+def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(GeoSQSListener())
     controller.oms_client = mock_oms_client
-    controller.oms_crud_tool = mock_oms_crud_tool
     return controller
-
 
 def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller, caplog):
     # This is what we want returned from get_oms_observation. We only need the nodeId
@@ -36,9 +34,9 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
     # Set the logger level to WARNING. This is the level we are sending our AttributeError message
     caplog.set_level(logging.WARNING)
 
-    # Run handle_event with our mock_object_event from above
-    obj = mock_geo_controller.handle_event(mock_object_event)
+    # Run handle_event with our mock_object_event from above. Should render False
+    handled = mock_geo_controller.handle_event(mock_object_event)
 
     # Assertions
     assert "No node found. Unable to process observation." in caplog.text
-    assert not obj
+    assert not handled
