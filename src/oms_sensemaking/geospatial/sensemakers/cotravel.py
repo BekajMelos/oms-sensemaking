@@ -338,7 +338,8 @@ class CotravelSensemaker(Sensemaker):
             cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
         if cotravels:
-            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {data.node_id}")
+            track_id = data.points[0].track_id
+            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_id}")
 
         for cotravel in cotravels:
             LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)

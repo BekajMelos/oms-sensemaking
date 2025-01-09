@@ -240,7 +240,8 @@ class LoiterSensemaker(Sensemaker):
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {data.node_id}")
+            track_id = data.points[0].track_id
+            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_id}")
 
         for loiter in confirmed_loiters:
             LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)
