@@ -1,0 +1,78 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX oms_latest_new: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/>
+PREFIX public: <http://cambridgesemantics.com/DataSource/cbd5ec538476e3efb7264e3825565c2a/OMS_Latest_New/public/>
+PREFIX s: <http://cambridgesemantics.com/ontologies/DataToolkit#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ont: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+
+INSERT { 
+    GRAPH ${targetGraph} { 
+        ?observation_obj a ?observation_class ;
+          rdfs:id ?observation_id ;
+          rdfs:label ?display_value ;
+          .
+         # the triple below isn't correct, but I'm using it as a placeholder for now.
+         # I did at least confirm that observations can only be geo at this time.
+         # In real use, geo treatment will be more complex.
+         # I don't want to use ?geometry as the obj in this triple, even temporarily, 
+         # bc it doesn't include time.
+    	 ?node_obj ?located_at ?observation_obj .
+    
+         ?observation_obj a ont:Observation ;
+           ont:Observation.id ?observation_id ;
+           ont:Observation.acm_string ?acm_string ;
+           ont:Observation.Tags ?tags ;
+           ont:Observation.display_value ?display_value ;
+           ont:Observation.class_iri ?class_iri ;
+           ont:Observation.class_iri_chain ?class_iri_chain ;
+           ont:Observation.geometry ?geometry ;
+           ont:Observation.confidence ?confidence ;
+           ont:Observation.start_time ?start_time  ;
+           ont:Observation.end_time ?end_time  ;
+           ont:Observation.node_id ?node_id  ;
+           ont:Observation.source_id ?source_id  ;
+           .
+  }
+}
+WHERE {
+    SERVICE <http://cambridgesemantics.com/services/DataToolkit> {
+        ?generator a s:RdfGenerator, s:OntologyGenerator ;
+            s:as (?subject ?predicate ?object) ;
+            s:base ${targetGraph} ;
+            .
+        oms_latest_new:OMS_Latest_New a s:DbSource ;
+            s:url "{{@db.cbd5ec538476e3efb7264e3825565c2a.url}}" ;
+            s:username "{{@db.cbd5ec538476e3efb7264e3825565c2a.user}}" ;
+            s:password "{{@db.cbd5ec538476e3efb7264e3825565c2a.password}}" ;
+            s:database "{{@db.cbd5ec538476e3efb7264e3825565c2a.database}}" ;
+            .
+        public:observation a s:DbSource ;
+            s:using oms_latest_new:OMS_Latest_New ;
+            s:table "public.observation" ;
+            s:model "observation" ;
+            s:query "select t.id as observation_id, a.acm_string as acm_string, t.tags as tags, t.class_iri as class_iri, t.class_iri_chain as class_iri_chain, t.class_name as class_name, t.display_value as display_value, t.confidence as confidence, t.source_id as source_id, t.node_id as node_id, t.geometry as geometry, t.start_time as start_time, t.end_time as end_time from observation t left join public.acm_container a on t.acm_id=a.id" ;
+                ?observation_id (xsd:string) ;
+                ?acm_string (xsd:string) ;
+                ?tags (xsd:list) ;
+                ?class_iri (xsd:string) ;
+    			?class_iri_chain (xsd:list) ;
+                ?class_name (xsd:string) ;
+                ?display_value (xsd:string) ; 
+                ?geometry (xsd:string) ; # may need different type here.  Revisit.
+                ?confidence (xsd:string) ;
+                ?start_time (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ;
+    			?end_time (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ;
+                ?node_id (xsd:string) ;
+                ?source_id (xsd:string) ;
+                 .
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Observation/{{?observation_id}}") AS ?observation_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/{{?node_id}}") AS ?node_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Source/{{?source_id}}") AS ?source_obj)
+                BIND(IRI("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Activity/{{?activity_id}}") AS ?activity_obj)
+                BIND(IRI("{{?class_iri}}") AS ?observation_class)
+    
+    			# again here, this is going to be the IRI we use. Placeholder for now.
+    			BIND(IRI("https://foundry.ai.mil/MIDB_GST/v1/Located_At") AS ?located_at)
+    }
+}
