@@ -1,4 +1,4 @@
 {
   "RawMessageDelivery": "true",
-  "FilterPolicy": "{\"objectType\": [\"ATTRIBUTE\"], \"eventType\": [\"CREATE\"]}"
+  "FilterPolicy": "{\"objectType\": [\"OBSERVATION\"], \"eventType\": [\"CREATE\"]}"
 }
