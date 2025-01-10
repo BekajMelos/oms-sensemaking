@@ -156,7 +156,11 @@ ENV UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
 
 ENV UVICORN_PORT=${UVICORN_PORT:-${PORT:-8443}}
 
-COPY . ${APP_HOME}
+COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
+COPY --chown=appuser:appuser src ${APP_HOME}/src
+COPY --chown=appuser:appuser alembic.ini pyproject.toml README.md ${APP_HOME}
+COPY --chown=appuser:appuser --chmod=755 docker/start.sh docker/healthcheck.sh /
+COPY --chmod=644 docker/banner.txt /etc/motd
 
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
 #       for a private PyPI to be used to define a dependency on the oms_sdk
@@ -189,19 +193,10 @@ apt-get install -y --no-install-recommends $BUILD_DEPS procps
 # install app
 pip install .
 
-# configure app
-mv $APP_HOME/docker/*.sh /
-chmod 755 /start.sh /healthcheck.sh
-
 # contrib
 APP_SHORT_NAME=oms_sensemaking
 mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
-
-# configure extras
-mv /etc/motd /etc/motd-alpine
-mv $APP_HOME/docker/banner.txt /etc/motd
-chmod 644 /etc/motd
 
 # clean up os packages
 apt-get purge -y $BUILD_DEPS
