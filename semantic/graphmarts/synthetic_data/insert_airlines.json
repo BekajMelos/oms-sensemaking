@@ -1,0 +1,100 @@
+[
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "airline_name": "Allegiant Air",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AllegiantAirlines"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "AAL",
+    "ceo": "http://example.org/airline-ontology#RobertIsom",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AmericanAirlines",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "subsidiary": "http://example.org/airline-ontology#AmericanAirlines",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AmericanAirlinesGroup"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "subsidiary": "http://example.org/airline-ontology#EnvoyAir",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AmericanAirlinesGroup"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "subsidiary": "http://example.org/airline-ontology#PSAAirlines",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AmericanAirlinesGroup"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "subsidiary": "http://example.org/airline-ontology#PiedmontAirlines",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#AmericanAirlinesGroup"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "airline_name": "Endeavor Air",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#Endeavor_Air"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "ENV",
+    "ceo": "http://example.org/airline-ontology#Pedro_Fabregas",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#EnvoyAir",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "PSA",
+    "ceo": "http://example.org/airline-ontology#Dion_Flannery",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#PSAAirlines",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "PDT",
+    "ceo": "http://example.org/airline-ontology#Eric_Morgan",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#PiedmontAirlines",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "SWA",
+    "ceo": "http://example.org/airline-ontology#BobJordan",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#SouthwestAirlines",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  },
+  {
+    "airline_class": "http://example.org/airline-ontology#Airline",
+    "ICAO_code": "UAL",
+    "airline_name": "United Airlines",
+    "ceo": "http://example.org/airline-ontology#ScottKirby",
+    "has_function": "http://www.ontologyrepository.com/CommonCoreOntologies/hasFunction",
+    "subsidiary": "http://example.org/airline-ontology#AllegiantAirlines",
+    "airline_function": "http://example.org/airline-ontology#PassengerTransportationFunction",
+    "airline": "http://example.org/airline-ontology#UnitedAirlines",
+    "ceo_class": "http://www.ontologyrepository.com/CommonCoreOntologies/Person"
+  }
+]
