@@ -158,7 +158,7 @@ ENV UVICORN_PORT=${UVICORN_PORT:-${PORT:-8443}}
 
 COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
 COPY --chown=appuser:appuser src ${APP_HOME}/src
-COPY --chown=appuser:appuser alembic.ini pyproject.toml README.md ${APP_HOME}
+COPY --chown=appuser:appuser --chmod=644 alembic.ini pyproject.toml README.md ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 docker/start.sh docker/healthcheck.sh /
 COPY --chmod=644 docker/banner.txt /etc/motd
 
@@ -168,6 +168,9 @@ COPY --chmod=644 docker/banner.txt /etc/motd
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
     --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
+
+find /app -type f -exec chmod 644 {} \;
+find /app -type d -exec chmod 755 {} \;
 
 # use the provided ca certificate bundle if available
 if [ -f /root/ca-certificate.crt ]; then
