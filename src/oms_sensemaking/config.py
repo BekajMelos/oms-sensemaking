@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Attribute"], description="Inference Sensemaker tags"
+        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
