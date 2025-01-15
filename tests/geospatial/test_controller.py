@@ -1,4 +1,5 @@
 """Geo Controller Unit Tests"""
+
 import logging
 from unittest import mock
 from uuid import uuid4
@@ -6,14 +7,19 @@ from uuid import uuid4
 import pytest
 from pytest_mock import MockerFixture
 
-from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.events import SQSListener
+from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 
 
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
-    controller = GeospatialSensemakerController(GeoSQSListener())
+    controller = GeospatialSensemakerController(
+        SQSListener("geo test queue listener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+    )
     controller.oms_client = mock_oms_client
     return controller
+
 
 def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller, caplog):
     # This is what we want returned from get_oms_observation. We only need the nodeId

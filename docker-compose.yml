@@ -9,7 +9,7 @@ services:
     environment:
       # AWS
       AWS_ENDPOINT_URL: http://localstack:4566
-      #SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+      #SQS_GEO_QUEUE_URL: ${SQS_GEO_QUEUE_URL}
 
       # database config
       DB_HOST: postgis
@@ -107,7 +107,7 @@ services:
     environment:
       - DEBUG=${DEBUG-}
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger
+      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger,inferenceSensemakerTrigger
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"

@@ -29,7 +29,7 @@ class BaseRule(ABC):
         :param input: Generic object used to evaluate and execute the rule
         """
 
-        LOGGER.debug(f"Executing Rule {self.get_name()}")
+        LOGGER.debug(f"Executing Rule {self.get_name()} with input {input}")
         if not self._has_action_already_ran(input) and self._evaluate(input):
             self._action(input)
         return
