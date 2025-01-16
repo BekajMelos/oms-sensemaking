@@ -95,6 +95,7 @@ services:
     depends_on:
       - postgis
       - localstack
+      - rabbitmq
     profiles:
       - local
 
@@ -167,6 +168,20 @@ services:
       - "9000:9000"
     environment:
       ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    profiles:
+      - local
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # management UI
+    volumes:
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./docker/rabbitmq/advanced.config:/etc/rabbitmq/advanced.config
+      - ./docker/rabbitmq/definitions.file.json:/etc/rabbitmq/definitions.file.json
 
 volumes:
   doccano-db:
