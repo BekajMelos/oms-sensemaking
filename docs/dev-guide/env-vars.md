@@ -53,7 +53,7 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-5`                                   | The version of oms-bridge | Yes            |
+| `OMSB_VERSION` | `Grimlock-INC-10`                                   | The version of oms-bridge | Yes            |
 | `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
@@ -79,4 +79,13 @@
 | `SIMILAR_TRACKS`                   | `True`                                                             | Toggle on/off Similar Track Calculations                       | No             |
 | `N_TRACKS`                         | `5`                                                                | Number of similar tracks to return                             | No             |
 | `WITHIN_METERS`                    | `3000.0`                                                           | Used to define the search space for potential similar tracks   | No             |
-| `SQS_QUEUE_URL`                    | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger` | SQS Queue URL                            | Yes            |
+| `SQS_GEO_QUEUE_URL`                | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger` | Geospatial SQS Queue URL                 | Yes            |
+| `GENERATE_INFERENCES`              | `True`                                                             | Turn the Inference Sensemaker On/Off                           | Yes            |
+| `INFERENCE_TAGS`                   | `["Oms Sensemaking", "Inferred Data"]`                        | Inference SQS Queue URL                                        | Yes            |
+| `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_IRI` | `https://foundry.ai.mil/INDOPACOM/v5/Name`                     | Iri to find for the HasNameAttribute rule                      | No             |
+| `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_META_DATA_IRI` | `https://foundry.ai.mil/MIDB_GST/v1/MDN`             | Iri to apply for the HasNameAttribute rule                     | No             |
+| `INFERENCE_ADD_GARRISON_ATTRIBUTE_IRI` | `https://blackcape.io/PLACEHOLDER/inGarrison`                  | Iri to apply to objects that are in their garrison             | No             |
+| `INFERENCE_PARTICIPATED_IN_IRI`    | `https://blackcape.io/PLACEHOLDER/participatedIn`                  | Iri to determine if an object participated in an observation   | No             |
+| `INFERENCE_GARRISON_LOCATION_IRI`  | `https://blackcape.io/PLACEHOLDER/garrisonedLocation`              | Iri for relationship between an object and its garrison        | No             |
+| `INFERENCE_ADD_IN_GARRISON_IRI`    | `https://blackcape.io/PLACEHOLDER/isgarrisonedAt`                  | Iri for attribute showing that an object is out of garrison    | No             |
+| `GARRISON_DISTANCE_KILOMETERS`     | `2000`                                                             | Distance to use for the Out of Garrison Rule                   | No             |

@@ -1,0 +1,4 @@
+{
+  "RawMessageDelivery": "true",
+  "FilterPolicy": "{\"objectType\": [\"ACTIVITY\", \"ATTRIBUTE\", \"OBSERVATION\"], \"eventType\": [\"CREATE\"]}"
+}

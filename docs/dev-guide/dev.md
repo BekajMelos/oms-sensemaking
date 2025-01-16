@@ -13,7 +13,7 @@ using matches the version defined in `.python-version`.
 
 ### Step 1: Install Docker
 
-See the [Install Docker Engine] section of the Docker Manual for platform 
+See the [Install Docker Engine] section of the Docker Manual for platform
 specific installation instructions.
 
 ### Step 1: Create a Virtual Environment
@@ -105,7 +105,7 @@ will rely on the default values set in the applicaton's configuraton:
 | Variable Name       | Example                          | Description                                           |
 |:--------------------|:---------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                        | The password for the PostgreSQL admmin user           |
-| `OMSB_VERSION`      | `Grimlock-INC-5`                 | The version of oms-bridge                             |
+| `OMSB_VERSION`      | `Grimlock-INC-10`                 | The version of oms-bridge                             |
 | `OMSB_URL`          | `https://localhost:8020/graphql` | URL for OMSB                                          |
 | `CERT_PATH`         | `./pki/test10.pem`               | Path to User PEM                                      |
 | `KEY_PATH`          | `./pki/test10.key`               | Path to User Key                                      |

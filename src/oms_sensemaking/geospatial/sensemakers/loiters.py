@@ -14,7 +14,6 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
-from oms_sdk.generated.generated_graphql_client.input_types import GeoInput
 from shapely import LineString
 
 from oms_sensemaking.config import SETTINGS
@@ -57,7 +56,7 @@ class Loiter(FindingBase):
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
     loiter_id: UUID = field(init=False, default_factory=uuid4)
-    track_node_id: UUID
+    vehicle_id: UUID
     geohash_low: str
     start_time: datetime
     end_time: datetime
@@ -87,9 +86,7 @@ class Loiter(FindingBase):
 
 
 class LoiterOmsPublisher(OmsPublisher):
-
     def format_nodes(self, track: Track, loiters: List[Loiter]) -> list[CreateNodeInput]:
-
         """
         Format Node Objects to publish to OMS
 
@@ -99,7 +96,6 @@ class LoiterOmsPublisher(OmsPublisher):
         """
         formatted_nodes = []
         for loiter in loiters:
-
             create_event_node = CreateNodeInput(
                 acm=loiter.acm,
                 name=SETTINGS.loiter_event_name,
@@ -107,7 +103,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 tags=[SETTINGS.geo_sensemaker_event_tag],
                 classIri=SETTINGS.loiter_event_node_iri,
                 ifcCodes=set(),
-                isNso=True
+                isNso=True,
             )
 
             self.node_uuid_list.append(str(loiter.loiter_id))
@@ -132,11 +128,11 @@ class LoiterOmsPublisher(OmsPublisher):
                 tags=[SETTINGS.geo_sensemaker_event_tag],
                 name=SETTINGS.loiter_event_name,
                 startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                endNodeId=loiter.track_node_id,
+                endNodeId=loiter.vehicle_id,
                 confidence=Confidence.HIGH,
                 acm=loiter.acm,
                 objectPropertyIri=SETTINGS.loiter_relationship_iri,
-                sourceId=source_id
+                sourceId=source_id,
             )
             formatted_relationships.append(create_relationship_input)
 
@@ -155,25 +151,20 @@ class LoiterOmsPublisher(OmsPublisher):
 
         for loiter in loiters:
             create_attribute_input = CreateAttributeInput(
-                    attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-                    attributeValue="geo",
-                    attributeDisplayValue="",
-                    attributeType=AttributeType.SPATIOTEMPORAL.value,
-                    confidence=Confidence.HIGH.value,
-                    tags=[SETTINGS.geo_sensemaker_event_tag],
-                    sourceId=source_id,
-                    geo=GeoInput(
-                        geoJson=loiter.to_geojson(),
-                        startTime=loiter.start_time,
-                        endTime=loiter.end_time
-                        ),
-                    nodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                    acm=loiter.acm,
-                    valueStart=loiter.start_time,
-                    valueEnd=loiter.end_time
-                )
+                attributeIri=SETTINGS.loiter_event_node_attribute_iri,
+                attributeValue="geo",
+                attributeDisplayValue="",
+                attributeType=AttributeType.GEOSPATIAL.value,
+                confidence=Confidence.HIGH.value,
+                tags=[SETTINGS.geo_sensemaker_event_tag],
+                sourceId=source_id,
+                geometry=loiter.to_geojson(),
+                nodeId=self.node_id_mapping[str(loiter.loiter_id)],
+                acm=loiter.acm,
+                valueStart=loiter.start_time,
+                valueEnd=loiter.end_time,
+            )
             formatted_attributes.append(create_attribute_input)
-
         return formatted_attributes
 
 
@@ -249,7 +240,8 @@ class LoiterSensemaker(Sensemaker):
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {data.node_id}")
+            track_id = data.points[0].track_id
+            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_id}")
 
         for loiter in confirmed_loiters:
             LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)

@@ -109,8 +109,9 @@ class Settings(BaseSettings):
     text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
 
     # Inference Settings
+    generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Infered Attribute"], description="Inference Sensemaker tags"
+        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
@@ -260,15 +261,19 @@ class Settings(BaseSettings):
         "messages can be received per poll",
     )
     sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
-    sqs_geo_sensemaker_queue: str = Field("getSensemakerTrigger", description="The geo sensemaker queue.")
-    sqs_queue_url: str = Field(
+    sqs_geo_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
         description="the SQS Geo Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
     )
+    sqs_inference_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger",
+        description="the SQS Inference Sensemaker Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger"]
+    )
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-5", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-10", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(

@@ -1,0 +1,1849 @@
+{
+	"info": {
+		"_postman_id": "a27ad9ef-8bbf-4db6-9cd8-16274dab39c1",
+		"name": "DICO Aircraft Object Example - Grimlock",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31613258"
+	},
+	"item": [
+		{
+			"name": "Create U Originator - INR",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U INR Originator created\", function () {",
+							"    pm.expect(jsonData.data.createOriginator.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"inrOriginatorId\",jsonData.data.createOriginator.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateOriginator(\r\n        input: {\r\n            name: \"INR\"\r\n            description: \"The Bureau of Intelligence and Research\"\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        description\r\n        acm\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Provider - USDOS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USDoS Provider created\", function () {",
+							"    pm.expect(jsonData.data.createProvider.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"usDosProviderId\",jsonData.data.createProvider.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createSrc ($originatorId: UUID!) {\r\n\tcreateProvider(\r\n        input: {\r\n            name: \"USDoS\"\r\n            description: \"United States Department of State\"\r\n            url: \"www.usdos.mil\"\r\n            defaultAcm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n            originatorId: $originatorId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        url\r\n        description\r\n        defaultAcm\r\n        originatorId\r\n        acm\r\n    }\r\n}",
+						"variables": "{\n    \"originatorId\": \"{{inrOriginatorId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Fed Gov01 US Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Fed Gov01 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"fedGov01SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"Fed Gov01\",\n            description: \"Fed Gov01 description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"fedgov01\"\n            uri: \"http://fedgov/01\"\n            dataAcm: $acm\n            primaryTopic: \"Government\",\n            secondaryTopic:\"United States\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{usDosProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Fed Gov01 Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"fedGov01NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Fed Gov01 (US)\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CountryCode\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Government Attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"US Gov Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"usGovAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceAId: UUID!, $nodeAId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/MIDB_GST/v1/Country\",\r\n            attributeValue: \"US Federal Gov01\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceAId,\r\n            nodeId: $nodeAId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [-103.771556, 44.967243]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceAId\": \"{{fedGov01SourceId}}\",\n    \"nodeAId\" : \"{{fedGov01NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Originator - AF AIS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U AF AIS Originator created\", function () {",
+							"    pm.expect(jsonData.data.createOriginator.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afAisOriginatorId\",jsonData.data.createOriginator.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateOriginator(\n        input: {\n            name: \"Air Foorce AIS\"\n            description: \"Air Force Automatic Identification Originator\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        name\n        description\n        acm\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Provider - AIS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"AIS Provider created\", function () {",
+							"    pm.expect(jsonData.data.createProvider.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"aisProviderId\",jsonData.data.createProvider.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createSrc ($originatorId: UUID!) {\n\tcreateProvider(\n        input: {\n            name: \"AIS\"\n            description: \"Automatic Identification Originator\"\n            url: \"www.ais.net\"\n            defaultAcm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            originatorId: $originatorId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        name\n        url\n        description\n        defaultAcm\n        originatorId\n        acm\n    }\n}",
+						"variables": "{\n    \"originatorId\": \"{{afAisOriginatorId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U USAF AF01 Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U AF01 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"af01SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"AF01\",\n            description: \"AF01 description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"af01\"\n            uri: \"http://af/01\"\n            dataAcm: $acm\n            primaryTopic: \"Air Force Unit\",\n            secondaryTopic:\"United States\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{aisProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AF01 Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"AF01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"af01NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"AF01 (USAF)\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CommandCapability\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AF01 Unit Attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USAF Unit Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnitAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceBId: UUID!, $nodeBId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/MIDB_GST/v1/Unit_Name\",\r\n            attributeValue: \"USAF AF01\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceBId,\r\n            nodeId: $nodeBId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [-103.771556, 44.967243]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceBId\": \"{{af01SourceId}}\",\n    \"nodeBId\" : \"{{af01NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AF01 to Fed Gov01 Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"allegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"DICO:Alleginace\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasAllegianceTo\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeAId\": \"{{fedGov01NodeId}}\",\n    \"nodeBId\": \"{{af01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Originator - Misawa Air Base AIS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Misawa AB AIS Originator created\", function () {",
+							"    pm.expect(jsonData.data.createOriginator.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"misawaAisOriginatorId\",jsonData.data.createOriginator.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateOriginator(\n        input: {\n            name: \"Misawa Air Base AIS\"\n            description: \"Misawa Air Base Automatic Identification Originator\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        name\n        description\n        acm\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U 13FS AFUnit13 Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U AFUnit13 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnit13SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"AFUnit13\",\n            description: \"AFUnit13 description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"afu13\"\n            uri: \"http://afu/13\"\n            dataAcm: $acm\n            primaryTopic: \"Air Force Unit\",\n            secondaryTopic:\"Air Base\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{aisProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AFUnit13 Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"AFUnit13 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnit13NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"AFUnit13 (13FS)\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CommandCapability\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AFUnit13 Attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USAF Unit Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnitAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceCId: UUID!, $nodeCId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/MIDB_GST/v1/Unit_Name\",\r\n            attributeValue: \"13FS AFUnit13\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceCId,\r\n            nodeId: $nodeCId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceCId\": \"{{afUnit13SourceId}}\",\n    \"nodeCId\" : \"{{afUnit13NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AFUnit13 to AF01 Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"AFUnit13 member of AF01 Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"memberOfRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeBId: UUID!, $nodeCId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"Bfo:memberOf (atsometime)\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeCId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"https://foundry.ai.mil/MIDB/V3.3/is_a_member_of\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeBId\": \"{{afUnit13NodeId}}\",\n    \"nodeCId\": \"{{af01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U AFUnit13 to Fed Gov01 Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"AFUnit13 Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnit13AllegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeBId: UUID!, $nodeCId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"Bfo:memberOf (atsometime)\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeCId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasAllegianceTo\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeBId\": \"{{afUnit13NodeId}}\",\n    \"nodeCId\": \"{{fedGov01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT 01 Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U ACFT 01 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"acft01SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"ACFT 01\",\n            description:\"ACFT 01 description\",\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"acft01\"\n            uri: \"http://acft/01\"\n            dataAcm: $acm\n            primaryTopic: \"F-16CJ\",\n            secondaryTopic:\"Fixed Wing Aircraft\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{aisProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT 01 Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"ACFT 01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"acft01NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"ACFT 01\"\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT 01 Attribute 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USAF Unit Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnitAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceDId: UUID!, $nodeDId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/INDOPACOM/v5/Aircraft_Base_Code\",\r\n            attributeValue: \"F-16CJ\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceDId,\r\n            nodeId: $nodeDId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceDId\": \"{{acft01SourceId}}\",\n    \"nodeDId\" : \"{{acft01NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT 01 Attribute 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USAF Unit Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"afUnitAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceDId: UUID!, $nodeDId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/INDOPACOM/v5/C2_Vehicle_Name\",\r\n            attributeValue: \"Fixed Wing Aircraft\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceDId,\r\n            nodeId: $nodeDId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceDId\": \"{{acft01SourceId}}\",\n    \"nodeDId\" : \"{{acft01NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT01 to AFUnit13 Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"ACFT01 controlledBy AFUnit13 Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"controlledByRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeCId: UUID!, $nodeDId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"DICO:controlledBy\",\r\n            startNodeId: $nodeDId,\r\n            endNodeId: $nodeCId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeCId\": \"{{afUnit13NodeId}}\",\n    \"nodeDId\": \"{{acft01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U ACFT01 to Fed Gov01 Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"ACFT01 Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"acft01AllegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeCId: UUID!, $nodeDId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"DICO:controlledBy\",\r\n            startNodeId: $nodeDId,\r\n            endNodeId: $nodeCId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasAllegianceTo\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeCId\": \"{{fedGov01NodeId}}\",\n    \"nodeDId\": \"{{acft01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Country Japan Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Country Japan Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"japanSourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"Japan\",\n            description: \"Japan description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"japan\"\n            uri: \"http://japan\"\n            dataAcm: $acm\n            primaryTopic: \"Country\",\n            secondaryTopic:\"Japan\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{usDosProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Country Japan Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Country Japan Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"japanNodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Japan\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Country\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"JA\"\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Country Japan Attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Japan Name Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"japanAttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceEId: UUID!, $nodeEId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/DICO/v3.1.0/Common_Name\",\r\n            attributeValue: \"Japan\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceEId,\r\n            nodeId: $nodeEId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [138.2529, 36.2048]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceEId\": \"{{japanSourceId}}\",\n    \"nodeEId\" : \"{{japanNodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Spatial Region Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Spatial Region 1 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"sp1SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"SpatialRegion1\",\n            description: \"SpatialRegion1 description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"spatialregion1\"\n            uri: \"http://spatialregion/1\"\n            dataAcm: $acm\n            primaryTopic: \"Spatial Region\",\n            secondaryTopic:\"Spatial Region\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{usDosProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Spatial Region Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Spatial Region 1 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"sp1NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"SpatialRegion1\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialRegion\"\r\n            tier: PRIMARY\r\n            isNso: true\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Spatial Region Attribute 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"SpatialRegion1 Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"sp1AttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceFId: UUID!, $nodeFId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/INDOPACOM/v5/Name\",\r\n            attributeValue: \"SpatialRegion1\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceFId,\r\n            nodeId: $nodeFId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [125.0, 35.0]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceFId\": \"{{sp1SourceId}}\",\n    \"nodeFId\" : \"{{sp1NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Spatial Region Attribute 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"SpatialRegion1 Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"sp1AttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceFId: UUID!, $nodeFId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/INDOPACOM/v5/Location\",\r\n            attributeValue: \"35N, 125E\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceFId,\r\n            nodeId: $nodeFId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [125.0, 35.0]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceFId\": \"{{sp1SourceId}}\",\n    \"nodeFId\" : \"{{sp1NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Originator - IATA DB",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U IATA DB Originator created\", function () {",
+							"    pm.expect(jsonData.data.createOriginator.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"iataOriginatorId\",jsonData.data.createOriginator.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateOriginator(\r\n        input: {\r\n            name: \"IATA DB\"\r\n            description: \"The International Air Transport Association Airline and Location Code Search\"\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        description\r\n        acm\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Provider - IATA",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"IATA Provider created\", function () {",
+							"    pm.expect(jsonData.data.createProvider.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"iataProviderId\",jsonData.data.createProvider.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createSrc ($originatorId: UUID!) {\r\n\tcreateProvider(\r\n        input: {\r\n            name: \"IATA\"\r\n            description: \"The International Air Transport Association\"\r\n            url: \"www.iata.org\"\r\n            defaultAcm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n            originatorId: $originatorId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        url\r\n        description\r\n        defaultAcm\r\n        originatorId\r\n        acm\r\n    }\r\n}",
+						"variables": "{\n    \"originatorId\": \"{{iataOriginatorId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Facility Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Forward Air Strip 01 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"airStrip01SourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"Forward Air Strip 01\",\n            description: \"Forward Air Strip 01 description\"\n            providerId: $providerId,\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"forwardairstrip01\"\n            uri: \"http://forwardairstrip/01\"\n            dataAcm: $acm\n            primaryTopic: \"Facility (Site)\",\n            secondaryTopic:\"Air Strip\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{iataProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Facility Node",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Forward Air Strip 01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"airStrip01NodeId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Forward Air Strip 01\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/SurfaceFacility\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Facility Attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Forward Air Strip 01 Attribute created\", function () {",
+							"    pm.expect(jsonData.data.createAttribute.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"airStrip01AttributeId\",jsonData.data.createAttribute.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($sourceGId: UUID!, $nodeGId: UUID) {\r\n\tcreateAttribute(\r\n        input: {\r\n            attributeIri: \"https://foundry.ai.mil/INDOPACOM/v5/Garrison_Facility\",\r\n            attributeValue: \"Forward Air Strip 01\",\r\n            attributeType: STRING\r\n            confidence: HIGH,\r\n            sourceId: $sourceGId,\r\n            nodeId: $nodeGId,\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [138.2529, 36.2048]\r\n            },\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        attributeIri\r\n        attributeName\r\n        attributeValue\r\n        attributeType\r\n        confidence\r\n        sourceId\r\n        # source\r\n        nodeId\r\n        # node\r\n        acm\r\n        geometry\r\n    }\r\n}",
+						"variables": "{\n    \"sourceGId\": \"{{airStrip01SourceId}}\",\n    \"nodeGId\" : \"{{airStrip01NodeId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Facility to Country Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Forward Airstrip 01 locatedIn Japan Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"locatedInRelationship1Id\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeEId: UUID!, $nodeFId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"BFO:locatedIn\",\r\n            startNodeId: $nodeEId,\r\n            endNodeId: $nodeFId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://purl.obolibrary.org/obo/BFO_0000082\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeEId\": \"{{airStrip01NodeId}}\",\n    \"nodeFId\": \"{{japanNodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Facility to Spatial Region Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Forward Airstrip 01 occupies Spatial Region 01 Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"occupiesSpRgRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeEId: UUID!, $nodeGId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"BFO:occupiesSpatialRegion\",\r\n            startNodeId: $nodeEId,\r\n            endNodeId: $nodeGId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://purl.obolibrary.org/obo/BFO_0000211\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeEId\": \"{{airStrip01NodeId}}\",\n    \"nodeGId\": \"{{sp1NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Aircraft to Facility Relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"ACFT01 locatedIn Forward Air Strip 01 Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"locatedInRelationship2Id\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeDId: UUID!, $nodeEId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"T1\", \"T2\"],\r\n            name: \"BFO:locatedIn\",\r\n            startNodeId: $nodeDId,\r\n            endNodeId: $nodeEId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://purl.obolibrary.org/obo/BFO_0000082\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeDId\": \"{{acft01NodeId}}\",\n    \"nodeEId\": \"{{airStrip01NodeId}}\",\n    \"af01SourceId\": \"{{af01SourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "inrOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "usDosProviderId",
+			"value": ""
+		},
+		{
+			"key": "fedGov01SourceId",
+			"value": ""
+		},
+		{
+			"key": "fedGov01NodeId",
+			"value": ""
+		},
+		{
+			"key": "usGovAttributeId",
+			"value": ""
+		},
+		{
+			"key": "afAisOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "aisProviderId",
+			"value": ""
+		},
+		{
+			"key": "af01SourceId",
+			"value": ""
+		},
+		{
+			"key": "af01NodeId",
+			"value": ""
+		},
+		{
+			"key": "afUnitAttributeId",
+			"value": ""
+		},
+		{
+			"key": "misawaAisOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "afUnit13SourceId",
+			"value": ""
+		},
+		{
+			"key": "afUnit13NodeId",
+			"value": ""
+		},
+		{
+			"key": "acft01SourceId",
+			"value": ""
+		},
+		{
+			"key": "acft01NodeId",
+			"value": ""
+		},
+		{
+			"key": "japanSourceId",
+			"value": ""
+		},
+		{
+			"key": "japanNodeId",
+			"value": ""
+		},
+		{
+			"key": "japanAttributeId",
+			"value": ""
+		},
+		{
+			"key": "sp1SourceId",
+			"value": ""
+		},
+		{
+			"key": "sp1NodeId",
+			"value": ""
+		},
+		{
+			"key": "sp1AttributeId",
+			"value": ""
+		},
+		{
+			"key": "iataOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "iataProviderId",
+			"value": ""
+		},
+		{
+			"key": "airStrip01SourceId",
+			"value": ""
+		},
+		{
+			"key": "airStrip01NodeId",
+			"value": ""
+		},
+		{
+			"key": "airStrip01AttributeId",
+			"value": ""
+		},
+		{
+			"key": "allegianceRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "memberOfRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "afUnit13AllegianceRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "controlledByRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "acft01AllegianceRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "locatedInRelationship1Id",
+			"value": ""
+		},
+		{
+			"key": "occupiesSpRgRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "locatedInRelationship2Id",
+			"value": ""
+		}
+	]
+}
