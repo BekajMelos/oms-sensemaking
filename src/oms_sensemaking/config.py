@@ -286,6 +286,7 @@ class Settings(BaseSettings):
         description="Path to service user key",
         examples=["/opt/common/pki/sensemaking.key"]
     )
+    root_path: str = Field("/", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", "/"])
 
     @field_validator("db_uri", mode="before")
     @classmethod

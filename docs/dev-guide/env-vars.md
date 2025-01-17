@@ -12,7 +12,7 @@
 |:----------------|:--------|:---------------------------------------------------------------|:--------------:|
 | `APP_LOG_LEVEL` | `DEBUG` | Option to set log level                                        | Yes            |
 | `RELOAD_APP`    | `1`     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
-
+| `ROOT_PATH`     | `/`     | BaseUrl for serving the project at                             | No             |
 
 ##### Database Settings
 
