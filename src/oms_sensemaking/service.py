@@ -88,7 +88,11 @@ def create_app(config: Settings) -> FastAPI:
     :param config: configuration used to initialize FastAPI and submodules.
     """
     application: FastAPI = FastAPIOffline(
-        title=__title__, description=__description__, version=__version__, lifespan=lifespan
+        title=__title__,
+        description=__description__,
+        version=__version__,
+        lifespan=lifespan,
+        root_path=config.root_path,
     )
 
     # initialize gzip middleware
