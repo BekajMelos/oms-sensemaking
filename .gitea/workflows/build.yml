@@ -7,6 +7,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
     branches:
       - "main"
+      - "222-add-root-path"
 
 env:
   # workflow config
@@ -27,7 +28,7 @@ jobs:
           machine tex.gerbil-cloud.ts.net
           login ${{ gitea.repository_owner }}
           password ${{ secrets.pypi_token }}
-          
+
           EOF
           chmod 600 /root/.netrc
 
