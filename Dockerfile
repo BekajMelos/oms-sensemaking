@@ -156,6 +156,8 @@ ENV UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
 
 ENV UVICORN_PORT=${UVICORN_PORT:-${PORT:-8443}}
 
+ENV UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-${ROOT_PATH:-/}}
+
 COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
 COPY --chown=appuser:appuser src ${APP_HOME}/src
 COPY --chown=appuser:appuser --chmod=644 alembic.ini pyproject.toml README.md ${APP_HOME}
@@ -167,7 +169,7 @@ COPY --chmod=644 docker/banner.txt /etc/motd
 #       for a private PyPI to be used to define a dependency on the oms_sdk
 #       project.
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
-    --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
+  --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
 
 find /app -type f ! -name '*.sh' -exec chmod 644 {} \;
