@@ -5,9 +5,9 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+      - "vtest[0-9]+"
     branches:
       - "main"
-      - "222-add-root-path"
 
 env:
   # workflow config
@@ -88,5 +88,5 @@ jobs:
             mynetrc=/root/.netrc
 
           push: ${{ github.event_name != 'pull_request' }}
-          tags: test
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
