@@ -1,0 +1,41 @@
+{
+    "permissions": [
+        {
+            "configure": ".*",
+            "read": ".*",
+            "user": "oms-bridge",
+            "vhost": "/",
+            "write": ".*"
+        }
+    ],
+    "bindings": [],
+    "queues": [],
+    "parameters": [],
+    "policies": [],
+    "rabbitmq_version": "3.13.6",
+    "rabbit_version": "3.13.6",
+    "exchanges": [],
+    "users": [
+        {
+            "hashing_algorithm": "rabbit_password_hashing_sha256",
+            "limits": {},
+            "name": "oms-bridge",
+            "password_hash": "yYTFsuT8cEX7r0blS1XVo0B20awXANzn0XBOksQnmQeK56nb",
+            "tags": [
+                "administrator"
+            ]
+        }
+    ],
+    "topic_permissions": [],
+    "vhosts": [
+        {
+            "limits": [],
+            "metadata": {
+                "description": "Default virtual host",
+                "tags": []
+            },
+            "name": "/"
+        }
+    ],
+    "global_parameters": []
+}

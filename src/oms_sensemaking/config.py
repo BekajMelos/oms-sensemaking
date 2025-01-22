@@ -273,16 +273,16 @@ class Settings(BaseSettings):
     )
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-10", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-12", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
-        "/opt/common/pki/service.public",
+        "/opt/common/pki/server.public",
         description="Path to service user cert",
         examples=["/opt/common/pki/sensemaking.pem"]
     )
     key_path: str = Field(
-        "/opt/common/pki/service.private",
+        "/opt/common/pki/server.private",
         description="Path to service user key",
         examples=["/opt/common/pki/sensemaking.key"]
     )
