@@ -156,7 +156,7 @@ ENV UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
 
 ENV UVICORN_PORT=${UVICORN_PORT:-${PORT:-8443}}
 
-ENV UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-/}
+ENV UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-}
 
 COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
 COPY --chown=appuser:appuser src ${APP_HOME}/src
