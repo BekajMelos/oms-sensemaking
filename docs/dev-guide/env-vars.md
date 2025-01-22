@@ -8,11 +8,13 @@
 
 ##### Service Variables
 
-| Variable Name   | Example | Description                                                    | Docker Compose |
-|:----------------|:--------|:---------------------------------------------------------------|:--------------:|
-| `APP_LOG_LEVEL` | `DEBUG` | Option to set log level                                        | Yes            |
-| `RELOAD_APP`    | `1`     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
-| `ROOT_PATH`     | `/`     | BaseUrl for serving the project at                             | No             |
+| Variable Name       | Example | Description                                                    | Docker Compose |
+|:--------------------|:--------|:---------------------------------------------------------------|:--------------:|
+| `APP_LOG_LEVEL`     | `DEBUG` | Option to set log level                                        | Yes            |
+| `RELOAD_APP`        | `1`     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
+| `ROOT_PATH`         | `/`     | BaseUrl for serving the project at                             | No             |
+| `UVICRON_ROOT_PATH` | `/`     | Uvicorn baseUrl for serving the project                        | Yes            |
+
 
 ##### Database Settings
 

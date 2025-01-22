@@ -17,6 +17,7 @@ export APP_MODULE=${APP_MODULE:-"$MODULE_NAME:$VARIABLE_NAME"}
 # configure uvicorn
 UVICORN_HOST=${UVICORN_HOST:-${HOST:-0.0.0.0}}
 UVICORN_PORT=${UVICORN_PORT:-80}
+UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-/}
 UVICORN_LOG_LEVEL=${UVICORN_LOG_LEVEL:-error}
 
 # If there's a prestart.sh script in the /app directory or other path specified, run it before starting
@@ -25,7 +26,7 @@ echo "Checking for script in $PRE_START_PATH"
 if [ -f $PRE_START_PATH ] ; then
     echo "Running script $PRE_START_PATH"
     . "$PRE_START_PATH"
-else 
+else
     echo "There is no script $PRE_START_PATH"
 fi
 
@@ -33,7 +34,7 @@ cat /etc/motd
 
 # Start uvicorn - relies on env var configuration (see https://www.uvicorn.org/settings/)
 if [ -z "$RELOAD_APP" ]; then
-  exec uvicorn --host $UVICORN_HOST $APP_MODULE
+  exec uvicorn --host $UVICORN_HOST $APP_MODULE --root-path $UVICORN_ROOT_PATH
 else
-  exec uvicorn --host $UVICORN_HOST --reload $APP_MODULE
+  exec uvicorn --host $UVICORN_HOST --reload $APP_MODULE --root-path $UVICORN_ROOT_PATH
 fi
