@@ -8,17 +8,13 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 from dateutil.parser import isoparse
-from oms_sdk import get_generated_graphql_client
-from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
-from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
@@ -41,12 +37,6 @@ class GeospatialSensemakerController(SensemakerController):
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = {}
-
-        #: OMS GraphQL client
-        self.oms_client: Client = get_generated_graphql_client(
-            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
-        )
-        self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
         """Start the controller."""
@@ -91,57 +81,54 @@ class GeospatialSensemakerController(SensemakerController):
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if isinstance(self.event_consumer, SQSListener):
-            # extract info from OMS via API calls
-            oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
+        # extract info from OMS via API calls
+        oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
 
-            # we expect an observation. If one doesn't exist, we can ignore the point.
-            if not oms_obs:
-                return True
+        # we expect an observation. If one doesn't exist, we can ignore the point.
+        if not oms_obs:
+            return True
 
-            # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
-            # we need to create a track_id for it so we can add future points for that vehicle/track
-            if oms_obs.nodeId not in self.node_track_mapping:
-                self.node_track_mapping[oms_obs.nodeId] = uuid4()
-            # set the current track_id to the track linked to the node (vehicle) in question
-            track_id = self.node_track_mapping[oms_obs.nodeId]
+        # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
+        # we need to create a track_id for it so we can add future points for that vehicle/track
+        if oms_obs.nodeId not in self.node_track_mapping:
+            self.node_track_mapping[oms_obs.nodeId] = uuid4()
+        # set the current track_id to the track linked to the node (vehicle) in question
+        track_id = self.node_track_mapping[oms_obs.nodeId]
 
-            try:
-                node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
-                node_version = node.version
-            except AttributeError:
-                LOGGER.warning("No node found. Unable to process observation.")
-                return False
+        try:
+            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
+            node_version = node.version
+        except AttributeError:
+            LOGGER.warning("No node found. Unable to process observation.")
+            return False
 
-            with db_session() as db:
-                # we're still using the point object for detections, so don't expire it
-                db.expire_on_commit = False
-                # create a point in the oms_sensemaking db, including the vehicle node_id and the track_id
-                point, is_new = Point.get_or_create(
-                    db,
-                    defaults=dict(
-                        acm=oms_obs.acm,
-                        location=(
-                            f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
-                        ),
-                        altitude=None,  # TODO include this
-                        detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
-                        node_version=int(node_version),
-                        observation_version=int(oms_obs.version),
+        with db_session() as db:
+            # we're still using the point object for detections, so don't expire it
+            db.expire_on_commit = False
+            # create a point in the oms_sensemaking db, including the vehicle node_id and the track_id
+            point, is_new = Point.get_or_create(
+                db,
+                defaults=dict(
+                    acm=oms_obs.acm,
+                    location=(
+                        f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
                     ),
-                    node_id=oms_obs.nodeId,
-                    observation_id=oms_obs.id,
-                    source_id=oms_obs.sourceId,
-                    track_id=track_id,
-                )
+                    altitude=None,  # TODO include this
+                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
+                    node_version=int(node_version),
+                    observation_version=int(oms_obs.version),
+                ),
+                node_id=oms_obs.nodeId,
+                observation_id=oms_obs.id,
+                source_id=oms_obs.sourceId,
+                track_id=track_id,
+            )
 
-            if not is_new:
-                if point:
-                    LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-                else:
-                    LOGGER.warning("Unable to process point.")
-        else:
-            LOGGER.warning("No ObjectEventConsumer found.")
+        if not is_new:
+            if point:
+                LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+            else:
+                LOGGER.warning("Unable to process point.")
 
         if point:
             with self.lock:
@@ -214,7 +201,7 @@ class GeospatialSensemakerController(SensemakerController):
         :return: None if no observation exists, or the OMS Observation
         """
         # get observation
-        oms_obs: ObservationObservation = self.oms_client.observation(IdQuery(id=observation_id))
+        oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
         # Filter observations
         # Only process if there is an observation and it has a geojson point

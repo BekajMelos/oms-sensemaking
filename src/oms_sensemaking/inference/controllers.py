@@ -7,7 +7,6 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.sensemakers.inference import InferenceSensemaker
 
@@ -15,10 +14,11 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class InferenceSensemakerController(SensemakerController):
-    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
-        """Create a new instance of InferenceSensemakerController."""
-        super().__init__(event_consumer)
-        self.oms_crud_tool = OmsCrudTool()
+    """
+    Inference sensemaker controller.
+
+    This class manages a collection of inference sensemakers.
+    """
 
     def start(self) -> None:
         # check to make sure its starting
