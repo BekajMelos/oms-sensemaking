@@ -10,7 +10,6 @@ from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribut
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import ObjectEvent, SQSListener
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemaker,
@@ -19,16 +18,15 @@ from oms_sensemaking.resolution.controllers import (
 
 
 @pytest.fixture
-def mock_res_controller(mock_oms_crud_tool: OmsCrudTool):
+def mock_res_controller():
     controller = ResolutionSensemakerController(
         SQSListener("ResolutionSQSListener", SETTINGS.sqs_res_queue_url, event_filter=ResolutionQueueFilter())
     )
-    controller.oms_crud_tool = mock_oms_crud_tool
     return controller
 
 
-@mock.patch("oms_sensemaking.resolution.controllers.as_completed")
-@mock.patch("oms_sensemaking.resolution.controllers.ThreadPoolExecutor")
+@mock.patch("oms_sensemaking.core.controllers.as_completed")
+@mock.patch("oms_sensemaking.core.controllers.ThreadPoolExecutor")
 def test_res_controller(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
@@ -46,6 +44,8 @@ def test_res_controller(
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
+
+    mock_res_controller.oms_crud_tool.get_attribute = mock.MagicMock()
     mock_res_controller.oms_crud_tool.get_attribute.return_value = oms_attribute
 
     # mock thread pool execution

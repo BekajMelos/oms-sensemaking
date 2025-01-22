@@ -17,7 +17,7 @@ def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
         SQSListener("geo test queue listener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
     )
-    controller.oms_client = mock_oms_client
+    controller.oms_crud_tool.oms_client = mock_oms_client
     return controller
 
 
@@ -35,7 +35,7 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
 
     # This method is hit during handle_event to get the associated node from the db
     # In this case, we want to return None to check that an AttributeError is raised
-    mocker.patch.object(mock_geo_controller.oms_client, "node").return_value = None
+    mocker.patch.object(mock_geo_controller.oms_crud_tool.oms_client, "node").return_value = None
 
     # Set the logger level to WARNING. This is the level we are sending our AttributeError message
     caplog.set_level(logging.WARNING)
