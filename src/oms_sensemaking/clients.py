@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 from .config import SETTINGS
 
@@ -57,3 +58,6 @@ def get_db_session() -> Iterator[Session]:
 
 
 oms_client = OmsCrudTool()
+oms_crud_tool = OmsCrudTool()
+
+corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
