@@ -8,6 +8,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateProviderCreateProvider,
     CreateRelationshipCreateRelationship,
     CreateSourceCreateSource,
+    CreateActivityCreateActivity,
     DeleteByIdInput,
     NodesNodes,
     OriginatorQuery,
@@ -25,20 +26,27 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateRelationshipUpdateRelationship,
     UpdateSourceInput,
     UpdateSourceUpdateSource,
+    ActivitiesActivities,
+    UpdateActivityInput,
+    UpdateActivityUpdateActivity,
+    ObservationsObservations
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.input_types import (
     AttributeQuery,
     CreateAttributeInput,
+    ActivityQuery,
     CreateNodeInput,
     CreateProviderInput,
     CreateRelationshipInput,
     CreateSourceInput,
+    CreateActivityInput,
     IdQuery,
     NodeQuery,
     ProviderQuery,
     StringQuery,
     UpdateNodeInput,
+    ObservationQuery,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -102,6 +110,14 @@ class OmsCrudTool:
         # 1. for each attribute, publish it to OMS
         return self.oms_client.create_attribute(attribute_input)
 
+    def create_activity(self, activity_input: CreateActivityInput) -> CreateActivityCreateActivity:
+        """
+        Publish the activity to oms
+        :param activity_input: a CreateActivityInput object
+        """
+        # 1. for each activity, publish it to OMS
+        return self.oms_client.create_activity(activity_input)
+
     def create_source(self, source_input: CreateSourceInput) -> CreateSourceCreateSource:
         """
         Create a source in OMS
@@ -139,6 +155,16 @@ class OmsCrudTool:
         attributes = self.oms_client.attributes(query=attribute_info)
         return attributes
 
+    def get_activities(self, activity_info: ActivityQuery) -> ActivitiesActivities:
+        """Get existing Activities from OMS"""
+        activities = self.oms_client.activities(query=activity_info)
+        return activities
+
+    def get_observations(self, observation_info: ObservationQuery) -> ObservationsObservations:
+        """Get existing Observations from OMS"""
+        observations = self.oms_client.observations(query=observation_info)
+        return observations
+    
     def get_source(self, source_id: str) -> SourceSource:
         """Get existing Attributes from OMS"""
         source = self.oms_client.source(query=IdQuery(id=source_id))
@@ -171,7 +197,11 @@ class OmsCrudTool:
     def update_source(self, update_input: UpdateSourceInput) -> UpdateSourceUpdateSource:
         """Update source"""
         return self.oms_client.update_source(update_input)
-
+    
+    def update_activity(self, update_input: UpdateActivityInput) -> UpdateActivityUpdateActivity:
+        """Update activity"""
+        return self.oms_client.update_activity(update_input)
+    
     ### DELETE ###
     def delete_node(self, node_id: str) -> bool:
         """Update node"""
