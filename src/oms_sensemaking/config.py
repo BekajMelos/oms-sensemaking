@@ -1,7 +1,7 @@
 """Application configuration."""
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
@@ -271,6 +271,26 @@ class Settings(BaseSettings):
         description="the SQS Inference Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger"]
     )
+
+    # Resolution Sensemaker Settings
+    sqs_res_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger",
+        description="the SQS Resolution Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger"]
+    )
+    enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
+    resolution_sensemaker_tag: str = Field("resolution_tag",
+                                           description="Tag for OMSB objects from the resolution sensemaker")
+    resolution_relationship_name: str = Field("Same As",
+                                           description="Relationship IRI for resolution sensemaker suggestions")
+    resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+                                           description="Relationship IRI for resolution sensemaker suggestions")
+    duplicate_facility_iris: List[str] = Field(
+        [
+            "https://foundry.ai.mil/MIDB_GST/v1/BE_Number",
+            "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
+        ],
+        description="List of fields that must match to be a duplicate Facility")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-12", description="OMSB Version")
