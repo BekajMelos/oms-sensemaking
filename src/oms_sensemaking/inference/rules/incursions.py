@@ -15,7 +15,8 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     ActivityQuery,
     TimeQuery,
     UpdateActivityInput,
-    ObservationQuery
+    ObservationQuery,
+    GeoQuery
 )
 
 from oms_sensemaking.clients import oms_client
@@ -37,17 +38,14 @@ class Incursion(BaseRule):
 
     def evaluate(self, input: RuleContext) -> bool:
         """
-        Add description (come back to this, should I be calling get_nodes twice, here and also in action method. also add geojson check?)
+        Add description (come back to this)
         """
         if input.observation: 
             obs = input.observation
-            node_response = oms_client.get_nodes(NodeQuery(
-                ids=[obs.nodeId]
-            ))
-        
+            
         return (
             input.observation
-            and len(obs.nodeId) # Observation is pointing to a node
+            and obs.nodeId # Observation is pointing to a node
             and obs.geometry # Observation has geometry
         )
 
@@ -62,7 +60,7 @@ class Incursion(BaseRule):
             ids=[obs.nodeId]
         ))
         parent_node = node_response.data[0]
-        geo = obs.geo
+        geo = obs.geometry
 
         # Check if observation occurred in an area of interest
         with open('./tests/inference/rules/test_data/areas_of_interest/geos_of_interest.json', 'r') as file:
@@ -80,10 +78,8 @@ class Incursion(BaseRule):
             attribute_query = AttributeQuery(
                 attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
                 attributeValue=StringQuery(equals="Incursion"),
-                attributeType={
-                    "is": AttributeType.GEOSPATIAL,
-                },
-                geometry=geo_of_interest,
+                attributeType={"is": AttributeType.GEOSPATIAL,},
+                geometry=GeoQuery(queryGeoJson=geo_of_interest),
                 nodeIds=[parent_node.id],
                 tags=SETTINGS.incursion_tags
             )
@@ -115,8 +111,7 @@ class Incursion(BaseRule):
                         self._handle_new_incursion(obs, parent_node, geo_of_interest)
     
     def _is_point_in_polygon(self, point, polygon):
-        point_dict = json.loads(point)
-        point_coordinates = point_dict["coordinates"]
+        point_coordinates = point["coordinates"]
         polygon_coordinates = polygon["coordinates"][0]
         polygon = Polygon(polygon_coordinates)
         point = Point(point_coordinates)
@@ -208,10 +203,8 @@ class Incursion(BaseRule):
         # Create new incursion attribute for parent node
         incursion_attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={
-                "is": AttributeType.GEOSPATIAL,
-            },
+            attributeValue="Incursion",
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=observation.confidence,
             sourceId=observation.sourceId, #change to config value
             nodeId=parent_node.id,
