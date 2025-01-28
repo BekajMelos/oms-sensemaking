@@ -9,7 +9,7 @@ services:
     environment:
       # AWS
       AWS_ENDPOINT_URL: http://localstack:4566
-      #SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+      #SQS_GEO_QUEUE_URL: ${SQS_GEO_QUEUE_URL}
 
       # database config
       DB_HOST: postgis
@@ -93,8 +93,12 @@ services:
       - "8010:8000"
       - "8020:8443"
     depends_on:
-      - postgis
-      - localstack
+      postgis:
+        condition: service_started
+      localstack:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     profiles:
       - local
 
@@ -107,7 +111,7 @@ services:
     environment:
       - DEBUG=${DEBUG-}
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger
+      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger,inferenceSensemakerTrigger,resolutionTrigger
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -167,6 +171,28 @@ services:
       - "9000:9000"
     environment:
       ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    user: rabbitmq
+    profiles:
+      - local
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # management UI
+    volumes:
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./docker/rabbitmq/advanced.config:/etc/rabbitmq/advanced.config
+      - ./docker/rabbitmq/definitions.file.json:/etc/rabbitmq/definitions.file.json
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      start_interval: 5s
 
 volumes:
   doccano-db:

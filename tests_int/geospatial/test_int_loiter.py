@@ -5,7 +5,6 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import pytest
 import shapely
 from geoalchemy2.shape import to_shape
 from oms_sdk import DEFAULT_ACM
@@ -74,10 +73,10 @@ def get_random_emirates_stadium_point() -> str:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
     """Simple success track."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -86,9 +85,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -99,9 +99,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -111,9 +112,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -123,9 +125,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -135,9 +138,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -147,9 +151,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # West London way later
     p7 = Point(
@@ -159,9 +164,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -223,7 +229,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL.value,
+            attributeType=AttributeType.GEOSPATIAL.value,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -245,6 +251,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
 def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -253,9 +260,10 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -266,9 +274,10 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -278,9 +287,10 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -290,9 +300,10 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Still within stamford bridge but past the observation time
     p5_point = get_random_stamford_bridge_point()
@@ -303,9 +314,10 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -318,6 +330,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
 def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -326,9 +339,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -339,9 +353,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -351,9 +366,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T12:40:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -363,9 +379,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T13:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -375,9 +392,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T13:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -387,9 +405,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T13:40:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # West London
     p7 = Point(
@@ -399,9 +418,10 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -411,12 +431,12 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
     assert len(loiters) == 0
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
 
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -425,9 +445,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -438,9 +459,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -450,9 +472,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -462,9 +485,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -474,9 +498,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -486,9 +511,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Still within stamford bridge but past the observation time
     p7_point = get_random_stamford_bridge_point()
@@ -499,9 +525,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -561,7 +588,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -580,10 +607,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -592,9 +619,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
@@ -605,9 +633,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -617,9 +646,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -629,9 +659,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -641,9 +672,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -653,9 +685,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # West London way later
     p7 = Point(
@@ -665,9 +698,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter 2 Points
     p8_point = get_random_stamford_bridge_point()
@@ -678,9 +712,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p9_point = get_random_stamford_bridge_point()
     p9 = Point(
@@ -690,9 +725,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p10_point = get_random_stamford_bridge_point()
     p10 = Point(
@@ -702,9 +738,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p11_point = get_random_stamford_bridge_point()
     p11 = Point(
@@ -714,9 +751,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -806,7 +844,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -823,7 +861,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
             # TODO make sure these are right
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -842,10 +880,10 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-@pytest.mark.skip(reason="Requires new object structure for grimlock inc 10")
 def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_oms_crud_tool):
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
+    track_id = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -854,9 +892,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
@@ -867,9 +906,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -879,9 +919,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -891,9 +932,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -903,9 +945,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -915,9 +958,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # West London way later
     p7 = Point(
@@ -927,9 +971,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     # Loiter 2 Points
     p8_point = get_random_emirates_stadium_point()
@@ -940,9 +985,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p9_point = get_random_emirates_stadium_point()
     p9 = Point(
@@ -952,9 +998,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p10_point = get_random_emirates_stadium_point()
     p10 = Point(
@@ -964,9 +1011,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
     p11_point = get_random_emirates_stadium_point()
     p11 = Point(
@@ -976,9 +1024,10 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
         node_id=node_id,
         node_version=1,
-        attribute_id=uuid4(),
-        attribute_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
         source_id=uuid4(),
+        track_id=track_id
     )
 
     # Create Track Object
@@ -1068,7 +1117,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,
@@ -1084,7 +1133,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
             attributeIri=SETTINGS.loiter_event_node_attribute_iri,
             attributeValue="geo",
             attributeDisplayValue="",
-            attributeType=AttributeType.SPATIOTEMPORAL,
+            attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
             sourceId=p1.source_id,

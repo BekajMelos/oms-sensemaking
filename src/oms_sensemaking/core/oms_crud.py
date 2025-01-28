@@ -1,5 +1,9 @@
+from uuid import UUID
+
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
+    ActivityActivity,
+    AttributeAttribute,
     AttributesAttributes,
     CreateAttributeCreateAttribute,
     CreateNodeCreateNode,
@@ -11,6 +15,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityCreateActivity,
     DeleteByIdInput,
     NodesNodes,
+    ObservationObservation,
     OriginatorQuery,
     OriginatorsOriginators,
     ProvidersProviders,
@@ -140,6 +145,21 @@ class OmsCrudTool:
         return self.oms_client.create_originator(originator_input)
 
     ### GET ###
+    def get_activity(self, id: UUID) -> ActivityActivity:
+        """Get existing Activity from OMS"""
+        activity = self.oms_client.activity(IdQuery(id=id))
+        return activity
+
+    def get_attribute(self, id: UUID) -> AttributeAttribute:
+        """Get existing Attribute from OMS"""
+        attribute = self.oms_client.attribute(IdQuery(id=id))
+        return attribute
+
+    def get_observation(self, id: UUID) -> ObservationObservation:
+        """Get existing Observation from OMS"""
+        observation = self.oms_client.observation(IdQuery(id=id))
+        return observation
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Nodes from OMS"""
         nodes = self.oms_client.nodes(query=node_info)

@@ -7,7 +7,7 @@
     1. Update the `.env` file to include the desired `OMSB_VERSION`
     2. For Geospatial Sensemakers:
         1. Update the `.env` to set the SQS queue to the aorTrigger (we're temporarily using that queue)
-            * `SQS_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/aorTrigger"`
+            * `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/aorTrigger"`
     2. Run `docker compose up -d`
     3. Navigate to the API at https://localhost:5001/docs
         1. If you are having issues getting the app to load, compare your `.env` with the `.env.template`

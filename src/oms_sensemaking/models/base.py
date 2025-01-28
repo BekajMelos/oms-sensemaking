@@ -183,10 +183,8 @@ class SecurityMarkingMixin(MappedAsDataclass):
         comment='The ACM representing the classification of the data.'
     )
 
-
-class OmsAttributeMixin(MappedAsDataclass):
-    """Declare OMS Attribute Metdata."""
-
+class RelatedNodeMixin(MappedAsDataclass):
+    """Declare OMS Node Metadata."""
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
@@ -199,6 +197,17 @@ class OmsAttributeMixin(MappedAsDataclass):
         nullable=False,
         comment='The version of the node associated with this object.'
     )
+
+class SourceMixin(MappedAsDataclass):
+    """Declare OMS Source Metadata."""
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        comment='The ID of the source associated with the object.'
+    )
+
+class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
+    """Declare OMS Attribute Metdata."""
 
     attribute_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -213,8 +222,24 @@ class OmsAttributeMixin(MappedAsDataclass):
         comment='The version of the attribute associated with the object.'
     )
 
-    source_id: Mapped[uuid.UUID] = mapped_column(
+class OmsObservationMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
+    """Declare OMS Observation Metadata."""
+
+    observation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
+        primary_key=True,
         nullable=False,
-        comment='The ID of the source associated with the object.'
+        comment='The ID of the observation associated with the object.'
+    )
+
+    observation_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment='The version of the observation associated with the object.'
+    )
+
+class TrackMixin(MappedAsDataclass):
+    track_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        comment="The ID of the track associated with the object."
     )

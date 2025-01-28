@@ -1,0 +1,820 @@
+{
+	"info": {
+		"_postman_id": "e52d176c-52bb-4827-8b6a-6c80fca53261",
+		"name": "DIEKM modeling examples",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31613258"
+	},
+	"item": [
+		{
+			"name": "Create U Originator - BoT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U BoT Originator created\", function () {",
+							"    pm.expect(jsonData.data.createOriginator.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"botOriginatorId\",jsonData.data.createOriginator.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateOriginator(\r\n        input: {\r\n            name: \"Bureau of Tracking\"\r\n            description: \"The Bureau of Tracking\"\r\n            tags: [\"DIEKM Testing\"],\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        description\r\n        acm\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Provider - USAF",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"USDoS Provider created\", function () {",
+							"    pm.expect(jsonData.data.createProvider.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"usAFProviderId\",jsonData.data.createProvider.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createSrc ($originatorId: UUID!) {\r\n\tcreateProvider(\r\n        input: {\r\n            name: \"USAF\"\r\n            description: \"United States Armed Forces\"\r\n            url: \"www.usdos.mil\"\r\n            tags: [\"DIEKM Testing\"]\r\n            defaultAcm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n            originatorId: $originatorId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        name\r\n        url\r\n        description\r\n        defaultAcm\r\n        originatorId\r\n        acm\r\n    }\r\n}",
+						"variables": "{\n    \"originatorId\": \"{{botOriginatorId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create U Federal Report Source",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"U Fed Gov01 Source created\", function () {",
+							"    pm.expect(jsonData.data.createSource.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"fedGovRepSourceId\",jsonData.data.createSource.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createRec(\n    $providerId: UUID!\n    $acm: ACM!\n){\n\tcreateSource(\n        input: {\n            name:\"Federal Government Report\",\n            description: \"Federal Government Report description\"\n            providerId: $providerId,\n            tags: [\"DIEKM Testing\"]\n            dateOfReport: \"2023-04-27T14:15:30+00:00\",\n            dateOfInformation: \"2023-04-27T14:15:30+00:00\",\n            identifier: \"fedgov01\"\n            uri: \"http://fedgov/01\"\n            dataAcm: $acm\n            primaryTopic: \"Government\",\n            secondaryTopic:\"United States\",\n            acm: $acm\n        }\n  \t) {\n        id\n        name\n        description\n        dateOfReport\n        dateOfInformation\n        primaryTopic\n        secondaryTopic\n        providerId\n        acm\n        identifier\n        uri\n    }\n}",
+						"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{usAFProviderId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Battalion Alpha",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Create Battalion Alpha\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"battalionAlphaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Battalion Alpha\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Battalion Beta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"battalionBetaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Battalion Beta\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Battalion Delta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"battalionDeltaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Battalion Delta\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Battalion Gamma",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"battalionGammaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Battalion Gamma\"\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Tank Alpha",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"tankAlphaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Tank Alpha\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Tank Alpha location Observation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Observation tank Alpha created\", function () {",
+							"    pm.expect(jsonData.data.createObservation.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"tankAlphaLocation1\",jsonData.data.createObservation.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            \r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation\"\r\n            tags: [\"DIEKM Testing\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeAId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [142.368976, 41.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
+						"variables": "{\n    \"nodeAId\": \"{{tankAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Tank Delta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"tankDeltaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Tank Delta\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Tank Delta location Observation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Observation tank delta created\", function () {",
+							"    pm.expect(jsonData.data.createObservation.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"tankDeltaLocation1\",jsonData.data.createObservation.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeBId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation\"\r\n            tags: [\"DIEKM Testing\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeBId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
+						"variables": "{\n    \"nodeBId\": \"{{tankDeltaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Battleship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"battleshipId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Battleship\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Ford Carrier",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"fordCarrierId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Ford Carrier\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Shipyard",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"shipyardId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"Newport News Shipyard\"\r\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/FixedStructure\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Alpha Equipment relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"allegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeAId\": \"{{battalionAlphaId}}\",\n    \"nodeBId\": \"{{tankAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Delta Equipment relationship",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"allegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeAId\": \"{{battalionDeltaId}}\",\n    \"nodeBId\": \"{{tankDeltaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ford Garrisoned in shipyard",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Allegiance Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"allegianceRelationshipId\",jsonData.data.createRelationship.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\"]\r\n            name: \"garrisoned in\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+						"variables": "{\n    \"nodeAId\": \"{{fordCarrierId}}\",\n    \"nodeBId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "botOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "battalionAlphaId",
+			"value": ""
+		},
+		{
+			"key": "battalionBetaId",
+			"value": ""
+		},
+		{
+			"key": "battalionDeltaId",
+			"value": ""
+		},
+		{
+			"key": "battalionGammaId",
+			"value": ""
+		},
+		{
+			"key": "tankAlphaId",
+			"value": ""
+		},
+		{
+			"key": "tankDeltaId",
+			"value": ""
+		},
+		{
+			"key": "battleshipId",
+			"value": ""
+		},
+		{
+			"key": "fordCarrierId",
+			"value": ""
+		},
+		{
+			"key": "shipyardId",
+			"value": ""
+		},
+		{
+			"key": "usAFProviderId",
+			"value": ""
+		},
+		{
+			"key": "fedGovRepSourceId",
+			"value": ""
+		},
+		{
+			"key": "allegianceRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "tankDeltaLocation1",
+			"value": ""
+		},
+		{
+			"key": "tankAlphaLocation1",
+			"value": ""
+		}
+	]
+}
