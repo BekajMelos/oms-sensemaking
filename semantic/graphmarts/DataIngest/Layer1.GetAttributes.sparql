@@ -87,8 +87,8 @@ WHERE {
                 ?value_start (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ; 
                 ?value_end (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ; 
                 ?is_mutable (xsd:boolean) ;
-                ?is_reviewed (xsd:string) ;
-                ?reviewed_by (xsd:boolean) ;
+                ?is_reviewed (xsd:boolean) ;
+                ?reviewed_by (xsd:string) ;
                 ?reviewed_at (xsd:dateTime "yyyy-MM-dd HH:mm:ss.SSSZ") ;
                 ?node_id (xsd:string) ;
                 ?observation_id (xsd:string) ;
