@@ -40,7 +40,7 @@ class Incursion(BaseRule):
         """
         Valid inputs must contain observations that have geometry and point to a node
         """
-        if input.observation: 
+        if input.observation:
             obs = input.observation
 
         return (
@@ -188,8 +188,8 @@ class Incursion(BaseRule):
                 part_of_existing_incursion = False
                 current_incursion_time = observation_time
 
-        return (part_of_existing_incursion, current_incursion_time) 
-  
+        return (part_of_existing_incursion, current_incursion_time)
+
     def _update_existing_incursion(self,
                                    observation: ObservationObservation,
                                    parent_node,
@@ -255,7 +255,7 @@ class Incursion(BaseRule):
 
     def has_action_already_ran(self, input: RuleContext):
         """
-        Determine if an incursion activity pointing to the inputted observation has already been created 
+        Determine if an incursion activity pointing to the inputted observation has already been created
         """
 
         obs = input.observation
