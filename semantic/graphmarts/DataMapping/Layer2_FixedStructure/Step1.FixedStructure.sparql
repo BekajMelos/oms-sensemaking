@@ -71,8 +71,12 @@ WHERE {
       			ingest_omsb_graphmart:Relationship.end_node_id ?controlling_node_id1 ;
       			ingest_omsb_graphmart:Relationship.object_property_iri ?ctrldby_relationship_iri ;
       FILTER (?ctrldby_relationship_iri IN (
-        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy"
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy",
+        "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled__by",
+        "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_primarily_by"
           # More to follow ...
+          # There are a lot of different variations to "controlled by" that mean slightly different things
+          # Need to ID which ones should be included in this query
         )) .
       BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?controlling_node_id1)) AS ?controlling_obj_id1 )
     }
@@ -84,8 +88,13 @@ WHERE {
       			ingest_omsb_graphmart:Relationship.start_node_id ?controlling_node_id2 ;
       			ingest_omsb_graphmart:Relationship.object_property_iri ?ctrls_relationship_iri ;
       FILTER (?ctrls_relationship_iri IN (
-        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controls"
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controls",
+        "https://foundry.ai.mil/MIDB/V3.3/commands_or_controls",
+        "https://foundry.ai.mil/MIDB/V3.3/commands_or_controls_primarily"
+
           # More to follow ...
+          # There are a lot of different variations to "controls" that mean slightly different things
+          # Need to ID which ones should be included in this query
         )) .
       BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?controlling_node_id2)) AS ?controlling_obj_id2 )
     }
