@@ -14,7 +14,7 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener

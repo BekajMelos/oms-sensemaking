@@ -5,7 +5,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest, NlpResponse
-from oms_sensemaking.clients import corenlp_client
+from oms_sensemaking.clients.instances import corenlp_client
 from oms_sensemaking.nlp.nlp_reader import NlpStringReader
 from oms_sensemaking.nlp.nlp_service import NlpService
 
