@@ -234,9 +234,6 @@ def test_action_method(mocker: MockerFixture,
     mock_observation_response = MagicMock()
     mock_observation_response.data = [observational_node_region1] 
     mock_get_observations.return_value = mock_observation_response
-    #_check_observations_between
-    # mock_check_observations_between = mocker.patch("oms_sensemaking.inference.rules.incursions.Incursion._check_observations_between")
-    # mock_check_observations_between.return_value = (False, ())
 
 
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
