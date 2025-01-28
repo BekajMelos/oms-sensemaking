@@ -1,27 +1,28 @@
-import pytest
-import json
 import copy
-
+import json
 from unittest.mock import MagicMock
-from pytest_mock import MockerFixture
+
+import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
-    AttributeAttribute,
-    AttributeType,
-    ActivityState,
-    ObservationObservation,
-    Confidence,
-    AttributeQuery,
-    CreateAttributeInput,
-    StringQuery,
-    CreateActivityInput,
-    GeoQuery,
-    ObservationQuery,
-    TimeQuery,
-    UpdateActivityInput,
-    UpdateAttributeInput,
-    NodeNode
+            ActivityState,
+            AttributeAttribute,
+            AttributeQuery,
+            AttributeType,
+            Confidence,
+            CreateActivityInput,
+            CreateAttributeInput,
+            GeoQuery,
+            NodeNode,
+            ObservationObservation,
+            ObservationQuery,
+            StringQuery,
+            TimeQuery,
+            UpdateActivityInput,
+            UpdateAttributeInput,
 )
+from pytest_mock import MockerFixture
+
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -80,11 +81,11 @@ def observational_node_region1(mocker: MockerFixture):
   Incoming observation
   """
   geometry = {
-    	"coordinates": [
-      	-157.20314345121238,
-      	20.32200240882949
-    	],
-    	"type": "Point"
+    "coordinates": [
+    -157.20314345121238,
+    20.32200240882949
+    ],
+    "type": "Point"
   }
 
   obs = mocker.Mock(spec=ObservationObservation)
@@ -108,11 +109,11 @@ def observational_node_region2(mocker: MockerFixture):
   Incoming observation
   """
   geometry = {
-    	"coordinates": [
-      	-152.16868319466693,
-        23.556473770341952
-    	],
-    	"type": "Point"
+    "coordinates": [
+    -152.16868319466693,
+    23.556473770341952
+    ],
+    "type": "Point"
   }
 
   obs = mocker.Mock(spec=ObservationObservation)
@@ -136,11 +137,11 @@ def no_inc_observational_node(mocker: MockerFixture):
   Incoming observation
   """
   geometry = {
-    	"coordinates": [
-      	-150.93829627954565,
-        20.83888460523758
-    	],
-    	"type": "Point"
+    "coordinates": [
+    -150.93829627954565,
+    20.83888460523758
+    ],
+    "type": "Point"
   }
 
   obs = mocker.Mock(spec=ObservationObservation)
@@ -182,10 +183,10 @@ def test_evaluate_input(observational_node_region1):
     assert not rule.evaluate(RuleContext()), "should only run for observations"
 
     # Input observations must include a nodeId and geometry
-    assert rule.evaluate(RuleContext(observation=observational_node_region1)), "expected input to be a valid observation"
+    assert rule.evaluate(RuleContext(observation=observational_node_region1)), "expected input to be valid"
     observation_without_parent = copy.deepcopy(observational_node_region1)
     observation_without_parent.nodeId = None
-    assert not rule.evaluate(RuleContext(observation=observation_without_parent)), "expected input to be an invalid observation"
+    assert not rule.evaluate(RuleContext(observation=observation_without_parent)), "expected input to be invalid"
 
 
 def test_action_method(mocker: MockerFixture,
@@ -203,32 +204,32 @@ def test_action_method(mocker: MockerFixture,
     #get_nodes
     mock_get_nodes = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
     mock_nodes_response = MagicMock()
-    mock_nodes_response.data = [parent_node] 
+    mock_nodes_response.data = [parent_node]
     mock_get_nodes.return_value = mock_nodes_response
     # get_attributes
     mock_get_attributes = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
     mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [] 
+    mock_attribute_response.data = []
     mock_get_attributes.return_value = mock_attribute_response
     # create_attribute
     mock_create_attribute = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
-    # update_attribute 
+    # update_attribute
     mock_update_attribute = mocker.patch("oms_sensemaking.clients.oms_client.update_attribute")
     # get_activities
     mock_get_activities = mocker.patch("oms_sensemaking.clients.oms_client.get_activities")
     mock_activity_response = MagicMock()
     mock_activity = MagicMock()
     mock_activity.id = "activity_id"
-    mock_activity_response.data = [mock_activity] 
-    mock_get_activities.return_value = mock_activity_response   
+    mock_activity_response.data = [mock_activity]
+    mock_get_activities.return_value = mock_activity_response
     # create_activity
     mock_create_activity = mocker.patch("oms_sensemaking.clients.oms_client.create_activity")
-    # update_attribute 
+    # update_attribute
     mock_update_activity = mocker.patch("oms_sensemaking.clients.oms_client.update_activity")
     # get_observations
     mock_get_observations = mocker.patch("oms_sensemaking.clients.oms_client.get_observations")
     mock_observation_response = MagicMock()
-    mock_observation_response.data = [observational_node_region1] 
+    mock_observation_response.data = [observational_node_region1]
     mock_get_observations.return_value = mock_observation_response
 
 
@@ -278,8 +279,10 @@ def test_action_method(mocker: MockerFixture,
             endTime=observational_node_region1.endTime
         )
     )
-    
-    # Scenario: Two existing incursion attributes with same geo of interest- one that is part of an incursion separate from the observation and one that is part of an incursion including the observation, resulting in an attribute/activity update
+
+    # Scenario: Two existing incursion attributes with same geo of interest- one that
+    # is part of an incursion separate from the observation and one that is part of an
+    # incursion including the observation, resulting in an attribute/activity update
     mock_attribute_response.data = [attribute2, attribute1]
     mock_get_attributes.return_value = mock_attribute_response
 
@@ -331,8 +334,9 @@ def test_action_method(mocker: MockerFixture,
         )
     )
 
-    # Scenario: One existing incursion attribute exists matching observation's geo of interest with nonoverlapping time, resulting in attribute/activity updates
-    mock_observation_response.data = [] 
+    # Scenario: One existing incursion attribute exists matching observation's geo of interest
+    # with nonoverlapping time, resulting in attribute/activity updates
+    mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
 
     rule.action(RuleContext(observation=observational_node_region1))

@@ -2,56 +2,54 @@ from uuid import UUID
 
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
+    ActivitiesActivities,
     ActivityActivity,
+    ActivityQuery,
     AttributeAttribute,
+    AttributeQuery,
     AttributesAttributes,
+    Client,
+    CreateActivityCreateActivity,
+    CreateActivityInput,
     CreateAttributeCreateAttribute,
+    CreateAttributeInput,
     CreateNodeCreateNode,
+    CreateNodeInput,
     CreateOriginatorCreateOriginator,
     CreateOriginatorInput,
     CreateProviderCreateProvider,
+    CreateProviderInput,
     CreateRelationshipCreateRelationship,
+    CreateRelationshipInput,
     CreateSourceCreateSource,
-    CreateActivityCreateActivity,
+    CreateSourceInput,
     DeleteByIdInput,
+    IdQuery,
+    NodeQuery,
     NodesNodes,
     ObservationObservation,
+    ObservationQuery,
+    ObservationsObservations,
     OriginatorQuery,
     OriginatorsOriginators,
+    ProviderQuery,
     ProvidersProviders,
     RelationshipQuery,
     RelationshipsRelationships,
     SourceQuery,
     SourceSource,
     SourcesSources,
+    StringQuery,
+    UpdateActivityInput,
+    UpdateActivityUpdateActivity,
     UpdateAttributeInput,
     UpdateAttributeUpdateAttribute,
+    UpdateNodeInput,
     UpdateNodeUpdateNode,
     UpdateRelationshipInput,
     UpdateRelationshipUpdateRelationship,
     UpdateSourceInput,
     UpdateSourceUpdateSource,
-    ActivitiesActivities,
-    UpdateActivityInput,
-    UpdateActivityUpdateActivity,
-    ObservationsObservations
-)
-from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.input_types import (
-    AttributeQuery,
-    CreateAttributeInput,
-    ActivityQuery,
-    CreateNodeInput,
-    CreateProviderInput,
-    CreateRelationshipInput,
-    CreateSourceInput,
-    CreateActivityInput,
-    IdQuery,
-    NodeQuery,
-    ProviderQuery,
-    StringQuery,
-    UpdateNodeInput,
-    ObservationQuery,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -184,7 +182,7 @@ class OmsCrudTool:
         """Get existing Observations from OMS"""
         observations = self.oms_client.observations(query=observation_info)
         return observations
-    
+
     def get_source(self, source_id: str) -> SourceSource:
         """Get existing Attributes from OMS"""
         source = self.oms_client.source(query=IdQuery(id=source_id))
@@ -217,11 +215,11 @@ class OmsCrudTool:
     def update_source(self, update_input: UpdateSourceInput) -> UpdateSourceUpdateSource:
         """Update source"""
         return self.oms_client.update_source(update_input)
-    
+
     def update_activity(self, update_input: UpdateActivityInput) -> UpdateActivityUpdateActivity:
         """Update activity"""
         return self.oms_client.update_activity(update_input)
-    
+
     ### DELETE ###
     def delete_node(self, node_id: str) -> bool:
         """Update node"""
