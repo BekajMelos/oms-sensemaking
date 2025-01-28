@@ -16,8 +16,8 @@ from oms_sdk.generated.generated_graphql_client.client import (
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from shapely import LineString
 
+from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
@@ -66,7 +66,7 @@ class Loiter(FindingBase):
     @cached_property
     def acm(self) -> dict:
         """Rollup the acm from the points"""
-        return get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
+        return aac_client.get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
 
     def __str__(self):
         return str(self.to_dict())
@@ -77,12 +77,7 @@ class Loiter(FindingBase):
     def to_geojson(self) -> dict:
         """Geojson representation of the loiter geometry"""
 
-        return {
-            "type": "LineString",
-            "coordinates": [
-                    point.coordinates for point in self.processed_points
-                ]
-        }
+        return {"type": "LineString", "coordinates": [point.coordinates for point in self.processed_points]}
 
 
 class LoiterOmsPublisher(OmsPublisher):
@@ -192,7 +187,7 @@ class LoiterSensemaker(Sensemaker):
             "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
             "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
-            "geohash_low": SETTINGS.geohash_low
+            "geohash_low": SETTINGS.geohash_low,
         }
         self.publisher = LoiterOmsPublisher(oms_crud_tool)
 
@@ -223,8 +218,9 @@ class LoiterSensemaker(Sensemaker):
                     loiter_points: list[Point] = []
                     for point in data.points:
                         # check for points within the loiter time window
-                        if (point.detection_time >= potential_loiter.start_time
-                                and point.detection_time <= potential_loiter.latest_time
+                        if (
+                            point.detection_time >= potential_loiter.start_time
+                            and point.detection_time <= potential_loiter.latest_time
                         ):
                             loiter_points.append(point)
 
@@ -264,11 +260,8 @@ class LoiterSensemaker(Sensemaker):
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-
             point_geohash_low = geohash.encode(
-                lat=point.coordinates[1],
-                lon=point.coordinates[0],
-                precision=SETTINGS.geohash_low
+                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
             )
 
             if point_geohash_low in prospective_loiters:

@@ -20,9 +20,8 @@ from shapely import LineString, MultiLineString
 from sqlalchemy import func, select
 from sqlalchemy.orm import with_expression
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
@@ -124,7 +123,7 @@ class Cotravel(FindingBase):
         """Rollup the acm from the points"""
         track1_acms = [point.acm for point in self.track1.points]
         track2_acms = [point.acm for point in self.track2.points]
-        return get_acm_rollup([{"ACM": acm} for acm in (track1_acms + track2_acms)])
+        return aac_client.get_acm_rollup([{"ACM": acm} for acm in (track1_acms + track2_acms)])
 
     def to_geojson(self) -> dict:
         """Geojson representation of the cotravel geometry"""
@@ -348,8 +347,7 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime,
-        target_time: datetime
+        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> List[Point]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
@@ -379,8 +377,7 @@ class CotravelSensemaker(Sensemaker):
             query = db.execute(
                 select(Point)
                 .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
-                .where(Point.node_id != vehicle_id, Point.detection_time > min_time,
-                       Point.detection_time < max_time)
+                .where(Point.node_id != vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
                 .distinct(Point.node_id)

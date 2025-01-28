@@ -10,7 +10,7 @@ from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from sqlalchemy import select
 
 from oms_sensemaking.api.schemas.nlp import NlpRequest
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.base import utcnow_with_timezone
