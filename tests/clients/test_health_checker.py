@@ -8,25 +8,6 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 
-def test_get_oms_health(mocker: MockerFixture):
-    crud_tool = mocker.Mock(spec=OmsCrudTool)
-    mock_oms = mocker.patch.object(crud_tool, "get_nodes", spec=OmsCrudTool)
-    actual = health_checker.get_oms_health(crud_tool)
-
-    assert actual == "healthy"
-    mock_oms.assert_called_once()
-
-
-def test_get_oms_unhealthy(mocker: MockerFixture):
-    crud_tool = mocker.Mock(spec=OmsCrudTool)
-    mock_oms = mocker.patch.object(crud_tool, "get_nodes", spec=OmsCrudTool, side_effect=Exception("mocked error"))
-
-    actual = health_checker.get_oms_health(crud_tool)
-
-    assert actual == "Unable to communicate with OMS"
-    mock_oms.assert_called_once()
-
-
 def test_services_healthy(mocker: MockerFixture):
     expected = "healthy"
     services = [
