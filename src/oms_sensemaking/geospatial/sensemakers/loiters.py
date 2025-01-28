@@ -3,7 +3,6 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from functools import cached_property
 from typing import List
 from uuid import UUID, uuid4
 
@@ -63,8 +62,7 @@ class Loiter(FindingBase):
     processed_points: list[Point]
     geometry: LineString
 
-    @cached_property
-    def acm(self) -> dict:
+    def get_acm(self) -> dict:
         """Rollup the acm from the points"""
         return aac_client.get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
 
@@ -92,7 +90,7 @@ class LoiterOmsPublisher(OmsPublisher):
         formatted_nodes = []
         for loiter in loiters:
             create_event_node = CreateNodeInput(
-                acm=loiter.acm,
+                acm=loiter.get_acm(),
                 name=SETTINGS.loiter_event_name,
                 tier=ObjectTier.DERIVATIVE,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
@@ -125,7 +123,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
                 endNodeId=loiter.vehicle_id,
                 confidence=Confidence.HIGH,
-                acm=loiter.acm,
+                acm=loiter.get_acm(),
                 objectPropertyIri=SETTINGS.loiter_relationship_iri,
                 sourceId=source_id,
             )
@@ -155,7 +153,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 sourceId=source_id,
                 geometry=loiter.to_geojson(),
                 nodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                acm=loiter.acm,
+                acm=loiter.get_acm(),
                 valueStart=loiter.start_time,
                 valueEnd=loiter.end_time,
             )

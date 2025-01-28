@@ -18,6 +18,7 @@ from oms_sensemaking.core.controllers import SensemakerController, run_controlle
 from oms_sensemaking.core.events import NoOpEventConsumer
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController, SQSListener
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
+from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
 from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -34,6 +35,9 @@ def get_controllers() -> list[SensemakerController]:
         ),
         InferenceSensemakerController(
             SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url, event_filter=InferenceQueueFilter())
+        ),
+        ResolutionSensemakerController(
+            SQSListener("ResolutionSQSListener", SETTINGS.sqs_res_queue_url, event_filter=ResolutionQueueFilter())
         ),
         SemanticSensemakerController(NoOpEventConsumer()),
     ]
