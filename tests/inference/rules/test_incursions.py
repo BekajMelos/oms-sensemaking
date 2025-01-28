@@ -1,7 +1,10 @@
-from unittest.mock import MagicMock
 import pytest
-from oms_sdk import DEFAULT_ACM
+import json
+import copy
 
+from unittest.mock import MagicMock
+from pytest_mock import MockerFixture
+from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributeType,
@@ -16,19 +19,12 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationQuery,
     TimeQuery,
     UpdateActivityInput,
-    UpdateAttributeInput
+    UpdateAttributeInput,
+    NodeNode
 )
-from pytest_mock import MockerFixture, mocker
-from oms_sdk.generated.generated_graphql_client.node import NodeNode
-
 from oms_sensemaking.config import SETTINGS
-import oms_sensemaking.inference
-import oms_sensemaking.inference.rules
 from oms_sensemaking.inference.rules.incursions import Incursion
-import oms_sensemaking.inference.rules.incursions
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-import json
-import copy
 
 # Refactor this- move to config
 with open('./tests/inference/rules/test_data/areas_of_interest/geos_of_interest.json', 'r') as file:

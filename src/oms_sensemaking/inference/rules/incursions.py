@@ -1,12 +1,13 @@
-from geopy.distance import geodesic
+import json
+
+from dateutil.parser import isoparse
+from shapely.geometry import Point, Polygon
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
     ActivityState,
     ObservationObservation,
     NodesNodesData,
     AttributesAttributesData,
-)
-from oms_sdk.generated.generated_graphql_client.input_types import (
     AttributeQuery,
     CreateAttributeInput,
     CreateActivityInput,
@@ -19,14 +20,11 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     GeoQuery,
     UpdateAttributeInput
 )
-
 from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from dateutil.parser import isoparse
-import json
-from shapely.geometry import Point, Polygon
+
 
 class Incursion(BaseRule):
     """
