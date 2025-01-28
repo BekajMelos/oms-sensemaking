@@ -1,9 +1,10 @@
+from oms_sdk.generated.generated_graphql_client.activity import ActivityActivity
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.node import NodeNode
+from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from oms_sdk.generated.generated_graphql_client.relationship import RelationshipRelationship
 from oms_sdk.generated.generated_graphql_client.source import SourceSource
-from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
-from oms_sdk.generated.generated_graphql_client.activity import ActivityActivity
+
 
 class RuleContext:
     """
