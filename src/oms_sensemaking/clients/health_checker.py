@@ -52,7 +52,7 @@ class HealthChecker:
     def get_nlp_health(self, corenlp_client: CoreNlpClient):
         LOGGER.debug("Checking NLP Service health")
         try:
-            corenlp_client.annotate_document_xml("the quick brown fox jumped over the lazy dog")
+            corenlp_client.annotate_document_str("the quick brown fox jumped over the lazy dog")
             return self._healthy
         except Exception as e:
             LOGGER.error(repr(e))
