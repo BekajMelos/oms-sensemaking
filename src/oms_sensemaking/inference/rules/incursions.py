@@ -22,6 +22,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.tools.geo_tools import is_point_in_polygon
@@ -61,10 +62,8 @@ class Incursion(BaseRule):
         parent_node = oms_client.get_node(IdQuery(id=obs.nodeId))
         geo = obs.geometry
 
-        # Check if observation occurred in an area of interest (temp, change after getting actual format)
-        with open('./tests/inference/rules/test_data/areas_of_interest/geos_of_interest.json', 'r') as file:
-            features = json.load(file)["features"]
-
+        # Check if observation occurred in an area of interest
+        features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
         potential_geos_of_interest = [feature["geometry"] for feature in features]
         geo_of_interest = None
         for polygon in potential_geos_of_interest:

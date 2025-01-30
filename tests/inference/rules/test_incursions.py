@@ -5,34 +5,33 @@ from unittest.mock import MagicMock
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
-            ActivityState,
-            AttributeAttribute,
-            AttributeQuery,
-            AttributeType,
-            Confidence,
-            CreateActivityInput,
-            CreateAttributeInput,
-            GeoQuery,
-            NodeNode,
-            ObservationObservation,
-            ObservationQuery,
-            StringQuery,
-            TimeQuery,
-            UpdateActivityInput,
-            UpdateAttributeInput,
+    ActivityState,
+    AttributeAttribute,
+    AttributeQuery,
+    AttributeType,
+    Confidence,
+    CreateActivityInput,
+    CreateAttributeInput,
+    GeoQuery,
+    NodeNode,
+    ObservationObservation,
+    ObservationQuery,
+    StringQuery,
+    TimeQuery,
+    UpdateActivityInput,
+    UpdateAttributeInput,
 )
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
-# Refactor this- move to config
-with open('./tests/inference/rules/test_data/areas_of_interest/geos_of_interest.json', 'r') as file:
-            features = json.load(file)["features"]
-            region1_geometry = features[0]["geometry"]
-            region2_geometry = features[1]["geometry"]
-
+# Areas of interest
+features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+region1_geometry = features[0]["geometry"]
+region2_geometry = features[1]["geometry"]
 
 # Mocked nodes
 @pytest.fixture
