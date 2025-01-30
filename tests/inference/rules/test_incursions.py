@@ -175,12 +175,10 @@ def parent_node(mocker: MockerFixture):
 
 # Mock methods
 @pytest.fixture
-def mock_get_nodes(mocker: MockerFixture, parent_node):
-    mock_get_nodes = mocker.patch("oms_sensemaking.clients.oms_client.get_nodes")
-    mock_nodes_response = MagicMock()
-    mock_nodes_response.data = [parent_node]
-    mock_get_nodes.return_value = mock_nodes_response
-    return mock_get_nodes
+def mock_get_node(mocker: MockerFixture, parent_node):
+    mock_get_node = mocker.patch("oms_sensemaking.clients.oms_client.get_node")
+    mock_get_node.return_value = parent_node
+    return mock_get_node
 
 @pytest.fixture
 def mock_get_attributes(mocker: MockerFixture):
@@ -243,7 +241,7 @@ def test_evaluate_input(observational_node_region1):
     assert not rule.evaluate(RuleContext(observation=observation_without_parent)), "expected input to be invalid"
 
 def test_no_incursion(no_inc_observational_node,
-                      mock_get_nodes,
+                      mock_get_node,
                       mock_create_activity,
                       mock_update_activity):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
@@ -255,7 +253,7 @@ def test_no_incursion(no_inc_observational_node,
 
 def test_new_incursion_region1(observational_node_region1,
                                parent_node,
-                               mock_get_nodes,
+                               mock_get_node,
                                mock_get_attributes,
                                mock_create_activity,
                                mock_create_attribute):
@@ -304,7 +302,7 @@ def test_new_incursion_region1(observational_node_region1,
 
 def test_new_incursion_region2(observational_node_region2,
                                parent_node,
-                               mock_get_nodes,
+                               mock_get_node,
                                mock_get_attributes,
                                mock_create_activity,
                                mock_create_attribute):
@@ -355,7 +353,7 @@ def test_two_existing_incursions(observational_node_region1,
                                  parent_node,
                                  attribute1,
                                  attribute2,
-                                 mock_get_nodes,
+                                 mock_get_node,
                                  mock_get_attributes,
                                  mock_get_activities,
                                  mock_get_observations,
@@ -407,7 +405,7 @@ def test_two_existing_incursions(observational_node_region1,
 def test_existing_incursion_nonoverlapping_time(observational_node_region1,
                                                 parent_node,
                                                 attribute2,
-                                                mock_get_nodes,
+                                                mock_get_node,
                                                 mock_get_attributes,
                                                 mock_get_activities,
                                                 mock_get_observations,

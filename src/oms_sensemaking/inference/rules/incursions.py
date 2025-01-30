@@ -10,8 +10,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
-    NodeQuery,
-    NodesNodesData,
+    IdQuery,
+    NodeNode,
     ObservationObservation,
     ObservationQuery,
     StringQuery,
@@ -52,14 +52,13 @@ class Incursion(BaseRule):
     def action(self, rule_context: RuleContext):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
+
+        :param rule_context: Rule context object containing the observation to evaluate
         """
 
         obs = rule_context.observation
         # Fetch node that observation points to
-        node_response = oms_client.get_nodes(NodeQuery(
-            ids=[obs.nodeId]
-        ))
-        parent_node = node_response.data[0]
+        parent_node = oms_client.get_node(IdQuery(id=obs.nodeId))
         geo = obs.geometry
 
         # Check if observation occurred in an area of interest (temp, change after getting actual format)
@@ -210,7 +209,7 @@ class Incursion(BaseRule):
         )
         oms_client.update_attribute(updated_attribute_input)
 
-    def _handle_new_incursion(self, observation: ObservationObservation, parent_node: NodesNodesData, geo_of_interest):
+    def _handle_new_incursion(self, observation: ObservationObservation, parent_node: NodeNode, geo_of_interest):
         # Create new incursion attribute for parent node
         incursion_attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,

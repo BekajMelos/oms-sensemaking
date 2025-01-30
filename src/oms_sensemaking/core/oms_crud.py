@@ -25,6 +25,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateSourceInput,
     DeleteByIdInput,
     IdQuery,
+    NodeNode,
     NodeQuery,
     NodesNodes,
     ObservationObservation,
@@ -153,13 +154,17 @@ class OmsCrudTool:
         attribute = self.oms_client.attribute(IdQuery(id=id))
         return attribute
 
+    def get_node(self, node_info: NodeQuery) -> NodeNode:
+        node = self.oms_client.node(query=node_info)
+        return node
+
     def get_observation(self, id: UUID) -> ObservationObservation:
         """Get existing Observation from OMS"""
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
 
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
-        """Get existing Nodes from OMS"""
+        """Get existing Node from OMS"""
         nodes = self.oms_client.nodes(query=node_info)
         return nodes
 
