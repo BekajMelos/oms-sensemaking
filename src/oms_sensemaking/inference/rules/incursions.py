@@ -19,12 +19,12 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateActivityInput,
     UpdateAttributeInput,
 )
-from shapely.geometry import Point, Polygon
 
 from oms_sensemaking.clients import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+from oms_sensemaking.tools.geo_tools import is_point_in_polygon
 
 
 class Incursion(BaseRule):
@@ -36,25 +36,25 @@ class Incursion(BaseRule):
     def __init__(self, name: str):
         self.name = name
 
-    def evaluate(self, input: RuleContext) -> bool:
+    def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
         """
-        if input.observation:
-            obs = input.observation
+        if rule_context.observation:
+            obs = rule_context.observation
 
         return (
-            input.observation
+            rule_context.observation
             and obs.nodeId
             and obs.geometry
         )
 
-    def action(self, input: RuleContext):
+    def action(self, rule_context: RuleContext):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
         """
 
-        obs = input.observation
+        obs = rule_context.observation
         # Fetch node that observation points to
         node_response = oms_client.get_nodes(NodeQuery(
             ids=[obs.nodeId]
@@ -69,7 +69,7 @@ class Incursion(BaseRule):
         potential_geos_of_interest = [feature["geometry"] for feature in features]
         geo_of_interest = None
         for polygon in potential_geos_of_interest:
-            if self._is_point_in_polygon(geo, polygon):
+            if is_point_in_polygon(geo, polygon):
                 geo_of_interest = polygon
                 break
 
@@ -90,10 +90,8 @@ class Incursion(BaseRule):
             for existing_incursion_attribute in existing_incursion_attributes:
                 # Check if times overlap
                 obs_time = (obs.startTime, obs.endTime)
-                existing_incursion_time = (existing_incursion_attribute.valueStart,
-                                           existing_incursion_attribute.valueEnd)
-                time_overlap, current_incursion_time = self._compare_times((obs.startTime, obs.endTime),
-                                                                            existing_incursion_time)
+                time_overlap, current_incursion_time = self._compare_times(obs,
+                                                                           existing_incursion_attribute)
                 if time_overlap:
                     # Times overlap, updating existing incursion
                     self._update_existing_incursion(obs,
@@ -120,32 +118,22 @@ class Incursion(BaseRule):
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, parent_node, geo_of_interest)
 
-    def _is_point_in_polygon(self,
-                             point,
-                             polygon):
-        point_coordinates = point["coordinates"]
-        polygon_coordinates = polygon["coordinates"][0]
-        polygon = Polygon(polygon_coordinates)
-        point = Point(point_coordinates)
-
-        return polygon.contains(point)
-
     def _compare_times(self,
-                       observation_time,
-                       existing_incursion_time):
-        observation_start_time = isoparse(observation_time[0])
-        observation_end_time = isoparse(observation_time[1])
-        attribute_start_time = isoparse(existing_incursion_time[0])
-        attribute_end_time = isoparse(existing_incursion_time[1])
-
+                       observation: ObservationObservation,
+                       existing_incursion_attribute: AttributesAttributesData):
         # Return union of intervals if overlap, observation time otherwise
+        observation_start_time = isoparse(observation.startTime)
+        observation_end_time = isoparse(observation.endTime)
+        attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
+        attribute_end_time = isoparse(existing_incursion_attribute.valueEnd)
+
         overlap = observation_end_time >= attribute_start_time and attribute_end_time >= observation_start_time
         if overlap:
-            incursion_start_time = min(observation_start_time, attribute_start_time).isoformat()
-            incursion_end_time = max(observation_end_time, attribute_end_time).isoformat()
-            return (True, (incursion_start_time, incursion_end_time))
+            updated_incursion_start_time = min(observation_start_time, attribute_start_time).isoformat()
+            updated_incursion_end_time = max(observation_end_time, attribute_end_time).isoformat()
+            return (True, (updated_incursion_start_time, updated_incursion_end_time))
         else:
-            return (False, observation_time)
+            return (False, (observation_start_time, observation_end_time))
 
     def _check_observations_between(self,
                                     parent_node,
@@ -253,12 +241,12 @@ class Incursion(BaseRule):
         )
         oms_client.create_activity(incursion_activity)
 
-    def has_action_already_ran(self, input: RuleContext):
+    def has_action_already_ran(self, rule_context: RuleContext):
         """
         Determine if an incursion activity pointing to the inputted observation has already been created
         """
 
-        obs = input.observation
+        obs = rule_context.observation
         if not obs:
             return False
 

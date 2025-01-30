@@ -84,7 +84,7 @@ def mock_oms_client():
 
 
 @pytest.fixture(scope="session")
-def mock_source() -> CreateSourceCreateSource:
+def mock_source() -> CreateSourceCreateSource: # type: ignore
     oms_crud_tool = OmsCrudTool()
     source = oms_crud_tool.create_test_source()
     yield source
