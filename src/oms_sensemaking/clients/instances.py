@@ -6,9 +6,12 @@ from typing import Iterator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
+from oms_sensemaking.clients.aac_client import AacClient
+from oms_sensemaking.clients.health_checker import HealthChecker
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
-from .config import SETTINGS
+from ..config import SETTINGS
 
 db_engine = create_engine(
     SETTINGS.db_uri,  # type: ignore
@@ -56,4 +59,10 @@ def get_db_session() -> Iterator[Session]:
         db.close()
 
 
+aac_client = AacClient()
 oms_client = OmsCrudTool()
+oms_crud_tool = OmsCrudTool()
+
+corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
+
+health_checker = HealthChecker()

@@ -11,7 +11,7 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     StringQuery,
 )
 
-from oms_sensemaking.clients import oms_client
+from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -31,10 +31,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
         """
         Determine if the Attribute has a geo
         """
-        return (
-            input.attribute.geo
-            and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
-        )
+        return input.attribute.geo and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
 
     def action(self, input: RuleContext):
         """
@@ -45,45 +42,43 @@ class AddOutOfGarrisonAttribute(BaseRule):
         base_attribute_geolocation = attr.geo
 
         # Runs a query to get the affiliated node
-        node_response = oms_client.get_nodes(NodeQuery(
-            ids=[attr.nodeId]
-        ))
+        node_response = oms_client.get_nodes(NodeQuery(ids=[attr.nodeId]))
         dynamic_node = attr.nodeId
 
         # Check if the node is an Observational Node
-        if(node_response.tier == "OBSERVATIONAL"):
-            node_relationship_observational_response = oms_client.get_relationships(NodeRelationshipQuery(
-                hasMatch=NodeRelationshipSubQuery(
-                    objectPropertyIris=[SETTINGS.inference_participated_in_iri],
-                    relatedNodeIds=[attr.nodeId]
+        if node_response.tier == "OBSERVATIONAL":
+            node_relationship_observational_response = oms_client.get_relationships(
+                NodeRelationshipQuery(
+                    hasMatch=NodeRelationshipSubQuery(
+                        objectPropertyIris=[SETTINGS.inference_participated_in_iri], relatedNodeIds=[attr.nodeId]
+                    )
                 )
-            ))
+            )
             # Gets the nodes that are related nodes from the Relationship Query
             for observational_relationship in node_relationship_observational_response:
                 filtered_node_ids = [
-                     node_id for node_id in observational_relationship.relatedNodeIds if node_id != attr.nodeId
-                     ]
+                    node_id for node_id in observational_relationship.relatedNodeIds if node_id != attr.nodeId
+                ]
                 dynamic_node = filtered_node_ids[0]
 
         # Runs a query on the PD (Primary/Derivative) Node
-        node_relationship_pd_response = oms_client.get_relationships(NodeRelationshipQuery(
-            hasMatch=NodeRelationshipSubQuery(
-                objectPropertyIris=[SETTINGS.inference_garrison_location_iri],
-                relatedNodeIds=[dynamic_node],
+        node_relationship_pd_response = oms_client.get_relationships(
+            NodeRelationshipQuery(
+                hasMatch=NodeRelationshipSubQuery(
+                    objectPropertyIris=[SETTINGS.inference_garrison_location_iri],
+                    relatedNodeIds=[dynamic_node],
+                )
             )
-        ))
+        )
         # Gets the nodes that are related nodes from the Relationship Query
         for pd_relationship in node_relationship_pd_response:
-            filtered_node_ids = [
-                node_id for node_id in pd_relationship.relatedNodeIds if node_id != dynamic_node
-                ]
+            filtered_node_ids = [node_id for node_id in pd_relationship.relatedNodeIds if node_id != dynamic_node]
             garrison_node = filtered_node_ids[0]
 
         # Runs an Attribute Query to get the related Attribute
-        final_attribute_response = oms_client.get_attributes(AttributeQuery(
-            attributeIris=[SETTINGS.inference_garrison_location_iri],
-            nodeId=garrison_node
-        ))
+        final_attribute_response = oms_client.get_attributes(
+            AttributeQuery(attributeIris=[SETTINGS.inference_garrison_location_iri], nodeId=garrison_node)
+        )
 
         # Extracts the new attribute coordinates
         new_attribute_geolocation = final_attribute_response.geo
@@ -105,7 +100,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
             sourceId=attr.sourceId,
             acm=attr.acm,
             isMutable=False,
-            tags=SETTINGS.inference_tags
+            tags=SETTINGS.inference_tags,
         )
         oms_client.create_attribute(attribute_out_of_garrison)
 
@@ -120,7 +115,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
         attribute_query = AttributeQuery(
             attributeIri=SETTINGS.inference_add_in_garrison_iri,
-            attributeValue=StringQuery(equals="Yes"), # Yes or No, will check if this works
+            attributeValue=StringQuery(equals="Yes"),  # Yes or No, will check if this works
             attributeType={
                 "is": AttributeType.STRING,
             },
