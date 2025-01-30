@@ -30,10 +30,8 @@ class InferenceSensemaker(Sensemaker):
 
         self.engine.execute_rules(data)
 
-        # TODO Figure out what to do with findings, process_data is called in
-        # the base class and is expected to return findings, but the important
-        # config+algorithm data for Inference is in the rules
+        # process_data is called in the base class and is expected to return findings,
+        # but the important config+algorithm data for Inference is in the rules
+        # the rules self publish and save findings, there's nothing more to do here
 
-        # return data
-        # purposefully do not return any results for now
         return []
