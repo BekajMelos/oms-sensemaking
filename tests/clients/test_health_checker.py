@@ -14,7 +14,7 @@ def test_services_healthy(mocker: MockerFixture):
         {"test_spec": OmsCrudTool, "spec_attribute": "get_nodes", "health_method": health_checker.get_oms_health},
         {
             "test_spec": CoreNlpClient,
-            "spec_attribute": "annotate_document_xml",
+            "spec_attribute": "annotate_document_str",
             "health_method": health_checker.get_nlp_health,
         },
         {
@@ -45,7 +45,7 @@ def test_services_unhealthy(mocker: MockerFixture):
         },
         {
             "test_spec": CoreNlpClient,
-            "spec_attribute": "annotate_document_xml",
+            "spec_attribute": "annotate_document_str",
             "health_method": health_checker.get_nlp_health,
             "expected": f"{status_msg} NLP Service",
         },
