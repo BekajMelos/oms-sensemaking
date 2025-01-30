@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
-from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
+from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
@@ -88,6 +88,16 @@ class LogConfig(BaseSettings):
                 "level": "INFO"
             }
         }
+
+
+
+class MilSymbolSettings(BaseModel):
+    sqs_mil_symbol_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger",
+        description="the SQS Resolution Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger"]
+    )
+    enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
 
 
 class Settings(BaseSettings):
@@ -291,6 +301,10 @@ class Settings(BaseSettings):
             "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
         ],
         description="List of fields that must match to be a duplicate Facility")
+
+
+    mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
+
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-12", description="OMSB Version")
