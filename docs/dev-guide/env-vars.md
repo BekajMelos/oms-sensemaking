@@ -98,3 +98,7 @@
 | `RESOLUTION_RELATIONSHIP_NAME`                    | `Same As`                                                                                         | Relationship IRI for resolution sensemaker suggestions         | No             |
 | `RESOLUTION_RELATIONSHIP_IRI`                     | `https://foundry.ai.mil/MIDB/V3.3/relates_to`                                                     | Iri to set for the Resolution Finding URL                      | No             |
 | `DUPLICATE_FACILITY_IRIS`                         | `'["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"]'`| Iris to match on when looking for duplicate facilities         | No             |
+| `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL` | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger` | Resolution SQS Queue URL                 | Yes            |
+| `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True` | Toggle on/off Entity Resolution                 | No            |
+| `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS` | '["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]' | List of Affiliation IRIs to enrich from                 | No            |
+| `MIL_SYMBOL_SETTINGS__STATUS_IRIS` | '["https://foundry.ai.mil/DICO/v3.1.0/Condition"]' | List of Status IRIs to enrich from                 | No            |
