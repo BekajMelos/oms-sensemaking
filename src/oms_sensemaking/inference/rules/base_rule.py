@@ -22,68 +22,68 @@ class BaseRule(ABC):
 
         return self.name
 
-    def execute(self, input: RuleContext):
+    def execute(self, rule_context: RuleContext):
         """
         Execution space for the rule
 
-        :param input: Generic object used to evaluate and execute the rule
+        :param rule_context: Generic object used to evaluate and execute the rule
         """
 
-        LOGGER.debug(f"Executing Rule {self.get_name()} with input {input}")
-        if not self._has_action_already_ran(input) and self._evaluate(input):
-            self._action(input)
+        LOGGER.debug(f"Executing Rule {self.get_name()} with rule_context {rule_context}")
+        if not self._has_action_already_ran(rule_context) and self._evaluate(rule_context):
+            self._action(rule_context)
         return
 
     @abstractmethod
-    def has_action_already_ran(self, input: RuleContext) -> bool:
+    def has_action_already_ran(self, rule_context: RuleContext) -> bool:
         """
         Determine if the action has already happened in a previous run
 
-        :param input: Generic object used to test conditions
+        :param rule_context: Generic object used to test conditions
         """
 
         raise NotImplementedError
 
     @abstractmethod
-    def evaluate(self, input: RuleContext) -> bool:
+    def evaluate(self, rule_context: RuleContext) -> bool:
         """
-        Determine if the input's properties justify running the action method
+        Determine if the rule_context's properties justify running the action method
 
-        :param input: Generic object used to test conditions
+        :param rule_context: Generic object used to test conditions
         """
 
         raise NotImplementedError
 
     @abstractmethod
-    def action(self, input: RuleContext):
+    def action(self, rule_context: RuleContext):
         """
         The command to run when this rule's conditions are met
 
-        :param input: Generic object used in the command
+        :param rule_context: Generic object used in the command
         """
 
         raise NotImplementedError
 
-    def _has_action_already_ran(self, input: RuleContext) -> bool:
+    def _has_action_already_ran(self, rule_context: RuleContext) -> bool:
         """
         Pre running step for the action_already_taken method
         """
 
         LOGGER.info(f"Determining if action already taken for rule {self.get_name()}")
-        return self.has_action_already_ran(input)
+        return self.has_action_already_ran(rule_context)
 
-    def _evaluate(self, input: RuleContext) -> bool:
+    def _evaluate(self, rule_context: RuleContext) -> bool:
         """
         Pre running step for the evaluate method
         """
 
         LOGGER.info(f"Evaluating Rule {self.get_name()}")
-        return self.evaluate(input)
+        return self.evaluate(rule_context)
 
-    def _action(self, input: RuleContext) -> bool:
+    def _action(self, rule_context: RuleContext) -> bool:
         """
         Pre running step for the action method
         """
 
         LOGGER.info(f"Executing Action for Rule {self.get_name()}")
-        return self.action(input)
+        return self.action(rule_context)

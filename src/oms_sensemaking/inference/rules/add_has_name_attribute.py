@@ -23,23 +23,23 @@ class AddHasNameAttribute(BaseRule):
     def __init__(self, name: str):
         self.name = name
 
-    def evaluate(self, input: RuleContext) -> bool:
+    def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Determine if the Attribute is a Name attribute for a node
         """
 
         return (
-            input.attribute
-            and input.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
-            and input.attribute.attributeValue
+            rule_context.attribute
+            and rule_context.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
+            and rule_context.attribute.attributeValue
         )
 
-    def action(self, input: RuleContext):
+    def action(self, rule_context: RuleContext):
         """
         Create a metadata attribute for a node that indicates that it has a name
         """
 
-        attr = input.attribute
+        attr = rule_context.attribute
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue="true",
@@ -53,12 +53,12 @@ class AddHasNameAttribute(BaseRule):
 
         oms_client.create_attribute(attribute)
 
-    def has_action_already_ran(self, input: RuleContext):
+    def has_action_already_ran(self, rule_context: RuleContext):
         """
         Determine if a metadata attribute has already been created for a node
         """
 
-        attr = input.attribute
+        attr = rule_context.attribute
         if not attr:
             return False
 

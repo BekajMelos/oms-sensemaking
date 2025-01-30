@@ -27,17 +27,20 @@ class AddOutOfGarrisonAttribute(BaseRule):
     def __init__(self, name: str):
         self.name = name
 
-    def evaluate(self, input: RuleContext) -> bool:
+    def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Determine if the Attribute has a geo
         """
-        return input.attribute.geo and input.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
+        return (
+            rule_context.attribute.geo
+            and rule_context.attribute.attributeIri == SETTINGS.inference_add_garrison_attribute_iri
+        )
 
-    def action(self, input: RuleContext):
+    def action(self, rule_context: RuleContext):
         """
         Create an attribute that indicates if a node is garrisoned at a base or not
         """
-        attr = input.attribute
+        attr = rule_context.attribute
         # Extracts the initial attribute coordinates
         base_attribute_geolocation = attr.geo
 
@@ -104,12 +107,12 @@ class AddOutOfGarrisonAttribute(BaseRule):
         )
         oms_client.create_attribute(attribute_out_of_garrison)
 
-    def has_action_already_ran(self, input: RuleContext):
+    def has_action_already_ran(self, rule_context: RuleContext):
         """
         Determine if a metadata attribute has already been created for a node
         """
 
-        attr = input.attribute
+        attr = rule_context.attribute
         if not attr:
             return False
 
