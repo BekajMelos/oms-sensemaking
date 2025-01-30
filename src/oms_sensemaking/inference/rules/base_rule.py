@@ -1,19 +1,27 @@
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
+from typing import Tuple
 
+from oms_sensemaking.core.sensemakers import FindingWriter, SensemakerMetaData
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseRule(ABC):
+class BaseRule(ABC, SensemakerMetaData):
     """
     Simple definition Rule that all other rules must be based on
     """
 
-    def __init__(self, name: str):
-        self.name = name
-        assert name, "Attempted to create a rule without a name"
+    def __init__(self, name: str = ""):
+        self.name: str = name if name else self.__class__.__name__
+        self.config: dict = {}
+
+        #: The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
+        self.version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
+        self.executed_at: datetime
+        self._finding_writer = FindingWriter()
 
     def get_name(self) -> str:
         """
@@ -86,4 +94,10 @@ class BaseRule(ABC):
         """
 
         LOGGER.info(f"Executing Action for Rule {self.get_name()}")
+        self.executed_at = datetime.now(tz=timezone.utc)
         return self.action(rule_context)
+
+    @property
+    def version_string(self) -> str:
+        """Return the algorithm version as a semantic version string."""
+        return ".".join(map(str, self.version))

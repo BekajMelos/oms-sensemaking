@@ -10,7 +10,7 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
+from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute, AddHasNameFinding
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
@@ -75,10 +75,14 @@ def test_has_action_already_ran(mocker: MockerFixture, name_attr):
 
 
 def test_action_creates_attribute(mocker: MockerFixture, name_attr):
-    mock = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
+    oms_mock = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
     rule = AddHasNameAttribute("some name")
-    rule.action(RuleContext(attribute=name_attr))
-    mock.assert_called_once_with(
+    finding_writer_mock = mocker.patch.object(rule._finding_writer, "save_findings")
+
+    # ensure we do pre-action steps too
+    rule._action(RuleContext(attribute=name_attr))
+
+    oms_mock.assert_called_once_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue="true",
@@ -90,3 +94,5 @@ def test_action_creates_attribute(mocker: MockerFixture, name_attr):
             tags=SETTINGS.inference_tags,
         )
     )
+    expected_findings = [AddHasNameFinding(name_attr.acm, name_attr.id)]
+    finding_writer_mock.assert_called_once_with(expected_findings, rule)

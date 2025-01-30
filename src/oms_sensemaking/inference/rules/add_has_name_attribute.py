@@ -1,3 +1,6 @@
+import uuid
+from dataclasses import dataclass, field
+
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
 )
@@ -9,8 +12,20 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.sensemakers import FindingBase
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+from oms_sensemaking.models.sensemaking import FindingType
+
+
+@dataclass
+class AddHasNameFinding(FindingBase):
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_HAS_NAME)
+    acm: dict
+    ref_attribute_id: uuid.UUID
+
+    def get_acm(self) -> dict:
+        return self.acm
 
 
 class AddHasNameAttribute(BaseRule):
@@ -20,8 +35,15 @@ class AddHasNameAttribute(BaseRule):
     pointing to the node
     """
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, name: str = ""):
+        super().__init__(name)
+        self.version = (1, 0, 0)
+        self.config = {
+            "inference_add_has_name_attribute_iri": SETTINGS.inference_add_has_name_attribute_iri,
+            "inference_add_has_name_attribute_meta_data_iri": SETTINGS.inference_add_has_name_attribute_meta_data_iri,
+            "inference_tags": SETTINGS.inference_tags,
+        }
+        self.version = (1, 0, 0)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -52,6 +74,9 @@ class AddHasNameAttribute(BaseRule):
         )
 
         oms_client.create_attribute(attribute)
+
+        finding = AddHasNameFinding(attr.acm, attr.id)
+        self._finding_writer.save_findings([finding], self)
 
     def has_action_already_ran(self, rule_context: RuleContext):
         """
