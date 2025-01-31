@@ -9,7 +9,7 @@ def is_point_in_polygon(point: dict[str, Any], polygon: dict[str, Any]):
     """  # add type annot
     point_coordinates = point["coordinates"]
     polygon_coordinates = polygon["coordinates"][0]
-    polygon = Polygon(polygon_coordinates)
-    point = Point(point_coordinates)
+    shapely_polygon = Polygon(polygon_coordinates)
+    shapely_point = Point(point_coordinates)
 
-    return polygon.contains(point)
+    return shapely_polygon.contains(shapely_point)
