@@ -7,7 +7,7 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
     StringQuery,
 )
 
-from oms_sensemaking.clients import oms_client
+from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext

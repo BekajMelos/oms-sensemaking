@@ -21,5 +21,14 @@ def mock_oms_client():
 
 @pytest.fixture
 def mock_oms_crud_tool():
-    return mock.MagicMock(spec=OmsCrudTool)
+
+    def mock_all_but_rehydrate_oms_obj_method(name, *args, **kwargs):
+        if name == 'rehydrate_oms_obj':
+            return OmsCrudTool().rehydrate_oms_obj(*args, **kwargs)  # Call the real method1
+        else:
+            return mock.MagicMock()(*args, **kwargs)  # Mock other methods
+
+    return mock.MagicMock(spec=OmsCrudTool, side_effect=mock_all_but_rehydrate_oms_obj_method)
+
+
 

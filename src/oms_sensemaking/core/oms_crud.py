@@ -1,3 +1,4 @@
+from typing import Union
 from uuid import UUID
 
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
@@ -28,6 +29,7 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeNode,
     NodeQuery,
     NodesNodes,
+    ObjectType,
     ObservationObservation,
     ObservationQuery,
     ObservationsObservations,
@@ -163,6 +165,11 @@ class OmsCrudTool:
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
 
+    def get_node(self, id: UUID) -> NodeNode:
+        """Get existing Node from OMS"""
+        node = self.oms_client.node(IdQuery(id=id))
+        return node
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
         nodes = self.oms_client.nodes(query=node_info)
@@ -246,6 +253,25 @@ class OmsCrudTool:
 
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
+
+    def rehydrate_oms_obj(
+            self,
+            object_id: UUID,
+            object_type: ObjectType
+        ) -> Union[ActivityActivity, AttributeAttribute, ObservationObservation, NodeNode]:
+        """Get full OMS Object from id
+
+        :param object_id: Id of OMS object to retrieve
+        :param object_type: ObjectType type of object to retrieve
+        """
+        obj_getter_mapping = {
+            ObjectType.ACTIVITY: self.get_activity,
+            ObjectType.ATTRIBUTE: self.get_attribute,
+            ObjectType.OBSERVATION: self.get_observation,
+            ObjectType.NODE: self.get_node,
+        }
+
+        return obj_getter_mapping[object_type](object_id)
 
     def create_test_source(
         self,
