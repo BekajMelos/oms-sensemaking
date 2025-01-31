@@ -43,7 +43,6 @@ class AddHasNameAttribute(BaseRule):
             "inference_add_has_name_attribute_meta_data_iri": SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             "inference_tags": SETTINGS.inference_tags,
         }
-        self.version = (1, 0, 0)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -73,9 +72,9 @@ class AddHasNameAttribute(BaseRule):
             tags=SETTINGS.inference_tags,
         )
 
-        oms_client.create_attribute(attribute)
+        response = oms_client.create_attribute(attribute)
 
-        finding = AddHasNameFinding(attr.acm, attr.id)
+        finding = AddHasNameFinding(attr.acm, response.id)
         self._finding_writer.save_findings([finding], self)
 
     def has_action_already_ran(self, rule_context: RuleContext):

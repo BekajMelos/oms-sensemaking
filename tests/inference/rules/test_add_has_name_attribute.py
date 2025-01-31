@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
@@ -76,6 +78,10 @@ def test_has_action_already_ran(mocker: MockerFixture, name_attr):
 
 def test_action_creates_attribute(mocker: MockerFixture, name_attr):
     oms_mock = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
+    create_attr_response = mocker.MagicMock(spec=AttributeAttribute)
+    create_attr_response.id = uuid4()
+    oms_mock.return_value = create_attr_response
+
     rule = AddHasNameAttribute("some name")
     finding_writer_mock = mocker.patch.object(rule._finding_writer, "save_findings")
 
@@ -94,5 +100,5 @@ def test_action_creates_attribute(mocker: MockerFixture, name_attr):
             tags=SETTINGS.inference_tags,
         )
     )
-    expected_findings = [AddHasNameFinding(name_attr.acm, name_attr.id)]
+    expected_findings = [AddHasNameFinding(name_attr.acm, create_attr_response.id)]
     finding_writer_mock.assert_called_once_with(expected_findings, rule)
