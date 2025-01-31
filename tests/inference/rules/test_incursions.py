@@ -24,6 +24,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -161,17 +162,17 @@ def parent_node(mocker: MockerFixture):
 
     return node
 
-
+def setup_mock_crud_tool_methods(mockmock_oms_crud_tool: OmsCrudTool
 # Mock methods
 @pytest.fixture
 def mock_get_node(mocker: MockerFixture, parent_node):
-    mock_get_node = mocker.patch("oms_sensemaking.clients.oms_client.get_node")
+    mock_get_node = mocker.patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_node")
     mock_get_node.return_value = parent_node
     return mock_get_node
 
 
 @pytest.fixture
-def mock_get_attributes(mocker: MockerFixture):
+def mock_get_attributes(mocker: MockerFixture, mock_oms_crud_tool: OmsCrudTool):
     mock_get_attributes = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = []
