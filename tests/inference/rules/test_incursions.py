@@ -28,14 +28,15 @@ from oms_sensemaking.inference.data.areas_of_interest import features_list_from_
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
-# Areas of interest
-features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
-region1_geometry = features[0]["geometry"]
-region2_geometry = features[1]["geometry"]
+
+@pytest.fixture
+def areas_of_interest():
+    features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+    return [feature["geometry"] for feature in features]
 
 # Mocked nodes
 @pytest.fixture
-def attribute1(mocker: MockerFixture):
+def attribute1(mocker: MockerFixture, areas_of_interest):
     """
     An existing incursion attribute
     """
@@ -49,13 +50,13 @@ def attribute1(mocker: MockerFixture):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "parent_node_id"
-    attr.geometry = json.dumps(region1_geometry)
+    attr.geometry = json.dumps(areas_of_interest[0])
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     return attr
 
 @pytest.fixture
-def attribute2(mocker: MockerFixture):
+def attribute2(mocker: MockerFixture, areas_of_interest):
     """
     An existing incursion attribute
     """
@@ -69,7 +70,7 @@ def attribute2(mocker: MockerFixture):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "parent_node_id"
-    attr.geometry = json.dumps(region1_geometry)
+    attr.geometry = json.dumps(areas_of_interest[0])
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     return attr
@@ -255,7 +256,8 @@ def test_new_incursion_region1(observational_node_region1,
                                mock_get_node,
                                mock_get_attributes,
                                mock_create_activity,
-                               mock_create_attribute):
+                               mock_create_attribute,
+                               areas_of_interest):
     # Scenario: Observation input yields new incursion and activity in region1
     rule = Incursion("incursion rule")
 
@@ -265,7 +267,7 @@ def test_new_incursion_region1(observational_node_region1,
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(region1_geometry)),
+            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
             nodeIds=[parent_node.id],
             tags=SETTINGS.incursion_tags
         )
@@ -280,7 +282,7 @@ def test_new_incursion_region1(observational_node_region1,
             nodeId=parent_node.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(region1_geometry),
+            geometry=json.dumps(areas_of_interest[0]),
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime
         )
@@ -290,7 +292,7 @@ def test_new_incursion_region1(observational_node_region1,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
             name="Incursion",
-            description=f"Incursion detected into {region1_geometry}",
+            description=f"Incursion detected into {areas_of_interest[0]}",
             state=ActivityState.UNKNOWN,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
@@ -304,7 +306,8 @@ def test_new_incursion_region2(observational_node_region2,
                                mock_get_node,
                                mock_get_attributes,
                                mock_create_activity,
-                               mock_create_attribute):
+                               mock_create_attribute,
+                               areas_of_interest):
     # Scenario: Observation input yields new incursion and activity in region2
     rule = Incursion("incursion rule")
 
@@ -314,7 +317,7 @@ def test_new_incursion_region2(observational_node_region2,
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(region2_geometry)),
+            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[1])),
             nodeIds=[parent_node.id],
             tags=SETTINGS.incursion_tags
         )
@@ -329,7 +332,7 @@ def test_new_incursion_region2(observational_node_region2,
             nodeId=parent_node.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(region2_geometry),
+            geometry=json.dumps(areas_of_interest[1]),
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime
         )
@@ -339,7 +342,7 @@ def test_new_incursion_region2(observational_node_region2,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
             name="Incursion",
-            description=f"Incursion detected into {region2_geometry}",
+            description=f"Incursion detected into {areas_of_interest[1]}",
             state=ActivityState.UNKNOWN,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
@@ -357,7 +360,8 @@ def test_two_existing_incursions(observational_node_region1,
                                  mock_get_activities,
                                  mock_get_observations,
                                  mock_update_attribute,
-                                 mock_update_activity):
+                                 mock_update_activity,
+                                 areas_of_interest):
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
@@ -372,7 +376,7 @@ def test_two_existing_incursions(observational_node_region1,
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(region1_geometry)),
+            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
             nodeIds=[parent_node.id],
             tags=SETTINGS.incursion_tags
         )
