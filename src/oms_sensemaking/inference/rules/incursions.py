@@ -20,8 +20,8 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
 )
 
+from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -34,9 +34,8 @@ class Incursion(BaseRule):
     with and make the appropriate attribute/activity updates
     """
 
-    def __init__(self, name: str, oms_crud_tool: OmsCrudTool):
+    def __init__(self, name: str):
         self.name = name
-        self.oms_crud_tool = oms_crud_tool
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -56,7 +55,7 @@ class Incursion(BaseRule):
 
         obs = rule_context.observation
         # Fetch node that observation points to
-        parent_node = self.oms_crud_tool.get_node(IdQuery(id=obs.nodeId))
+        parent_node = oms_client.get_node(IdQuery(id=obs.nodeId))
         geo = obs.geometry
 
         # Check if observation occurred in an area of interest
@@ -78,7 +77,7 @@ class Incursion(BaseRule):
                 nodeIds=[parent_node.id],
                 tags=SETTINGS.incursion_tags,
             )
-            attr_response = self.oms_crud_tool.get_attributes(attribute_query)
+            attr_response = oms_client.get_attributes(attribute_query)
             existing_incursion_attributes = attr_response.data
 
             matching_incursion_attribute_found = False
@@ -141,7 +140,7 @@ class Incursion(BaseRule):
                 startTime=TimeQuery(gte=observation_time[1]),
                 endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
             )
-            observation_response = self.oms_crud_tool.get_observations(observation_query)
+            observation_response = oms_client.get_observations(observation_query)
             if len(observation_response.data) == 0:
                 # No intermediate observations exist, current observation is part of existing incursion
                 part_of_existing_incursion = True
@@ -157,7 +156,7 @@ class Incursion(BaseRule):
                 startTime=TimeQuery(gte=existing_incursion_attribute.valueEnd),
                 endTime=TimeQuery(lte=observation_time[0]),
             )
-            observation_response = self.oms_crud_tool.get_observations(observation_query)
+            observation_response = oms_client.get_observations(observation_query)
             if len(observation_response.data) == 0:
                 # No intermediate observations exist, current observation is part of existing incursion
                 part_of_existing_incursion = True
@@ -183,7 +182,7 @@ class Incursion(BaseRule):
             startTime=TimeQuery(gte=existing_incursion_attribute.valueStart),
             endTime=TimeQuery(lte=existing_incursion_attribute.valueEnd),
         )
-        activity_response = self.oms_crud_tool.get_activities(activity_query)
+        activity_response = oms_client.get_activities(activity_query)
         incursion_activity = activity_response.data[0]
 
         # Update start/end times and add observation to incursion activity
@@ -193,13 +192,13 @@ class Incursion(BaseRule):
             endTime=current_incursion_time[1],
             addObservationIds=[observation.id],
         )
-        self.oms_crud_tool.update_activity(updated_activity_input)
+        oms_client.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         updated_attribute_input = UpdateAttributeInput(
             id=existing_incursion_attribute.id, startTime=current_incursion_time[0], endTime=current_incursion_time[1]
         )
-        self.oms_crud_tool.update_attribute(updated_attribute_input)
+        oms_client.update_attribute(updated_attribute_input)
 
     def _handle_new_incursion(self, observation: ObservationObservation, parent_node: NodeNode, geo_of_interest):
         # Create new incursion attribute for parent node
@@ -216,7 +215,7 @@ class Incursion(BaseRule):
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
-        self.oms_crud_tool.create_attribute(incursion_attribute)
+        oms_client.create_attribute(incursion_attribute)
 
         # Create new incursion activity for parent node and observation
         incursion_activity = CreateActivityInput(
@@ -230,7 +229,7 @@ class Incursion(BaseRule):
             startTime=observation.startTime,
             endTime=observation.endTime,
         )
-        self.oms_crud_tool.create_activity(incursion_activity)
+        oms_client.create_activity(incursion_activity)
 
     def has_action_already_ran(self, rule_context: RuleContext):
         """

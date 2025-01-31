@@ -24,7 +24,6 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -162,18 +161,18 @@ def parent_node(mocker: MockerFixture):
 
     return node
 
-def setup_mock_crud_tool_methods(mockmock_oms_crud_tool: OmsCrudTool
+
 # Mock methods
 @pytest.fixture
 def mock_get_node(mocker: MockerFixture, parent_node):
-    mock_get_node = mocker.patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_node")
+    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_node")
     mock_get_node.return_value = parent_node
     return mock_get_node
 
 
 @pytest.fixture
-def mock_get_attributes(mocker: MockerFixture, mock_oms_crud_tool: OmsCrudTool):
-    mock_get_attributes = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
+def mock_get_attributes(mocker: MockerFixture):
+    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_attributes")
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = []
     mock_get_attributes.return_value = mock_attribute_response
@@ -182,19 +181,19 @@ def mock_get_attributes(mocker: MockerFixture, mock_oms_crud_tool: OmsCrudTool):
 
 @pytest.fixture
 def mock_create_attribute(mocker: MockerFixture):
-    mock_create_attribute = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
+    mock_create_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
     return mock_create_attribute
 
 
 @pytest.fixture
 def mock_update_attribute(mocker: MockerFixture):
-    mock_update_attribute = mocker.patch("oms_sensemaking.clients.oms_client.update_attribute")
+    mock_update_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_client.update_attribute")
     return mock_update_attribute
 
 
 @pytest.fixture
 def mock_get_activities(mocker: MockerFixture):
-    mock_get_activities = mocker.patch("oms_sensemaking.clients.oms_client.get_activities")
+    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_activities")
     mock_activity_response = MagicMock()
     mock_activity = MagicMock()
     mock_activity.id = "activity_id"
@@ -205,19 +204,19 @@ def mock_get_activities(mocker: MockerFixture):
 
 @pytest.fixture
 def mock_create_activity(mocker: MockerFixture):
-    mock_create_activity = mocker.patch("oms_sensemaking.clients.oms_client.create_activity")
+    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_activity")
     return mock_create_activity
 
 
 @pytest.fixture
 def mock_update_activity(mocker: MockerFixture):
-    mock_update_activity = mocker.patch("oms_sensemaking.clients.oms_client.update_activity")
+    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.update_activity")
     return mock_update_activity
 
 
 @pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node_region1):
-    mock_get_observations = mocker.patch("oms_sensemaking.clients.oms_client.get_observations")
+    mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_observations")
     mock_observation_response = MagicMock()
     mock_observation_response.data = [observational_node_region1]
     mock_get_observations.return_value = mock_observation_response
