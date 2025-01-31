@@ -22,7 +22,7 @@ from oms_sensemaking.models.sensemaking import FindingType
 class AddHasNameFinding(FindingBase):
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_HAS_NAME)
     acm: dict
-    ref_attribute_id: uuid.UUID
+    attr_id: uuid.UUID
 
     def get_acm(self) -> dict:
         return self.acm
