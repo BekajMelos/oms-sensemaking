@@ -26,7 +26,7 @@ if not SETTINGS.db_uri.endswith("_test"):
     SETTINGS.db_uri = f"{SETTINGS.db_uri}_test"
 
 # the session generator should initialized after the config hack above
-from oms_sensemaking.clients import SessionLocal
+from oms_sensemaking.clients.instances import SessionLocal
 
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
