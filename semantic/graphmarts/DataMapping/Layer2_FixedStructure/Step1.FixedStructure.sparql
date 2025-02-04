@@ -97,7 +97,7 @@ WHERE {
     ######################
     # CONTINUANT PART OF # (ie. another node is "continuant part of" my node)
     #####################
-    OPTIONAL {	?cont_part_rel_obj ingest_omsb_graphmart:Relationship.end_node_id ?node_id ;
+    OPTIONAL {	?cont_part_of_rel_obj ingest_omsb_graphmart:Relationship.end_node_id ?node_id ;
       			ingest_omsb_graphmart:Relationship.start_node_id ?cont_part_node_id1 ;
       			ingest_omsb_graphmart:Relationship.object_property_iri ?cont_part_of_rel_iri ;
       FILTER (?cont_part_of_rel_iri IN (
@@ -111,7 +111,7 @@ WHERE {
     ######################
     # HAS CONTINUANT PART # (ie. my node "has continuant part" that is another node)
     #####################
-    OPTIONAL {	?cont_part_rel_obj ingest_omsb_graphmart:Relationship.end_node_id ?cont_part_node_id2 ;
+    OPTIONAL {	?has_cont_part_rel_obj ingest_omsb_graphmart:Relationship.end_node_id ?cont_part_node_id2 ;
       			ingest_omsb_graphmart:Relationship.start_node_id ?node_id ;
       			ingest_omsb_graphmart:Relationship.object_property_iri ?has_cont_part_rel_iri ;
       FILTER (?has_cont_part_rel_iri IN (
