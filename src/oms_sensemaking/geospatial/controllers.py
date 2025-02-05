@@ -1,6 +1,7 @@
 """Geospatial sensemaker controller."""
 
 import logging
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
@@ -20,7 +21,7 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.geo import Point, Track, get_track, noop_track_weaver
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -42,7 +43,10 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = {}
 
-        #: OMS GraphQL client
+        # track weaver to call on completed Tracks before publishing
+        self.track_weaver: Callable[[Track], Track] = noop_track_weaver
+
+        # OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(
             SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
         )
@@ -173,6 +177,10 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             LOGGER.info(f"Track completed: {track_id}")
                             track: Track = get_track(db, track_id)
+                            # As long as track_weaver either returns a Track or raises ValueError,
+                            # the except clause below should be all the error handling we need.
+                            track = self.track_weaver(track)
+                            # TODO: If storing Tracks in db, store completed (weaved) Track now.
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
