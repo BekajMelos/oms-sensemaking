@@ -89,6 +89,23 @@ project documentation with `mkdocs serve`, which will host the project at
 http://localhost:4000 or build a static copy with `mkdocs build` (the resulting
 static site will be located in the `site` directory).
 
+## Build Docker Image and Test in Tex
+
+```shell
+# create the "latest" docker image
+make docker-build
+
+# find the new docker image (it has the newest timestamp),
+docker image ls | grep sense
+
+# tag it as "latest-test"
+docker image tag IMAGE_ID_HERE tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-sensemaking:latest-test
+
+# push "latest-test" to tex registry
+docker image push tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-sensemaking:latest-test
+
+# update docker image in charts/omsb-sensemaking in omsb-helm-chart repo to latest-test
+```
 
 [Install Docker Engine]: https://docs.docker.com/engine/install/
 
