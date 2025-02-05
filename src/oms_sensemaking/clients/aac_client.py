@@ -4,13 +4,15 @@ from typing import List, Optional
 
 import httpx
 
+from oms_sensemaking.config import SETTINGS
+
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class AacClient:
     """AAC Client for communicating with the AAC Service"""
 
-    def __init__(self, aac_url: str, cert_path: Optional[str], key_path: Optional[str]) -> None:
+    def __init__(self, cert_path: Optional[str], key_path: Optional[str]) -> None:
         """
         Construct the client for communicating to an AAC Service v2.x
 
@@ -20,14 +22,10 @@ class AacClient:
 
         For http connections, do not set cert_path or key_path
 
-        :param aac_url: http(s)://aac_host:port of the AAC Service
-
         :param cert_path: For two-way ssl, the path to the .pem or .crt file
 
         :param key_path: For two-way ssl, the path to the .key file
         """
-
-        self._aac_url = aac_url
 
         self._ctx = ssl.create_default_context()
         if cert_path and key_path:
@@ -43,5 +41,5 @@ class AacClient:
         """Use AAC to rollup a list of ACMs"""
         LOGGER.debug("Getting ACM Rollup")
         client = httpx.Client(verify=self._ctx)
-        response = client.post(f"{self._aac_url}/acms/rollup", json={"AccessTuples": acms})
+        response = client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
         return response.json()["RollupACM"]
