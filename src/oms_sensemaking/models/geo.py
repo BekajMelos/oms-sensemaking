@@ -1,4 +1,5 @@
 """Geospatial Sensemaker models."""
+
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -36,17 +37,13 @@ class OmsGeoMixin(MappedAsDataclass):
         # of an altitude/elevation field.
         #
         # https://github.com/geoalchemy/geoalchemy2/issues/157
-        Geometry('POINT', dimension=2, srid=SETTINGS.srid, spatial_index=False),
+        Geometry("POINT", dimension=2, srid=SETTINGS.srid, spatial_index=False),
         nullable=False,
         unique=False,
-        comment='The 2D location of the point.'
+        comment="The 2D location of the point.",
     )
 
-    altitude: Mapped[Optional[float]] = mapped_column(
-        Float,
-        nullable=True,
-        comment='The altitude of the point.'
-    )
+    altitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="The altitude of the point.")
 
     @declared_attr
     def geohash(self) -> Mapped[str]:
@@ -59,10 +56,7 @@ class OmsGeoMixin(MappedAsDataclass):
         return query_expression(doc="A geocoded representation of the location.")
 
     detection_time: Mapped[datetime] = mapped_column(
-        UtcDateTime,
-        unique=False,
-        nullable=False,
-        comment='The time the point was detected.'
+        UtcDateTime, unique=False, nullable=False, comment="The time the point was detected."
     )
 
     @cached_property
@@ -82,13 +76,7 @@ class OmsGeoMixin(MappedAsDataclass):
 
     def to_geojson(self) -> dict:
         """Return a GeoJSON representation of the point."""
-        return {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": self.coordinates
-            }
-        }
+        return {"type": "Feature", "geometry": {"type": "Point", "coordinates": self.coordinates}}
 
 
 class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin, TrackMixin):
@@ -110,7 +98,7 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - track_id
     """
 
-    __tablename__: str = 'points'
+    __tablename__: str = "points"
 
     def __post_init__(self):
         """
@@ -156,7 +144,6 @@ class Track:
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
 
-
     def to_dict(self) -> dict:
         """Return a dictionary representation of the object."""
         return asdict(self)
@@ -172,17 +159,17 @@ def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point
     # NOTE: this a naive implementation.
     #
     # @see https://stackoverflow.com/questions/7389759/memory-efficient-built-in-sqlalchemy-iterator-generator
-    return list(db.execute(
-        select(
-            Point
-        ).where(
-            Point.track_id == track_id
-        ).order_by(
-            Point.detection_time.asc()
-        ).options(
-            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+    return list(
+        db.execute(
+            select(Point)
+            .where(Point.track_id == track_id)
+            .order_by(Point.detection_time.asc())
+            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
-    ).scalars().all())
+        .scalars()
+        .all()
+    )
+
 
 def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     """
@@ -196,3 +183,15 @@ def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     node_id = points[0].node_id
 
     return Track(points=points, node_id=node_id)
+
+
+# The simplest track weaver performs no mutation
+def noop_track_weaver(track: Track) -> Track:
+    return track
+
+
+# The next simplest track weaver accepts all Points in order
+def naive_track_weaver(track: Track) -> Track:
+    points = track.points
+    points.sort(lambda x: x.detection_time)
+    return Track(points=points, node_id=points[0].node_id)
