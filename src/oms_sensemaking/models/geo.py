@@ -98,6 +98,8 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - track_id
     """
 
+    # TODO: Add confidence attribute, either directly, by modifying existing mixins, or new mixin
+
     __tablename__: str = "points"
 
     def __post_init__(self):
@@ -122,6 +124,8 @@ class Track:
     node_id: uuid.UUID
     start_time: datetime = field(init=False)
     end_time: datetime = field(init=False)
+    # TODO: Add optional parameter for metadata:
+    #   aggregate confidence, excluded Points, track weaver algorithm, etc.
 
     def __post_init__(self) -> None:
         """
