@@ -197,5 +197,5 @@ def noop_track_weaver(track: Track) -> Track:
 # The next simplest track weaver accepts all Points in order
 def naive_track_weaver(track: Track) -> Track:
     points = track.points
-    points.sort(lambda x: x.detection_time)
+    points.sort(key=lambda x: x.detection_time)
     return Track(points=points, node_id=points[0].node_id)
