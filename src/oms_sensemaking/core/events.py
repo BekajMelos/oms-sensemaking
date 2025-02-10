@@ -187,7 +187,7 @@ class SQSListener(BaseSQSListener):
                     break
 
                 # Receive message from SQS queue
-                LOGGER.info(f"{self._name} checking queue with url {self._queue_url}")
+                LOGGER.debug(f"{self._name} checking queue with url {self._queue_url}")
                 try:
                     response = self.sqs.receive_message(
                         QueueUrl=self._queue_url,
