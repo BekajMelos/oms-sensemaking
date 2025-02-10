@@ -20,7 +20,7 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import NaiveTrackWeaver, Point, Track, TrackWeaverBase, get_track
+from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.node_track_mapping: dict[UUID, UUID] = {}
 
         # track weaver to call on completed Tracks before publishing
-        self.track_weaver: TrackWeaverBase = NaiveTrackWeaver()
+        self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
 
         # OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(

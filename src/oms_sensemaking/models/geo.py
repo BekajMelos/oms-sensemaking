@@ -1,15 +1,18 @@
 """Geospatial Sensemaker models."""
 
+import itertools
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from functools import cached_property
-from typing import Optional, Union
+from typing import Iterable, Optional, Union
 
+import timehash
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
+from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Float, func, select
@@ -196,6 +199,93 @@ class NaiveTrackWeaver(TrackWeaverBase):
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
         return Track(points=points, node_id=points[0].node_id)
+
+
+class TimeBinTrackWeaver(TrackWeaverBase):
+    """
+    A track weaver that bins Points by time, then weighted averages bins by confidence.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "time binning" algorithm implementation.
+
+    """
+
+    def __init__(self) -> None:
+        """Create a new instance of NaiveTrackWeaver."""
+        super().__init__()
+        self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        # TODO: Figure out what to do about generated Points requiring a source_id and observation_id
+        self.config = {
+            "timehash_bin_size": SETTINGS.timehash_bin_size,
+            "confidence_map": {
+                Confidence.UNKNOWN: SETTINGS.confidence_weight_unknown,
+                Confidence.HIGH: SETTINGS.confidence_weight_high,
+                Confidence.MODERATE: SETTINGS.confidence_weight_moderate,
+                Confidence.LOW: SETTINGS.confidence_weight_low,
+            },
+            "track_weaver_source_id": uuid.uuid4(),
+        }
+
+    def execute(self, points: list[Point]) -> Track:
+        points.sort(key=lambda x: x.detection_time)
+        time_bins = {
+            time_bin: tuple(points)
+            for time_bin, points in itertools.groupby(
+                points,
+                key=lambda x: timehash.encode_from_datetime(
+                    x.detection_time, precision=self.config["timehash_bin_size"]
+                ),
+            )
+        }
+        confidence_map: dict = self.config["confidence_map"]
+        weighted_points: list[Point] = []
+        for points in time_bins.values():
+            # Reuse most of the attributes from one of the points in the bin
+            point_dict = points[0].to_dict()
+            # TODO: Is there a real source_id or observation_id we could use? Shouldn't matter as long as
+            # we don't push fake values to OMS
+            # TODO: Is there any value to comparing ACMs among averaged points and combining them somehow?
+            point_dict["source_id"] = self.config["track_weaver_source_id"]
+            point_dict["observation_id"] = uuid.uuid4()
+            """
+            lon, lat
+            location=(
+                f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
+            ),
+            """
+            lon = weighted_average(
+                (p.coordinates[0] for p in points), (confidence_map[p.observation_confidence] for p in points)
+            )
+            lat = weighted_average(
+                (p.coordinates[1] for p in points), (confidence_map[p.observation_confidence] for p in points)
+            )
+            point_dict["location"] = f"Point({lon} " f"{lat})"
+            # TODO: Deal with possibly missing altitudes
+            point_dict["altitude"] = None
+            # TODO: Allow Point model to store arbitrary float confidence values?
+            confidence_level = Confidence.UNKNOWN
+            confidence_val = min(confidence_map[p.observation_confidence] for p in points)
+            for confidence, weight in confidence_map.items():
+                if weight == confidence_val:
+                    confidence_level = confidence
+            point_dict["observation_confidence"] = confidence_level
+            weighted_points.append(Point(**point_dict))
+
+        return Track(points=weighted_points, node_id=weighted_points[0].node_id)
+
+
+def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]):
+    # Consume input iterables into reusable collection type
+    values = tuple(values)
+    weights = tuple(weights)
+    if sum(weights) == 0:
+        return 0
+    return sum(v * w for v, w in zip(values, weights, strict=True)) / sum(weights)
 
 
 def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
