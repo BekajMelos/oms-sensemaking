@@ -135,6 +135,7 @@ class GeospatialSensemakerController(SensemakerController):
                     ),
                     node_id=oms_obs.nodeId,
                     observation_id=oms_obs.id,
+                    observation_confidence=oms_obs.confidence,
                     source_id=oms_obs.sourceId,
                     track_id=track_id,
                 )
