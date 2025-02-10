@@ -208,6 +208,13 @@ class Settings(BaseSettings):
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
 
+    # Track Weaver Settings
+    timehash_bin_size: int = Field(8, description="Timehash precision to use when binning timehashes.")
+    confidence_weight_unknown: float = Field(1.0, description="Weight assigned to UNKNOWN confidence.")
+    confidence_weight_high: float = Field(1.0, description="Weight assigned to HIGH confidence.")
+    confidence_weight_moderate: float = Field(0.5, description="Weight assigned to MODERATE confidence.")
+    confidence_weight_low: float = Field(0.25, description="Weight assigned to LOW confidence.")
+
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
     loiter_min_time: int = Field(900, description="Minimum amount of time for a valid Loiter Event")
