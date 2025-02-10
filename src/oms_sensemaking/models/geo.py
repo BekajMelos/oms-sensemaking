@@ -249,15 +249,9 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             point_dict = points[0].to_dict()
             # TODO: Is there a real source_id or observation_id we could use? Shouldn't matter as long as
             # we don't push fake values to OMS
-            # TODO: Is there any value to comparing ACMs among averaged points and combining them somehow?
+            # TODO: derive ACM from get_acm_rollup()
             point_dict["source_id"] = self.config["track_weaver_source_id"]
             point_dict["observation_id"] = uuid.uuid4()
-            """
-            lon, lat
-            location=(
-                f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
-            ),
-            """
             lon = weighted_average(
                 (p.coordinates[0] for p in points), (confidence_map[p.observation_confidence] for p in points)
             )
