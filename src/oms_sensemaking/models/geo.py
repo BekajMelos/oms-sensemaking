@@ -27,6 +27,7 @@ from sqlalchemy.orm import (
 )
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.acm import get_acm_rollup
 
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
 
@@ -228,7 +229,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 Confidence.MODERATE: SETTINGS.confidence_weight_moderate,
                 Confidence.LOW: SETTINGS.confidence_weight_low,
             },
-            "track_weaver_source_id": uuid.uuid4(),
         }
 
     def execute(self, points: list[Point]) -> Track:
@@ -245,13 +245,20 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         confidence_map: dict = self.config["confidence_map"]
         weighted_points: list[Point] = []
         for points in time_bins.values():
-            # Reuse most of the attributes from one of the points in the bin
-            point_dict = points[0].to_dict()
-            # TODO: Is there a real source_id or observation_id we could use? Shouldn't matter as long as
-            # we don't push fake values to OMS
-            # TODO: derive ACM from get_acm_rollup()
-            point_dict["source_id"] = self.config["track_weaver_source_id"]
-            point_dict["observation_id"] = uuid.uuid4()
+            # Reuse most of the attributes from the first point in the bin
+            # TODO: Deal with altitudes
+            # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
+            point_dict = {
+                "node_id": points[0].node_id,
+                "node_version": points[0].node_version,
+                "source_id": points[0].source_id,
+                "observation_id": uuid.uuid4(),
+                "observation_version": points[0].observation_version,
+                "altitude": None,
+                "detection_time": points[0].detection_time,
+                "acm": get_acm_rollup([point.acm for point in points]),
+                "track_id": points[0].track_id,
+            }
             lon = weighted_average(
                 (p.coordinates[0] for p in points), (confidence_map[p.observation_confidence] for p in points)
             )
@@ -259,8 +266,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 (p.coordinates[1] for p in points), (confidence_map[p.observation_confidence] for p in points)
             )
             point_dict["location"] = f"Point({lon} " f"{lat})"
-            # TODO: Deal with possibly missing altitudes
-            point_dict["altitude"] = None
             # TODO: Allow Point model to store arbitrary float confidence values?
             confidence_level = Confidence.UNKNOWN
             confidence_val = min(confidence_map[p.observation_confidence] for p in points)
