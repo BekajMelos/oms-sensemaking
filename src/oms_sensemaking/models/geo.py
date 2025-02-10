@@ -1,6 +1,7 @@
 """Geospatial Sensemaker models."""
 
 import uuid
+from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from functools import cached_property
@@ -152,6 +153,51 @@ class Track:
         return asdict(self)
 
 
+class TrackWeaverBase(ABC):
+    """Abstract TrackWeaver base class."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Create a new instance of the track weaver."""
+        super().__init__()
+        self.name: str = self.__class__.__name__
+        self.config: dict = {}
+
+    @abstractmethod
+    def execute(self, points: list[Point]) -> Track:
+        """
+        Weave a Track from a series of Points.
+
+        This method provides the implementation of the track weaver's business
+        logic. Subclasses must override this method.
+        """
+        raise NotImplementedError()
+
+
+class NaiveTrackWeaver(TrackWeaverBase):
+    """
+    A simple track weaver that accepts all points in order.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "naive" algorithm implementation.
+
+    """
+
+    def __init__(self) -> None:
+        """Create a new instance of NaiveTrackWeaver."""
+        super().__init__()
+        self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        self.config = {}
+
+    def execute(self, points: list[Point]) -> Track:
+        points.sort(key=lambda x: x.detection_time)
+        return Track(points=points, node_id=points[0].node_id)
+
+
 def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
     """
     Get track points for a given track id.
@@ -186,15 +232,3 @@ def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     node_id = points[0].node_id
 
     return Track(points=points, node_id=node_id)
-
-
-# The simplest track weaver performs no mutation
-def noop_track_weaver(track: Track) -> Track:
-    return track
-
-
-# The next simplest track weaver accepts all Points in order
-def naive_track_weaver(track: Track) -> Track:
-    points = track.points
-    points.sort(key=lambda x: x.detection_time)
-    return Track(points=points, node_id=points[0].node_id)
