@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import Confidence
 from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -314,6 +315,16 @@ class Settings(BaseSettings):
         examples=["/opt/common/pki/sensemaking.key"]
     )
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
+
+    @computed_field
+    @property
+    def confidence_weight_map(self) -> dict[Confidence, float]:
+        return {
+            Confidence.UNKNOWN: self.confidence_weight_unknown,
+            Confidence.HIGH: self.confidence_weight_high,
+            Confidence.MODERATE: self.confidence_weight_moderate,
+            Confidence.LOW: self.confidence_weight_low,
+        }
 
     @field_validator("db_uri", mode="before")
     @classmethod

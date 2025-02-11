@@ -5,7 +5,8 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from functools import cached_property
+from functools import cached_property, reduce
+from operator import mul
 from typing import Iterable, Optional, Union
 
 import timehash
@@ -102,9 +103,13 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - detection_time
     - acm
     - track_id
+    - weight
     """
 
     __tablename__: str = "points"
+    weight: Mapped[float] = mapped_column(
+        Float, nullable=False, comment="The weight assigned to the Point from confidence and other factors."
+    )
 
     def __post_init__(self):
         """
@@ -209,6 +214,10 @@ class TimeBinTrackWeaver(TrackWeaverBase):
     Algorithm ChangeLog
     ===================
 
+    [1.0.1]
+
+    - Use Point.weight attribute instead of confidence weight map.
+
     [1.0.0]
 
     - Initial "time binning" algorithm implementation.
@@ -220,15 +229,8 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        # TODO: Figure out what to do about generated Points requiring a source_id and observation_id
         self.config = {
             "timehash_bin_size": SETTINGS.timehash_bin_size,
-            "confidence_map": {
-                Confidence.UNKNOWN: SETTINGS.confidence_weight_unknown,
-                Confidence.HIGH: SETTINGS.confidence_weight_high,
-                Confidence.MODERATE: SETTINGS.confidence_weight_moderate,
-                Confidence.LOW: SETTINGS.confidence_weight_low,
-            },
         }
 
     def execute(self, points: list[Point]) -> Track:
@@ -242,7 +244,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 ),
             )
         }
-        confidence_map: dict = self.config["confidence_map"]
+        confidence_map = SETTINGS.confidence_weight_map
         weighted_points: list[Point] = []
         for points in time_bins.values():
             # Reuse most of the attributes from the first point in the bin
@@ -259,20 +261,16 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 "acm": get_acm_rollup([point.acm for point in points]),
                 "track_id": points[0].track_id,
             }
-            lon = weighted_average(
-                (p.coordinates[0] for p in points), (confidence_map[p.observation_confidence] for p in points)
-            )
-            lat = weighted_average(
-                (p.coordinates[1] for p in points), (confidence_map[p.observation_confidence] for p in points)
-            )
+            lon = weighted_average((p.coordinates[0] for p in points), (p.weight for p in points))
+            lat = weighted_average((p.coordinates[1] for p in points), (p.weight for p in points))
             point_dict["location"] = f"Point({lon} " f"{lat})"
-            # TODO: Allow Point model to store arbitrary float confidence values?
             confidence_level = Confidence.UNKNOWN
             confidence_val = min(confidence_map[p.observation_confidence] for p in points)
             for confidence, weight in confidence_map.items():
                 if weight == confidence_val:
                     confidence_level = confidence
             point_dict["observation_confidence"] = confidence_level
+            point_dict["weight"] = reduce(mul, (point.weight for point in points))
             weighted_points.append(Point(**point_dict))
 
         return Track(points=weighted_points, node_id=weighted_points[0].node_id)

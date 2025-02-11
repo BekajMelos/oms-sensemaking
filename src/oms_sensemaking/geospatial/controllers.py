@@ -44,6 +44,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
+        self.confidence_weight_map = SETTINGS.confidence_weight_map
 
         # OMS GraphQL client
         self.oms_client: Client = get_generated_graphql_client(
@@ -137,6 +138,7 @@ class GeospatialSensemakerController(SensemakerController):
                     observation_confidence=oms_obs.confidence,
                     source_id=oms_obs.sourceId,
                     track_id=track_id,
+                    weight=self.confidence_weight_map[oms_obs.confidence],
                 )
 
             if not is_new:
