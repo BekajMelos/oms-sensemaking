@@ -27,7 +27,7 @@ jobs:
           machine tex.gerbil-cloud.ts.net
           login ${{ gitea.repository_owner }}
           password ${{ secrets.pypi_token }}
-          
+
           EOF
           chmod 600 /root/.netrc
 

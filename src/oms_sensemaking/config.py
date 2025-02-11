@@ -1,10 +1,10 @@
 """Application configuration."""
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
-from pydantic import Field, PostgresDsn, ValidationInfo, computed_field, field_validator
+from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
@@ -90,10 +90,20 @@ class LogConfig(BaseSettings):
         }
 
 
+
+class MilSymbolSettings(BaseModel):
+    sqs_mil_symbol_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger",
+        description="the SQS Resolution Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger"]
+    )
+    enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
+
+
 class Settings(BaseSettings):
     """Settings class."""
 
-    model_config = SettingsConfigDict()
+    model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     gzip_minimum_size: int = 1000
 
@@ -109,8 +119,9 @@ class Settings(BaseSettings):
     text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
 
     # Inference Settings
+    generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Infered Attribute"], description="Inference Sensemaker tags"
+        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
@@ -260,27 +271,56 @@ class Settings(BaseSettings):
         "messages can be received per poll",
     )
     sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
-    sqs_geo_sensemaker_queue: str = Field("getSensemakerTrigger", description="The geo sensemaker queue.")
-    sqs_queue_url: str = Field(
+    sqs_geo_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
         description="the SQS Geo Sensemaker Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
     )
+    sqs_inference_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger",
+        description="the SQS Inference Sensemaker Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger"]
+    )
+
+    # Resolution Sensemaker Settings
+    sqs_res_queue_url: str = Field(
+        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger",
+        description="the SQS Resolution Queue URL",
+        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger"]
+    )
+    enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
+    resolution_sensemaker_tag: str = Field("resolution_tag",
+                                           description="Tag for OMSB objects from the resolution sensemaker")
+    resolution_relationship_name: str = Field("Same As",
+                                           description="Relationship IRI for resolution sensemaker suggestions")
+    resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+                                           description="Relationship IRI for resolution sensemaker suggestions")
+    duplicate_facility_iris: List[str] = Field(
+        [
+            "https://foundry.ai.mil/MIDB_GST/v1/BE_Number",
+            "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
+        ],
+        description="List of fields that must match to be a duplicate Facility")
+
+
+    mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
+
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-5", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-12", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
-        "/opt/common/pki/service.public",
+        "/opt/common/pki/server.public",
         description="Path to service user cert",
         examples=["/opt/common/pki/sensemaking.pem"]
     )
     key_path: str = Field(
-        "/opt/common/pki/service.private",
+        "/opt/common/pki/server.private",
         description="Path to service user key",
         examples=["/opt/common/pki/sensemaking.key"]
     )
+    root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
     @field_validator("db_uri", mode="before")
     @classmethod

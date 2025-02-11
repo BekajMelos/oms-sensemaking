@@ -11,7 +11,7 @@ class Engine:
     Executor of a set of rules
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._rules: list[BaseRule] = []
 
     def add_rule(self, rule: BaseRule):

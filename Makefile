@@ -9,8 +9,14 @@ SHELL := /bin/bash
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-test: ## Run integration tests
+test: ## Run all tests
 	python -m pytest $(PYTEST_FLAGS)
+
+unit-test: ## Run unit tests
+	python -m pytest tests $(PYTEST_FLAGS)
+
+int-test: ## Run integration tests
+	python -m pytest tests_int $(PYTEST_FLAGS)
 
 build: ## Build the project artifacts (i.e. wheel and tarball)
 	python -m build

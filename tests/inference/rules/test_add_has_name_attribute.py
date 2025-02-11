@@ -56,7 +56,7 @@ def test_evaluate_attribute_empty_value(name_attr):
 
 
 def test_has_action_already_ran(mocker: MockerFixture, name_attr):
-    mock = mocker.patch("oms_sensemaking.clients.oms_client.get_attributes")
+    mock = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_attributes")
     rule = AddHasNameAttribute("some name")
     rule.has_action_already_ran(RuleContext(attribute=name_attr))
     mock.assert_called_once_with(
@@ -75,7 +75,7 @@ def test_has_action_already_ran(mocker: MockerFixture, name_attr):
 
 
 def test_action_creates_attribute(mocker: MockerFixture, name_attr):
-    mock = mocker.patch("oms_sensemaking.clients.oms_client.create_attribute")
+    mock = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
     rule = AddHasNameAttribute("some name")
     rule.action(RuleContext(attribute=name_attr))
     mock.assert_called_once_with(

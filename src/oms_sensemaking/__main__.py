@@ -3,7 +3,7 @@ Provides a CLI for oms-sensemaking.
 
 ```
 $ python -m oms_sensemaking -h
-usage: oms_sensemaking [-h] [-V] {geo,nlp,semantic} ...
+usage: oms_sensemaking [-h] [-V] {geo,semantic} ...
 
 A utility for analysing OMS data.
 
@@ -14,9 +14,8 @@ options:
 commands:
   Run 'python -m oms_sensemaking COMMAND -h' for more information.
 
-  {geo,nlp,semantic}
+  {geo,semantic}
     geo               Run geospatial analytics.
-    nlp               Run NLP analytics.
     semantic          Run semantic workflow.
 ```
 
@@ -55,19 +54,6 @@ Run and listen for events from SQS::
     $ python -m oms_sensemaking geo
 
 
-Natural Language Processing CLI
-===============================
-
-| **WARNING**: Not fully implemented
-
-```
-$python -m oms_sensemaking nlp -h
-usage: oms_sensemaking nlp [-h]
-
-options:
-  -h, --help  show this help message and exit
-```
-
 Semantic CLI
 ============
 
@@ -92,13 +78,11 @@ from typing import Any, Optional, Sequence, Union
 
 from dotenv import load_dotenv
 
-from oms_sensemaking.api.schemas.nlp import NlpRequest
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
-from oms_sensemaking.nlp.nlp_reader import NlpFileReader
+from oms_sensemaking.geospatial.controllers import GeoQueueFilter
+from oms_sensemaking.inference.controllers import InferenceQueueFilter
 
 load_dotenv()
 
-from oms_sdk import DEFAULT_ACM
 
 from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.controllers import start_controller_and_wait
@@ -210,38 +194,36 @@ def run_geospatial(args: Namespace) -> None:
     # TODO: Handle PKCS12
 
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController, GeoSQSListener
+    from oms_sensemaking.core.events import SQSListener
+    from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
-    geo: GeospatialSensemakerController = GeospatialSensemakerController(GeoSQSListener())
+    geo = GeospatialSensemakerController(
+        SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+    )
 
     start_controller_and_wait(geo)
 
 
-def run_nlp(args: Namespace) -> None:
-    """Run the NLP algorithms."""
+def run_inference() -> None:
+    """Run the inference algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.nlp.nlp_service import NlpService
+    from oms_sensemaking.core.events import SQSListener
+    from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
-    nlp_service = NlpService()
-    nlp_reader = NlpFileReader(args.filename)
-    nlp_service.run_service(
-        NlpRequest(
-            text=args.text,
-            source_id=args.source_id,
-            acm=DEFAULT_ACM,
-        ),
-        nlp_reader=nlp_reader,
-        corenlp_client=CoreNlpClient(props={}, hostname=SETTINGS.corenlp_localhost),
+    inference = InferenceSensemakerController(
+        SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url, event_filter=InferenceQueueFilter())
     )
+
+    start_controller_and_wait(inference)
 
 
 def run_semantic() -> None:
     """Run the semantic algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import DummyObjectEventConsumer
+    from oms_sensemaking.core.events import NoOpEventConsumer
     from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
-    start_controller_and_wait(SemanticSensemakerController(DummyObjectEventConsumer()))
+    start_controller_and_wait(SemanticSensemakerController(NoOpEventConsumer()))
 
 
 def get_cli_parser() -> ArgumentParser:
@@ -259,12 +241,6 @@ def get_cli_parser() -> ArgumentParser:
         add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
     geo_parser.set_defaults(func=run_geospatial)
-
-    # natural language processing subcommand
-    nlp_parser: ArgumentParser = subparsers.add_parser("nlp", help="Run NLP analytics.")
-    nlp_parser.add_argument("-f", "--filename", type=str, help="File to run on.")
-    nlp_parser.add_argument("-id", "--source-id", type=str, help="Source ID of the text.")
-    nlp_parser.set_defaults(func=run_nlp)
 
     semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
     semantic_parser.set_defaults(func=lambda args: run_semantic())

@@ -1,5 +1,10 @@
+from typing import Union
+from uuid import UUID
+
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
+    ActivityActivity,
+    AttributeAttribute,
     AttributesAttributes,
     CreateAttributeCreateAttribute,
     CreateNodeCreateNode,
@@ -9,7 +14,10 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipCreateRelationship,
     CreateSourceCreateSource,
     DeleteByIdInput,
+    NodeNode,
     NodesNodes,
+    ObjectType,
+    ObservationObservation,
     OriginatorQuery,
     OriginatorsOriginators,
     ProvidersProviders,
@@ -124,6 +132,26 @@ class OmsCrudTool:
         return self.oms_client.create_originator(originator_input)
 
     ### GET ###
+    def get_activity(self, id: UUID) -> ActivityActivity:
+        """Get existing Activity from OMS"""
+        activity = self.oms_client.activity(IdQuery(id=id))
+        return activity
+
+    def get_attribute(self, id: UUID) -> AttributeAttribute:
+        """Get existing Attribute from OMS"""
+        attribute = self.oms_client.attribute(IdQuery(id=id))
+        return attribute
+
+    def get_observation(self, id: UUID) -> ObservationObservation:
+        """Get existing Observation from OMS"""
+        observation = self.oms_client.observation(IdQuery(id=id))
+        return observation
+
+    def get_node(self, id: UUID) -> NodeNode:
+        """Get existing Node from OMS"""
+        node = self.oms_client.node(IdQuery(id=id))
+        return node
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Nodes from OMS"""
         nodes = self.oms_client.nodes(query=node_info)
@@ -194,6 +222,25 @@ class OmsCrudTool:
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
+    def rehydrate_oms_obj(
+            self,
+            object_id: UUID,
+            object_type: ObjectType
+        ) -> Union[ActivityActivity, AttributeAttribute, ObservationObservation, NodeNode]:
+        """Get full OMS Object from id
+
+        :param object_id: Id of OMS object to retrieve
+        :param object_type: ObjectType type of object to retrieve
+        """
+        obj_getter_mapping = {
+            ObjectType.ACTIVITY: self.get_activity,
+            ObjectType.ATTRIBUTE: self.get_attribute,
+            ObjectType.OBSERVATION: self.get_observation,
+            ObjectType.NODE: self.get_node,
+        }
+
+        return obj_getter_mapping[object_type](object_id)
+
     def create_test_source(
         self,
         test_originator_name: str = "nlp_test_originator",
@@ -203,7 +250,7 @@ class OmsCrudTool:
         """Creates an originator, a provider, and a source for test purposes"""
         # Create test originator if it doesn't already exist
         originator_by_name = self.get_originator_by_name(test_originator_name)
-        if originator_by_name.totalSize > 0:
+        if len(originator_by_name.data) > 0:
             originator = originator_by_name.data[0]
         else:
             originator = self.create_originator(
@@ -217,7 +264,7 @@ class OmsCrudTool:
 
         # Create test provider if it doesn't already exist
         provider_by_name = self.get_provider_by_name(test_provider_name)
-        if provider_by_name.totalSize > 0:
+        if len(provider_by_name.data) > 0:
             provider = provider_by_name.data[0]
         else:
             provider = self.create_provider(
@@ -232,7 +279,7 @@ class OmsCrudTool:
 
         # Create test source if it doesn't already exist
         source_by_name = self.get_source_by_name(test_source_name)
-        if source_by_name.totalSize > 0:
+        if len(source_by_name.data) > 0:
             source = source_by_name.data[0]
         else:
             source = self.create_source(

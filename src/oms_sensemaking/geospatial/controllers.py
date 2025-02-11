@@ -4,93 +4,21 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
-from time import sleep
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from botocore.exceptions import BotoCoreError
 from dateutil.parser import isoparse
-from oms_sdk import get_generated_graphql_client
-from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
-from oms_sdk.generated.generated_graphql_client.client import Client
-from oms_sdk.generated.generated_graphql_client.enums import Action, AttributeType
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery, RelationshipNodeQuery, RelationshipQuery
-from oms_sdk.generated.generated_graphql_client.node import NodeNode
+from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
+from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import (
-    EVENT_HANDLER,
-    ObjectEvent,
-    ObjectEventConsumer,
-    ObjectType,
-    SQSListener,
-)
-from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class GeoSQSListener(SQSListener):
-    """An SQS ObjectEventConsumer that consumes geo-temporal OMS events."""
-
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
-        """Create a new instance of GeoSqsObjectEventConsumer."""
-        super().__init__(handle_event)
-
-    def process_object_events(self) -> None:
-        """Process geo-temporal object events from OMS."""
-        if not callable(self.handle_event):
-            raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
-
-        while not self.stopped.is_set():
-            LOGGER.info("Waiting for events in SQS")
-
-            for _ in range(0, SETTINGS.sqs_read_loops):
-                if self.stopped.is_set():
-                    LOGGER.debug("Shutting down GeoSQSListener")
-                    break
-
-                # Receive message from SQS queue
-                try:
-                    response = self.sqs.receive_message(
-                        QueueUrl=SETTINGS.sqs_queue_url,
-                        AttributeNames=["SentTimestamp"],
-                        MaxNumberOfMessages=10,
-                        MessageAttributeNames=["All"],
-                        VisibilityTimeout=0,
-                        WaitTimeSeconds=0,
-                    )
-                except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
-                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
-                    break
-
-                if "Messages" not in response:
-                    LOGGER.debug("No Messages in response.")
-                    sleep(SETTINGS.sqs_read_wait_seconds)
-                    continue
-
-                for message in response["Messages"]:
-                    object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
-
-                    # ignore if not the right type of event
-                    if ((object_event.objectType != ObjectType.ATTRIBUTE.value)
-                            and (object_event.eventType != Action.CREATE.value)):
-                        continue
-
-                    LOGGER.info(f"Received Geo Attribute: {object_event.objectId}")
-
-                    if self.handle_event(object_event):
-                        # Delete received message from queue - required, so you don't get the same message
-                        self.sqs.delete_message(
-                            QueueUrl=SETTINGS.sqs_queue_url,
-                            ReceiptHandle=message["ReceiptHandle"]
-                        )
-                    else:
-                        LOGGER.warning("object event was not processed successfully.")
 
 
 class GeospatialSensemakerController(SensemakerController):
@@ -108,10 +36,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-        self.oms_client: Client = get_generated_graphql_client(
-            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
-        )
-        self.oms_crud_tool = OmsCrudTool()
+        self.node_track_mapping: dict[UUID, UUID] = {}
 
     def start(self) -> None:
         """Start the controller."""
@@ -149,48 +74,66 @@ class GeospatialSensemakerController(SensemakerController):
         Handle inbound OMS event.
 
         :param event: The event to process.
+        :return: True if the object event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
         point: Optional[Point] = None
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if isinstance(self.event_consumer, GeoSQSListener):
-            # extract info from OMS via API calls
-            oms_attr: Optional[AttributeAttribute] = self.get_oms_attribute(event.objectId)
+        # extract info from OMS via API calls
+        oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
 
-            # we expect an observation node and a track node. If these don't exist, we can ignore the point.
-            if not oms_attr:
-                return True
+        # we expect an observation. If one doesn't exist, we can ignore the point.
+        if not oms_obs:
+            return True
 
-            track_node: Optional[NodeNode] = self.get_track_node(oms_attr)
-            if not track_node:
-                return True
+        # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
+        # we need to create a track_id for it so we can add future points for that vehicle/track
+        if oms_obs.nodeId not in self.node_track_mapping:
+            self.node_track_mapping[oms_obs.nodeId] = uuid4()
+        # set the current track_id to the track linked to the node (vehicle) in question
+        track_id = self.node_track_mapping[oms_obs.nodeId]
 
-            with db_session() as db:
-                # we're still using the point object for detections, so don't expire it
-                db.expire_on_commit = False
-                point, is_new = Point.get_or_create(db, defaults=dict(
-                    acm=oms_attr.acm,
-                    location=(f'Point({oms_attr.geo.geoJson["coordinates"][0]} '
-                                f'{oms_attr.geo.geoJson["coordinates"][1]})'),
+        try:
+            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
+            node_version = node.version
+        except AttributeError:
+            LOGGER.warning("No node found. Unable to process observation.")
+            return False
+
+        with db_session() as db:
+            # we're still using the point object for detections, so don't expire it
+            db.expire_on_commit = False
+            # create a point in the oms_sensemaking db, including the vehicle node_id and the track_id
+            point, is_new = Point.get_or_create(
+                db,
+                defaults=dict(
+                    acm=oms_obs.acm,
+                    location=(
+                        f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
+                    ),
                     altitude=None,  # TODO include this
-                    detection_time=isoparse(oms_attr.geo.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(oms_attr.node.version),
-                    attribute_version=int(oms_attr.version)
-                ), node_id=track_node.id, attribute_id=oms_attr.id, source_id=oms_attr.sourceId)
+                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
+                    node_version=int(node_version),
+                    observation_version=int(oms_obs.version),
+                ),
+                node_id=oms_obs.nodeId,
+                observation_id=oms_obs.id,
+                source_id=oms_obs.sourceId,
+                track_id=track_id,
+            )
 
-            if not is_new:
-                if point:
-                    LOGGER.debug("Processing existing point: attribute_id=%s", point.attribute_id)
-                else:
-                    LOGGER.warning("Unable to process point.")
-        else:
-            LOGGER.warning("No ObjectEventConsumer found.")
+        if not is_new:
+            if point:
+                LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+            else:
+                LOGGER.warning("Unable to process point.")
 
         if point:
             with self.lock:
-                self.buffer[point.node_id] = now
+                # we just received the point, so set the point's track_id time to now in the buffer
+                self.buffer[track_id] = now
 
             return True
 
@@ -205,22 +148,22 @@ class GeospatialSensemakerController(SensemakerController):
             # purge stale keys
             self.buffer = {key: val for key, val in self.buffer.items() if val is not None}
 
-            for node_id, last_updated_at in self.buffer.items():
+            for track_id, last_updated_at in self.buffer.items():
                 if last_updated_at is None:
-                    LOGGER.warning("Skipping Node(id=%s)", node_id)
+                    LOGGER.warning("Skipping Track(id=%s)", track_id)
                     continue
 
-                LOGGER.debug("Checking buffer for %s", node_id)
+                LOGGER.debug("Checking buffer for %s", track_id)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
-                    LOGGER.debug("node_id=%s is expired, processing from buffer.", node_id)
+                    LOGGER.debug("track_id=%s is expired, processing from buffer.", track_id)
                     with db_session() as db:
                         try:
-                            LOGGER.info(f"Track completed: {node_id}")
-                            track: Track = get_track(db, node_id)
+                            LOGGER.info(f"Track completed: {track_id}")
+                            track: Track = get_track(db, track_id)
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.warn(e)
-                            self.buffer[node_id] = None
+                            LOGGER.warning(e)
+                            self.buffer[track_id] = None
                             continue
                         LOGGER.debug(track.to_linestring())
 
@@ -237,64 +180,41 @@ class GeospatialSensemakerController(SensemakerController):
 
                             executor.shutdown(wait=True)
                     except Exception:
-                        LOGGER.exception("Error encountered while processing %s from buffer", node_id)
+                        LOGGER.exception("Error encountered while processing %s from buffer", track_id)
                     finally:
-                        self.buffer[node_id] = None  # mark for removal
+                        self.buffer[track_id] = None  # mark for removal
+                        for key, value in list(self.node_track_mapping.items()):
+                            if value == track_id:
+                                del self.node_track_mapping[key]
                 else:
-                    LOGGER.debug("node_id %s is still active in the buffer", node_id)
+                    LOGGER.debug("track_id %s is still active in the buffer", track_id)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
 
-    def get_oms_attribute(self, attribute_id: UUID) -> Optional[AttributeAttribute]:
+    def get_oms_observation(self, observation_id: UUID) -> Optional[ObservationObservation]:
         """
-        Given an OMS Attribute ID, get the OMS Attribute.
+        Given an OMS Observation ID, get the OMS Observation.
 
-        :param attribute_id: ID of the attribute
-        :return: None if no attribute exists, or the OMS Attribute
+        :param observation_id: ID of the observation
+        :return: None if no observation exists, or the OMS Observation
         """
-        # get attribute
-        oms_attr: AttributeAttribute = self.oms_client.attribute(IdQuery(id=attribute_id))
+        # get observation
+        oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
-        # Filter Attributes
-        # Only process if there is a node ID
-        if not oms_attr or oms_attr.nodeId is None:
+        # Filter observations
+        # Only process if there is an observation and it has a geojson point
+        if not oms_obs:
             return None
 
-        if oms_attr.attributeType != AttributeType.SPATIOTEMPORAL.value:
+        can_handle_geometry = oms_obs.geometry["type"].lower() != "point"
+        if can_handle_geometry:
             return None
 
-        if oms_attr.geo.geoJson["type"].lower() != "point":
-            return None
+        return oms_obs
 
-        return oms_attr
 
-    def get_track_node(self, oms_attr: AttributeAttribute) -> Optional[NodeNode]:
-        """
-        Given an OMS Observation Geo Attribute, get the associated Flight Activity Node - AKA Track Node ID.
-
-        :param oms_attr: Attribute object
-        :return: None if no relationship exists, or the Track Node id
-        """
-        # get relationship
-        observation_node_id = oms_attr.nodeId
-        rel = self.oms_client.relationships(
-            query=RelationshipQuery(
-                nodes=RelationshipNodeQuery(endNodeIds=[observation_node_id]),
-                objectPropertyIris=[SETTINGS.operated_by_iri],
-            )
-        )
-
-        if not len(rel.data) > 0:
-            return None
-
-        # ADSB Flight Activity Node. AKA Track Node ID
-        track_node_id = rel.data[0].startNodeId
-
-        node = self.oms_client.node(query=IdQuery(id=track_node_id))
-
-        if not node:
-            return None
-
-        return node
+class GeoQueueFilter(EventFilter):
+    def passes_filter(self, object_event: ObjectEvent):
+        return object_event.objectType == ObjectType.OBSERVATION.value and object_event.eventType == Action.CREATE.value

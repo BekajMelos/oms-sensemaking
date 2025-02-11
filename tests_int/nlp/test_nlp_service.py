@@ -1,0 +1,91 @@
+"""Tests for the NlpSensemakerController"""
+
+from typing import Iterator
+from uuid import uuid4
+
+import pytest
+from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, RelationshipQuery
+from sqlalchemy.orm import Session
+
+from oms_sensemaking.api.schemas.nlp import NlpRequest
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.models.base import utcnow_with_timezone
+from oms_sensemaking.nlp.nlp_reader import NlpStringReader
+from oms_sensemaking.nlp.nlp_service import NlpService
+from tests.nlp.mock_corenlp_client import MockCoreNlpClient
+from tests.nlp.mock_responses import mock_response_long_text_str
+
+service = NlpService()
+doc_id = str(uuid4())
+source_id = str(uuid4())
+sample_text = (
+    "EU rejects German call to boycott British lamb. Peter Blackburn BRUSSELS 1996-08-22 "
+    "The European Commission said on Thursday it disagreed with German advice to consumers "
+    "to shun British lamb until scientists determine whether mad cow disease can be transmitted"
+    " to sheep. Germany's representative to the European Union's veterinary committee Werner Zwingmann"
+    " said on Wednesday consumers should buy sheepmeat from countries other than Britain until the "
+    "scientific advice was clearer."
+)
+reader = NlpStringReader(text=sample_text, document_id=doc_id)
+
+mock_corenlp_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
+mock_corenlp_client.set_response(mock_response_long_text_str)
+
+mock_findings = service.run_nlp(nlp_reader=reader, corenlp_client=mock_corenlp_client)
+
+
+@pytest.fixture
+def mock_db(db: Session) -> Iterator[Session]:
+    yield db
+
+
+def test_run_service(mock_db, mock_source):
+    request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
+
+    result = service.run_service(request=request, nlp_reader=reader, corenlp_client=mock_corenlp_client)
+    assert result
+
+
+def test_run_nlp(mock_db):
+    """Tests just running the business logic"""
+    assert mock_findings["ner_entities"]
+    assert mock_findings["document_entity"]
+    assert mock_findings["ner_relationships"]
+    assert mock_findings["document_relationships"]
+    assert len(mock_findings["document_relationships"]) == len(mock_findings["ner_entities"])
+    assert mock_findings["document_entity"]["document_id"] == doc_id
+
+
+def test_submit_findings_to_postgis(mock_db):
+    """Tests submitting mocked findings to postgis"""
+    acm = DEFAULT_ACM
+    execution_time = utcnow_with_timezone()
+
+    # First check if it runs with no problems
+    service.submit_findings_to_postgis(acm=acm, findings=mock_findings, execution_time=execution_time)
+
+    # Check the db for the posted findings
+    results = service.get_all_findings_from_postgis()
+    for finding in results:
+        assert finding.finding_data == mock_findings
+
+
+def test_submit_findings_to_oms(mock_db, mock_source):
+    """Tests submitting findings to OMS"""
+    request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
+
+    service.submit_findings_to_oms(request=request, findings=mock_findings)
+
+    # Call a get operation to get the nodes, relationships, and attributes
+    nodes = service.oms_crud_tool.get_nodes(node_info=NodeQuery(tags=SETTINGS.nlp_tags))
+    relationships = service.oms_crud_tool.get_relationships(relationship_info=RelationshipQuery(tags=SETTINGS.nlp_tags))
+    attributes = service.oms_crud_tool.get_attributes(attribute_info=AttributeQuery(tags=SETTINGS.nlp_tags))
+    assert nodes
+    assert relationships
+    assert attributes
+
+
+def test_create_test_source(mock_db, mock_source):
+    source = service.create_test_source()
+    assert source.name == "nlp_test_source"

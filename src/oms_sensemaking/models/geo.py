@@ -23,7 +23,7 @@ from sqlalchemy.orm import (
 
 from oms_sensemaking.config import SETTINGS
 
-from .base import AuditMixin, BaseORM, OmsAttributeMixin, SecurityMarkingMixin, UtcDateTime
+from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -91,21 +91,23 @@ class OmsGeoMixin(MappedAsDataclass):
         }
 
 
-class Point(BaseORM, OmsAttributeMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
+class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin, TrackMixin):
     """
     Represents a geolocation in OMS.
 
     This model is also a dataclass. The order of the positional parameters in
     the generated ``__init__()`` method are:
 
-    - acm
+    - node_id
+    - node_version
+    - source_id
+    - observation_id
+    - observation_version
     - location
     - altitude
     - detection_time
-    - node_id
-    - node_version
-    - attribute_id
-    - attribute_version
+    - acm
+    - track_id
     """
 
     __tablename__: str = 'points'
@@ -160,12 +162,12 @@ class Track:
         return asdict(self)
 
 
-def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]:
+def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
     """
-    Get track for a given node id.
+    Get track points for a given track id.
 
     :param db: A database session.
-    :param node_id: The Node's unique identifier.
+    :param track_id: The Track's unique identifier.
     """
     # NOTE: this a naive implementation.
     #
@@ -174,7 +176,7 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
         select(
             Point
         ).where(
-            Point.node_id == node_id
+            Point.track_id == track_id
         ).order_by(
             Point.detection_time.asc()
         ).options(
@@ -182,16 +184,15 @@ def get_track_points(db: Session, node_id: Union[str, uuid.UUID]) -> list[Point]
         )
     ).scalars().all())
 
-
-def get_track(db: Session, node_id: Union[str, uuid.UUID]) -> Track:
+def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     """
-    Get track for a given Node.
+    Get track for a given track id.
 
     :param db: A database session.
-    :param node_id: The Node's unique identifier.
+    :param track_id: The Track's unique identifier.
     :return: A Track.
     """
-    if isinstance(node_id, str):
-        node_id = uuid.UUID(node_id)
+    points = get_track_points(db, track_id)
+    node_id = points[0].node_id
 
-    return Track(points=get_track_points(db, node_id), node_id=node_id)
+    return Track(points=points, node_id=node_id)

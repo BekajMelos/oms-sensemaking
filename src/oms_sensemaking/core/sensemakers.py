@@ -4,7 +4,6 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from functools import cached_property
 from threading import Lock
 from typing import Any, Iterable, List, Tuple
 
@@ -20,7 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipInput,
 )
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.sensemaking import Finding, FindingType
@@ -71,8 +70,8 @@ class OmsPublisher(SensemakerPublisher):
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
     def publish(self, data: Any, results: Any) -> None:
-        self.node_uuid_list = [] # Make sure old lists doesn't persist between publishes
-        self.node_id_mapping = {} # Make sure old mappings don't persist between publishes
+        self.node_uuid_list = []  # Make sure old lists doesn't persist between publishes
+        self.node_id_mapping = {}  # Make sure old mappings don't persist between publishes
         self.publish_nodes(self.format_nodes(data, results))
         self.publish_relationships(self.format_relationships(data, results))
         self.publish_attributes(self.format_attributes(data, results))
@@ -113,9 +112,7 @@ class FindingBase(ABC):
         """Return a dictionary representation of the object."""
         return jsonify(asdict(self))
 
-    @cached_property
-    @abstractmethod
-    def acm(self) -> dict:
+    def get_acm(self) -> dict:
         """Return the acm for this object"""
         raise NotImplementedError
 
@@ -201,7 +198,7 @@ class Sensemaker(ABC):
         findings: List = []
         for finding_object in finding_objects:
             finding = Finding(
-                acm=finding_object.acm,
+                acm=finding_object.get_acm(),
                 algorithm_name=self.name,
                 algorithm_version=f"{self.version[0]}.{self.version[1]}.{self.version[2]}",
                 algorithm_configuration=self.config,
@@ -218,6 +215,8 @@ class Sensemaker(ABC):
             db.commit()
 
     @abstractmethod
+    # TODO: enforce common return format
+    # def process_data(self, data: Any) -> Iterable[FindingBase]:
     def process_data(self, data: Any) -> Any:
         """
         Process data.
