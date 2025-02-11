@@ -1,6 +1,7 @@
 """Geospatial Sensemaker models."""
 
 import itertools
+import logging
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
@@ -27,10 +28,13 @@ from sqlalchemy.orm import (
     with_expression,
 )
 
+from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
 
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -108,7 +112,10 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
 
     __tablename__: str = "points"
     weight: Mapped[float] = mapped_column(
-        Float, nullable=False, comment="The weight assigned to the Point from confidence and other factors."
+        Float,
+        default=1.0,
+        nullable=False,
+        comment="The weight assigned to the Point from confidence and other factors.",
     )
 
     def __post_init__(self):
@@ -225,7 +232,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
     """
 
     def __init__(self) -> None:
-        """Create a new instance of NaiveTrackWeaver."""
+        """Create a new instance of TimeBinTrackWeaver."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
@@ -235,6 +242,9 @@ class TimeBinTrackWeaver(TrackWeaverBase):
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
+        # Give the weaved track a new track_id. The old track_id assigned to the parent Points remains in the DB.
+        track_id = uuid.uuid4()
+        LOGGER.info(f"Weaving new track_id: {track_id}")
         time_bins = {
             time_bin: tuple(points)
             for time_bin, points in itertools.groupby(
@@ -246,42 +256,49 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         }
         confidence_map = SETTINGS.confidence_weight_map
         weighted_points: list[Point] = []
-        for points in time_bins.values():
-            # Reuse most of the attributes from the first point in the bin
-            # TODO: Deal with altitudes
-            # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
-            point_dict = {
-                "node_id": points[0].node_id,
-                "node_version": points[0].node_version,
-                "source_id": points[0].source_id,
-                "observation_id": uuid.uuid4(),
-                "observation_version": points[0].observation_version,
-                "altitude": None,
-                "detection_time": points[0].detection_time,
-                "acm": get_acm_rollup([point.acm for point in points]),
-                "track_id": points[0].track_id,
-            }
-            lon = weighted_average((p.coordinates[0] for p in points), (p.weight for p in points))
-            lat = weighted_average((p.coordinates[1] for p in points), (p.weight for p in points))
-            point_dict["location"] = f"Point({lon} " f"{lat})"
-            confidence_level = Confidence.UNKNOWN
-            confidence_val = min(confidence_map[p.observation_confidence] for p in points)
-            for confidence, weight in confidence_map.items():
-                if weight == confidence_val:
-                    confidence_level = confidence
-            point_dict["observation_confidence"] = confidence_level
-            point_dict["weight"] = reduce(mul, (point.weight for point in points))
-            weighted_points.append(Point(**point_dict))
+        with db_session() as db:
+            db.expire_on_commit = False
+            for bin_points in time_bins.values():
+                # TODO: Skip this process for bins containing a single Point. Associate Point to new track_id.
+                # Reuse most of the attributes from the first point in the bin
+                # TODO: Deal with altitudes
+                # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
+                acm_rollup = get_acm_rollup([{"ACM": point.acm} for point in bin_points])
+                point_dict = {
+                    "node_id": bin_points[0].node_id,
+                    "node_version": bin_points[0].node_version,
+                    "source_id": bin_points[0].source_id,
+                    "observation_id": uuid.uuid4(),
+                    "observation_version": bin_points[0].observation_version,
+                    "altitude": None,
+                    "detection_time": bin_points[0].detection_time,
+                    "acm": acm_rollup,
+                    "track_id": track_id,
+                }
+                lon = weighted_average((p.coordinates[0] for p in bin_points), (p.weight for p in bin_points))
+                lat = weighted_average((p.coordinates[1] for p in bin_points), (p.weight for p in bin_points))
+                point_dict["location"] = f"Point({lon} " f"{lat})"
+                # Find the Confidence enum member mapped to the lowest weight among parent Point confidences
+                confidence_level = Confidence.UNKNOWN
+                confidence_val = min(confidence_map[p.observation_confidence] for p in bin_points)
+                for confidence, weight in confidence_map.items():
+                    if weight == confidence_val:
+                        confidence_level = confidence
+                point_dict["observation_confidence"] = confidence_level
+                # Multiply parent Point weights to get new Point weight [0.0 - 1.0]
+                point_dict["weight"] = reduce(mul, (point.weight for point in bin_points))
+                weighted_point, _ = Point.get_or_create(db, defaults=None, **point_dict)
+                weighted_points.append(weighted_point)
 
         return Track(points=weighted_points, node_id=weighted_points[0].node_id)
 
 
-def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]):
+def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:
     # Consume input iterables into reusable collection type
     values = tuple(values)
     weights = tuple(weights)
     if sum(weights) == 0:
-        return 0
+        return 0.0
     return sum(v * w for v, w in zip(values, weights, strict=True)) / sum(weights)
 
 
@@ -292,6 +309,9 @@ def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point
     :param db: A database session.
     :param track_id: The Track's unique identifier.
     """
+    # TODO: Add track_points relation table to DB. Stop storing track_id on points table or Point model.
+    #       Add tracks table to DB. Store all Track attributes and pk track_ids there.
+    #       Query points by JOIN on track_points table.
     # NOTE: this a naive implementation.
     #
     # @see https://stackoverflow.com/questions/7389759/memory-efficient-built-in-sqlalchemy-iterator-generator

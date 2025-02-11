@@ -138,6 +138,7 @@ class GeospatialSensemakerController(SensemakerController):
                     observation_confidence=oms_obs.confidence,
                     source_id=oms_obs.sourceId,
                     track_id=track_id,
+                    # TODO: Multiply by source weight if available
                     weight=self.confidence_weight_map[oms_obs.confidence],
                 )
 
