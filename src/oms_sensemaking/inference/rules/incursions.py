@@ -60,17 +60,16 @@ class Incursion(BaseRule):
 
         # Check if observation occurred in an area of interest
         features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
-        potential_geos_of_interest = [feature["geometry"] for feature in features]
         geo_of_interest = None
-        for polygon in potential_geos_of_interest:
-            if is_point_in_polygon(geo, polygon):
-                geo_of_interest = polygon
+        for feature in features:
+            if is_point_in_polygon(geo, feature["geometry"]):
+                geo_of_interest = feature["geometry"]
                 break
 
         if geo_of_interest:
             # Check for existing incursions in the relevant geo of interest
             attribute_query = AttributeQuery(
-                attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
+                attributeIri=SETTINGS.inference_incursion_attribute_iri,
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
                 geometry=GeoQuery(queryGeoJson=json.dumps(geo_of_interest)),
@@ -141,7 +140,7 @@ class Incursion(BaseRule):
                 endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
             )
             observation_response = oms_client.get_observations(observation_query)
-            if len(observation_response.data) == 0:
+            if not observation_response.data:
                 # No intermediate observations exist, current observation is part of existing incursion
                 part_of_existing_incursion = True
                 current_incursion_time = (observation_time[0], existing_incursion_attribute.valueEnd)
@@ -157,7 +156,7 @@ class Incursion(BaseRule):
                 endTime=TimeQuery(lte=observation_time[0]),
             )
             observation_response = oms_client.get_observations(observation_query)
-            if len(observation_response.data) == 0:
+            if not observation_response.data:
                 # No intermediate observations exist, current observation is part of existing incursion
                 part_of_existing_incursion = True
                 current_incursion_time = (existing_incursion_attribute.valueStart, observation_time[1])
