@@ -25,7 +25,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from oms_sensemaking.tools.geo_tools import is_point_in_polygon
+from oms_sensemaking.tools.geo_tools import is_point_in_region
 
 
 class Incursion(BaseRule):
@@ -62,7 +62,7 @@ class Incursion(BaseRule):
         features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
         geo_of_interest = None
         for feature in features:
-            if is_point_in_polygon(geo, feature["geometry"]):
+            if is_point_in_region(geo, feature["geometry"]):
                 geo_of_interest = feature["geometry"]
                 break
 
