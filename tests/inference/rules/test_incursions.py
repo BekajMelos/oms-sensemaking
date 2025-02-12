@@ -23,15 +23,15 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 from pytest_mock import MockerFixture
 
+from data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
 @pytest.fixture
 def areas_of_interest():
-    features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+    features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
     return [feature["geometry"] for feature in features]
 
 

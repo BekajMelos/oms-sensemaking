@@ -21,9 +21,9 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
 )
 
+from data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.tools.geo_tools import is_point_in_region
@@ -60,7 +60,7 @@ class Incursion(BaseRule):
         geo = obs.geometry
 
         # Check if observation occurred in an area of interest
-        features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+        features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
         geo_of_interest = None
         for feature in features:
             if is_point_in_region(geo, feature["geometry"]):

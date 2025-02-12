@@ -126,12 +126,14 @@ class Settings(BaseSettings):
     incursion_tags: list[str] = Field(
         ["oms_sensemaking", "inferred_attribute", "incursion_rule"], description="Incursion tags"
     )
-    incursion_areas_of_interest_path: str = "./src/oms_sensemaking/inference/data/geos_of_interest.json"
+    inference_incursion_areas_of_interest_path: str = Field(
+        "./data/geos_of_interest.json", description="Path to areas of interest file"
+    )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
     )
     inference_add_has_name_attribute_meta_data_iri: str = Field(
-        "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
+                                 "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
     inference_add_garrison_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
