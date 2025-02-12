@@ -170,8 +170,8 @@ class Incursion(BaseRule):
     def _update_existing_incursion(
         self,
         observation: ObservationObservation,
-        incurring_object,
-        current_incursion_time,
+        incurring_object: NodesNodesData,
+        current_incursion_time: tuple[str, str],
         existing_incursion_attribute: AttributesAttributesData,
     ):
         """
@@ -215,7 +215,7 @@ class Incursion(BaseRule):
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observation.confidence,
-            sourceId=observation.sourceId,  # change to config value
+            sourceId=observation.sourceId,
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
