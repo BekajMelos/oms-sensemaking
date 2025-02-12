@@ -30,7 +30,6 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
     controllers: list[SensemakerController] = [
-        # TODO: set queue names independently
         GeospatialSensemakerController(
             SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
         ),
@@ -41,9 +40,11 @@ def get_controllers() -> list[SensemakerController]:
             SQSListener("ResolutionSQSListener", SETTINGS.sqs_res_queue_url, event_filter=ResolutionQueueFilter())
         ),
         MilSymbolSensemakerController(
-            SQSListener("MilSymbolSQSListener",
-                        SETTINGS.mil_symbol_settings.sqs_mil_symbol_queue_url,
-                        event_filter=MilSymbolQueueFilter())
+            SQSListener(
+                "MilSymbolSQSListener",
+                SETTINGS.mil_symbol_settings.sqs_mil_symbol_queue_url,
+                event_filter=MilSymbolQueueFilter(),
+            )
         ),
         SemanticSensemakerController(NoOpEventConsumer()),
     ]

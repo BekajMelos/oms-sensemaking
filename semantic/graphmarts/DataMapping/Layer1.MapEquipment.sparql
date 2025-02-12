@@ -1,0 +1,142 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+PREFIX ingest_omsb_graphmart: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+INSERT {
+    GRAPH ${targetGraph} {
+      # make obj an instance of the class OBI specified for EQP
+      ?eqp_object a ?equip_class ;
+        # I'm using rdfs:label in the absence of a hasUniqueName IRI for now
+      	rdfs:label ?node_name ;
+        ?located_at ?observed_geometry ;
+        ?bearer_of ?function ;
+        ?operational_status ?status ;
+        ?controlled_by ?controlling_obj_id1 ;
+        ?controlled_by ?controlling_obj_id2 ;
+        ?continuant_part_of_at_some_time ?partholder_obj_id1 ;
+        ?continuant_part_of_at_some_time ?partholder_obj_id2 .
+    }
+}
+WHERE {
+  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+	?eqp_node_obj ingest_omsb_graphmart:Node.class_iri ?object  ;
+        # flagging for viewers that I don't have to use OPTIONAL below
+        # bc I know that both name & id are NOT NULL fields in the node table 
+        # from which these objects were created.
+		ingest_omsb_graphmart:Node.name ?node_name ;
+        ingest_omsb_graphmart:Node.id ?node_id ;
+
+        # The list below is based on whatever IRIs we have in omsb-latest's node table right now.
+    FILTER (?object IN (
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem", 
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+        "http://omsb/test/Tank",
+        "http://omsb/test/Plane",
+        "http://omsb/test/Helicopter",
+        "https://foundry.ai.mil/NIEM/v5.2/AircraftType",
+        "https://foundry.ai.mil/NIEM/v5.2/VesselType",
+        "https://foundry.ai.mil/NIEM/v5.2/AircraftType",
+        "https://foundry.ai.mil/NIEM/v5.2/PleasureCraftCodeType"
+    ) ) .
+
+    # the OPTIONAL is because not all nodes have an observation assoc'd w/ them in OMSB2
+	OPTIONAL {    ?observation_obj ingest_omsb_graphmart:Observation.node_id ?node_id  ;
+		ingest_omsb_graphmart:Observation.geometry ?observed_geometry .
+    }  
+    # OPTIONAL again in attribs below bc nodes need not have attributes much less necessarily have the
+    # attribute types/values we care about here
+    
+    # FUNCTION
+    OPTIONAL {    ?funct_attribute_obj ingest_omsb_graphmart:Attribute.node_id ?node_id  ;
+                  ingest_omsb_graphmart:Attribute.attribute_value ?function ;
+                  ingest_omsb_graphmart:Attribute.attribute_iri ?funct_attribute_iri ;
+      FILTER (?funct_attribute_iri IN (
+          "https://foundry.ai.mil/INDOPACOM/v5/Function", 
+          "https://foundry.ai.mil/INDOPACOM/v5/Function_Primary",
+          "https://foundry.ai.mil/INDOPACOM/v5/Object_Role_or_Function",
+          "https://foundry.ai.mil/INDOPACOM/v5/Secondary_Function",
+          "https://foundry.ai.mil/MIDB_GST/v1/Function",
+          "https://foundry.ai.mil/MIDB_GST/v1/Primary_Function",
+          "https://foundry.ai.mil/MIDB_GST/v1/Function_Primary",
+          "https://foundry.ai.mil/MIDB_GST/v1/Function_Secondary",
+          "https://foundry.ai.mil/MIDB_GST/v1/Object_Role_or_Function"
+      ) )
+    }
+    
+    # STATUS
+    # open question: should I be looking in relationships for hasOperationalStatus in
+    # addition to attributes?  I might need to better understand how we deal w/ op status
+    # in OMSB2 in various types of data.
+    OPTIONAL {    ?status_attribute_obj ingest_omsb_graphmart:Attribute.node_id ?node_id  ;
+                  ingest_omsb_graphmart:Attribute.attribute_value ?status ;
+                  ingest_omsb_graphmart:Attribute.attribute_iri ?status_attribute_iri ;
+      FILTER (?status_attribute_iri IN (
+          "https://foundry.ai.mil/DICO/v3.1.0/Operational_Status", 
+          "https://foundry.ai.mil/INDOPACOM/v5/Operational_Status",
+          "https://foundry.ai.mil/MIDB_GST/v1/Operational_Status",
+          "https://foundry.ai.mil/DICO/v3.1.0/Status",
+          "https://foundry.ai.mil/INDOPACOM/v5/Status",
+          "https://foundry.ai.mil/MIDB_GST/v1/Status"
+      ) )
+    }
+    
+    # CONTROLLED BY where my node is the start node
+    OPTIONAL {    ?ctrldby_relationship_obj ingest_omsb_graphmart:Relationship.start_node_id ?node_id  ;
+                  ingest_omsb_graphmart:Relationship.end_node_id ?controlling_node_id1 ;
+                  ingest_omsb_graphmart:Relationship.object_property_iri ?ctrldby_relationship_iri ;
+      FILTER (?ctrldby_relationship_iri IN (
+          "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy", 
+          "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled__by"
+          # THIS IRI LIST IS VERY LONG.  ABBREVIATING FOR NOW.
+      ) ) .
+    BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/",?controlling_node_id1)) AS ?controlling_obj_id1 )
+    }
+    
+    # CONTROLS/CONTROLLING where my node is the end node
+    OPTIONAL {    ?ctrls_relationship_obj ingest_omsb_graphmart:Relationship.end_node_id ?node_id  ;
+                  ingest_omsb_graphmart:Relationship.start_node_id ?controlling_node_id2 ;
+                  ingest_omsb_graphmart:Relationship.object_property_iri ?ctrls_relationship_iri ;
+      FILTER (?ctrls_relationship_iri IN (
+          "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controls", 
+          "https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"
+          # THIS IRI LIST IS VERY LONG.  ABBREVIATING FOR NOW.
+      ) ) .
+    BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/",?controlling_node_id2)) AS ?controlling_obj_id2 )      
+      
+    }
+    
+    # CONTINUANT PART OF where my node is the start node
+    OPTIONAL {    ?partof_relationship_obj ingest_omsb_graphmart:Relationship.start_node_id ?node_id  ;
+                  ingest_omsb_graphmart:Relationship.end_node_id ?partholder_node_id1 ;
+                  ingest_omsb_graphmart:Relationship.object_property_iri ?partof_relationship_iri ;
+      FILTER (?partof_relationship_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000176", # continuant part of at some time
+          "http://purl.obolibrary.org/obo/BFO_0000177"  # continuant part of at all times
+      ) )
+          BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/", ?partholder_node_id1)) AS ?partholder_obj_id1)
+    }
+  
+    # HAS CONTINUANT PART where my node is the end node
+    OPTIONAL {    ?haspart_relationship_obj ingest_omsb_graphmart:Relationship.end_node_id ?node_id  ;
+                  ingest_omsb_graphmart:Relationship.start_node_id ?partholder_node_id2 ;
+                  ingest_omsb_graphmart:Relationship.object_property_iri ?haspart_relationship_iri ;
+      FILTER (?haspart_relationship_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000110", # has continuant part at all times
+          "http://purl.obolibrary.org/obo/BFO_0000178"  # has continuant part at some times
+      ) )
+          BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/", ?partholder_node_id2)) AS ?partholder_obj_id2)
+    }
+    
+    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
+    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem") AS ?equip_class)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000196") AS ?bearer_of)
+    BIND(IRI("https://foundry.ai.mil/MIDB_GST/v1/Located_At") AS ?located_at)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000176") AS ?continuant_part_of_at_some_time)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasOperationalStatus") AS ?operational_status)
+    BIND (IRI ( CONCAT ( "https://blackcape.io/2025/01/omsdiekm/", ?node_id)) as ?eqp_object)
+  }
+}

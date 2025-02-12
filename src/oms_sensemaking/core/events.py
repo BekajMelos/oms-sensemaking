@@ -187,6 +187,7 @@ class SQSListener(BaseSQSListener):
                     break
 
                 # Receive message from SQS queue
+                LOGGER.debug(f"{self._name} checking queue with url {self._queue_url}")
                 try:
                     response = self.sqs.receive_message(
                         QueueUrl=self._queue_url,
@@ -211,7 +212,7 @@ class SQSListener(BaseSQSListener):
                     if self._event_filter and not self._event_filter.passes_filter(object_event):
                         LOGGER.warning(
                             f"{self._name} Filtered {object_event.eventType} {object_event.objectType}:"
-                            + f"{object_event.objectId} from queue"
+                            + f"{object_event.objectId} from queue {self._queue_url}"
                         )
                         self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
                         continue
@@ -223,6 +224,7 @@ class SQSListener(BaseSQSListener):
 
                     if self.handle_event(object_event):
                         # Delete received message from queue - required, so you don't get the same message
+                        LOGGER.info(f"Deleting processed object {object_event.objectId} from {self._queue_url}")
                         self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
                     else:
                         LOGGER.warning("object event was not processed successfully.")

@@ -103,7 +103,7 @@ class MilSymbolSettings(BaseModel):
 class Settings(BaseSettings):
     """Settings class."""
 
-    model_config = SettingsConfigDict()
+    model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     gzip_minimum_size: int = 1000
 
