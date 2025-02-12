@@ -51,11 +51,10 @@ class IncursionAttribute:
         self.start_time = min(obs.start_time, self.start_time)
         self.end_time = max(obs.end_time, self.end_time)
 
-    def is_observation_part_of_existing_incursion(
+    def object_observed_between_incursion_and_observation_times(
         self,
         incurring_object: NodesNodesData,
         observation: ObservationObservation,
-        existing_incursion_attribute: AttributesAttributesData,
     ):
         """
         Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
@@ -65,14 +64,13 @@ class IncursionAttribute:
         """
 
         observation_start_time = isoparse(observation.startTime)
-        attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
 
-        if observation_start_time < attribute_start_time:
+        if observation_start_time < self.start_time:
             # Check for observations between current observation end time and attribute start time
             observation_query = ObservationQuery(
                 nodeId=[incurring_object.id],
                 startTime=TimeQuery(gte=observation.endTime),
-                endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
+                endTime=TimeQuery(lte=self.start_time.isoformat()),
             )
             observation_response = oms_client.get_observations(observation_query)
             part_of_existing_incursion = bool(not observation_response.data)
@@ -80,7 +78,7 @@ class IncursionAttribute:
             # Check for observations between attribute end time and current observation start time
             observation_query = ObservationQuery(
                 nodeId=[incurring_object.id],
-                startTime=TimeQuery(gte=existing_incursion_attribute.valueEnd),
+                startTime=TimeQuery(gte=self.end_time.isoformat()),
                 endTime=TimeQuery(lte=observation.startTime),
             )
             observation_response = oms_client.get_observations(observation_query)
@@ -155,9 +153,7 @@ class Incursion(BaseRule):
                 else:
                     # Times don't overlap, check if object stayed in area of interest between
                     # observation and existing incursion times
-                    if inc_attr.is_observation_part_of_existing_incursion(
-                        incurring_object, obs, existing_incursion_attribute
-                    ):
+                    if inc_attr.object_observed_between_incursion_and_observation_times(incurring_object, obs):
                         inc_attr.update_incursion_times_with_observation(incursion_obs)
                         self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
                         matching_incursion_attribute_found = True
