@@ -210,7 +210,10 @@ class Settings(BaseSettings):
                                           description="Tag for OMSB objects from the geospatial sensemakers")
 
     # Track Weaver Settings
-    timehash_bin_size: int = Field(8, description="Timehash precision to use when binning timehashes.")
+    time_bin_size_seconds: int = Field(
+        60,
+        description="Length of time bins in seconds for grouping Points in track weaver."
+    )
     confidence_weight_unknown: float = Field(1.0, description="Weight assigned to UNKNOWN confidence.")
     confidence_weight_high: float = Field(1.0, description="Weight assigned to HIGH confidence.")
     confidence_weight_moderate: float = Field(0.5, description="Weight assigned to MODERATE confidence.")
