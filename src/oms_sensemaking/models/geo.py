@@ -1,16 +1,16 @@
 """Geospatial Sensemaker models."""
 
 import itertools
+import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import cached_property, reduce
 from operator import mul
 from typing import Iterable, Optional, Union
 
-import timehash
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
@@ -237,7 +237,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {
-            "timehash_bin_size": SETTINGS.timehash_bin_size,
+            "time_bin_size_seconds": SETTINGS.time_bin_size_seconds,
         }
 
     def execute(self, points: list[Point]) -> Track:
@@ -245,13 +245,12 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         # Give the weaved track a new track_id. The old track_id assigned to the parent Points remains in the DB.
         track_id = uuid.uuid4()
         LOGGER.info(f"Weaving new track_id: {track_id}")
+        # Integer division by bin size sorts timestamps into bins of arbitrary length
         time_bins = {
             time_bin: tuple(points)
             for time_bin, points in itertools.groupby(
-                points,
-                key=lambda x: timehash.encode_from_datetime(
-                    x.detection_time, precision=self.config["timehash_bin_size"]
-                ),
+                (p for p in points if p.weight),
+                key=lambda x: x.detection_time.timestamp() // self.config["time_bin_size_seconds"],
             )
         }
         confidence_map = SETTINGS.confidence_weight_map
@@ -263,6 +262,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
                 # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
+                LOGGER.info(f"Averaging {len(bin_points)} points: {', '.join(str(p.coordinates) for p in bin_points)}")
                 acm_rollup = get_acm_rollup([{"ACM": point.acm} for point in bin_points])
                 point_dict = {
                     "node_id": bin_points[0].node_id,
@@ -271,7 +271,13 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                     "observation_id": uuid.uuid4(),
                     "observation_version": bin_points[0].observation_version,
                     "altitude": None,
-                    "detection_time": bin_points[0].detection_time,
+                    "detection_time": datetime.fromtimestamp(
+                        weighted_average(
+                            (p.detection_time.astimezone(UTC).timestamp() for p in bin_points),
+                            (p.weight for p in bin_points),
+                        ),
+                        tz=UTC,
+                    ),
                     "acm": acm_rollup,
                     "track_id": track_id,
                 }
@@ -289,7 +295,29 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 point_dict["weight"] = reduce(mul, (point.weight for point in bin_points))
                 weighted_point, _ = Point.get_or_create(db, defaults=None, **point_dict)
                 weighted_points.append(weighted_point)
-
+                LOGGER.info(f"Averaged point: {weighted_point.coordinates}")
+        LOGGER.info("GeoJSON features:")
+        LOGGER.info(
+            json.dumps(
+                {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": {"stroke": "#002aff", "stroke-width": 2, "stroke-opacity": 1},
+                            "geometry": LineString([point.coordinates for point in points]).__geo_interface__,
+                            "id": 0,
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": {"stroke": "#ff8800", "stroke-width": 2, "stroke-opacity": 1},
+                            "geometry": LineString([point.coordinates for point in weighted_points]).__geo_interface__,
+                            "id": 1,
+                        },
+                    ],
+                }
+            )
+        )
         return Track(points=weighted_points, node_id=weighted_points[0].node_id)
 
 
