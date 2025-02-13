@@ -7,7 +7,7 @@ from threading import Event, Timer
 from typing import Optional
 from uuid import UUID, uuid4
 
-from dateutil.parser import isoparse
+from oms_sdk import Client, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
@@ -15,8 +15,9 @@ from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track
+from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track, apply_common_sense_filters
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -169,6 +170,11 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             LOGGER.info(f"Track completed: {track_id}")
                             track: Track = get_track(db, track_id)
+                            if SETTINGS.apply_common_sense_filters:
+                                # Get the IRI for the track
+                                iri = self.oms_crud_tool.get_node(track.node_id).classIri
+                                track = apply_common_sense_filters(track, iri)
+
                             # As long as track_weaver either returns a Track or raises ValueError,
                             # the except clause below should be all the error handling we need.
                             track = self.track_weaver.execute(track.points)
