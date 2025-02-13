@@ -304,13 +304,28 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                     "features": [
                         {
                             "type": "Feature",
-                            "properties": {"stroke": "#002aff", "stroke-width": 2, "stroke-opacity": 1},
+                            "properties": {
+                                "name": "Original Points",
+                                "num_points": len(points),
+                                "stroke": "#ff0000",
+                                "stroke-width": 2,
+                                "stroke-opacity": 1,
+                            },
                             "geometry": LineString([point.coordinates for point in points]).__geo_interface__,
                             "id": 0,
                         },
                         {
                             "type": "Feature",
-                            "properties": {"stroke": "#ff8800", "stroke-width": 2, "stroke-opacity": 1},
+                            "properties": {
+                                "name": "Weaved Track",
+                                "num_points": len(weighted_points),
+                                "average_point_weight": round(
+                                    sum(p.weight for p in weighted_points) / len(weighted_points), 2
+                                ),
+                                "stroke": "#00ff1e",
+                                "stroke-width": 2,
+                                "stroke-opacity": 1,
+                            },
                             "geometry": LineString([point.coordinates for point in weighted_points]).__geo_interface__,
                             "id": 1,
                         },
