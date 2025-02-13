@@ -1,13 +1,20 @@
 """Geospatial Sensemaker models."""
+
+import itertools
+import logging
 import uuid
+from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from functools import cached_property
-from typing import Optional, Union
+from functools import cached_property, reduce
+from operator import mul
+from typing import Iterable, Optional, Union
 
+import timehash
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
+from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Float, func, select
@@ -21,9 +28,13 @@ from sqlalchemy.orm import (
     with_expression,
 )
 
+from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.acm import get_acm_rollup
 
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -36,17 +47,13 @@ class OmsGeoMixin(MappedAsDataclass):
         # of an altitude/elevation field.
         #
         # https://github.com/geoalchemy/geoalchemy2/issues/157
-        Geometry('POINT', dimension=2, srid=SETTINGS.srid, spatial_index=False),
+        Geometry("POINT", dimension=2, srid=SETTINGS.srid, spatial_index=False),
         nullable=False,
         unique=False,
-        comment='The 2D location of the point.'
+        comment="The 2D location of the point.",
     )
 
-    altitude: Mapped[Optional[float]] = mapped_column(
-        Float,
-        nullable=True,
-        comment='The altitude of the point.'
-    )
+    altitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="The altitude of the point.")
 
     @declared_attr
     def geohash(self) -> Mapped[str]:
@@ -59,10 +66,7 @@ class OmsGeoMixin(MappedAsDataclass):
         return query_expression(doc="A geocoded representation of the location.")
 
     detection_time: Mapped[datetime] = mapped_column(
-        UtcDateTime,
-        unique=False,
-        nullable=False,
-        comment='The time the point was detected.'
+        UtcDateTime, unique=False, nullable=False, comment="The time the point was detected."
     )
 
     @cached_property
@@ -82,13 +86,7 @@ class OmsGeoMixin(MappedAsDataclass):
 
     def to_geojson(self) -> dict:
         """Return a GeoJSON representation of the point."""
-        return {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": self.coordinates
-            }
-        }
+        return {"type": "Feature", "geometry": {"type": "Point", "coordinates": self.coordinates}}
 
 
 class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin, TrackMixin):
@@ -103,14 +101,22 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - source_id
     - observation_id
     - observation_version
+    - observation_confidence
     - location
     - altitude
     - detection_time
     - acm
     - track_id
+    - weight
     """
 
-    __tablename__: str = 'points'
+    __tablename__: str = "points"
+    weight: Mapped[float] = mapped_column(
+        Float,
+        default=1.0,
+        nullable=False,
+        comment="The weight assigned to the Point from confidence and other factors.",
+    )
 
     def __post_init__(self):
         """
@@ -134,6 +140,8 @@ class Track:
     node_id: uuid.UUID
     start_time: datetime = field(init=False)
     end_time: datetime = field(init=False)
+    # TODO: Add optional parameter(s) for metadata:
+    #   aggregate confidence, excluded Points, track weaver algorithm, etc.
 
     def __post_init__(self) -> None:
         """
@@ -156,10 +164,142 @@ class Track:
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
 
-
     def to_dict(self) -> dict:
         """Return a dictionary representation of the object."""
         return asdict(self)
+
+
+class TrackWeaverBase(ABC):
+    """Abstract TrackWeaver base class."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Create a new instance of the track weaver."""
+        super().__init__()
+        self.name: str = self.__class__.__name__
+        self.config: dict = {}
+
+    @abstractmethod
+    def execute(self, points: list[Point]) -> Track:
+        """
+        Weave a Track from a series of Points.
+
+        This method provides the implementation of the track weaver's business
+        logic. Subclasses must override this method.
+        """
+        raise NotImplementedError()
+
+
+class NaiveTrackWeaver(TrackWeaverBase):
+    """
+    A simple track weaver that accepts all points in order.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.0]
+
+    - Initial "naive" algorithm implementation.
+
+    """
+
+    def __init__(self) -> None:
+        """Create a new instance of NaiveTrackWeaver."""
+        super().__init__()
+        self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        self.config = {}
+
+    def execute(self, points: list[Point]) -> Track:
+        points.sort(key=lambda x: x.detection_time)
+        return Track(points=points, node_id=points[0].node_id)
+
+
+class TimeBinTrackWeaver(TrackWeaverBase):
+    """
+    A track weaver that bins Points by time, then weighted averages bins by confidence.
+
+    Algorithm ChangeLog
+    ===================
+
+    [1.0.1]
+
+    - Use Point.weight attribute instead of confidence weight map.
+
+    [1.0.0]
+
+    - Initial "time binning" algorithm implementation.
+
+    """
+
+    def __init__(self) -> None:
+        """Create a new instance of TimeBinTrackWeaver."""
+        super().__init__()
+        self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        self.config = {
+            "timehash_bin_size": SETTINGS.timehash_bin_size,
+        }
+
+    def execute(self, points: list[Point]) -> Track:
+        points.sort(key=lambda x: x.detection_time)
+        # Give the weaved track a new track_id. The old track_id assigned to the parent Points remains in the DB.
+        track_id = uuid.uuid4()
+        LOGGER.info(f"Weaving new track_id: {track_id}")
+        time_bins = {
+            time_bin: tuple(points)
+            for time_bin, points in itertools.groupby(
+                points,
+                key=lambda x: timehash.encode_from_datetime(
+                    x.detection_time, precision=self.config["timehash_bin_size"]
+                ),
+            )
+        }
+        confidence_map = SETTINGS.confidence_weight_map
+        weighted_points: list[Point] = []
+        with db_session() as db:
+            db.expire_on_commit = False
+            for bin_points in time_bins.values():
+                # TODO: Skip this process for bins containing a single Point. Associate Point to new track_id.
+                # Reuse most of the attributes from the first point in the bin
+                # TODO: Deal with altitudes
+                # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
+                acm_rollup = get_acm_rollup([{"ACM": point.acm} for point in bin_points])
+                point_dict = {
+                    "node_id": bin_points[0].node_id,
+                    "node_version": bin_points[0].node_version,
+                    "source_id": bin_points[0].source_id,
+                    "observation_id": uuid.uuid4(),
+                    "observation_version": bin_points[0].observation_version,
+                    "altitude": None,
+                    "detection_time": bin_points[0].detection_time,
+                    "acm": acm_rollup,
+                    "track_id": track_id,
+                }
+                lon = weighted_average((p.coordinates[0] for p in bin_points), (p.weight for p in bin_points))
+                lat = weighted_average((p.coordinates[1] for p in bin_points), (p.weight for p in bin_points))
+                point_dict["location"] = f"Point({lon} " f"{lat})"
+                # Find the Confidence enum member mapped to the lowest weight among parent Point confidences
+                confidence_level = Confidence.UNKNOWN
+                confidence_val = min(confidence_map[p.observation_confidence] for p in bin_points)
+                for confidence, weight in confidence_map.items():
+                    if weight == confidence_val:
+                        confidence_level = confidence
+                point_dict["observation_confidence"] = confidence_level
+                # Multiply parent Point weights to get new Point weight [0.0 - 1.0]
+                point_dict["weight"] = reduce(mul, (point.weight for point in bin_points))
+                weighted_point, _ = Point.get_or_create(db, defaults=None, **point_dict)
+                weighted_points.append(weighted_point)
+
+        return Track(points=weighted_points, node_id=weighted_points[0].node_id)
+
+
+def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:
+    # Consume input iterables into reusable collection type
+    values = tuple(values)
+    weights = tuple(weights)
+    if sum(weights) == 0:
+        return 0.0
+    return sum(v * w for v, w in zip(values, weights, strict=True)) / sum(weights)
 
 
 def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
@@ -169,20 +309,23 @@ def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point
     :param db: A database session.
     :param track_id: The Track's unique identifier.
     """
+    # TODO: Add track_points relation table to DB. Stop storing track_id on points table or Point model.
+    #       Add tracks table to DB. Store all Track attributes and pk track_ids there.
+    #       Query points by JOIN on track_points table.
     # NOTE: this a naive implementation.
     #
     # @see https://stackoverflow.com/questions/7389759/memory-efficient-built-in-sqlalchemy-iterator-generator
-    return list(db.execute(
-        select(
-            Point
-        ).where(
-            Point.track_id == track_id
-        ).order_by(
-            Point.detection_time.asc()
-        ).options(
-            with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+    return list(
+        db.execute(
+            select(Point)
+            .where(Point.track_id == track_id)
+            .order_by(Point.detection_time.asc())
+            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
-    ).scalars().all())
+        .scalars()
+        .all()
+    )
+
 
 def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     """

@@ -16,7 +16,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -37,6 +37,16 @@ class GeospatialSensemakerController(SensemakerController):
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = {}
+
+        # track weaver to call on completed Tracks before publishing
+        self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
+        self.confidence_weight_map = SETTINGS.confidence_weight_map
+
+        # OMS GraphQL client
+        self.oms_client: Client = get_generated_graphql_client(
+            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
+        )
+        self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
         """Start the controller."""
@@ -113,15 +123,14 @@ class GeospatialSensemakerController(SensemakerController):
                     location=(
                         f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
                     ),
-                    altitude=None,  # TODO include this
-                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(node_version),
-                    observation_version=int(oms_obs.version),
-                ),
-                node_id=oms_obs.nodeId,
-                observation_id=oms_obs.id,
-                source_id=oms_obs.sourceId,
-                track_id=track_id,
+                    node_id=oms_obs.nodeId,
+                    observation_id=oms_obs.id,
+                    observation_confidence=oms_obs.confidence,
+                    source_id=oms_obs.sourceId,
+                    track_id=track_id,
+                    # TODO: Multiply by source weight if available
+                    weight=self.confidence_weight_map[oms_obs.confidence],
+                )
             )
 
         if not is_new:
@@ -160,6 +169,10 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             LOGGER.info(f"Track completed: {track_id}")
                             track: Track = get_track(db, track_id)
+                            # As long as track_weaver either returns a Track or raises ValueError,
+                            # the except clause below should be all the error handling we need.
+                            track = self.track_weaver.execute(track.points)
+                            # TODO: If storing Tracks in db, store completed (weaved) Track now.
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)

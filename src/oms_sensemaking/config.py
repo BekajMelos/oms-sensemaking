@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import Confidence
 from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -218,6 +219,13 @@ class Settings(BaseSettings):
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
 
+    # Track Weaver Settings
+    timehash_bin_size: int = Field(8, description="Timehash precision to use when binning timehashes.")
+    confidence_weight_unknown: float = Field(1.0, description="Weight assigned to UNKNOWN confidence.")
+    confidence_weight_high: float = Field(1.0, description="Weight assigned to HIGH confidence.")
+    confidence_weight_moderate: float = Field(0.5, description="Weight assigned to MODERATE confidence.")
+    confidence_weight_low: float = Field(0.25, description="Weight assigned to LOW confidence.")
+
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
     loiter_min_time: int = Field(900, description="Minimum amount of time for a valid Loiter Event")
@@ -321,6 +329,16 @@ class Settings(BaseSettings):
         examples=["/opt/common/pki/sensemaking.key"]
     )
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
+
+    @computed_field  # type: ignore
+    @property
+    def confidence_weight_map(self) -> dict[Confidence, float]:
+        return {
+            Confidence.UNKNOWN: self.confidence_weight_unknown,
+            Confidence.HIGH: self.confidence_weight_high,
+            Confidence.MODERATE: self.confidence_weight_moderate,
+            Confidence.LOW: self.confidence_weight_low,
+        }
 
     @field_validator("db_uri", mode="before")
     @classmethod
