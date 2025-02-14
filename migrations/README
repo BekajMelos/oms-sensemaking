@@ -12,3 +12,15 @@ For example:
 ```sh
 alembic revision --autogenerate --rev-id $(date +%Y%m%d%H%M) -m "Added new table."
 ```
+
+## Applying and Removing New Migrations
+
+Migrations are automatically applied through the Sensemaking container to the database, but during development it can be beneficial to apply and revert while fleshing out schema changes:
+
+```sh
+# apply new migration
+alembic upgrade head
+
+# revert migration
+alembic downgrade head
+```
