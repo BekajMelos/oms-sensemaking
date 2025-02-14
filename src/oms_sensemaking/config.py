@@ -127,7 +127,7 @@ class Settings(BaseSettings):
         ["oms_sensemaking", "inferred_attribute", "incursion_rule"], description="Incursion tags"
     )
     inference_incursion_areas_of_interest_path: str = Field(
-        "./data/geos_of_interest.json", description="Path to areas of interest file"
+        "./data/areas_of_interest.json", description="Path to areas of interest file"
     )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
