@@ -29,6 +29,107 @@ from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.tools.geo_tools import is_point_in_region
 
 
+class IncursionObservation:
+    def __init__(self, obs: ObservationObservation):
+        self._obs = obs
+
+        self.start_time = isoparse(obs.startTime)
+        self.end_time = isoparse(obs.endTime)
+
+
+class IncursionAttribute:
+    def __init__(self, attr: AttributesAttributesData):
+        self._attr = attr
+
+        self.start_time = isoparse(attr.valueStart)
+        self.end_time = isoparse(attr.valueEnd)
+
+    def does_observation_overlap(self, obs: IncursionObservation):
+        return obs.end_time >= self.start_time and self.end_time >= obs.start_time
+
+    def update_incursion_times_with_observation(self, obs: IncursionObservation):
+        self.start_time = min(obs.start_time, self.start_time)
+        self.end_time = max(obs.end_time, self.end_time)
+
+    def is_observation_part_of_existing_incursion(
+        self,
+        incurring_object: NodesNodesData,
+        observation: ObservationObservation,
+        existing_incursion_attribute: AttributesAttributesData,
+        inc_attr: "IncursionAttribute",
+    ):
+        """
+        Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
+        incursion and observation, which indicates whether or not that the observation is part of the
+        existing incursion. Returns boolean indicating if the observation is part of the incursion and the
+        updated incursion time
+        """
+
+        observation_start_time = isoparse(observation.startTime)
+        attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
+
+        if observation_start_time < attribute_start_time:
+            # Check for observations between current observation end time and attribute start time
+            observation_query = ObservationQuery(
+                nodeId=[incurring_object.id],
+                startTime=TimeQuery(gte=observation.endTime),
+                endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
+            )
+            observation_response = oms_client.get_observations(observation_query)
+            part_of_existing_incursion = bool(not observation_response.data)
+        else:
+            # Check for observations between attribute end time and current observation start time
+            observation_query = ObservationQuery(
+                nodeId=[incurring_object.id],
+                startTime=TimeQuery(gte=existing_incursion_attribute.valueEnd),
+                endTime=TimeQuery(lte=observation.startTime),
+            )
+            observation_response = oms_client.get_observations(observation_query)
+            part_of_existing_incursion = bool(not observation_response.data)
+
+        return part_of_existing_incursion
+
+    def update_incursion_with_observation_times(
+        self,
+        incurring_object: NodesNodesData,
+        observation: ObservationObservation,
+        existing_incursion_attribute: AttributesAttributesData,
+    ):
+        """
+        Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
+        incursion and observation, which indicates whether or not that the observation is part of the
+        existing incursion. Returns boolean indicating if the observation is part of the incursion and the
+        updated incursion time
+        """
+
+        observation_start_time = isoparse(observation.startTime)
+        inc_obs = IncursionObservation(observation)
+        attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
+
+        if observation_start_time < attribute_start_time:
+            # Check for observations between current observation end time and attribute start time
+            observation_query = ObservationQuery(
+                nodeId=[incurring_object.id],
+                startTime=TimeQuery(gte=observation.endTime),
+                endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
+            )
+            observation_response = oms_client.get_observations(observation_query)
+            if not observation_response.data:
+                # No intermediate observations exist, current observation is part of existing incursion
+                self.update_incursion_times_with_observation(inc_obs)
+        else:
+            # Check for observations between attribute end time and current observation start time
+            observation_query = ObservationQuery(
+                nodeId=[incurring_object.id],
+                startTime=TimeQuery(gte=existing_incursion_attribute.valueEnd),
+                endTime=TimeQuery(lte=observation.startTime),
+            )
+            observation_response = oms_client.get_observations(observation_query)
+            if not observation_response.data:
+                # No intermediate observations exist, current observation is part of existing incursion
+                self.update_incursion_times_with_observation(inc_obs)
+
+
 class Incursion(BaseRule):
     """
     Determine if an Observation indicates an incursion for the node it's associated
@@ -81,33 +182,27 @@ class Incursion(BaseRule):
             existing_incursion_attributes = attr_response.data
 
             matching_incursion_attribute_found = False
+
+            incursion_obs = IncursionObservation(obs)
             for existing_incursion_attribute in existing_incursion_attributes:
+                inc_attr = IncursionAttribute(existing_incursion_attribute)
                 # Check if times overlap
-                obs_start_time = isoparse(obs.startTime)
-                obs_end_time = isoparse(obs.endTime)
-                existing_inc_start_time = isoparse(existing_incursion_attribute.valueStart)
-                existing_inc_end_time = isoparse(existing_incursion_attribute.valueEnd)
-                times_overlap = obs_end_time >= existing_inc_start_time and existing_inc_end_time >= obs_start_time
-                if times_overlap:
+                if inc_attr.does_observation_overlap(incursion_obs):
                     # Update existing incursion with union of observation and incursion time intervals
-                    updated_incursion_start_time = min(obs_start_time, existing_inc_start_time).isoformat()
-                    updated_incursion_end_time = max(obs_end_time, existing_inc_end_time).isoformat()
-                    updated_incursion_time = (updated_incursion_start_time, updated_incursion_end_time)
-                    self._update_existing_incursion(
-                        obs, incurring_object, updated_incursion_time, existing_incursion_attribute
-                    )
+                    inc_attr.update_incursion_times_with_observation(incursion_obs)
+                    self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
                     matching_incursion_attribute_found = True
                     break
                 else:
                     # Times don't overlap, check if object stayed in area of interest between
                     # observation and existing incursion times
-                    update_existing_incursion, current_incursion_time = self._is_observation_part_of_existing_incursion(
-                        incurring_object, obs, existing_incursion_attribute
-                    )
-                    if update_existing_incursion:
-                        self._update_existing_incursion(
-                            obs, incurring_object, current_incursion_time, existing_incursion_attribute
+                    if inc_attr.is_observation_part_of_existing_incursion(
+                        incurring_object, obs, existing_incursion_attribute, inc_attr
+                    ):
+                        inc_attr.update_incursion_with_observation_times(
+                            incurring_object, obs, existing_incursion_attribute
                         )
+                        self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
                         matching_incursion_attribute_found = True
                         break
 
@@ -115,64 +210,12 @@ class Incursion(BaseRule):
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, geo_of_interest)
 
-
-    def _is_observation_part_of_existing_incursion(
-        self,
-        incurring_object: NodesNodesData,
-        observation: ObservationObservation,
-        existing_incursion_attribute: AttributesAttributesData
-    ):
-        """
-        Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
-        incursion and observation, which indicates whether or not that the observation is part of the
-        existing incursion. Returns boolean indicating if the observation is part of the incursion and the
-        updated incursion time
-        """
-
-        observation_start_time = isoparse(observation.startTime)
-        attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
-
-        if observation_start_time < attribute_start_time:
-            # Check for observations between current observation end time and attribute start time
-            observation_query = ObservationQuery(
-                nodeId=[incurring_object.id],
-                startTime=TimeQuery(gte=observation.endTime),
-                endTime=TimeQuery(lte=existing_incursion_attribute.valueStart),
-            )
-            observation_response = oms_client.get_observations(observation_query)
-            if not observation_response.data:
-                # No intermediate observations exist, current observation is part of existing incursion
-                part_of_existing_incursion = True
-                current_incursion_time = (observation.startTime, existing_incursion_attribute.valueEnd)
-            else:
-                # Intermediate observations exist, current observation is part of a new incursion
-                part_of_existing_incursion = False
-                current_incursion_time = (observation.startTime, observation.endTime)
-        else:
-            # Check for observations between attribute end time and current observation start time
-            observation_query = ObservationQuery(
-                nodeId=[incurring_object.id],
-                startTime=TimeQuery(gte=existing_incursion_attribute.valueEnd),
-                endTime=TimeQuery(lte=observation.startTime),
-            )
-            observation_response = oms_client.get_observations(observation_query)
-            if not observation_response.data:
-                # No intermediate observations exist, current observation is part of existing incursion
-                part_of_existing_incursion = True
-                current_incursion_time = (existing_incursion_attribute.valueStart, observation.endTime)
-            else:
-                # Intermediate observations exist, current observation is part of a new incursion
-                part_of_existing_incursion = False
-                current_incursion_time = (observation.startTime, observation.endTime)
-
-        return (part_of_existing_incursion, current_incursion_time)
-
     def _update_existing_incursion(
         self,
         observation: ObservationObservation,
         incurring_object: NodesNodesData,
-        current_incursion_time: tuple[str, str],
         existing_incursion_attribute: AttributesAttributesData,
+        inc_attr: IncursionAttribute,
     ):
         """
         Update an existing incursion attribute and corresponding activity
@@ -192,15 +235,15 @@ class Incursion(BaseRule):
         # Update start/end times and add observation to incursion activity
         updated_activity_input = UpdateActivityInput(
             id=incursion_activity.id,
-            startTime=current_incursion_time[0],
-            endTime=current_incursion_time[1],
+            startTime=inc_attr.start_time.isoformat(),
+            endTime=inc_attr.end_time.isoformat(),
             addObservationIds=[observation.id],
         )
         oms_client.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         updated_attribute_input = UpdateAttributeInput(
-            id=existing_incursion_attribute.id, startTime=current_incursion_time[0], endTime=current_incursion_time[1]
+            id=existing_incursion_attribute.id, startTime=inc_attr.start_time, endTime=inc_attr.end_time.isoformat()
         )
         oms_client.update_attribute(updated_attribute_input)
 
