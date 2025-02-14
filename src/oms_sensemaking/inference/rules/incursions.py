@@ -44,13 +44,6 @@ class IncursionAttribute:
         self.start_time = isoparse(attr.valueStart)
         self.end_time = isoparse(attr.valueEnd)
 
-    # def get_start_time(self):
-    #     # self._start_time
-    #     return isoparse(self._attr.valueStart)
-
-    # def get_attr(self):
-    #     return self._attr
-
     def does_observation_overlap(self, obs: IncursionObservation):
         return obs.end_time >= self.start_time and self.end_time >= obs.start_time
 
@@ -73,7 +66,6 @@ class IncursionAttribute:
         """
 
         observation_start_time = isoparse(observation.startTime)
-        # inc_obs = IncursionObservation(observation)
         attribute_start_time = isoparse(existing_incursion_attribute.valueStart)
 
         if observation_start_time < attribute_start_time:
@@ -97,7 +89,7 @@ class IncursionAttribute:
 
         return part_of_existing_incursion
 
-    def update_incursion_with_observation_times2(
+    def update_incursion_with_observation_times(
         self,
         incurring_object: NodesNodesData,
         observation: ObservationObservation,
@@ -207,7 +199,7 @@ class Incursion(BaseRule):
                     if inc_attr.is_observation_part_of_existing_incursion(
                         incurring_object, obs, existing_incursion_attribute, inc_attr
                     ):
-                        inc_attr.update_incursion_with_observation_times2(
+                        inc_attr.update_incursion_with_observation_times(
                             incurring_object, obs, existing_incursion_attribute
                         )
                         self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
