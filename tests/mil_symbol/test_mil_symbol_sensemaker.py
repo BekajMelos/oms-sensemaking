@@ -50,9 +50,9 @@ def create_attribute(attribute_iri = None, attribute_value = None) -> AttributeA
     return attr
 
 
-def test_process_data(mock_oms_crud_tool, oms_node):
+def test_process_data(mock_oms_crud_tool, oms_node, mil_symbol_rules):
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # case 1
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
@@ -97,9 +97,9 @@ def test_process_data(mock_oms_crud_tool, oms_node):
     assert code_c.new_symbol_id_code == "SFPP------*****"
 
 
-def test_get_starting_symbol_id_code(mock_oms_crud_tool, oms_node):
+def test_get_starting_symbol_id_code(mock_oms_crud_tool, oms_node, mil_symbol_rules):
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # mock getting the ontology classes
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -130,10 +130,10 @@ def test_get_starting_symbol_id_code(mock_oms_crud_tool, oms_node):
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
 
-def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool):
+def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool, mil_symbol_rules):
     """Test traversing ontology for parent classes with codes"""
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # mock getting the ontology classes
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -159,10 +159,10 @@ def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool):
     code = sensemaker.get_default_symbol_id_code(initial_iri)
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
-def test_get_default_symbol_id_code_no_parents(mock_oms_crud_tool, oms_node):
+def test_get_default_symbol_id_code_no_parents(mock_oms_crud_tool, oms_node, mil_symbol_rules):
     """test get_default_symbol_id_code when there's no code and no parents to traverse"""
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # mock getting the ontology classes
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -178,9 +178,9 @@ def test_get_default_symbol_id_code_no_parents(mock_oms_crud_tool, oms_node):
     assert code is None
 
 
-def test_get_context(mock_oms_crud_tool, oms_node):
+def test_get_context(mock_oms_crud_tool, oms_node, mil_symbol_rules):
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_context(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(
@@ -193,9 +193,9 @@ def test_get_context(mock_oms_crud_tool, oms_node):
         ))
 
 
-def test_get_affiliation(mock_oms_crud_tool, oms_node):
+def test_get_affiliation(mock_oms_crud_tool, oms_node, mil_symbol_rules):
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_affiliation(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(
@@ -204,9 +204,9 @@ def test_get_affiliation(mock_oms_crud_tool, oms_node):
         ))
 
 
-def test_get_status(mock_oms_crud_tool, oms_node):
+def test_get_status(mock_oms_crud_tool, oms_node, mil_symbol_rules):
 
-    sensemaker = MilSymbolSensemaker(mock_oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_status(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(

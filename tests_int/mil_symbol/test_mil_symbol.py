@@ -53,10 +53,10 @@ def create_attribute(
     return attr
 
 
-def test_execute(mock_source, db):
+def test_execute(mock_source, db, mil_symbol_rules):
 
     oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(oms_crud_tool)
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
 
     # mock create_attribute
     oms_crud_tool.create_attribute = mock.MagicMock()

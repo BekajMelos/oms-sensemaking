@@ -12,81 +12,6 @@ LOGGER = logging.getLogger(__name__)
 
 class MilSymbol2525C(MilSymbol):
 
-    # Standard Identity Settings
-    PENDING_STANDARD_IDENTITIES = ["pending"]
-    UNKNOWN_STANDARD_IDENTITIES = ["unknown"]
-    ASSUMED_FRIENDLY_STANDARD_IDENTITIES = ["assumed friend", "assumed friendly"]
-    FRIENDLY_STANDARD_IDENTITIES = ["friend", "friendly"]
-    NEUTRAL_STANDARD_IDENTITIES = ["neutral"]
-    SUSPECT_STANDARD_IDENTITIES = ["suspect", "assumed hostile"]
-    HOSTILE_STANDARD_IDENTITIES = ["hostile"]
-    EXERCISE_PENDING_STANDARD_IDENTITIES = ["exercise pending"]
-    EXERCISE_UNKNOWN_STANDARD_IDENTITIES = ["exercise unknown"]
-    EXERCISE_ASSUMED_FRIEND_STANDARD_IDENTITIES = ["exercise assumed friend", "exercise assumed friendly"]
-    EXERCISE_FRIEND_STANDARD_IDENTITIES = ["exercise friend", "exercise friendly"]
-    EXERCISE_NEUTRAL_STANDARD_IDENTITIES = ["exercise neutral"]
-    JOKER_STANDARD_IDENTITIES = ["joker"]
-    FAKER_STANDARD_IDENTITIES = ["faker"]
-
-    STANDARD_IDENTITY_LISTS = {
-        "P": PENDING_STANDARD_IDENTITIES,
-        "U": UNKNOWN_STANDARD_IDENTITIES,
-        "A": ASSUMED_FRIENDLY_STANDARD_IDENTITIES,
-        "F": FRIENDLY_STANDARD_IDENTITIES,
-        "N": NEUTRAL_STANDARD_IDENTITIES,
-        "S": SUSPECT_STANDARD_IDENTITIES,
-        "H": HOSTILE_STANDARD_IDENTITIES,
-        "G": EXERCISE_PENDING_STANDARD_IDENTITIES,
-        "W": EXERCISE_UNKNOWN_STANDARD_IDENTITIES,
-        "M": EXERCISE_ASSUMED_FRIEND_STANDARD_IDENTITIES,
-        "D": EXERCISE_FRIEND_STANDARD_IDENTITIES,
-        "L": EXERCISE_NEUTRAL_STANDARD_IDENTITIES,
-        "J": JOKER_STANDARD_IDENTITIES,
-        "K": FAKER_STANDARD_IDENTITIES,
-    }
-
-    # Dimension Settings
-    # Should include high level IRIs and exceptions
-    DIMENSION_IRIS = {
-        "P": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
-        "A": [
-            "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
-            "http://omsb/test/Plane",
-            "http://omsb/test/Helicopter",
-            "http://omsb/test/Apache"
-        ],
-        "G": [
-            "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle",
-            "http://omsb/test/Tank",
-            "http://omsb/test/LAV",
-            "http://schema.dia.mil/DefenseIntelligenceCoreOntology/CivilianInstallation",
-            "http://schema.dia.mil/DefenseIntelligenceCoreOntology/Installation",
-            "http://schema.dia.mil/DefenseIntelligenceCoreOntology/MilitaryInstallation",
-        ],
-        "S": ["http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"],
-        "U": ["http://omsb/test/Submarine"],
-        "F": [],  # Currently Unsupported
-        "X": [],  # Currently Unsupported
-        "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"],  # unknown
-    }
-
-    # Status Settings
-    ANTICIPATED_STATUSES = ["anticipated", "planned"]
-    PRESENT_STATUSES = ["present"]  # TODO is this units only?
-    FULLY_CAPABLE_STATUSES = ["fully capable"]
-    DAMAGED_STATUSES = ["damaged"]
-    DESTROYED_STATUSES = ["destroyed"]
-    FULL_TO_CAPACITY_STATUSES = ["full to capacity"]
-
-    STATUS_LISTS = {
-        "A": ANTICIPATED_STATUSES,
-        "P": PRESENT_STATUSES,
-        "C": FULLY_CAPABLE_STATUSES,
-        "D": DAMAGED_STATUSES,
-        "X": DESTROYED_STATUSES,
-        "F": FULL_TO_CAPACITY_STATUSES,
-    }
-
     # E.g.  SUZP------*****
     MIL_SYM_2525C_STD_IDENTITY_IDX = 1
     MIL_SYM_2525C_DIMENSION_IDX = 2
@@ -124,7 +49,7 @@ class MilSymbol2525C(MilSymbol):
 
         if affiliation_attr:
             node_standard_identity = affiliation_attr.attributeValue
-            for code, standard_identity_list in self.STANDARD_IDENTITY_LISTS.items():
+            for code, standard_identity_list in self.settings["MIL_SYMBOL_2525C"]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525C_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
@@ -144,7 +69,7 @@ class MilSymbol2525C(MilSymbol):
         # TODO I think this should check all parent iris for a match
 
         # TODO ignore case?
-        for code, value in self.DIMENSION_IRIS.items():
+        for code, value in self.settings["MIL_SYMBOL_2525C"]["DIMENSION_IRIS"].items():
             if iri in value:
                 self.update_code(self.MIL_SYM_2525C_DIMENSION_IDX, code)
                 LOGGER.debug(f'Updated dimension: {code} b/c {iri}')
@@ -159,7 +84,7 @@ class MilSymbol2525C(MilSymbol):
 
         if status_attr:
             status = status_attr.attributeValue
-            for code, status_list in self.STATUS_LISTS.items():
+            for code, status_list in self.settings["MIL_SYMBOL_2525C"]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525C_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))

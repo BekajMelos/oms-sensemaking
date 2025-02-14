@@ -1,6 +1,7 @@
 """PyTest Configuration."""
-
+import json
 from logging.config import dictConfig
+from typing import Dict
 from unittest import mock
 
 import pytest
@@ -31,4 +32,8 @@ def mock_oms_crud_tool():
     return mock.MagicMock(spec=OmsCrudTool, side_effect=mock_all_but_rehydrate_oms_obj_method)
 
 
-
+@pytest.fixture
+def mil_symbol_rules() -> Dict:
+    with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
+        rules = json.load(fd)
+    return rules
