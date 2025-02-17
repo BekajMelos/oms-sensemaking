@@ -97,64 +97,60 @@ class GeospatialSensemakerController(SensemakerController):
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if isinstance(self.event_consumer, SQSListener):
-            # extract info from OMS via API calls
-            oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
-
-            # we expect an observation. If one doesn't exist, we can ignore the point.
-            if not oms_obs:
-                return True
-
-            # set the current track_uuid to the track linked to the node (vehicle) in question or a new track_uuid
-            track_uuid = self.node_track_mapping[oms_obs.nodeId]
-
-            try:
-                node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
-                node_version = node.version
-            except AttributeError:
-                LOGGER.warning("No node found. Unable to process observation.")
-                return False
-
-            with db_session() as db:
-                # we're still using the point object for detections, so don't expire it
-                db.expire_on_commit = False
-                # create a point in the oms_sensemaking db, including the vehicle node_id
-                point, is_new = Point.get_or_create(
-                    db,
-                    defaults=dict(
-                        acm=oms_obs.acm,
-                        location=(
-                            f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
-                        ),
-                        altitude=None,  # TODO include this
-                        detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
-                        node_version=int(node_version),
-                        observation_version=int(oms_obs.version),
-                    ),
-                    node_id=oms_obs.nodeId,
-                    observation_id=oms_obs.id,
-                    observation_confidence=oms_obs.confidence,
-                    source_id=oms_obs.sourceId,
-                    # TODO: Multiply by source weight if available
-                    weight=self.confidence_weight_map[oms_obs.confidence],
-                )
-
-            if not is_new:
-                if point:
-                    LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-                else:
-                    LOGGER.warning("Unable to process point.")
-        else:
+        if not isinstance(self.event_consumer, SQSListener):
             LOGGER.warning("No ObjectEventConsumer found.")
+            return False
 
+        # extract info from OMS via API calls
+        oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
+
+        # we expect an observation. If one doesn't exist, we can ignore the point.
+        if not oms_obs:
+            return True
+
+        # set the current track_uuid to the track linked to the node (vehicle) in question or a new track_uuid
+        track_uuid = self.node_track_mapping[oms_obs.nodeId]
+
+        try:
+            node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
+            node_version = node.version
+        except AttributeError:
+            LOGGER.warning("No node found. Unable to process observation.")
+            return False
+
+        with db_session() as db:
+            # we're still using the point object for detections, so don't expire it
+            db.expire_on_commit = False
+            # create a point in the oms_sensemaking db, including the vehicle node_id
+            point, is_new = Point.get_or_create(
+                db,
+                defaults=dict(
+                    acm=oms_obs.acm,
+                    location=(f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'),
+                    altitude=None,  # TODO include this
+                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
+                    node_version=int(node_version),
+                    observation_version=int(oms_obs.version),
+                ),
+                node_id=oms_obs.nodeId,
+                observation_id=oms_obs.id,
+                observation_confidence=oms_obs.confidence,
+                source_id=oms_obs.sourceId,
+                # TODO: Multiply by source weight if available
+                weight=self.confidence_weight_map[oms_obs.confidence],
+            )
+
+        if not is_new:
+            if point:
+                LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+            else:
+                LOGGER.warning("Unable to process point.")
         if point:
             with self.lock:
                 # we just received the point, so set the track_id time to now in the buffer
                 self.buffer[track_uuid] = now
                 self.track_node_buffer[track_uuid].append(point)
             return True
-
-        return False
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
@@ -178,8 +174,13 @@ class GeospatialSensemakerController(SensemakerController):
                             LOGGER.info(f"Track completed: {track_uuid}")
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(self.track_node_buffer[track_uuid])
-                            weaved_track.track_uuid = track_uuid
-                            track, _ = Track.get_or_create(session=db, defaults=None, **weaved_track.to_dict())
+                            track_dict = {
+                                "points": weaved_track.points,
+                                "node_id": weaved_track.node_id,
+                                "algorithm": weaved_track.algorithm,
+                                "observation_ids": weaved_track.observation_ids,
+                            }
+                            track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.debug(track.to_linestring())
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points

@@ -17,7 +17,7 @@ from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, select
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import (
     Mapped,
     MappedAsDataclass,
@@ -168,7 +168,7 @@ class Track(BaseORM):
         comment="The track weaver algorithm used to create this track.",
     )
     observation_ids: Mapped[list[UUID]] = mapped_column(
-        JSONB,
+        ARRAY(UUID),
         nullable=False,
         default_factory=list,
         comment="The list of any observation IDs used to create this track, even if dropped.",
@@ -285,11 +285,10 @@ class TimeBinTrackWeaver(TrackWeaverBase):
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
-        # Give the weaved track a new track_uuid. This is not persisted to the DB yet.
         # Integer division by bin size sorts timestamps into bins of arbitrary length
         time_bins = {
-            time_bin: tuple(points)
-            for time_bin, points in itertools.groupby(
+            k: tuple(g)
+            for k, g in itertools.groupby(
                 (p for p in points if p.weight),
                 key=lambda x: x.detection_time.timestamp() // self.config["time_bin_size_seconds"],
             )
@@ -299,7 +298,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         with db_session() as db:
             db.expire_on_commit = False
             for bin_points in time_bins.values():
-                if len(bin_points == 1):
+                if len(bin_points) == 1:
                     weighted_points.extend(bin_points)
                     continue
                 # Reuse most of the attributes from the first point in the bin
