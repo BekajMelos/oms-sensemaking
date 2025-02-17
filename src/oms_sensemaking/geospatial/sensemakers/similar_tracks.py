@@ -1,4 +1,5 @@
 """Similar Tracks Sensemakers."""
+
 import logging
 import uuid
 from collections import defaultdict
@@ -188,9 +189,7 @@ class SimilarTracksSensemaker(Sensemaker):
         for point in points:
             # reduce precision of the geohash by one to generate set for comparison to expand range for 'similar' tracks
             point_geohash_low = geohash.encode(
-                lat=point.coordinates[1],
-                lon=point.coordinates[0],
-                precision=SETTINGS.geohash_low
+                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
             )
             base_geohash = point_geohash_low[0:-1]
             buffered_geohash_set.add(base_geohash)
@@ -200,7 +199,6 @@ class SimilarTracksSensemaker(Sensemaker):
                 buffered_geohash_set.add(neighbor)
 
         return buffered_geohash_set
-
 
     @staticmethod
     def query_for_similar_tracks(
@@ -239,18 +237,20 @@ class SimilarTracksSensemaker(Sensemaker):
         """
 
         def generate_query(order_col, geojson):
+            # TODO: Fix query to use joined points, track_points tables
 
             # sub-subquery to label the rows in the Point table after ordering by order_col
             sub_subquery = select(
-                Point,
-                func.ROW_NUMBER().over(partition_by=Point.track_id, order_by=order_col).label('row_number')
+                Point, func.ROW_NUMBER().over(partition_by=Point.track_id, order_by=order_col).label("row_number")
             ).subquery()
 
             # use the row number to find the first value. This subquery gives us either the set of starting track
             # points or the set of ending track points depending on the order_col order (desc or not)
-            subquery = select(
-                sub_subquery.c.track_id, sub_subquery.c.observation_id, sub_subquery.c.detection_time
-            ).where(sub_subquery.c.row_number == 1).subquery()
+            subquery = (
+                select(sub_subquery.c.track_id, sub_subquery.c.observation_id, sub_subquery.c.detection_time)
+                .where(sub_subquery.c.row_number == 1)
+                .subquery()
+            )
 
             # This query will join the original Point table with the sorted start or end table in order to look at the
             # entire set of starting (or ending) points. Then look for points that are within the query_distance.
@@ -258,48 +258,47 @@ class SimilarTracksSensemaker(Sensemaker):
             # Overall, this query will find tracks that have starting points that are within the query_distance of the
             # given track. Then with the end query, it will find tracks that end within the query distance of the given
             # track.
-            query = select(
+            query = (
+                select(
                     Point.track_id,
                     func.array_agg(  # the array_agg will return the point as a geojson
                         aggregate_order_by(
                             func.ST_asGeoJSON(
                                 func.ST_Transform(Point.location, SETTINGS.srid),
                                 ST_TRANSFORM_MAX_DECIMAL_DIGITS,  # maxdecimaldigits
-                                ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
+                                ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS,  # option 2: GeoJSON Short CRS (e.g EPSG:4326)
                             ),
-                            Point.detection_time
+                            Point.detection_time,
                         )
-                    ).label('bookend')
-                ).join(
-                    subquery, and_(
-                        Point.track_id == subquery.c.track_id, Point.observation_id == subquery.c.observation_id)
-                ).where(
+                    ).label("bookend"),
+                )
+                .join(
+                    subquery,
+                    and_(Point.track_id == subquery.c.track_id, Point.observation_id == subquery.c.observation_id),
+                )
+                .where(
                     func.ST_DWithin(
                         cast(Point.location, Geography(srid=-1)),
-                        cast(func.ST_Transform(
-                                func.ST_GeomFromGeoJSON(str(geojson)), SETTINGS.srid), Geography(srid=-1)),
-                             query_distance)
-                ).group_by(Point.track_id)
+                        cast(
+                            func.ST_Transform(func.ST_GeomFromGeoJSON(str(geojson)), SETTINGS.srid), Geography(srid=-1)
+                        ),
+                        query_distance,
+                    )
+                )
+                .group_by(Point.track_id)
+            )
 
             return query
 
-
         with db_session() as db:
-
-            start_geojson = {
-                "type": "Point",
-                "coordinates": first
-            }
+            start_geojson = {"type": "Point", "coordinates": first}
 
             start_query = generate_query(Point.detection_time, start_geojson)
             LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
             res = db.execute(start_query)
             start_groups = res.all()
 
-            end_geojson = {
-                "type": "Point",
-                "coordinates": last
-            }
+            end_geojson = {"type": "Point", "coordinates": last}
             end_query = generate_query(desc(Point.detection_time), end_geojson)
             LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
             res = db.execute(end_query)
