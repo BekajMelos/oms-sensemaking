@@ -156,13 +156,6 @@ class Track(BaseORM):
 
     __tablename__: str = "tracks"
 
-    track_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        default_factory=uuid.uuid4,
-        primary_key=True,
-        nullable=False,
-        comment="The unique ID of the Sensemaking Track.",
-    )
     points: Mapped[list[Point]] = relationship(secondary="track_points_table")
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -173,6 +166,13 @@ class Track(BaseORM):
         String,
         nullable=True,
         comment="The track weaver algorithm used to create this track.",
+    )
+    track_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        default_factory=uuid.uuid4,
+        primary_key=True,
+        nullable=False,
+        comment="The unique ID of the Sensemaking Track.",
     )
 
     @property
