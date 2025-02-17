@@ -10,6 +10,7 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "202502171426"
@@ -36,6 +37,13 @@ def upgrade() -> None:
             nullable=False,
             comment="The unique ID of the Sensemaking Track.",
         ),
+        sa.Column(
+            "observation_ids",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=False,
+            comment="The list of any observation IDs used to create this track, even if dropped.",
+        ),
+        sa.Column("track_uuid", sa.UUID(), nullable=False, comment="The UUID of the track within Sensemaker."),
         sa.PrimaryKeyConstraint("track_id", name=op.f("pk_tracks")),
     )
     op.execute("ALTER TABLE points ADD point_id SERIAL UNIQUE NOT NULL")
