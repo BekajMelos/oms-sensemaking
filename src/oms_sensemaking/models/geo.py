@@ -5,7 +5,6 @@ import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from functools import cached_property, reduce
 from operator import mul
@@ -17,7 +16,8 @@ from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Float, func, select
+from sqlalchemy import Column, Float, ForeignKey, String, Table, func, select
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import (
     Mapped,
     MappedAsDataclass,
@@ -25,6 +25,7 @@ from sqlalchemy.orm import (
     declared_attr,
     mapped_column,
     query_expression,
+    relationship,
     with_expression,
 )
 
@@ -32,9 +33,17 @@ from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
 
-from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
+from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, UtcDateTime
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+track_points_table = Table(
+    "track_points",
+    BaseORM.metadata,
+    Column("track_id", ForeignKey("tracks.track_id"), primary_key=True),
+    Column("point_id", ForeignKey("points.point_id"), primary_key=True),
+)
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -89,7 +98,7 @@ class OmsGeoMixin(MappedAsDataclass):
         return {"type": "Feature", "geometry": {"type": "Point", "coordinates": self.coordinates}}
 
 
-class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin, TrackMixin):
+class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
     """
     Represents a geolocation in OMS.
 
@@ -106,8 +115,11 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - altitude
     - detection_time
     - acm
-    - track_id
     - weight
+    - point_id (default)
+
+    It should never be necessary to specify point_id in the constructor.
+    The parameter is auto-generated for new instances and used by SQLAlchemy.
     """
 
     __tablename__: str = "points"
@@ -116,6 +128,13 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         default=1.0,
         nullable=False,
         comment="The weight assigned to the Point from confidence and other factors.",
+    )
+    point_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        default_factory=uuid.uuid4,
+        primary_key=True,
+        nullable=False,
+        comment="The unique ID of the Sensemaking Point.",
     )
 
     def __post_init__(self):
@@ -132,41 +151,49 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         return self.detection_time < other.detection_time
 
 
-@dataclass
-class Track:
+class Track(BaseORM):
     """Represents a track."""
 
-    points: list[Point]
-    node_id: uuid.UUID
-    start_time: datetime = field(init=False)
-    end_time: datetime = field(init=False)
-    # TODO: Add optional parameter(s) for metadata:
-    #   aggregate confidence, excluded Points, track weaver algorithm, etc.
+    __tablename__: str = "tracks"
 
-    def __post_init__(self) -> None:
-        """
-        Create a new instance of Track.
+    track_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        default_factory=uuid.uuid4,
+        primary_key=True,
+        nullable=False,
+        comment="The unique ID of the Sensemaking Track.",
+    )
+    points: Mapped[list[Point]] = relationship(secondary="track_points_table")
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        comment="The node ID of the object associated with this track.",
+    )
+    algorithm: Mapped[str] = mapped_column(
+        String,
+        nullable=True,
+        comment="The track weaver algorithm used to create this track.",
+    )
 
-        This method populates the ``start_time`` and ``end_time`` attributes
-        based on the ``points`` attribute (i.e. the track).
-        """
-        point_count: int = len(self.points)
+    @property
+    def start_time(self) -> datetime | None:
+        if not self.points:
+            return None
+        return self.points[0].detection_time
 
-        if point_count < 2:
-            # TODO maybe just log this and move on
-            raise ValueError("A Track must consist of at least 2 points.")
+    @property
+    def end_time(self) -> datetime | None:
+        if not self.points:
+            return None
+        return self.points[-1].detection_time
 
-        if point_count > 0:
-            self.start_time = self.points[0].detection_time
-            self.end_time = self.points[-1].detection_time
+    @property
+    def observation_ids(self) -> list[uuid.UUID]:
+        return [p.observation_id for p in self.points]
 
     def to_linestring(self) -> LineString:
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
-
-    def to_dict(self) -> dict:
-        """Return a dictionary representation of the object."""
-        return asdict(self)
 
 
 class TrackWeaverBase(ABC):
@@ -205,13 +232,14 @@ class NaiveTrackWeaver(TrackWeaverBase):
     def __init__(self) -> None:
         """Create a new instance of NaiveTrackWeaver."""
         super().__init__()
-        self.version = (1, 0, 0)
+        self.version = (1, 1, 0)
         self.name = self.__class__.__name__
         self.config = {}
+        self.algorithm = "naive"
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
-        return Track(points=points, node_id=points[0].node_id)
+        return Track(points=points, node_id=points[0].node_id, algorithm=self.algorithm)
 
 
 class TimeBinTrackWeaver(TrackWeaverBase):
@@ -234,11 +262,12 @@ class TimeBinTrackWeaver(TrackWeaverBase):
     def __init__(self) -> None:
         """Create a new instance of TimeBinTrackWeaver."""
         super().__init__()
-        self.version = (1, 0, 0)
+        self.version = (1, 1, 0)
         self.name = self.__class__.__name__
         self.config = {
             "time_bin_size_seconds": SETTINGS.time_bin_size_seconds,
         }
+        self.algorithm = "time_bin_weighted_average"
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
@@ -318,6 +347,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                             "type": "Feature",
                             "properties": {
                                 "name": "Weaved Track",
+                                "algorithm": self.algorithm,
                                 "num_points": len(weighted_points),
                                 "average_point_weight": round(
                                     sum(p.weight for p in weighted_points) / len(weighted_points), 2
@@ -333,7 +363,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 }
             )
         )
-        return Track(points=weighted_points, node_id=weighted_points[0].node_id)
+        return Track(points=weighted_points, node_id=weighted_points[0].node_id, algorithm=self.algorithm)
 
 
 def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:
