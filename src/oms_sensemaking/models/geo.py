@@ -16,8 +16,8 @@ from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, select
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import (
     Mapped,
     MappedAsDataclass,
@@ -26,7 +26,6 @@ from sqlalchemy.orm import (
     mapped_column,
     query_expression,
     relationship,
-    with_expression,
 )
 
 from oms_sensemaking.clients import db_session
@@ -128,6 +127,7 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         autoincrement=True,
         nullable=False,
         primary_key=True,
+        init=False,
         comment="The unique ID of the Sensemaking Point.",
     )
     weight: Mapped[float] = mapped_column(
@@ -156,7 +156,7 @@ class Track(BaseORM):
 
     __tablename__: str = "tracks"
 
-    points: Mapped[list[Point]] = relationship(secondary="track_points_table")
+    points: Mapped[list[Point]] = relationship(secondary=track_points_table)
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
@@ -167,12 +167,25 @@ class Track(BaseORM):
         nullable=True,
         comment="The track weaver algorithm used to create this track.",
     )
+    observation_ids: Mapped[list[UUID]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default_factory=list,
+        comment="The list of any observation IDs used to create this track, even if dropped.",
+    )
+    track_uuid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        default_factory=uuid.uuid4,
+        comment="The UUID of the track within Sensemaker.",
+    )
     track_id: Mapped[int] = mapped_column(
         Integer,
         autoincrement=True,
         nullable=False,
         primary_key=True,
-        comment="The unique ID of the Sensemaking Track.",
+        init=False,
+        comment="The unique ID of the Track within the database only.",
     )
 
     @property
@@ -186,10 +199,6 @@ class Track(BaseORM):
         if not self.points:
             return None
         return self.points[-1].detection_time
-
-    @property
-    def observation_ids(self) -> list[uuid.UUID]:
-        return [p.observation_id for p in self.points]
 
     def to_linestring(self) -> LineString:
         """Return a linestring representation of the track."""
@@ -239,7 +248,12 @@ class NaiveTrackWeaver(TrackWeaverBase):
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
-        return Track(points=points, node_id=points[0].node_id, algorithm=self.algorithm)
+        return Track(
+            points=points,
+            node_id=points[0].node_id,
+            algorithm=self.algorithm,
+            observation_ids=[p.observation_id for p in points],
+        )
 
 
 class TimeBinTrackWeaver(TrackWeaverBase):
@@ -363,7 +377,12 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 }
             )
         )
-        return Track(points=weighted_points, node_id=weighted_points[0].node_id, algorithm=self.algorithm)
+        return Track(
+            points=weighted_points,
+            node_id=weighted_points[0].node_id,
+            algorithm=self.algorithm,
+            observation_ids=[p.observation_id for p in points],
+        )
 
 
 def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:
@@ -375,40 +394,12 @@ def weighted_average(values: Iterable[int | float], weights: Iterable[int | floa
     return sum(v * w for v, w in zip(values, weights, strict=True)) / sum(weights)
 
 
-def get_track_points(db: Session, track_id: Union[str, uuid.UUID]) -> list[Point]:
+def get_track(db: Session, track_uuid: Union[str, uuid.UUID]) -> Track:
     """
-    Get track points for a given track id.
+    Get track for a given track uuid.
 
     :param db: A database session.
-    :param track_id: The Track's unique identifier.
-    """
-    # TODO: Add track_points relation table to DB. Stop storing track_id on points table or Point model.
-    #       Add tracks table to DB. Store all Track attributes and pk track_ids there.
-    #       Query points by JOIN on track_points table.
-    # NOTE: this a naive implementation.
-    #
-    # @see https://stackoverflow.com/questions/7389759/memory-efficient-built-in-sqlalchemy-iterator-generator
-    return list(
-        db.execute(
-            select(Point)
-            .where(Point.track_id == track_id)
-            .order_by(Point.detection_time.asc())
-            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
-        )
-        .scalars()
-        .all()
-    )
-
-
-def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
-    """
-    Get track for a given track id.
-
-    :param db: A database session.
-    :param track_id: The Track's unique identifier.
+    :param track_uuid: The Track's unique identifier.
     :return: A Track.
     """
-    points = get_track_points(db, track_id)
-    node_id = points[0].node_id
-
-    return Track(points=points, node_id=node_id)
+    return db.execute(select(Track).filter_by(track_uuid=track_uuid)).scalar_one()

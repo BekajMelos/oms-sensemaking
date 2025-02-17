@@ -1,6 +1,7 @@
 """Geospatial sensemaker controller."""
 
 import logging
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
@@ -20,7 +21,7 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track
+from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer: dict[UUID, Optional[datetime]] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-        self.node_track_mapping: dict[UUID, UUID] = {}
+        self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
+        self.track_node_buffer: dict[UUID, list[Point]] = defaultdict(list)
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
@@ -103,12 +105,8 @@ class GeospatialSensemakerController(SensemakerController):
             if not oms_obs:
                 return True
 
-            # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
-            # we need to create a track_id for it so we can add future points for that vehicle/track
-            if oms_obs.nodeId not in self.node_track_mapping:
-                self.node_track_mapping[oms_obs.nodeId] = uuid4()
-            # set the current track_id to the track linked to the node (vehicle) in question
-            track_id = self.node_track_mapping[oms_obs.nodeId]
+            # set the current track_uuid to the track linked to the node (vehicle) in question or a new track_uuid
+            track_uuid = self.node_track_mapping[oms_obs.nodeId]
 
             try:
                 node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
@@ -120,7 +118,7 @@ class GeospatialSensemakerController(SensemakerController):
             with db_session() as db:
                 # we're still using the point object for detections, so don't expire it
                 db.expire_on_commit = False
-                # create a point in the oms_sensemaking db, including the vehicle node_id and the track_id
+                # create a point in the oms_sensemaking db, including the vehicle node_id
                 point, is_new = Point.get_or_create(
                     db,
                     defaults=dict(
@@ -137,7 +135,6 @@ class GeospatialSensemakerController(SensemakerController):
                     observation_id=oms_obs.id,
                     observation_confidence=oms_obs.confidence,
                     source_id=oms_obs.sourceId,
-                    track_id=track_id,
                     # TODO: Multiply by source weight if available
                     weight=self.confidence_weight_map[oms_obs.confidence],
                 )
@@ -152,9 +149,9 @@ class GeospatialSensemakerController(SensemakerController):
 
         if point:
             with self.lock:
-                # we just received the point, so set the point's track_id time to now in the buffer
-                self.buffer[track_id] = now
-
+                # we just received the point, so set the track_id time to now in the buffer
+                self.buffer[track_uuid] = now
+                self.track_node_buffer[track_uuid].append(point)
             return True
 
         return False
@@ -168,28 +165,27 @@ class GeospatialSensemakerController(SensemakerController):
             # purge stale keys
             self.buffer = {key: val for key, val in self.buffer.items() if val is not None}
 
-            for track_id, last_updated_at in self.buffer.items():
+            for track_uuid, last_updated_at in self.buffer.items():
                 if last_updated_at is None:
-                    LOGGER.warning("Skipping Track(id=%s)", track_id)
+                    LOGGER.warning("Skipping Track(track_uuid=%s)", track_uuid)
                     continue
 
-                LOGGER.debug("Checking buffer for %s", track_id)
+                LOGGER.debug("Checking buffer for %s", track_uuid)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
-                    LOGGER.debug("track_id=%s is expired, processing from buffer.", track_id)
+                    LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
                     with db_session() as db:
                         try:
-                            LOGGER.info(f"Track completed: {track_id}")
-                            track: Track = get_track(db, track_id)
-                            # As long as track_weaver either returns a Track or raises ValueError,
-                            # the except clause below should be all the error handling we need.
-                            track = self.track_weaver.execute(track.points)
-                            # TODO: If storing Tracks in db, store completed (weaved) Track now.
+                            LOGGER.info(f"Track completed: {track_uuid}")
+                            # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
+                            weaved_track = self.track_weaver.execute(self.track_node_buffer[track_uuid])
+                            weaved_track.track_uuid = track_uuid
+                            track, _ = Track.get_or_create(session=db, defaults=None, **weaved_track.to_dict())
+                            LOGGER.debug(track.to_linestring())
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
-                            self.buffer[track_id] = None
+                            self.buffer[track_uuid] = None
                             continue
-                        LOGGER.debug(track.to_linestring())
 
                     try:
                         with ThreadPoolExecutor() as executor:
@@ -204,14 +200,14 @@ class GeospatialSensemakerController(SensemakerController):
 
                             executor.shutdown(wait=True)
                     except Exception:
-                        LOGGER.exception("Error encountered while processing %s from buffer", track_id)
+                        LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
                     finally:
-                        self.buffer[track_id] = None  # mark for removal
+                        self.buffer[track_uuid] = None  # mark for removal
                         for key, value in list(self.node_track_mapping.items()):
-                            if value == track_id:
+                            if value == track_uuid:
                                 del self.node_track_mapping[key]
                 else:
-                    LOGGER.debug("track_id %s is still active in the buffer", track_id)
+                    LOGGER.debug("track_uuid %s is still active in the buffer", track_uuid)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
