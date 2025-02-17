@@ -285,9 +285,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
 
     def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
-        # Give the weaved track a new track_id. The old track_id assigned to the parent Points remains in the DB.
-        track_id = uuid.uuid4()
-        LOGGER.info(f"Weaving new track_id: {track_id}")
+        # Give the weaved track a new track_uuid. This is not persisted to the DB yet.
         # Integer division by bin size sorts timestamps into bins of arbitrary length
         time_bins = {
             time_bin: tuple(points)
@@ -301,7 +299,9 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         with db_session() as db:
             db.expire_on_commit = False
             for bin_points in time_bins.values():
-                # TODO: Skip this process for bins containing a single Point. Associate Point to new track_id.
+                if len(bin_points == 1):
+                    weighted_points.extend(bin_points)
+                    continue
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
                 # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
@@ -322,7 +322,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                         tz=UTC,
                     ),
                     "acm": acm_rollup,
-                    "track_id": track_id,
                 }
                 lon = weighted_average((p.coordinates[0] for p in bin_points), (p.weight for p in bin_points))
                 lat = weighted_average((p.coordinates[1] for p in bin_points), (p.weight for p in bin_points))
