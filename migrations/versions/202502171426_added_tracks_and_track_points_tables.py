@@ -1,8 +1,8 @@
-"""Added tracks table and normalized track-point relationship.
+"""Added tracks and track_points tables.
 
-Revision ID: 202502171339
+Revision ID: 202502171426
 Revises: 202502101854
-Create Date: 2025-02-17 13:39:38.837212
+Create Date: 2025-02-17 14:27:00.437609
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "202502171339"
+revision: str = "202502171426"
 down_revision: Union[str, None] = "202502101854"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,21 +29,35 @@ def upgrade() -> None:
         sa.Column(
             "algorithm", sa.String(), nullable=True, comment="The track weaver algorithm used to create this track."
         ),
-        sa.Column("track_id", sa.UUID(), nullable=False, comment="The unique ID of the Sensemaking Track."),
+        sa.Column(
+            "track_id",
+            sa.Integer(),
+            autoincrement=True,
+            nullable=False,
+            comment="The unique ID of the Sensemaking Track.",
+        ),
         sa.PrimaryKeyConstraint("track_id", name=op.f("pk_tracks")),
     )
+    op.add_column(
+        "points",
+        sa.Column(
+            "point_id",
+            sa.Integer(),
+            autoincrement=True,
+            nullable=False,
+            comment="The unique ID of the Sensemaking Point.",
+        ),
+    )
+    op.create_primary_key("pk_points", "points", ["point_id"])
+    op.drop_column("points", "track_id")
     op.create_table(
         "track_points",
-        sa.Column("track_id", sa.UUID(), nullable=False),
-        sa.Column("point_id", sa.UUID(), nullable=False),
+        sa.Column("track_id", sa.Integer(), nullable=False),
+        sa.Column("point_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(["point_id"], ["points.point_id"], name=op.f("fk_track_points_point_id_points")),
         sa.ForeignKeyConstraint(["track_id"], ["tracks.track_id"], name=op.f("fk_track_points_track_id_tracks")),
         sa.PrimaryKeyConstraint("track_id", "point_id", name=op.f("pk_track_points")),
     )
-    op.add_column(
-        "points", sa.Column("point_id", sa.UUID(), nullable=False, comment="The unique ID of the Sensemaking Point.")
-    )
-    op.drop_column("points", "track_id")
     # ### end Alembic commands ###
 
 
@@ -60,7 +74,8 @@ def downgrade() -> None:
             comment="The ID of the track associated with the object.",
         ),
     )
-    op.drop_column("points", "point_id")
     op.drop_table("track_points")
     op.drop_table("tracks")
+    op.drop_constraint("point_id", "points")
+    op.drop_column("points", "point_id")
     # ### end Alembic commands ###

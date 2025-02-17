@@ -16,7 +16,7 @@ from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Column, Float, ForeignKey, String, Table, func, select
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import (
     Mapped,
@@ -123,18 +123,18 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     """
 
     __tablename__: str = "points"
+    point_id: Mapped[int] = mapped_column(
+        Integer,
+        autoincrement=True,
+        nullable=False,
+        primary_key=True,
+        comment="The unique ID of the Sensemaking Point.",
+    )
     weight: Mapped[float] = mapped_column(
         Float,
         default=1.0,
         nullable=False,
         comment="The weight assigned to the Point from confidence and other factors.",
-    )
-    point_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        default_factory=uuid.uuid4,
-        primary_key=True,
-        nullable=False,
-        comment="The unique ID of the Sensemaking Point.",
     )
 
     def __post_init__(self):
@@ -167,11 +167,11 @@ class Track(BaseORM):
         nullable=True,
         comment="The track weaver algorithm used to create this track.",
     )
-    track_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        default_factory=uuid.uuid4,
-        primary_key=True,
+    track_id: Mapped[int] = mapped_column(
+        Integer,
+        autoincrement=True,
         nullable=False,
+        primary_key=True,
         comment="The unique ID of the Sensemaking Track.",
     )
 
