@@ -38,16 +38,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("track_id", name=op.f("pk_tracks")),
     )
-    op.add_column(
-        "points",
-        sa.Column(
-            "point_id",
-            sa.Integer(),
-            autoincrement=True,
-            nullable=False,
-            comment="The unique ID of the Sensemaking Point.",
-        ),
-    )
+    op.execute("ALTER TABLE points ADD point_id SERIAL UNIQUE NOT NULL")
     op.create_primary_key("pk_points", "points", ["point_id"])
     op.drop_column("points", "track_id")
     op.create_table(
