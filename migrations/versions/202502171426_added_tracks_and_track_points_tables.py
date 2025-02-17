@@ -39,7 +39,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "observation_ids",
-            postgresql.JSONB(astext_type=sa.Text()),
+            postgresql.ARRAY(sa.UUID()),
             nullable=False,
             comment="The list of any observation IDs used to create this track, even if dropped.",
         ),
