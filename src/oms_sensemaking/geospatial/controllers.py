@@ -17,8 +17,14 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track, \
-    apply_common_sense_filters
+from oms_sensemaking.models.geo import (
+    Point,
+    TimeBinTrackWeaver,
+    Track,
+    TrackWeaverBase,
+    apply_common_sense_filters,
+    get_track,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

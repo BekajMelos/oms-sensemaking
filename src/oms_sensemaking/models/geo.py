@@ -28,8 +28,9 @@ from sqlalchemy.orm import (
     with_expression,
 )
 
-from oms_sensemaking.clients.instances import db_session, aac_client
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
+
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -397,6 +398,7 @@ def _filter_teleportation(track: Track) -> Track:
     :return: The filtered track. Points that are likely the result of teleportation have their weights assigned to 0.
     """
     from logging import getLogger
+
     from geoalchemy2.functions import ST_Distance
 
     logger = getLogger(__name__)
