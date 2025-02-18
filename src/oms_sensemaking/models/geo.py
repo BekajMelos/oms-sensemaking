@@ -30,7 +30,6 @@ from sqlalchemy.orm import (
 
 from oms_sensemaking.clients.instances import db_session, aac_client
 from oms_sensemaking.config import SETTINGS
-
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, TrackMixin, UtcDateTime
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -375,9 +374,11 @@ def apply_common_sense_filters(track: Track, iri: str) -> Track | None:
     - <b>Altitude</b>: Removes points with negative or extreme altitude/altitude change.
 
     :param track: The track to apply common sense filters to.
+    :param iri: The IRI of the object being tracked.
     :return: The filtered track
     """
     from logging import getLogger
+
     logger = getLogger(__name__)
 
     if not SETTINGS.apply_common_sense_filters:
@@ -397,6 +398,7 @@ def _filter_teleportation(track: Track) -> Track:
     """
     from logging import getLogger
     from geoalchemy2.functions import ST_Distance
+
     logger = getLogger(__name__)
 
     for i in range(1, len(track.points)):

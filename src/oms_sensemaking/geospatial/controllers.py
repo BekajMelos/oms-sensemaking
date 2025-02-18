@@ -17,7 +17,8 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track, apply_common_sense_filters
+from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase, get_track, \
+    apply_common_sense_filters
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -106,12 +107,12 @@ class GeospatialSensemakerController(SensemakerController):
         # set the current track_id to the track linked to the node (vehicle) in question
         track_id = self.node_track_mapping[oms_obs.nodeId]
 
-        try:
-            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
-            node_version = node.version
-        except AttributeError:
-            LOGGER.warning("No node found. Unable to process observation.")
-            return False
+        # try:
+        #     node = self.oms_crud_tool.get_node(oms_obs.nodeId)
+        #     node_version = node.version
+        # except AttributeError:
+        #     LOGGER.warning("No node found. Unable to process observation.")
+        #     return False
 
         with db_session() as db:
             # we're still using the point object for detections, so don't expire it
