@@ -100,9 +100,10 @@ class MilSymbolSensemaker(Sensemaker):
         context_attr = self.get_context(oms_node)
         affiliation_attr = self.get_affiliation(oms_node)
         status_attr = self.get_status(oms_node)
+        ancestor_iris = self.get_node_ancestors_iris(oms_node)
 
-        code_2525d.enrich(context_attr, affiliation_attr, oms_node.classIri, status_attr)
-        code_2525c.enrich(affiliation_attr, oms_node.classIri, status_attr)
+        code_2525d.enrich(context_attr, affiliation_attr, oms_node.classIri, ancestor_iris, status_attr)
+        code_2525c.enrich(affiliation_attr, oms_node.classIri, ancestor_iris, status_attr)
 
         LOGGER.info(f"Enriched 2525C: {code_2525c.formatted_code}")
         LOGGER.info(f"Enriched 2525D: {code_2525d.formatted_code}")
@@ -220,6 +221,34 @@ class MilSymbolSensemaker(Sensemaker):
             return status_attr[0]
 
         return None
+
+    def get_node_ancestors_iris(self, oms_node: NodeNode) -> List[str]:
+        """Get ancestor's iris.
+
+        :param oms_node: Node to grab the status for
+        :return: The Node's ancestor's iri list
+        """
+
+        # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
+
+        iris = []
+        has_parent = True
+        current_iri = oms_node.classIri
+        while has_parent:
+
+            ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(
+                iri=current_iri)
+
+            if not ontology_class or not ontology_class.parentOntologyClasses:
+                break
+
+            # If multiple parent Iris, just get the first one
+            parent_iri = ontology_class.parentOntologyClasses[0].iri
+            iris.append(parent_iri)
+            current_iri = parent_iri
+
+        return iris
+
 
     def publish_attributes(self,
                            oms_node: NodeNode,
