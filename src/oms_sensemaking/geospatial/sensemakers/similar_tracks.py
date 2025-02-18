@@ -263,6 +263,9 @@ class SimilarTracksSensemaker(Sensemaker):
             # Overall, this query will find tracks that have starting points that are within the query_distance of the
             # given track. Then with the end query, it will find tracks that end within the query distance of the given
             # track.
+
+            # TODO: Figure out the error here. I think I need to incorporate a select_from() somewhere to clear up
+            #       confusion around the joins. SA can't determine which is the left side implicitly.
             query = (
                 select(
                     Point.location,
