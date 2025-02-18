@@ -368,7 +368,7 @@ def get_track(db: Session, track_id: Union[str, uuid.UUID]) -> Track:
     return Track(points=points, node_id=node_id)
 
 
-def apply_common_sense_filters(track: Track, iri: str) -> Track | None:
+def apply_common_sense_filters(track: Track, iri: str) -> Track:
     """
     Apply common sense filters to the track to identify any outlying points. Runs the following filters:
     - <b>Teleportation</b>: Removes points that are likely the result of teleportation.
@@ -384,7 +384,7 @@ def apply_common_sense_filters(track: Track, iri: str) -> Track | None:
 
     if not SETTINGS.apply_common_sense_filters:
         logger.info("Common sense filters are disabled. Skipping.")
-        return None
+        return track
 
     filtered_track = _filter_altitude_by_iri(_filter_teleportation(track), iri)
     return filtered_track
@@ -417,7 +417,7 @@ def _filter_teleportation(track: Track) -> Track:
         # sensemaking db.
         distance_exceeded = distance > SETTINGS.distance_threshold_meters
         time_within_threshold = time_delta.total_seconds() < SETTINGS.time_threshold_seconds
-        velocity_within_threshold = 0 < relative_velocity < SETTINGS.relative_velocity_threshold_meters_per_second
+        velocity_within_threshold = 0 < relative_velocity < SETTINGS.relative_velocity_threshold_mps
         if (distance_exceeded and time_within_threshold) or velocity_within_threshold:
             logger.debug(
                 "Removing point %s from track %s due to teleportation: distance=%s, time_delta=%s",
@@ -459,7 +459,7 @@ def _filter_altitude_by_iri(track: Track, iri: str) -> Track:
                          current_point.observation_id, track.node_id, current_point.altitude)
             track.points[i].weight *= 0
             continue
-        elif current_point.altitude > SETTINGS.max_altitude_meters:
+        elif current_point.altitude > SETTINGS.altitude_threshold_meters:
             logger.debug("Removing point %s from track %s due to altitude exceeding maximum: altitude=%s",
                          current_point.observation_id, track.node_id, current_point.altitude)
             track.points[i].weight *= 0
