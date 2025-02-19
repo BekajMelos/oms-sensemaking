@@ -115,9 +115,8 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     - detection_time
     - acm
     - weight
-    - point_id (default)
 
-    It should never be necessary to specify point_id in the constructor.
+    You should never refer to point_id outside of a query context.
     The parameter is auto-generated for new instances and used by SQLAlchemy.
     """
 
@@ -152,7 +151,21 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
 
 
 class Track(BaseORM):
-    """Represents a track."""
+    """Represents a track.
+
+    This model is also a dataclass. The order of the positional parameters in
+    the generated ``__init__()`` method are:
+
+    - points
+    - node_id
+    - algorithm
+    - observation_ids
+    - track_uuid
+
+    You should never refer to track_id outside of a query context.
+    The parameter is auto-generated for new instances and used only by SQLAlchemy.
+    Use track_uuid for Sensemaker's unique identifier for a track.
+    """
 
     __tablename__: str = "tracks"
 
