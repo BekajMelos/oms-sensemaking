@@ -9,7 +9,7 @@ from typing import Any, List, Set
 
 from geoalchemy2.types import Geography
 from geolib import geohash
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import and_, desc, func, join, select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.sql import cast
 
@@ -17,7 +17,7 @@ from oms_sensemaking.clients import db_engine, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_id_projection import GroupByTrackIdProjection
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,14 +34,14 @@ ST_TRANSFORM_OPTION_GEOJSON_SHORT_CRS: int = 2  # option 2: GeoJSON Short CRS (e
 class ComparisonResult:
     """Represents the results of a track comparison."""
 
-    def __init__(self, track_id: uuid.UUID, similarity_score: float):
+    def __init__(self, track_uuid: uuid.UUID, similarity_score: float):
         """
         Create a new instance of ComparisonResult.
 
-        :param track_id: The unique identifier for the Track.
+        :param track_uuid: The unique identifier for the Track.
         :param similarity_score: The similarity score.
         """
-        self.track_id = track_id
+        self.track_uuid = track_uuid
         self.similarity_score = similarity_score
 
     def __str__(self):
@@ -70,7 +70,7 @@ class TopSimilar:
 
         :param comparison_result: The results to enqueue.
         """
-        self.top_similarities.put((comparison_result.similarity_score, comparison_result.track_id))
+        self.top_similarities.put((comparison_result.similarity_score, comparison_result.track_uuid))
 
 
 class SimilarTracksSensemaker(Sensemaker):
@@ -115,13 +115,13 @@ class SimilarTracksSensemaker(Sensemaker):
         seen_groups = []
         for similar_track_group in similar_track_groups:
             # Remove any representations of the track of interest itself
-            if similar_track_group.track_id == first.track_id:
+            if similar_track_group.track_uuid == data.track_uuid:
                 continue
 
             # filter to one entry per trackId
-            if similar_track_group.track_id in seen_groups:
+            if similar_track_group.track_uuid in seen_groups:
                 continue
-            seen_groups.append(similar_track_group.track_id)
+            seen_groups.append(similar_track_group.track_uuid)
 
             similar_track: Track = self.get_track_from_group_projection(similar_track_group)
 
@@ -130,7 +130,7 @@ class SimilarTracksSensemaker(Sensemaker):
 
             # calculate similarity by Jaccard measure of bufferedHashSets
             comparison_result: ComparisonResult = self.determine_jaccard_similarity(
-                ref_track_geohash_set, eval_track_geohash_set, similar_track_group.track_id
+                ref_track_geohash_set, eval_track_geohash_set, similar_track_group.track_uuid
             )
 
             similar_results.add_comparison_result(comparison_result)
@@ -139,14 +139,14 @@ class SimilarTracksSensemaker(Sensemaker):
 
     @staticmethod
     def determine_jaccard_similarity(
-        ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], track_id: uuid.UUID
+        ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], track_uuid: uuid.UUID
     ) -> ComparisonResult:
         """
         Determine the Jaccard similairty between two track geohash sets.
 
         :param ref_track_geohash_set: The references track geohash set.
         :param eval_track_geohash_set:
-        :param track_id:
+        :param track_uuid:
         :return: A comparison result with similarity score.
         """
         # intersection of two sets
@@ -155,7 +155,7 @@ class SimilarTracksSensemaker(Sensemaker):
         union = len(ref_track_geohash_set.union(eval_track_geohash_set))
         score = intersection / union
         LOGGER.debug(f"Overall similarity for {eval_track_geohash_set}, {score}")
-        return ComparisonResult(track_id, score)
+        return ComparisonResult(track_uuid, score)
 
     @classmethod
     def get_track_from_group_projection(cls, group_projection: GroupByTrackIdProjection) -> Track:
@@ -166,7 +166,7 @@ class SimilarTracksSensemaker(Sensemaker):
         :return: Track object
         """
         with db_session() as db:
-            return get_track(db, group_projection.track_id)
+            return get_track(db, group_projection.track_uuid)
 
     @staticmethod
     def get_buffered_geohash_set(points: List[Point]) -> Set[str]:
@@ -245,7 +245,13 @@ class SimilarTracksSensemaker(Sensemaker):
                     Track.track_uuid,
                     func.ROW_NUMBER().over(partition_by=Track.track_uuid, order_by=order_col).label("row_number"),
                 )
-                .join(Track, Track.points)
+                .select_from(
+                    join(
+                        Point,
+                        track_points_table,
+                        track_points_table.c.point_id == Point.point_id,
+                    ).join(Track, track_points_table.c.track_id == Track.track_id)
+                )
                 .subquery()
             )
 
@@ -268,8 +274,6 @@ class SimilarTracksSensemaker(Sensemaker):
             #       confusion around the joins. SA can't determine which is the left side implicitly.
             query = (
                 select(
-                    Point.location,
-                    Point.observation_id,
                     Track.track_uuid,
                     func.array_agg(  # the array_agg will return the point as a geojson
                         aggregate_order_by(
@@ -281,12 +285,21 @@ class SimilarTracksSensemaker(Sensemaker):
                             Point.detection_time,
                         )
                     ).label("bookend"),
-                    # ).join(
-                    #     Track, Track.points
                 )
-                .join(
-                    subquery,
-                    and_(subquery.c.track_uuid == Track.track_uuid, subquery.c.observation_id == Point.observation_id),
+                .select_from(
+                    join(
+                        Point,
+                        track_points_table,
+                        track_points_table.c.point_id == Point.point_id,
+                    )
+                    .join(Track, track_points_table.c.track_id == Track.track_id)
+                    .join(
+                        subquery,
+                        and_(
+                            subquery.c.track_uuid == Track.track_uuid,
+                            subquery.c.observation_id == Point.observation_id,
+                        ),
+                    )
                 )
                 .where(
                     func.ST_DWithin(
@@ -316,7 +329,7 @@ class SimilarTracksSensemaker(Sensemaker):
             res = db.execute(end_query)
             end_groups = res.all()
 
-            # combine the start bookends with the end bookends by track_id
+            # combine the start bookends with the end bookends by track_uuid
             groups = defaultdict(list)
             for track_uuid, bookend in start_groups + end_groups:
                 groups[track_uuid].append(bookend)
