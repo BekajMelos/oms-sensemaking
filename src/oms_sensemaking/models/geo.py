@@ -167,8 +167,6 @@ class Track(BaseORM):
     Use track_uuid for Sensemaker's unique identifier for a track.
     """
 
-    __tablename__: str = "tracks"
-
     points: Mapped[list[Point]] = relationship(secondary=track_points_table, lazy="joined")
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -200,6 +198,8 @@ class Track(BaseORM):
         init=False,
         comment="The unique ID of the Track within the database only.",
     )
+
+    __tablename__: str = "tracks"
 
     @property
     def start_time(self) -> datetime | None:
