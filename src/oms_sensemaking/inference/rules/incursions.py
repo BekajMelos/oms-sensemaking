@@ -20,13 +20,14 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateActivityInput,
     UpdateAttributeInput,
 )
+from shapely import Point
+from shapely.geometry import shape
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from oms_sensemaking.tools.geo_tools import is_point_in_region
 
 
 class IncursionObservation:
@@ -37,14 +38,12 @@ class IncursionObservation:
         self.end_time = isoparse(obs.endTime)
 
 
-class IncursionAttribute:
+class IncursionTimeframe:
     def __init__(self, attr: AttributesAttributesData):
-        self._attr = attr
-
         self.start_time = isoparse(attr.valueStart)
         self.end_time = isoparse(attr.valueEnd)
 
-    def does_observation_overlap(self, obs: IncursionObservation):
+    def does_observation_overlap(self, obs: IncursionObservation) -> bool:
         return obs.end_time >= self.start_time and self.end_time >= obs.start_time
 
     def update_incursion_times_with_observation(self, obs: IncursionObservation):
@@ -55,7 +54,7 @@ class IncursionAttribute:
         self,
         incurring_object: NodesNodesData,
         observation: ObservationObservation,
-    ):
+    ) -> bool:
         """
         Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
         incursion and observation, which indicates whether or not that the observation is part of the
@@ -72,8 +71,6 @@ class IncursionAttribute:
                 startTime=TimeQuery(gte=observation.endTime),
                 endTime=TimeQuery(lte=self.start_time.isoformat()),
             )
-            observation_response = oms_client.get_observations(observation_query)
-            part_of_existing_incursion = bool(not observation_response.data)
         else:
             # Check for observations between attribute end time and current observation start time
             observation_query = ObservationQuery(
@@ -81,8 +78,8 @@ class IncursionAttribute:
                 startTime=TimeQuery(gte=self.end_time.isoformat()),
                 endTime=TimeQuery(lte=observation.startTime),
             )
-            observation_response = oms_client.get_observations(observation_query)
-            part_of_existing_incursion = bool(not observation_response.data)
+        observation_response = oms_client.get_observations(observation_query)
+        part_of_existing_incursion = bool(not observation_response.data)
 
         return part_of_existing_incursion
 
@@ -95,6 +92,7 @@ class Incursion(BaseRule):
 
     def __init__(self, name: str):
         self.name = name
+        self.features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -118,10 +116,12 @@ class Incursion(BaseRule):
         geo = obs.geometry
 
         # Check if observation occurred in an area of interest
-        features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
         geo_of_interest = None
-        for feature in features:
-            if is_point_in_region(geo, feature["geometry"]):
+        for feature in self.features:
+            point_coordinates = geo["coordinates"]
+            shapely_region = shape(feature["geometry"])
+            shapely_point = Point(point_coordinates)
+            if shapely_region.contains(shapely_point):
                 geo_of_interest = feature["geometry"]
                 break
 
@@ -142,22 +142,17 @@ class Incursion(BaseRule):
 
             incursion_obs = IncursionObservation(obs)
             for existing_incursion_attribute in existing_incursion_attributes:
-                inc_attr = IncursionAttribute(existing_incursion_attribute)
-                # Check if times overlap
-                if inc_attr.does_observation_overlap(incursion_obs):
+                inc_attr = IncursionTimeframe(existing_incursion_attribute)
+                # Update existing incursion if times overlap or if object stayed in area of
+                # interest in the time between the observation and incursion
+                time_overlap = inc_attr.does_observation_overlap(incursion_obs)
+                if time_overlap or inc_attr.object_observed_between_incursion_and_observation_times(incurring_object,
+                                                                                                    obs):
                     # Update existing incursion with union of observation and incursion time intervals
                     inc_attr.update_incursion_times_with_observation(incursion_obs)
                     self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
                     matching_incursion_attribute_found = True
                     break
-                else:
-                    # Times don't overlap, check if object stayed in area of interest between
-                    # observation and existing incursion times
-                    if inc_attr.object_observed_between_incursion_and_observation_times(incurring_object, obs):
-                        inc_attr.update_incursion_times_with_observation(incursion_obs)
-                        self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
-                        matching_incursion_attribute_found = True
-                        break
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
@@ -168,7 +163,7 @@ class Incursion(BaseRule):
         observation: ObservationObservation,
         incurring_object: NodesNodesData,
         existing_incursion_attribute: AttributesAttributesData,
-        inc_attr: IncursionAttribute,
+        inc_attr: IncursionTimeframe,
     ):
         """
         Update an existing incursion attribute and corresponding activity
