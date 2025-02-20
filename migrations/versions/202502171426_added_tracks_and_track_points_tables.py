@@ -7,6 +7,7 @@ Create Date: 2025-02-17 14:27:00.437609
 """
 
 from typing import Sequence, Union
+from uuid import uuid4
 
 import sqlalchemy as sa
 from alembic import op
@@ -69,12 +70,24 @@ def downgrade() -> None:
             "track_id",
             sa.UUID(),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
             comment="The ID of the track associated with the object.",
         ),
     )
+    # Migrate track_id back to points table from tracks.track_uuid
+    op.execute("""
+        UPDATE points p
+        SET track_id = t.track_uuid
+        FROM tracks t
+        JOIN track_points tp ON t.track_id = tp.track_id
+        WHERE p.point_id = tp.point_id
+    """)
+    # Supply default UUID for any missing track_id
+    op.execute(f"UPDATE points SET track_id = '{str(uuid4())}'::UUID WHERE track_id IS NULL")
+    # Make track_id column not nullable
+    op.alter_column("points", "track_id", nullable=False)
     op.drop_table("track_points")
     op.drop_table("tracks")
-    op.drop_constraint("point_id", "points")
+    op.drop_constraint("pk_points", "points")
     op.drop_column("points", "point_id")
     # ### end Alembic commands ###
