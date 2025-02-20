@@ -16,7 +16,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from shapely import LineString, MultiLineString
-from sqlalchemy import func, select
+from sqlalchemy import func, join, select
 from sqlalchemy.orm import with_expression
 
 from oms_sensemaking.clients import db_session
@@ -24,7 +24,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
-from oms_sensemaking.models.geo import Point, Track, get_track
+from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
 from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
@@ -139,10 +139,20 @@ class Cotravel(FindingBase):
 class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
-    def __init__(self, track1_node_id: UUID, track2_node_id: UUID, point: Point, db_point: Point):
+    def __init__(
+        self,
+        track1_node_id: UUID,
+        track2_node_id: UUID,
+        track1_id: UUID,
+        track2_id: UUID,
+        point: Point,
+        db_point: Point,
+    ):
         """Create a new instance of Colocation."""
         self.track1_node_id = track1_node_id
         self.track2_node_id = track2_node_id
+        self.track1_id = track1_id
+        self.track2_id = track2_id
         self.point = point
         self.db_point = db_point
 
@@ -304,7 +314,7 @@ class CotravelSensemaker(Sensemaker):
                 lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
             )
 
-            db_points: List[Point] = self.get_points(
+            db_points = self.get_points(
                 point_geohash_low,
                 data.node_id,
                 (time - MAX_LAG_LEAD_DURATION_SECONDS),
@@ -314,7 +324,15 @@ class CotravelSensemaker(Sensemaker):
 
             # Create colocations from track entries
             match_points: List[Colocation] = [
-                Colocation(data.node_id, db_point.node_id, point, db_point) for db_point in db_points
+                Colocation(
+                    data.node_id,
+                    db_point.node_id,
+                    data.track_uuid,
+                    track2_uuid,
+                    point,
+                    db_point,
+                )
+                for track2_uuid, db_point in db_points
             ]
 
             if matches:
@@ -336,8 +354,8 @@ class CotravelSensemaker(Sensemaker):
             cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
         if cotravels:
-            track_id = data.points[0].track_id
-            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_id}")
+            track_uuid = data.track_uuid
+            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_uuid}")
 
         for cotravel in cotravels:
             LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
@@ -346,9 +364,8 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime,
-        target_time: datetime
-    ) -> List[Point]:
+        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
+    ) -> list[tuple[UUID, Point]]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
 
@@ -375,16 +392,22 @@ class CotravelSensemaker(Sensemaker):
         """
         with db_session() as db:
             query = db.execute(
-                select(Point)
+                select(Track.track_uuid, Point)
+                .select_from(
+                    join(
+                        Point,
+                        track_points_table,
+                        track_points_table.c.point_id == Point.point_id,
+                    ).join(Track, track_points_table.c.track_id == Track.track_id)
+                )
                 .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
-                .where(Point.node_id != vehicle_id, Point.detection_time > min_time,
-                       Point.detection_time < max_time)
+                .where(Point.node_id != vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
                 .distinct(Point.node_id)
             )
 
-            return list(query.scalars().all())
+            return list(query.all())
 
     @staticmethod
     def determine_cotravels(track: Track, colocations: list[Colocation]) -> list[Cotravel]:
@@ -398,25 +421,34 @@ class CotravelSensemaker(Sensemaker):
         def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
             """Helper function to create Cotravel from PotentialMatch"""
             with db_session() as db:
+                db.expire_on_commit = False
                 track2_id = to_add_to.track_id2
                 track2: Track = get_track(db, track2_id)
 
-            start_time = min(to_add_to.start_time1, to_add_to.start_time2)
-            last_time = max(to_add_to.last_time1, to_add_to.last_time2)
+                start_time = min(to_add_to.start_time1, to_add_to.start_time2)
+                last_time = max(to_add_to.last_time1, to_add_to.last_time2)
 
-            return Cotravel(
-                track1=Track(
-                    points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
-                    node_id=track.node_id,
-                ),
-                track2=Track(
-                    points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
-                    node_id=track2.node_id,
-                ),
-                start_time=start_time,
-                last_time=last_time,
-                true_cotravel=to_add_to.true_cotravel,
-            )
+                # Preserve original tracks' metadata for possible use in Finding
+                # Stay in db_session scope while referencing track2
+                return Cotravel(
+                    track1=Track(
+                        points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
+                        node_id=track.node_id,
+                        algorithm=track.algorithm,
+                        observation_ids=track.observation_ids,
+                        track_uuid=uuid4(),  # different points, new Track UUID
+                    ),
+                    track2=Track(
+                        points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
+                        node_id=track2.node_id,
+                        algorithm=track2.algorithm,
+                        observation_ids=track2.observation_ids,
+                        track_uuid=uuid4(),  # different points, new Track UUID
+                    ),
+                    start_time=start_time,
+                    last_time=last_time,
+                    true_cotravel=to_add_to.true_cotravel,
+                )
 
         completed: list[Cotravel] = []
         to_add_to: Optional[PotentialMatch] = None
@@ -444,8 +476,8 @@ class CotravelSensemaker(Sensemaker):
                         colocation.db_point.detection_time,
                         colocation.point.detection_time,
                         colocation.db_point.detection_time,
-                        colocation.point.track_id,
-                        colocation.db_point.track_id,
+                        colocation.track1_id,
+                        colocation.track2_id,
                         true_cotravel,
                     )
             else:
@@ -462,8 +494,8 @@ class CotravelSensemaker(Sensemaker):
                     colocation.db_point.detection_time,
                     colocation.point.detection_time,
                     colocation.db_point.detection_time,
-                    colocation.point.track_id,
-                    colocation.db_point.track_id,
+                    colocation.track1_id,
+                    colocation.track2_id,
                     true_cotravel,
                 )
 
