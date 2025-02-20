@@ -421,34 +421,34 @@ class CotravelSensemaker(Sensemaker):
         def create_cotravel_from_match(to_add_to: PotentialMatch) -> Cotravel:
             """Helper function to create Cotravel from PotentialMatch"""
             with db_session() as db:
-                db.expire_on_commit = False
+                # db.expire_on_commit = False
                 track2_id = to_add_to.track_id2
                 track2: Track = get_track(db, track2_id)
 
                 start_time = min(to_add_to.start_time1, to_add_to.start_time2)
                 last_time = max(to_add_to.last_time1, to_add_to.last_time2)
 
-                # Preserve original tracks' metadata for possible use in Finding
-                # Stay in db_session scope while referencing track2
-                return Cotravel(
-                    track1=Track(
-                        points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
-                        node_id=track.node_id,
-                        algorithm=track.algorithm,
-                        observation_ids=track.observation_ids,
-                        track_uuid=uuid4(),  # different points, new Track UUID
-                    ),
-                    track2=Track(
-                        points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
-                        node_id=track2.node_id,
-                        algorithm=track2.algorithm,
-                        observation_ids=track2.observation_ids,
-                        track_uuid=uuid4(),  # different points, new Track UUID
-                    ),
-                    start_time=start_time,
-                    last_time=last_time,
-                    true_cotravel=to_add_to.true_cotravel,
-                )
+            # Preserve original tracks' metadata for possible use in Finding
+            # Stay in db_session scope while referencing track2
+            return Cotravel(
+                track1=Track(
+                    points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
+                    node_id=track.node_id,
+                    algorithm=track.algorithm,
+                    observation_ids=track.observation_ids,
+                    track_uuid=uuid4(),  # different points, new Track UUID
+                ),
+                track2=Track(
+                    points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
+                    node_id=track2.node_id,
+                    algorithm=track2.algorithm,
+                    observation_ids=track2.observation_ids,
+                    track_uuid=uuid4(),  # different points, new Track UUID
+                ),
+                start_time=start_time,
+                last_time=last_time,
+                true_cotravel=to_add_to.true_cotravel,
+            )
 
         completed: list[Cotravel] = []
         to_add_to: Optional[PotentialMatch] = None

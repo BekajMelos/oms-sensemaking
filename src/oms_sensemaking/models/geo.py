@@ -169,7 +169,7 @@ class Track(BaseORM):
 
     __tablename__: str = "tracks"
 
-    points: Mapped[list[Point]] = relationship(secondary=track_points_table)
+    points: Mapped[list[Point]] = relationship(secondary=track_points_table, lazy="joined")
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
@@ -413,4 +413,4 @@ def get_track(db: Session, track_uuid: Union[str, uuid.UUID]) -> Track:
     :param track_uuid: The Track's unique identifier.
     :return: A Track.
     """
-    return db.execute(select(Track).filter_by(track_uuid=track_uuid)).scalar_one()
+    return db.execute(select(Track).filter_by(track_uuid=track_uuid)).unique().scalar_one()
