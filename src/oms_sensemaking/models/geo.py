@@ -13,18 +13,18 @@ from typing import Iterable, Optional, Union
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
+from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, select
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     MappedAsDataclass,
     Session,
-    declared_attr,
     mapped_column,
-    query_expression,
     relationship,
 )
 
@@ -63,15 +63,27 @@ class OmsGeoMixin(MappedAsDataclass):
 
     altitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="The altitude of the point.")
 
-    @declared_attr
-    def geohash(self) -> Mapped[str]:
+    @hybrid_property
+    def geohash(self):
         """
         Return a geocoded representation of the location.
 
-        This value is calculated when the data is queried and may be
-        null if the query was not configured to populate it.
+        This value is calculated when the data is queried
+        or provided by Python if accessed in a Python expression
         """
-        return query_expression(doc="A geocoded representation of the location.")
+        return geohash.encode(self.coordinates[1], self.coordinates[0], 12)
+
+    @geohash.expression
+    @classmethod
+    def geohash(cls):
+        """
+        Return a geocoded representation of the location when accessed in a query.
+        Example: 'Point.geohash.like("ttnfv2u%")'
+
+        Replaces previous use of with_expression:
+        with_expression(Point.geohash, func.ST_GeoHash(Point.location))
+        """
+        return func.ST_GeoHash(cls.location, 12)
 
     detection_time: Mapped[datetime] = mapped_column(
         UtcDateTime, unique=False, nullable=False, comment="The time the point was detected."

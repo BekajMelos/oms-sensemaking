@@ -188,9 +188,7 @@ class SimilarTracksSensemaker(Sensemaker):
 
         for point in points:
             # reduce precision of the geohash by one to generate set for comparison to expand range for 'similar' tracks
-            point_geohash_low = geohash.encode(
-                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
-            )
+            point_geohash_low = point.geohash[: SETTINGS.geohash_low]
             base_geohash = point_geohash_low[0:-1]
             buffered_geohash_set.add(base_geohash)
 

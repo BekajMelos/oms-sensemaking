@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeInput,
@@ -17,7 +16,6 @@ from oms_sdk.generated.generated_graphql_client.client import (
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, join, select
-from sqlalchemy.orm import with_expression
 
 from oms_sensemaking.clients import db_session
 from oms_sensemaking.config import SETTINGS
@@ -310,9 +308,7 @@ class CotravelSensemaker(Sensemaker):
         for point in data.points:
             time = point.detection_time
 
-            point_geohash_low = geohash.encode(
-                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
-            )
+            point_geohash_low = point.geohash[: self.config["geohash_low"]]
 
             db_points = self.get_points(
                 point_geohash_low,
@@ -400,10 +396,9 @@ class CotravelSensemaker(Sensemaker):
                         track_points_table.c.point_id == Point.point_id,
                     ).join(Track, track_points_table.c.track_id == Track.track_id)
                 )
-                .filter(Point.location.ST_Geohash().like(f"{geohash_low}%"))
+                .filter(Point.geohash.like(f"{geohash_low}%"))
                 .where(Point.node_id != vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
-                .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
                 .distinct(Point.node_id)
             )
 

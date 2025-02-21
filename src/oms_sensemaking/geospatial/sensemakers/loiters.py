@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
-from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeInput,
@@ -257,9 +256,7 @@ class LoiterSensemaker(Sensemaker):
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-            point_geohash_low = geohash.encode(
-                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
-            )
+            point_geohash_low = point.geohash[: SETTINGS.geohash_low]
 
             if point_geohash_low in prospective_loiters:
                 # existing geohash
