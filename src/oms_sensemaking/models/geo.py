@@ -73,7 +73,7 @@ class OmsGeoMixin(MappedAsDataclass):
         """
         return geohash.encode(self.coordinates[1], self.coordinates[0], 20)
 
-    @geohash.expression
+    @geohash.expression  # type: ignore [no-redef]
     @classmethod
     def geohash(cls):
         """

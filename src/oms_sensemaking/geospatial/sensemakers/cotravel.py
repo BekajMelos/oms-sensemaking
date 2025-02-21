@@ -396,7 +396,7 @@ class CotravelSensemaker(Sensemaker):
                         track_points_table.c.point_id == Point.point_id,
                     ).join(Track, track_points_table.c.track_id == Track.track_id)
                 )
-                .filter(Point.geohash.like(f"{geohash_low}%"))
+                .filter(Point.geohash.like(f"{geohash_low}%"))  # type: ignore [attr-defined]
                 .where(Point.node_id != vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .distinct(Point.node_id)
