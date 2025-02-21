@@ -11,7 +11,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Confidence
 from sqlalchemy import func, select
 from sqlalchemy.exc import StatementError
-from sqlalchemy.orm import Session, with_expression
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.models.geo import Point, Track, get_track
 
@@ -194,7 +194,6 @@ def test_geohash(tester_db: Session):
             select(Point)
             .where(Point.altitude.is_(None))
             .where(Point.node_id == NODE_ID_FFX, Point.observation_id == ATTR_ID_FFX)
-            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
         .scalars()
         .one()
@@ -259,10 +258,9 @@ def test_geohash_nearby_query(tester_db: Session):
         tester_db.execute(
             select(Point)
             .filter(
-                Point.location.ST_Geohash().like("dr5rxtembz9t%")  # full value should be dr5rxtembz9tw6b30s9w
+                Point.geohash.like("dr5rxtembz9t%")  # full value should be dr5rxtembz9tw6b30s9w
             )
             .order_by(Point.detection_time.asc())
-            .options(with_expression(Point.geohash, func.ST_GeoHash(Point.location)))
         )
         .scalars()
         .all()

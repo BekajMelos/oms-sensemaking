@@ -135,7 +135,7 @@ DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, det
 }
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def tester_db(db: Session) -> Generator[Session, Any, None]:
     for track_uuid, rows in DATA.items():
         points: list[Point] = []
@@ -214,7 +214,7 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session):
     # Create Track Object
     track = Track(
         points=[p1, p2, p3],
-        node_id=uuid4(),
+        node_id=node_id,
         track_uuid=track_uuid,
         algorithm="test_track",
     )
