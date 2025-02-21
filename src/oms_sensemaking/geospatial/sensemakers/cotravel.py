@@ -429,7 +429,6 @@ class CotravelSensemaker(Sensemaker):
                 last_time = max(to_add_to.last_time1, to_add_to.last_time2)
 
             # Preserve original tracks' metadata for possible use in Finding
-            # Stay in db_session scope while referencing track2
             return Cotravel(
                 track1=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
