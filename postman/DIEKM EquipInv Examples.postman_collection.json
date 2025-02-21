@@ -186,6 +186,141 @@
 			"response": []
 		},
 		{
+			"name": "Create AF Unit Beta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Create AF Unit Beta\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"AfUnitBetaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Unit Beta\"\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Inventory Alpha",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"InventoryAlphaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Inventory Alpha\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Inventory Beta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Fed Gov01 Node created\", function () {",
+							"    pm.expect(jsonData.data.createNode.id).to.exist;",
+							"});",
+							"pm.collectionVariables.set(\"InventoryBetaId\",jsonData.data.createNode.id);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "user_dn",
+						"value": "{{TS_USER_DN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Inventory Beta\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://{{GRAPHQL_ENDPOINT}}",
+					"protocol": "https",
+					"host": [
+						"{{GRAPHQL_ENDPOINT}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Create Fighter Jet Alpha",
 			"event": [
 				{
@@ -276,51 +411,6 @@
 			"response": []
 		},
 		{
-			"name": "Create Inventory Alpha",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = JSON.parse(pm.response.text());",
-							"pm.test(\"Fed Gov01 Node created\", function () {",
-							"    pm.expect(jsonData.data.createNode.id).to.exist;",
-							"});",
-							"pm.collectionVariables.set(\"InventoryAlphaId\",jsonData.data.createNode.id);",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "user_dn",
-						"value": "{{TS_USER_DN}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "graphql",
-					"graphql": {
-						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Inventory Alpha\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
-						"variables": ""
-					}
-				},
-				"url": {
-					"raw": "https://{{GRAPHQL_ENDPOINT}}",
-					"protocol": "https",
-					"host": [
-						"{{GRAPHQL_ENDPOINT}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Create Continuant",
 			"event": [
 				{
@@ -352,51 +442,6 @@
 					"mode": "graphql",
 					"graphql": {
 						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} Continuant\"\n            classIri: \"http://purl.obolibrary.org/obo/BFO_0000002\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
-						"variables": ""
-					}
-				},
-				"url": {
-					"raw": "https://{{GRAPHQL_ENDPOINT}}",
-					"protocol": "https",
-					"host": [
-						"{{GRAPHQL_ENDPOINT}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create AF Unit Beta",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = JSON.parse(pm.response.text());",
-							"pm.test(\"Create AF Unit Beta\", function () {",
-							"    pm.expect(jsonData.data.createNode.id).to.exist;",
-							"});",
-							"pm.collectionVariables.set(\"AfUnitBetaId\",jsonData.data.createNode.id);",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "user_dn",
-						"value": "{{TS_USER_DN}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "graphql",
-					"graphql": {
-						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Unit Beta\"\n            classIri: \"http://www.ontologyrepository.com/CommonCoreOntologies/Organization\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
 						"variables": ""
 					}
 				},
@@ -541,6 +586,21 @@
 		},
 		{
 			"name": "Continuant Part Of",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(pm.response.text());",
+							"pm.test(\"Continuant Part Of Relationship created\", function () {",
+							"    pm.expect(jsonData.data.createRelationship.id).to.exist;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -641,51 +701,6 @@
 					"graphql": {
 						"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controls\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/controls\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 						"variables": "{\n    \"nodeAId\": \"{{InventoryBetaId}}\",\n    \"nodeBId\": \"{{AfUnitBetaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
-					}
-				},
-				"url": {
-					"raw": "https://{{GRAPHQL_ENDPOINT}}",
-					"protocol": "https",
-					"host": [
-						"{{GRAPHQL_ENDPOINT}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create Inventory Beta",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = JSON.parse(pm.response.text());",
-							"pm.test(\"Fed Gov01 Node created\", function () {",
-							"    pm.expect(jsonData.data.createNode.id).to.exist;",
-							"});",
-							"pm.collectionVariables.set(\"InventoryBetaId\",jsonData.data.createNode.id);",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "user_dn",
-						"value": "{{TS_USER_DN}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "graphql",
-					"graphql": {
-						"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} AF Inventory Beta\"\n            classIri: \"http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems\"\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
-						"variables": ""
 					}
 				},
 				"url": {
