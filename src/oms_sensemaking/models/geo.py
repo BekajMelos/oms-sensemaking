@@ -71,7 +71,7 @@ class OmsGeoMixin(MappedAsDataclass):
         This value is calculated when the data is queried
         or provided by Python if accessed in a Python expression
         """
-        return geohash.encode(self.coordinates[1], self.coordinates[0], 12)
+        return geohash.encode(self.coordinates[1], self.coordinates[0], 20)
 
     @geohash.expression
     @classmethod
@@ -83,7 +83,7 @@ class OmsGeoMixin(MappedAsDataclass):
         Replaces previous use of with_expression:
         with_expression(Point.geohash, func.ST_GeoHash(Point.location))
         """
-        return func.ST_GeoHash(cls.location, 12)
+        return func.ST_GeoHash(cls.location, 20)
 
     detection_time: Mapped[datetime] = mapped_column(
         UtcDateTime, unique=False, nullable=False, comment="The time the point was detected."
