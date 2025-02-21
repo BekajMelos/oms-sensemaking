@@ -266,7 +266,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
             points=points,
             node_id=points[0].node_id,
             algorithm=self.algorithm,
-            observation_ids=[p.observation_id for p in points],
+            observation_ids=[p.observation_id for p in points],  # type: ignore
         )
 
 
@@ -393,7 +393,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             points=weighted_points,
             node_id=weighted_points[0].node_id,
             algorithm=self.algorithm,
-            observation_ids=[p.observation_id for p in points],
+            observation_ids=[p.observation_id for p in points],  # type: ignore
         )
 
 

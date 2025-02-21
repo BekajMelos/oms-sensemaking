@@ -327,7 +327,7 @@ class CotravelSensemaker(Sensemaker):
                 Colocation(
                     data.node_id,
                     db_point.node_id,
-                    data.track_uuid,
+                    data.track_uuid,  # type: ignore
                     track2_uuid,
                     point,
                     db_point,
@@ -407,7 +407,7 @@ class CotravelSensemaker(Sensemaker):
                 .distinct(Point.node_id)
             )
 
-            return list(query.all())
+            return list(tuple(row) for row in query.all())
 
     @staticmethod
     def determine_cotravels(track: Track, colocations: list[Colocation]) -> list[Cotravel]:
@@ -435,14 +435,14 @@ class CotravelSensemaker(Sensemaker):
                     node_id=track.node_id,
                     algorithm=track.algorithm,
                     observation_ids=track.observation_ids,
-                    track_uuid=uuid4(),  # different points, new Track UUID
+                    track_uuid=uuid4(),  # type: ignore
                 ),
                 track2=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
                     node_id=track2.node_id,
                     algorithm=track2.algorithm,
                     observation_ids=track2.observation_ids,
-                    track_uuid=uuid4(),  # different points, new Track UUID
+                    track_uuid=uuid4(),  # type: ignore
                 ),
                 start_time=start_time,
                 last_time=last_time,

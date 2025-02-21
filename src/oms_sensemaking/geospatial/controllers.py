@@ -151,6 +151,7 @@ class GeospatialSensemakerController(SensemakerController):
                 self.buffer[track_uuid] = now
                 self.track_node_buffer[track_uuid].append(point)
             return True
+        return False
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
