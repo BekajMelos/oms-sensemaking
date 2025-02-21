@@ -133,7 +133,7 @@ class Settings(BaseSettings):
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
     )
     inference_add_has_name_attribute_meta_data_iri: str = Field(
-                                 "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
+        "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
     inference_add_garrison_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
