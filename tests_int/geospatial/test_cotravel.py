@@ -256,7 +256,6 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 points=points,
                 node_id=points[0].node_id,
                 algorithm="cotravel_test_track",
-                observation_ids=[p.observation_id for p in points],
             ),
             track_uuid=track_uuid,
         )
@@ -313,7 +312,6 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
         points=[p1, p2, p3],
         node_id=node_id,
         algorithm="test_algorithm",
-        observation_ids=[p.observation_id for p in [p1, p2, p3]],
         track_uuid=track_uuid,
     )
 
@@ -452,7 +450,6 @@ def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Sessio
         points=[p1, p2, p3],
         node_id=node_id,
         algorithm="test_algorithm",
-        observation_ids=[p.observation_id for p in [p1, p2, p3]],
         track_uuid=track_uuid,
     )
 
@@ -652,7 +649,6 @@ def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
         points=[p1, p2, p3],
         node_id=node_id,
         algorithm="test_algorithm",
-        observation_ids=[p.observation_id for p in [p1, p2, p3]],
         track_uuid=track_uuid,
     )
 
@@ -791,7 +787,6 @@ def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrud
         points=[p1, p2, p3],
         node_id=node_id,
         algorithm="test_algorithm",
-        observation_ids=[p.observation_id for p in [p1, p2, p3]],
         track_uuid=track_uuid,
     )
 
@@ -863,7 +858,6 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         points=[p1, p2, p3, p4],
         node_id=node_id,
         algorithm="test_algorithm",
-        observation_ids=[p.observation_id for p in [p1, p2, p3]],
         track_uuid=track_uuid,
     )
 

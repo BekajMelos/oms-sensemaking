@@ -178,10 +178,10 @@ class Track(BaseORM):
         nullable=True,
         comment="The track weaver algorithm used to create this track.",
     )
-    observation_ids: Mapped[list[UUID]] = mapped_column(
+    observation_ids: Mapped[set[UUID]] = mapped_column(
         ARRAY(UUID),
         nullable=False,
-        default_factory=list,
+        default_factory=set,
         comment="The list of any observation IDs used to create this track, even if dropped.",
     )
     track_uuid: Mapped[UUID] = mapped_column(
@@ -266,7 +266,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
             points=points,
             node_id=points[0].node_id,
             algorithm=self.algorithm,
-            observation_ids=[p.observation_id for p in points],  # type: ignore
+            observation_ids={p.observation_id for p in points},  # type: ignore
         )
 
 
@@ -393,7 +393,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             points=weighted_points,
             node_id=weighted_points[0].node_id,
             algorithm=self.algorithm,
-            observation_ids=[p.observation_id for p in points],  # type: ignore
+            observation_ids={p.observation_id for p in points},  # type: ignore
         )
 
 
