@@ -187,6 +187,7 @@ class Track(BaseORM):
     track_uuid: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
+        unique=True,
         default_factory=uuid.uuid4,
         comment="The UUID of the track within Sensemaker.",
     )

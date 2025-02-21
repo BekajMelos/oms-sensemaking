@@ -44,7 +44,9 @@ def upgrade() -> None:
             nullable=False,
             comment="The list of any observation IDs used to create this track, even if dropped.",
         ),
-        sa.Column("track_uuid", sa.UUID(), nullable=False, comment="The UUID of the track within Sensemaker."),
+        sa.Column(
+            "track_uuid", sa.UUID(), nullable=False, unique=True, comment="The UUID of the track within Sensemaker."
+        ),
         sa.PrimaryKeyConstraint("track_id", name=op.f("pk_tracks")),
     )
     op.execute("ALTER TABLE points ADD point_id SERIAL UNIQUE NOT NULL")

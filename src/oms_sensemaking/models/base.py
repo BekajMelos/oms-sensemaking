@@ -56,7 +56,7 @@ class BaseORM(MappedAsDataclass, DeclarativeBase):
                  instance was created as part of the call to this function.
         """
         # 1. find the model, if it exists
-        instance = session.execute(select(cls).filter_by(**kwargs)).scalars().one_or_none()
+        instance = session.execute(select(cls).filter_by(**kwargs)).unique().scalars().one_or_none()
 
         if instance:
             return instance, False
