@@ -396,8 +396,8 @@ def test_two_existing_incursions(
     mock_update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute1.id,
-            startTime=observational_node_region1.startTime,
-            endTime=observational_node_region1.endTime,
+            valueStart=observational_node_region1.startTime,
+            valueEnd=observational_node_region1.endTime,
         )
     )
     mock_update_activity.assert_called_with(
@@ -443,8 +443,8 @@ def test_existing_incursion_nonoverlapping_time(
     mock_update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute2.id,
-            startTime=attribute2.valueStart,
-            endTime=observational_node_region1.endTime,
+            valueStart=attribute2.valueStart,
+            valueEnd=observational_node_region1.endTime,
         )
     )
     mock_update_activity.assert_called_with(

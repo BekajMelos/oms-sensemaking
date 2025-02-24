@@ -190,7 +190,9 @@ class Incursion(BaseRule):
 
         # Update start/end times of incursion attribute
         updated_attribute_input = UpdateAttributeInput(
-            id=existing_incursion_attribute.id, startTime=inc_attr.start_time, endTime=inc_attr.end_time.isoformat()
+            id=existing_incursion_attribute.id,
+            valueStart=inc_attr.start_time.isoformat(),
+            valueEnd=inc_attr.end_time.isoformat()
         )
         oms_client.update_attribute(updated_attribute_input)
 
