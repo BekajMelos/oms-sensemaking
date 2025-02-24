@@ -1,7 +1,7 @@
 """Application configuration."""
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
@@ -189,7 +189,7 @@ class Settings(BaseSettings):
     db_user: str = Field("appuser", description="Database user.")
     db_password: str = Field("password", description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
-    db_uri: Optional[str] = Field(
+    db_uri: str | None = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
     )
     db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
@@ -296,7 +296,7 @@ class Settings(BaseSettings):
                                            description="Relationship IRI for resolution sensemaker suggestions")
     resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    duplicate_facility_iris: List[str] = Field(
+    duplicate_facility_iris: list[str] = Field(
         [
             "https://foundry.ai.mil/MIDB_GST/v1/BE_Number",
             "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
@@ -331,13 +331,13 @@ class Settings(BaseSettings):
 
     @field_validator("db_uri", mode="before")
     @classmethod
-    def db_connection(cls, field_value: Optional[str], info: ValidationInfo) -> str:
+    def db_connection(cls, field_value: str | None, info: ValidationInfo) -> str:
         """Validate database connection."""  # pylint: disable=too-many-function-args, no-self-argument
         return cls.assemble_db_connection(field_value, info.data, "db_")
 
     @classmethod
     def assemble_db_connection(
-        cls, field_value: Optional[str], values: Dict[str, Any], settings_prefix: str = ""
+        cls, field_value: str | None, values: dict[str, Any], settings_prefix: str = ""
     ) -> str:
         """
         Validate db connection.

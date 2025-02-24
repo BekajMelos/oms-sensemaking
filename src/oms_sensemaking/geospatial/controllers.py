@@ -5,7 +5,6 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
-from typing import Optional
 from uuid import UUID, uuid4
 
 from dateutil.parser import isoparse
@@ -38,7 +37,7 @@ class GeospatialSensemakerController(SensemakerController):
         super().__init__(event_consumer)
 
         # initialize buffer
-        self.buffer: dict[UUID, Optional[datetime]] = {}
+        self.buffer: dict[UUID, datetime | None] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
@@ -93,7 +92,7 @@ class GeospatialSensemakerController(SensemakerController):
         :return: True if the object event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
-        point: Optional[Point] = None
+        point: Point | None = None
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
@@ -102,7 +101,7 @@ class GeospatialSensemakerController(SensemakerController):
             return False
 
         # extract info from OMS via API calls
-        oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
+        oms_obs: ObservationObservation | None = self.get_oms_observation(event.objectId)
 
         # we expect an observation. If one doesn't exist, we can ignore the point.
         if not oms_obs:
@@ -215,7 +214,7 @@ class GeospatialSensemakerController(SensemakerController):
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
 
-    def get_oms_observation(self, observation_id: UUID) -> Optional[ObservationObservation]:
+    def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
         Given an OMS Observation ID, get the OMS Observation.
 

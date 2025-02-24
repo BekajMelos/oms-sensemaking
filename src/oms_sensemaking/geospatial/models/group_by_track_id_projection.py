@@ -1,13 +1,12 @@
 """Provides GroupByTrackIdProjection model."""
 
-from typing import List
 from uuid import UUID
 
 
 class GroupByTrackIdProjection:
     """Represents a track and it's bookends."""
 
-    def __init__(self, track_uuid: UUID, track_bookends: List[str]):
+    def __init__(self, track_uuid: UUID, track_bookends: list[str]):
         """
         Create a new instance of GroupByTrackIdProject.
 

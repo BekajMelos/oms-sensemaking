@@ -5,10 +5,10 @@ import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from functools import cached_property, reduce
 from operator import mul
-from typing import Iterable, Optional, Union
 
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
@@ -61,7 +61,7 @@ class OmsGeoMixin(MappedAsDataclass):
         comment="The 2D location of the point.",
     )
 
-    altitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="The altitude of the point.")
+    altitude: Mapped[float | None] = mapped_column(Float, nullable=True, comment="The altitude of the point.")
 
     @hybrid_property
     def geohash(self):
@@ -418,7 +418,7 @@ def weighted_average(values: Iterable[int | float], weights: Iterable[int | floa
     return sum(v * w for v, w in zip(values, weights, strict=True)) / sum(weights)
 
 
-def get_track(db: Session, track_uuid: Union[str, uuid.UUID]) -> Track:
+def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
     """
     Get track for a given track uuid.
 

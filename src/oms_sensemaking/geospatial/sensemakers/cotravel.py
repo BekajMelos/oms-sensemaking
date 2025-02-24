@@ -5,7 +5,6 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import List, Optional
 from uuid import UUID, uuid4
 
 from oms_sdk.generated.generated_graphql_client.client import (
@@ -162,7 +161,7 @@ class Colocation:
 
 
 class CotravelOmsPublisher(OmsPublisher):
-    def format_nodes(self, track: Track, cotravels: List[Cotravel]) -> list[CreateNodeInput]:
+    def format_nodes(self, track: Track, cotravels: list[Cotravel]) -> list[CreateNodeInput]:
         """
         Format Node Objects to publish to OMS
 
@@ -189,7 +188,7 @@ class CotravelOmsPublisher(OmsPublisher):
 
         return formatted_nodes
 
-    def format_relationships(self, track: Track, cotravels: List[Cotravel]) -> list[CreateRelationshipInput]:
+    def format_relationships(self, track: Track, cotravels: list[Cotravel]) -> list[CreateRelationshipInput]:
         """
         Format Relationships Objects to publish to OMS
 
@@ -232,7 +231,7 @@ class CotravelOmsPublisher(OmsPublisher):
 
         return formatted_relationships
 
-    def format_attributes(self, track: Track, cotravels: List[Cotravel]) -> list[CreateAttributeInput]:
+    def format_attributes(self, track: Track, cotravels: list[Cotravel]) -> list[CreateAttributeInput]:
         """
         Format Attribute Objects to publish to OMS
 
@@ -319,7 +318,7 @@ class CotravelSensemaker(Sensemaker):
             )
 
             # Create colocations from track entries
-            match_points: List[Colocation] = [
+            match_points: list[Colocation] = [
                 Colocation(
                     data.node_id,
                     db_point.node_id,
@@ -445,7 +444,7 @@ class CotravelSensemaker(Sensemaker):
             )
 
         completed: list[Cotravel] = []
-        to_add_to: Optional[PotentialMatch] = None
+        to_add_to: PotentialMatch | None = None
 
         for colocation in colocations:
             if to_add_to:
@@ -502,7 +501,7 @@ class CotravelSensemaker(Sensemaker):
 
     # TODO maybe move to utility
     @staticmethod
-    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> List[Point]:
+    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> list[Point]:
         """
         Return points within provided time bounds.
 

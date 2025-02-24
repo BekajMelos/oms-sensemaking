@@ -2,7 +2,6 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional
 
 from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.enums import Action
@@ -63,9 +62,8 @@ class ResolutionSensemakerController(SensemakerController):
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
         if isinstance(self.event_consumer, SQSListener):
-
             # extract info from OMS via API calls
-            oms_attr: Optional[AttributeAttribute] = self.oms_crud_tool.get_attribute(event.objectId)
+            oms_attr: AttributeAttribute | None = self.oms_crud_tool.get_attribute(event.objectId)
             if not oms_attr:
                 return True
 

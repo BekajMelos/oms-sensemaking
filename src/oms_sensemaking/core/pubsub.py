@@ -2,11 +2,12 @@
 
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from queue import Queue
 from threading import Thread
-from typing import Any, Callable, Optional
+from typing import Any
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 SHUTDOWN_EVENT: str = "shutdown"
@@ -17,7 +18,7 @@ class PubSubEvent:
     """Represents a simple event."""
 
     event_type: str
-    data: Optional[Any] = None
+    data: Any | None = None
 
 
 class PubSub:
@@ -73,7 +74,7 @@ class PubSub:
 
         return False
 
-    def publish(self, event_type: str, data: Optional[Any] = None) -> None:
+    def publish(self, event_type: str, data: Any | None = None) -> None:
         """
         Publish an event to the message queue.
 

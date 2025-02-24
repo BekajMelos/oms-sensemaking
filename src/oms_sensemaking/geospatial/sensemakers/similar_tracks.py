@@ -5,7 +5,7 @@ import uuid
 from collections import defaultdict
 from datetime import timedelta
 from queue import PriorityQueue
-from typing import Any, List, Set
+from typing import Any
 
 from geoalchemy2.types import Geography
 from geolib import geohash
@@ -96,7 +96,7 @@ class SimilarTracksSensemaker(Sensemaker):
         Primary method to obtain N-most similar track objects to the track provided.
 
         :param data: Track object to detect cotravels on
-        :return: List[PotentialMatch] list of TopSimilar tracks
+        :return: list[PotentialMatch] list of TopSimilar tracks
         """
         LOGGER.debug(f"Looking for similar tracks to {data.node_id}")
 
@@ -104,11 +104,11 @@ class SimilarTracksSensemaker(Sensemaker):
 
         first: Point = data.points[0]
         last: Point = data.points[-1]
-        ref_track_geohash_set: Set[str] = self.get_buffered_geohash_set(data.points)
+        ref_track_geohash_set: set[str] = self.get_buffered_geohash_set(data.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
         LOGGER.debug(f"Reference track has first {first} and last {last} points")
-        similar_track_groups: List[GroupByTrackIdProjection] = self.query_for_similar_tracks(
+        similar_track_groups: list[GroupByTrackIdProjection] = self.query_for_similar_tracks(
             first.coordinates, last.coordinates, SETTINGS.within_meters
         )
 
@@ -139,7 +139,7 @@ class SimilarTracksSensemaker(Sensemaker):
 
     @staticmethod
     def determine_jaccard_similarity(
-        ref_track_geohash_set: Set[str], eval_track_geohash_set: Set[str], track_uuid: uuid.UUID
+        ref_track_geohash_set: set[str], eval_track_geohash_set: set[str], track_uuid: uuid.UUID
     ) -> ComparisonResult:
         """
         Determine the Jaccard similairty between two track geohash sets.
@@ -169,7 +169,7 @@ class SimilarTracksSensemaker(Sensemaker):
             return get_track(db, group_projection.track_uuid)
 
     @staticmethod
-    def get_buffered_geohash_set(points: List[Point]) -> Set[str]:
+    def get_buffered_geohash_set(points: list[Point]) -> set[str]:
         """
         Obtain a bufferedGeoHash set from the points provided.
 
@@ -184,7 +184,7 @@ class SimilarTracksSensemaker(Sensemaker):
         :param points: list of track points
         :return: Set of geohashes
         """
-        buffered_geohash_set: Set[str] = set()
+        buffered_geohash_set: set[str] = set()
 
         for point in points:
             # reduce precision of the geohash by one to generate set for comparison to expand range for 'similar' tracks
@@ -200,8 +200,8 @@ class SimilarTracksSensemaker(Sensemaker):
 
     @staticmethod
     def query_for_similar_tracks(
-        first: List[float], last: List[float], query_distance: float
-    ) -> List[GroupByTrackIdProjection]:
+        first: list[float], last: list[float], query_distance: float
+    ) -> list[GroupByTrackIdProjection]:
         """
         Primary method to obtain the other tracks that have either the same start or end point provided.
 

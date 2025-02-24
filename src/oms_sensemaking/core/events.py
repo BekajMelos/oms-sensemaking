@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Event, Thread
 from time import sleep
-from typing import Optional, Protocol
+from typing import Protocol
 from uuid import UUID, uuid4
 
 import boto3
@@ -76,7 +76,7 @@ class EventFilter(Protocol):
 class ObjectEventConsumer(ABC):
     """Provides a client interface to a data source (i.e. a data producer)."""
 
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(self, handle_event: EVENT_HANDLER | None = None):
         """
         Create a new instances of EventConsumer.
 
@@ -85,12 +85,12 @@ class ObjectEventConsumer(ABC):
         :param handle_event: The event handler (i.e. a Callable with the event as a single argument).
         """
         #: An event handler callable that accepts a reference to this consumer and the event.
-        self.handle_event: Optional[EVENT_HANDLER] = handle_event
+        self.handle_event: EVENT_HANDLER | None = handle_event
 
         #: Indicates if the consumer is running (i.e. cleared) or stopped (i.e. set).
         self.stopped: Event = Event()
 
-        self.__data_consumer: Optional[Thread] = None
+        self.__data_consumer: Thread | None = None
 
     def start(self) -> None:
         """
@@ -129,8 +129,8 @@ class BaseSQSListener(ObjectEventConsumer):
         self,
         name: str,
         queue_url: str,
-        handle_event: Optional[EVENT_HANDLER] = None,
-        event_filter: Optional[EventFilter] = None,
+        handle_event: EVENT_HANDLER | None = None,
+        event_filter: EventFilter | None = None,
     ):
         """Create a new instance of SQSListener."""
         super().__init__(handle_event)
@@ -167,8 +167,8 @@ class SQSListener(BaseSQSListener):
         self,
         name: str,
         queue_url: str,
-        handle_event: Optional[EVENT_HANDLER] = None,
-        event_filter: Optional[EventFilter] = None,
+        handle_event: EVENT_HANDLER | None = None,
+        event_filter: EventFilter | None = None,
     ):
         """Create a new instance of SqsObjectEventConsumer."""
         super().__init__(name, queue_url, handle_event, event_filter)
@@ -231,7 +231,7 @@ class SQSListener(BaseSQSListener):
 class DummyObjectEventConsumer(ObjectEventConsumer):
     """A simple object event consumer for testing purposes."""
 
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(self, handle_event: EVENT_HANDLER | None = None):
         """Create a new instance of DummyObjectEventConsumer."""
         super().__init__(handle_event)
 
@@ -252,7 +252,7 @@ class DummyObjectEventConsumer(ObjectEventConsumer):
 class NoOpEventConsumer(ObjectEventConsumer):
     """A simple object event consumer intended as a placeholder."""
 
-    def __init__(self, handle_event: Optional[EVENT_HANDLER] = None):
+    def __init__(self, handle_event: EVENT_HANDLER | None = None):
         """Create a new instance ofr NoOpEventConsumer."""
         super().__init__(handle_event)
 
