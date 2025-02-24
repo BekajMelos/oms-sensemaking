@@ -265,7 +265,7 @@ def test_new_incursion_region1(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
             nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -280,7 +280,7 @@ def test_new_incursion_region1(
             nodeId=incurring_object.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(areas_of_interest[0]),
+            geometry=areas_of_interest[0],
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
@@ -318,7 +318,7 @@ def test_new_incursion_region2(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[1])),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
             nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -333,7 +333,7 @@ def test_new_incursion_region2(
             nodeId=incurring_object.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(areas_of_interest[1]),
+            geometry=areas_of_interest[1],
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
@@ -380,7 +380,7 @@ def test_two_existing_incursions(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
             nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )

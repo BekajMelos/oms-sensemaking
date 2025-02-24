@@ -130,7 +130,7 @@ class Incursion(BaseRule):
                 attributeIri=SETTINGS.inference_incursion_attribute_iri,
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
-                geometry=GeoQuery(queryGeoJson=json.dumps(geo_of_interest)),
+                geometry=GeoQuery(queryGeoJson=geo_of_interest),
                 nodeIds=[incurring_object.id],
                 tags=SETTINGS.incursion_tags,
             )
@@ -209,7 +209,7 @@ class Incursion(BaseRule):
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(geo_of_interest),
+            geometry=geo_of_interest,
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
