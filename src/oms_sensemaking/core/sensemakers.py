@@ -20,7 +20,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipInput,
 )
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.sensemaking import Finding, FindingType

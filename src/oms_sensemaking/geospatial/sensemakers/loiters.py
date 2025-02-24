@@ -13,8 +13,8 @@ from oms_sdk.generated.generated_graphql_client.client import (
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from shapely import LineString
 
+from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
@@ -62,7 +62,7 @@ class Loiter(FindingBase):
 
     def get_acm(self) -> dict:
         """Rollup the acm from the points"""
-        return get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
+        return aac_client.get_acm_rollup([{"ACM": point.acm} for point in self.processed_points])
 
     def __str__(self):
         return str(self.to_dict())

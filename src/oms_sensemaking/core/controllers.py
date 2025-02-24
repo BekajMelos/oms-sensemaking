@@ -1,17 +1,18 @@
 """Sensemaker Controllers."""
 
 import logging
-from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
 from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class SensemakerController(ABC):
-    """Abstract base class for sensemaker controllers."""
+class SensemakerController:
+    """Base class for sensemaker controllers."""
 
     def __init__(self, event_consumer: ObjectEventConsumer, *args, **kwargs) -> None:
         """
@@ -42,6 +43,7 @@ class SensemakerController(ABC):
         self.event_consumer: ObjectEventConsumer = event_consumer
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
+        self.oms_crud_tool: OmsCrudTool = OmsCrudTool()
 
         self.stopped.set()  # start off in the "stopped" state
 
@@ -101,7 +103,6 @@ class SensemakerController(ABC):
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
-    @abstractmethod
     def handle_event(self, event: ObjectEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -110,9 +111,31 @@ class SensemakerController(ABC):
         data to the sensemakers.
 
         :param event: The event to process.
-        :return: True if the object event was successfully processed, False otherwise.
         """
-        raise NotImplementedError()
+
+        LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
+
+        # extract info from OMS via API calls
+        oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+        if not oms_obj:
+            return True
+
+        try:
+            with ThreadPoolExecutor() as executor:
+                futures = []
+                for sensemaker in self._registry.values():
+                    future = executor.submit(sensemaker.execute, oms_obj)
+                    futures.append(future)
+
+                # make sure errors are caught
+                for future in as_completed(futures):
+                    _ = future.result()
+
+                executor.shutdown(wait=True)
+        except Exception:
+            LOGGER.exception(f"Error encountered while processing object {event.objectId}")
+
+        return True
 
 
 def run_controller(controller: SensemakerController) -> None:

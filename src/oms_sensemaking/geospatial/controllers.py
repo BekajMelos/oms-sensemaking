@@ -8,17 +8,13 @@ from threading import Event, Timer
 from uuid import UUID, uuid4
 
 from dateutil.parser import isoparse
-from oms_sdk import get_generated_graphql_client
-from oms_sdk.generated.generated_graphql_client.client import Client
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
-from oms_sdk.generated.generated_graphql_client.input_types import IdQuery
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer, SQSListener
-from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
@@ -46,12 +42,6 @@ class GeospatialSensemakerController(SensemakerController):
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
         self.confidence_weight_map = SETTINGS.confidence_weight_map
-
-        # OMS GraphQL client
-        self.oms_client: Client = get_generated_graphql_client(
-            SETTINGS.omsb_url, SETTINGS.user_dn, SETTINGS.cert_path, SETTINGS.key_path
-        )
-        self.oms_crud_tool = OmsCrudTool()
 
     def start(self) -> None:
         """Start the controller."""
@@ -96,10 +86,6 @@ class GeospatialSensemakerController(SensemakerController):
 
         LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
 
-        if not isinstance(self.event_consumer, SQSListener):
-            LOGGER.warning("No ObjectEventConsumer found.")
-            return False
-
         # extract info from OMS via API calls
         oms_obs: ObservationObservation | None = self.get_oms_observation(event.objectId)
 
@@ -107,11 +93,15 @@ class GeospatialSensemakerController(SensemakerController):
         if not oms_obs:
             return True
 
-        # set the current track_uuid to the track linked to the node (vehicle) in question or a new track_uuid
+        # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
+        # we need to create a track_id for it so we can add future points for that vehicle/track
+        if oms_obs.nodeId not in self.node_track_mapping:
+            self.node_track_mapping[oms_obs.nodeId] = uuid4()
+        # set the current track_id to the track linked to the node (vehicle) in question
         track_uuid = self.node_track_mapping[oms_obs.nodeId]
 
         try:
-            node = self.oms_client.node(query=IdQuery(id=oms_obs.nodeId))
+            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
             node_version = node.version
         except AttributeError:
             LOGGER.warning("No node found. Unable to process observation.")
@@ -222,7 +212,7 @@ class GeospatialSensemakerController(SensemakerController):
         :return: None if no observation exists, or the OMS Observation
         """
         # get observation
-        oms_obs: ObservationObservation = self.oms_client.observation(IdQuery(id=observation_id))
+        oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
         # Filter observations
         # Only process if there is an observation and it has a geojson point

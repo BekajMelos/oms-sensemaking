@@ -16,9 +16,8 @@ from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Conf
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, join, select
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.acm import get_acm_rollup
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
@@ -119,7 +118,7 @@ class Cotravel(FindingBase):
         """Rollup the acm from the points"""
         track1_acms = [point.acm for point in self.track1.points]
         track2_acms = [point.acm for point in self.track2.points]
-        return get_acm_rollup([{"ACM": acm} for acm in (track1_acms + track2_acms)])
+        return aac_client.get_acm_rollup([{"ACM": acm} for acm in (track1_acms + track2_acms)])
 
     def to_geojson(self) -> dict:
         """Geojson representation of the cotravel geometry"""

@@ -28,9 +28,8 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from oms_sensemaking.clients import db_session
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.acm import get_acm_rollup
 
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, UtcDateTime
 
@@ -331,7 +330,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 # TODO: Deal with altitudes
                 # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
                 LOGGER.info(f"Averaging {len(bin_points)} points: {', '.join(str(p.coordinates) for p in bin_points)}")
-                acm_rollup = get_acm_rollup([{"ACM": point.acm} for point in bin_points])
+                acm_rollup = aac_client.get_acm_rollup([{"ACM": point.acm} for point in bin_points])
                 point_dict = {
                     "node_id": bin_points[0].node_id,
                     "node_version": bin_points[0].node_version,

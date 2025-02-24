@@ -1,0 +1,45 @@
+import logging
+import ssl
+from typing import List, Optional
+
+import httpx
+
+from oms_sensemaking.config import SETTINGS
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+class AacClient:
+    """AAC Client for communicating with the AAC Service"""
+
+    def __init__(self, cert_path: Optional[str], key_path: Optional[str]) -> None:
+        """
+        Construct the client for communicating to an AAC Service v2.x
+
+        For https connections with two way ssl, the client can be configured in one of two ways
+        * set the cert_path with a .pem file,
+        * set the cert_path with a .crt file and the key_path with a .key file
+
+        For http connections, do not set cert_path or key_path
+
+        :param cert_path: For two-way ssl, the path to the .pem or .crt file
+
+        :param key_path: For two-way ssl, the path to the .key file
+        """
+
+        self._ctx = ssl.create_default_context()
+        if cert_path and key_path:
+            LOGGER.debug("AAC Client cert_path and key_path detected")
+            self._ctx.load_cert_chain(f"{cert_path}", f"{key_path}")
+        elif cert_path:
+            LOGGER.debug("AAC Client cert_path detected")
+            self._ctx.load_cert_chain(f"{cert_path}")
+        else:
+            LOGGER.debug("AAC Client certs not detected")
+
+    def get_acm_rollup(self, acms: List[dict]) -> dict:
+        """Use AAC to rollup a list of ACMs"""
+        LOGGER.debug("Getting ACM Rollup")
+        client = httpx.Client(verify=self._ctx)
+        response = client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
+        return response.json()["RollupACM"]

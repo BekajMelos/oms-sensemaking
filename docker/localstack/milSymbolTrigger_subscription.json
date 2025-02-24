@@ -1,0 +1,4 @@
+{
+  "RawMessageDelivery": "true",
+  "FilterPolicy": "{\"objectType\": [\"NODE\"], \"eventType\": [\"CREATE\"]}"
+}

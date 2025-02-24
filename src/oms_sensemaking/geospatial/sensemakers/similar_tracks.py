@@ -13,7 +13,7 @@ from sqlalchemy import and_, desc, func, join, select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.sql import cast
 
-from oms_sensemaking.clients import db_engine, db_session
+from oms_sensemaking.clients.instances import db_engine, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_id_projection import GroupByTrackIdProjection
