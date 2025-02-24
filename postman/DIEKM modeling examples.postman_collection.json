@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "78315ea5-dea1-417d-9bf1-e143b0f9870f",
+		"_postman_id": "54abac2a-f9d9-4e13-89e2-e23782f8d536",
 		"name": "DIEKM modeling examples",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "33002351"
@@ -765,25 +765,25 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"// if (pm.collectionVariables.has(\"sourceIds\")) {",
-									"//     let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
+									"if (pm.collectionVariables.has(\"sourceIds\")) {",
+									"    let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
 									"",
-									"//     if (sourceIds.length > 0) {",
-									"//         const sourceId = sourceIds.shift();",
-									"//         pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
-									"//         pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
-									"//     } else {",
-									"//         skip()",
-									"//     }",
-									"// } else {",
-									"//     skip()",
-									"// }",
+									"    if (sourceIds.length > 0) {",
+									"        const sourceId = sourceIds.shift();",
+									"        pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
+									"        pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
 									"",
-									"// function skip() {",
-									"//     pm.execution.skipRequest()",
-									"//     pm.collectionVariables.unset(\"sourceIds\")",
-									"//     pm.collectionVariables.unset(\"fedGovRepSourceId\")",
-									"// }"
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"sourceIds\")",
+									"    pm.collectionVariables.unset(\"fedGovRepSourceId\")",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1368,7 +1368,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Alpha\"\r\n            classIri: \"{{organizationIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Alpha\"\r\n            classIri: \"{{ORGANIZATION_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1412,7 +1412,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Beta\"\r\n            classIri: \"{{organizationIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Beta\"\r\n            classIri: \"{{ORGANIZATION_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1456,7 +1456,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Delta\"\r\n            classIri: \"{{organizationIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Delta\"\r\n            classIri: \"{{ORGANIZATION_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1500,7 +1500,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Gamma\"\r\n            classIri: \"{{organizationIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battalion Gamma\"\r\n            classIri: \"{{ORGANIZATION_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1544,7 +1544,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Tank Alpha\"\r\n            classIri: \"{{equipmentItemIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Tank Alpha\"\r\n            classIri: \"{{EQUIPMENT_ITEM_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1588,7 +1588,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            \r\n            classIri: \"{{geospatialLocationIri}}\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeAId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [142.368976, 41.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
+								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            \r\n            classIri: \"{{GEOSPATIAL_LOCATION_IRI}}\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeAId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [142.368976, 41.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
 								"variables": "{\n    \"nodeAId\": \"{{tankAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -1632,7 +1632,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Tank Delta\"\r\n            classIri: \"{{equipmentItemIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Tank Delta\"\r\n            classIri: \"{{EQUIPMENT_ITEM_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1676,7 +1676,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeBId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            classIri: \"{{geospatialLocationIri}}\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeBId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
+								"query": "mutation ($nodeBId: UUID!, $af01SourceId: UUID!){\r\n\tcreateObservation(\r\n        input: {\r\n            classIri: \"{{GEOSPATIAL_LOCATION_IRI}}\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            confidence: UNKNOWN\r\n            sourceId: $af01SourceId\r\n            nodeId: $nodeBId\r\n            geometry: {\r\n                type: \"Point\",\r\n                coordinates: [141.368976, 40.683134]\r\n            }\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        classIri\r\n    }\r\n}",
 								"variables": "{\n    \"nodeBId\": \"{{tankDeltaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -1720,7 +1720,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battleship\"\r\n            classIri: \"{{equipmentItemIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Battleship\"\r\n            classIri: \"{{EQUIPMENT_ITEM_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1764,7 +1764,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Ford Carrier\"\r\n            classIri: \"{{equipmentItemIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Ford Carrier\"\r\n            classIri: \"{{EQUIPMENT_ITEM_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1808,7 +1808,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Newport News Shipyard\"\r\n            classIri: \"{{fixedStructureIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Newport News Shipyard\"\r\n            classIri: \"{{FIXED_STRUCTURE_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1852,7 +1852,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Hangar Alpha\"\r\n            classIri: \"{{fixedStructureIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Hangar Alpha\"\r\n            classIri: \"{{FIXED_STRUCTURE_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1896,7 +1896,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Continuant\"\r\n            classIri: \"{{continuantIri}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
+								"query": "mutation {\r\n\tcreateNode(\r\n        input: {\r\n            name: \"{{myPrefix}} Continuant\"\r\n            classIri: \"{{CONTINUANT_IRI}}\"\r\n            tier: PRIMARY\r\n            isNso: false\r\n            allegiance: \"US\"\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        guideId\r\n        name\r\n        tier\r\n        isNso\r\n        classIri\r\n        ifcCodes\r\n        allegiance\r\n    }\r\n}",
 								"variables": ""
 							}
 						},
@@ -1940,7 +1940,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{controlledByIri}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{CONTROLLED_BY_IRI}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
 								"variables": "{\n    \"nodeAId\": \"{{battalionAlphaId}}\",\n    \"nodeBId\": \"{{tankAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -1984,7 +1984,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{controlledByIri}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"controlled by\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{CONTROLLED_BY_IRI}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
 								"variables": "{\n    \"nodeAId\": \"{{battalionDeltaId}}\",\n    \"nodeBId\": \"{{tankDeltaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2028,7 +2028,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"garrisoned in\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{garrisonedInIri}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\r\n\tcreateRelationship(\r\n        input: {\r\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\r\n            name: \"garrisoned in\",\r\n            startNodeId: $nodeBId,\r\n            endNodeId: $nodeAId,\r\n            sourceId: $af01SourceId\r\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\r\n            confidence: HIGH,\r\n            objectPropertyIri: \"{{GARRISONED_IN_IRI}}\"\r\n        }\r\n  \t) {\r\n        id\r\n        version\r\n        acm\r\n        tags\r\n        name\r\n        startNodeId\r\n        endNodeId\r\n        confidence\r\n        objectPropertyIri\r\n        objectPropertyName\r\n    }\r\n}",
 								"variables": "{\n    \"nodeAId\": \"{{fordCarrierId}}\",\n    \"nodeBId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2071,7 +2071,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeAId,\n            endNodeId: $nodeBId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{controlledByIri}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeAId,\n            endNodeId: $nodeBId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{CONTROLLED_BY_IRI}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"nodeBId\": \"{{battalionAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2114,7 +2114,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controls\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{controlsIri}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controls\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{CONTROLS_IRI}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{hangarId}}\",\n    \"nodeBId\": \"{{battalionAlphaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2157,7 +2157,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeAId,\n            endNodeId: $nodeBId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{hasContinuantPartIri}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeAId,\n            endNodeId: $nodeBId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{HAS_CONTINUANT_PART_IRI}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"nodeBId\": \"{{continuantId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2200,7 +2200,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{continuantPartOfIri}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            name: \"controlled by\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{CONTINUANT_PART_OF_IRI}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{hangarId}}\",\n    \"nodeBId\": \"{{continuantId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2237,7 +2237,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{functionIri}}\"\n            attributeValue: \"{{myPrefix}} Function\"\n            attributeDisplayValue: \"Test Function\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{FUNCTION_IRI}}\"\n            attributeValue: \"{{myPrefix}} Function\"\n            attributeDisplayValue: \"Test Function\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2274,7 +2274,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{operationalStatusIri}}\"\n            attributeValue: \"{{myPrefix}} Status\"\n            attributeDisplayValue: \"Test Status\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
+								"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{OPERATIONAL_STATUS_IRI}}\"\n            attributeValue: \"{{myPrefix}} Status\"\n            attributeDisplayValue: \"Test Status\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
 								"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 							}
 						},
@@ -2323,182 +2323,6 @@
 			"key": "myTestTag",
 			"value": "",
 			"type": "string"
-		},
-		{
-			"key": "usAFProviderId",
-			"value": ""
-		},
-		{
-			"key": "fedGovRepSourceId",
-			"value": ""
-		},
-		{
-			"key": "battalionAlphaId",
-			"value": ""
-		},
-		{
-			"key": "battalionBetaId",
-			"value": ""
-		},
-		{
-			"key": "battalionDeltaId",
-			"value": ""
-		},
-		{
-			"key": "battalionGammaId",
-			"value": ""
-		},
-		{
-			"key": "tankAlphaId",
-			"value": ""
-		},
-		{
-			"key": "tankAlphaLocation1",
-			"value": ""
-		},
-		{
-			"key": "tankDeltaId",
-			"value": ""
-		},
-		{
-			"key": "tankDeltaLocation1",
-			"value": ""
-		},
-		{
-			"key": "battleshipId",
-			"value": ""
-		},
-		{
-			"key": "fordCarrierId",
-			"value": ""
-		},
-		{
-			"key": "shipyardId",
-			"value": ""
-		},
-		{
-			"key": "hangarId",
-			"value": ""
-		},
-		{
-			"key": "continuantId",
-			"value": ""
-		},
-		{
-			"key": "allegianceRelationshipId",
-			"value": ""
-		},
-		{
-			"key": "originatorIds",
-			"value": ""
-		},
-		{
-			"key": "relationshipIds",
-			"value": ""
-		},
-		{
-			"key": "relationshipId",
-			"value": ""
-		},
-		{
-			"key": "attributeIds",
-			"value": ""
-		},
-		{
-			"key": "attributeId",
-			"value": ""
-		},
-		{
-			"key": "observationIds",
-			"value": ""
-		},
-		{
-			"key": "observationId",
-			"value": ""
-		},
-		{
-			"key": "nodeIds",
-			"value": ""
-		},
-		{
-			"key": "nodeId",
-			"value": ""
-		},
-		{
-			"key": "sourceIds",
-			"value": ""
-		},
-		{
-			"key": "providerIds",
-			"value": ""
-		},
-		{
-			"key": "providerId",
-			"value": ""
-		},
-		{
-			"key": "organizationIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "equipmentItemIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "fixedStructureIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "continuantIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "controlledByIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "controlsIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "garrisonedInIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "hasContinuantPartIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "continuantPartOfIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "functionIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "operationalStatusIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "geospatialLocationIri",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "botOriginatorId",
-			"value": ""
 		}
 	]
 }
