@@ -238,5 +238,7 @@ class Incursion(BaseRule):
         if not obs:
             return False
 
-        activities = obs.activities.data
+        activity_query = ActivityQuery(observationIds=[obs.id])
+        activities = oms_client.get_activities(activity_query).data
+
         return any(activity.name == "Incursion" for activity in activities)
