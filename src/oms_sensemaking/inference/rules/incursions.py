@@ -10,7 +10,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
-    IdQuery,
     NodeNode,
     NodesNodesData,
     ObservationObservation,
@@ -112,7 +111,7 @@ class Incursion(BaseRule):
 
         obs = rule_context.observation
         # Fetch node that observation points to
-        incurring_object = oms_client.get_node(IdQuery(id=obs.nodeId))
+        incurring_object = oms_client.get_node(obs.nodeId)
         geo = obs.geometry
 
         # Check if observation occurred in an area of interest

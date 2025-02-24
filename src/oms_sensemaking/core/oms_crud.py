@@ -156,8 +156,9 @@ class OmsCrudTool:
         attribute = self.oms_client.attribute(IdQuery(id=id))
         return attribute
 
-    def get_node(self, node_info: IdQuery) -> NodeNode:
-        node = self.oms_client.node(query=node_info)
+    def get_node(self, id: UUID) -> NodeNode:
+        """Get existing Node from OMS"""
+        node = self.oms_client.node(IdQuery(id=id))
         return node
 
     def get_observation(self, id: UUID) -> ObservationObservation:
