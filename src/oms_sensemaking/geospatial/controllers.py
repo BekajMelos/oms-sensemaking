@@ -16,7 +16,13 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import Point, TimeBinTrackWeaver, Track, TrackWeaverBase
+from oms_sensemaking.models.geo import (
+    Point,
+    TimeBinTrackWeaver,
+    Track,
+    TrackWeaverBase,
+    apply_common_sense_filters,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -33,7 +39,7 @@ class GeospatialSensemakerController(SensemakerController):
         super().__init__(event_consumer)
 
         # initialize buffer
-        self.buffer: dict[UUID, datetime | None] = {}
+        self.track_times: dict[UUID, datetime | None] = {}
         self.autoflush_enabled: Event = Event()
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
@@ -137,7 +143,7 @@ class GeospatialSensemakerController(SensemakerController):
         if point:
             with self.lock:
                 # we just received the point, so set the track_id time to now in the buffer
-                self.buffer[track_uuid] = now
+                self.track_times[track_uuid] = now
                 self.track_node_buffer[track_uuid].append(point)
             return True
         return False
@@ -149,9 +155,9 @@ class GeospatialSensemakerController(SensemakerController):
 
         with self.lock:
             # purge stale keys
-            self.buffer = {key: val for key, val in self.buffer.items() if val is not None}
+            self.track_times = {key: val for key, val in self.track_times.items() if val is not None}
 
-            for track_uuid, last_updated_at in self.buffer.items():
+            for track_uuid, last_updated_at in self.track_times.items():
                 if last_updated_at is None:
                     LOGGER.warning("Skipping Track(track_uuid=%s)", track_uuid)
                     continue
@@ -161,9 +167,13 @@ class GeospatialSensemakerController(SensemakerController):
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
                     with db_session() as db:
                         try:
-                            LOGGER.info(f"Track completed: {track_uuid}")
+                            points = self.track_node_buffer[track_uuid]
+                            if SETTINGS.apply_common_sense_filters:
+                                # Get the IRI for the node
+                                iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
+                                points = apply_common_sense_filters(points, iri)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
-                            weaved_track = self.track_weaver.execute(self.track_node_buffer[track_uuid])
+                            weaved_track = self.track_weaver.execute(points)
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
@@ -171,13 +181,12 @@ class GeospatialSensemakerController(SensemakerController):
                                 "observation_ids": weaved_track.observation_ids,
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
-                            LOGGER.debug(track.to_linestring())
+                            LOGGER.info(f"Track completed: {track_uuid}")
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
-                            self.buffer[track_uuid] = None
+                            self.track_times[track_uuid] = None
                             continue
-
                     try:
                         with ThreadPoolExecutor() as executor:
                             futures = []
@@ -193,7 +202,7 @@ class GeospatialSensemakerController(SensemakerController):
                     except Exception:
                         LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
                     finally:
-                        self.buffer[track_uuid] = None  # mark for removal
+                        self.track_times[track_uuid] = None  # mark for removal
                         for key, value in list(self.node_track_mapping.items()):
                             if value == track_uuid:
                                 del self.node_track_mapping[key]

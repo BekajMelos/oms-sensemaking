@@ -426,3 +426,118 @@ def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
     :return: A Track.
     """
     return db.execute(select(Track).filter_by(track_uuid=track_uuid)).unique().scalar_one()
+
+
+def apply_common_sense_filters(points: list[Point], iri: str) -> list[Point]:
+    """
+    Apply common sense filters to the track to identify any outlying points. Runs the following filters:
+    - <b>Teleportation</b>: Removes points that are likely the result of teleportation.
+    - <b>Altitude</b>: Removes points with negative or extreme altitude/altitude change.
+
+    :param track: The track to apply common sense filters to.
+    :param iri: The IRI of the object being tracked.
+    :return: The filtered track
+    """
+    from logging import getLogger
+
+    logger = getLogger(__name__)
+
+    if not SETTINGS.apply_common_sense_filters:
+        logger.info("Common sense filters are disabled. Skipping.")
+        return points
+
+    filtered_points = _filter_altitude_by_iri(_filter_teleportation(points), iri)
+    return filtered_points
+
+
+def _filter_teleportation(points: list[Point]) -> list[Point]:
+    """
+    Filter points that are likely the result of teleportation.
+
+    :param points: The list of points to filter teleport anomalies from.
+    :return: The filtered points. Points that are likely the result of teleportation have their weights assigned to 0.
+    """
+    from logging import getLogger
+
+    from geoalchemy2.functions import ST_Distance
+
+    logger = getLogger(__name__)
+
+    for i in range(1, len(points)):
+        # get the current and previous points
+        current_point = points[i]
+        prev_point = points[i - 1]
+
+        time_delta = current_point.detection_time - prev_point.detection_time
+        distance: float = ST_Distance(current_point.location, prev_point.location).scalar()
+        relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
+
+        # If the distance between two points is very large and the time between them is very small, it's likely that the
+        # object teleported. We don't want to include these points in the track, but we'll still keep them in the
+        # sensemaking db.
+        distance_exceeded = distance > SETTINGS.distance_threshold_meters
+        time_within_threshold = time_delta.total_seconds() < SETTINGS.time_threshold_seconds
+        velocity_within_threshold = 0 < relative_velocity < SETTINGS.relative_velocity_threshold_mps
+        if (distance_exceeded and time_within_threshold) or velocity_within_threshold:
+            logger.debug(
+                "Removing point %s due to teleportation: distance=%s, time_delta=%s",
+                current_point.observation_id,
+                distance,
+                time_delta,
+            )
+            points[i].weight *= 0
+    return points
+
+
+def _filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
+    """
+    Filter out points that drastically deviate in elevation.
+
+    :param track: The track to filter altitude discrepancies from.
+    :return: The filtered track.
+    """
+    from logging import getLogger
+
+    logger = getLogger(__name__)
+
+    if "aircraft" not in iri.lower():
+        logger.debug("Skipping altitude filtering for non-aircraft track.")
+        return points
+
+    for i in range(1, len(points)):
+        # get the current and previous points
+        current_point = points[i]
+        prev_point = points[i - 1]
+        # if either point doesn't have an altitude, skip this filter
+        if current_point.altitude is None or prev_point.altitude is None:
+            logger.debug("Skipping altitude filter for point %s", current_point.observation_id)
+            continue
+
+        # Check if the altitude is negative, zero, or exceeds the maximum altitude threshold.
+        if current_point.altitude < 0:
+            logger.debug(
+                "Removing point %s due to negative altitude: altitude=%s",
+                current_point.observation_id,
+                current_point.altitude,
+            )
+            points[i].weight *= 0
+            continue
+        elif current_point.altitude > SETTINGS.altitude_threshold_meters:
+            logger.debug(
+                "Removing point %s due to altitude exceeding maximum: altitude=%s",
+                current_point.observation_id,
+                current_point.altitude,
+            )
+            points[i].weight *= 0
+
+        # Check if the change in altitude between this point and the previous is large.
+        if abs(current_point.altitude - prev_point.altitude) > SETTINGS.altitude_deviation_threshold_meters:
+            logger.debug(
+                "Removing point %s due to altitude discrepancy: altitude=%s, prev_altitude=%s",
+                current_point.observation_id,
+                current_point.altitude,
+                prev_point.altitude,
+            )
+            points[i].weight *= 0
+
+    return points
