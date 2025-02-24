@@ -52,6 +52,7 @@ jobs:
           echo "APP_VERSION=$(source .venv/bin/activate && python -m setuptools_scm)" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
 
+      # see https://github.com/docker/metadata-action for examples
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -59,6 +60,7 @@ jobs:
           images: ${{ env.DOCKER_REGISTRY }}/aio4/dev/services/oms/oms-sensemaking
           tags: |
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,event=tag,value=${{ github.ref_name }},enable=true
 
       # Login against a Docker registry except on PR
       - name: Log into registry ${{ env.DOCKER_REGISTRY }}
