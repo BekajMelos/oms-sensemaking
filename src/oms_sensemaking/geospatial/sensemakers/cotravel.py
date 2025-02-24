@@ -313,8 +313,8 @@ class CotravelSensemaker(Sensemaker):
             db_points = self.get_points(
                 point_geohash_low,
                 data.node_id,
-                (time - MAX_LAG_LEAD_DURATION_SECONDS),
-                (time + MAX_LAG_LEAD_DURATION_SECONDS),
+                (time - timedelta(seconds=self.config["max_lag_lead_duration_seconds"])),
+                (time + timedelta(seconds=self.config["max_lag_lead_duration_seconds"])),
                 time,
             )
 

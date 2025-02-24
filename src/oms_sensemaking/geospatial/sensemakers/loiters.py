@@ -209,7 +209,7 @@ class LoiterSensemaker(Sensemaker):
             LOGGER.debug(f"Prospective Loiter: {point_geohash}: {potential_loiters}")
             for potential_loiter in potential_loiters:
                 time_diff = abs(potential_loiter.latest_time - potential_loiter.start_time)
-                if time_diff >= LOITER_MIN_TIME:
+                if time_diff >= timedelta(seconds=self.config["loiter_min_time"]):
                     # if craft loitered long enough
                     loiter_points: list[Point] = []
                     for point in data.points:
