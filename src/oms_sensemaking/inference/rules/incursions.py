@@ -21,9 +21,9 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
 )
 
-from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.tools.geo_tools import is_point_in_region
