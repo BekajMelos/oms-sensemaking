@@ -67,15 +67,15 @@ class IncursionTimeframe:
             # Check for observations between current observation end time and attribute start time
             observation_query = ObservationQuery(
                 nodeId=[incurring_object.id],
-                startTime=TimeQuery(gte=observation.endTime),
-                endTime=TimeQuery(lte=self.start_time.isoformat()),
+                startTime=TimeQuery(gt=observation.endTime),
+                endTime=TimeQuery(lt=self.start_time.isoformat()),
             )
         else:
             # Check for observations between attribute end time and current observation start time
             observation_query = ObservationQuery(
                 nodeId=[incurring_object.id],
-                startTime=TimeQuery(gte=self.end_time.isoformat()),
-                endTime=TimeQuery(lte=observation.startTime),
+                startTime=TimeQuery(gt=self.end_time.isoformat()),
+                endTime=TimeQuery(lt=observation.startTime),
             )
         observation_response = oms_client.get_observations(observation_query)
         part_of_existing_incursion = bool(not observation_response.data)

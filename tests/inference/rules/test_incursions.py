@@ -51,7 +51,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "incurring_object_id"
-    attr.geometry = json.dumps(areas_of_interest[0])
+    attr.geometry = areas_of_interest[0]
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     return attr
@@ -72,7 +72,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "incurring_object_id"
-    attr.geometry = json.dumps(areas_of_interest[0])
+    attr.geometry = areas_of_interest[0]
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     return attr
@@ -83,7 +83,7 @@ def observational_node_region1(mocker: MockerFixture):
     """
     Incoming observation
     """
-    geometry = {"coordinates": [-157.20314345121238, 20.32200240882949], "type": "Point"}
+    geometry = {"coordinates": [-155.6235, 19.7023], "type": "Point"}
 
     obs = mocker.Mock(spec=ObservationObservation)
     obs.id = "obs_id"
@@ -389,8 +389,8 @@ def test_two_existing_incursions(
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=[incurring_object.id],
-            startTime=TimeQuery(gte=attribute2.valueEnd),
-            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            startTime=TimeQuery(gt=attribute2.valueEnd),
+            endTime=TimeQuery(lt=observational_node_region1.startTime),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -436,8 +436,8 @@ def test_existing_incursion_nonoverlapping_time(
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=[incurring_object.id],
-            startTime=TimeQuery(gte=attribute2.valueEnd),
-            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            startTime=TimeQuery(gt=attribute2.valueEnd),
+            endTime=TimeQuery(lt=observational_node_region1.startTime),
         )
     )
     mock_update_attribute.assert_called_with(
