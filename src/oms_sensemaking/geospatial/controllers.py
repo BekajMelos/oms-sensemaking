@@ -215,4 +215,6 @@ class GeospatialSensemakerController(SensemakerController):
 
 class GeoQueueFilter(EventFilter):
     def passes_filter(self, audit_event: AuditLogEvent):
-        return audit_event.objectType == ObjectType.OBSERVATION.value and audit_event.action == Action.CREATE.value
+        handled_object_types = [ObjectType.OBSERVATION.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types

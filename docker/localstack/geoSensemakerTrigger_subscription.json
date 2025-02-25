@@ -1,4 +1,4 @@
 {
   "RawMessageDelivery": "true",
-  "FilterPolicy": "{\"objectType\": [\"OBSERVATION\"], \"action\": [\"CREATE\"]}"
+  "FilterPolicy": "{\"objectType\": [\"OBSERVATION\"], \"action\": [\"CREATE\", \"RESTORE\"]}"
 }

@@ -1,4 +1,4 @@
 {
   "RawMessageDelivery": "true",
-  "FilterPolicy": "{\"objectType\": [\"NODE\"], \"action\": [\"CREATE\"]}"
+  "FilterPolicy": "{\"objectType\": [\"NODE\"], \"action\": [\"CREATE\", \"RESTORE\"]}"
 }

@@ -77,5 +77,5 @@ class InferenceSensemakerController(SensemakerController):
 class InferenceQueueFilter(EventFilter):
     def passes_filter(self, audit_event: AuditLogEvent):
         handled_object_types = [ObjectType.ACTIVITY.value, ObjectType.ATTRIBUTE.value, ObjectType.OBSERVATION.value]
-        handled_event_types = [Action.CREATE]
+        handled_event_types = [Action.CREATE, Action.RESTORE]
         return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types
