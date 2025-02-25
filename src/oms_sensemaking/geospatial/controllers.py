@@ -110,10 +110,8 @@ class GeospatialSensemakerController(SensemakerController):
                 db,
                 defaults=dict(
                     acm=oms_obs.acm,
-                    location=(
-                        f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
-                    ),
-                    altitude=None,  # TODO include this
+                    location=(f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'),
+                    altitude=oms_obs.geometry["coordinates"][2] if oms_obs.geometry["coordinates"][2:] else None,
                     detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                     node_version=int(node_version),
                     observation_version=int(oms_obs.version),
