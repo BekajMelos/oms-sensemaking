@@ -7,1203 +7,6 @@
 	},
 	"item": [
 		{
-			"name": "Delete",
-			"item": [
-				{
-					"name": "Find Relationships",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const relationshipIds = jsonData.data.relationships.data.map(relationship => relationship.id);",
-									"pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    relationships(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Relationships",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"relationshipIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Relationships\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"relationshipIds\")) {",
-									"    let relationshipIds = JSON.parse(pm.collectionVariables.get(\"relationshipIds\"))",
-									"",
-									"    if (relationshipIds.length > 0) {",
-									"        const relationshipId = relationshipIds.shift();",
-									"        pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds));",
-									"        pm.collectionVariables.set(\"relationshipId\", relationshipId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"relationshipIds\")",
-									"    pm.collectionVariables.unset(\"relationshipId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $relationshipId: UUID!\n){\n    deleteRelationship(\n        input: {\n            id: $relationshipId\n        }\n    )\n}",
-								"variables": "{\n    \"relationshipId\": \"{{relationshipId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Relationships",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Relationships\", function () {",
-									"    pm.expect(jsonData.data.relationships.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    relationships(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Attributes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const attributeIds = jsonData.data.attributes.data.map(attribute => attribute.id);",
-									"pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    attributes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Attributes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"attributeIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Attributes\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"attributeIds\")) {",
-									"    let attributeIds = JSON.parse(pm.collectionVariables.get(\"attributeIds\"))",
-									"",
-									"    if (attributeIds.length > 0) {",
-									"        const attributeId = attributeIds.shift();",
-									"        pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds));",
-									"        pm.collectionVariables.set(\"attributeId\", attributeId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"attributeIds\")",
-									"    pm.collectionVariables.unset(\"attributeId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $attributeId: UUID!\n){\n    deleteAttribute(\n        input: {\n            id: $attributeId\n        }\n    )\n}",
-								"variables": "{\n    \"attributeId\": \"{{attributeId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Attributes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Attributes\", function () {",
-									"    pm.expect(jsonData.data.attributes.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    attributes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Observations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const observationIds = jsonData.data.observations.data.map(observation => observation.id);",
-									"pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    observations(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Observations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"observationIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Observations\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"observationIds\")) {",
-									"    let observationIds = JSON.parse(pm.collectionVariables.get(\"observationIds\"))",
-									"",
-									"    if (observationIds.length > 0) {",
-									"        const observationId = observationIds.shift();",
-									"        pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds));",
-									"        pm.collectionVariables.set(\"observationId\", observationId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"observationIds\")",
-									"    pm.collectionVariables.unset(\"observationId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $observationId: UUID!\n){\n    deleteObservation(\n        input: {\n            id: $observationId\n        }\n    )\n}",
-								"variables": "{\n    \"observationId\": \"{{observationId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Observations",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Observations\", function () {",
-									"    pm.expect(jsonData.data.observations.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    observations(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Nodes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const nodeIds = jsonData.data.nodes.data.map(node => node.id);",
-									"pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    nodes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Nodes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"nodeIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Nodes\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"nodeIds\")) {",
-									"    let nodeIds = JSON.parse(pm.collectionVariables.get(\"nodeIds\"))",
-									"",
-									"    if (nodeIds.length > 0) {",
-									"        const nodeId = nodeIds.shift();",
-									"        pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds));",
-									"        pm.collectionVariables.set(\"nodeId\", nodeId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"nodeIds\")",
-									"    pm.collectionVariables.unset(\"nodeId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $nodeId: UUID!\n){\n    deleteNode(\n        input: {\n            id: $nodeId\n        }\n    )\n}",
-								"variables": "{\n    \"nodeId\": \"{{nodeId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Nodes",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Nodes\", function () {",
-									"    pm.expect(jsonData.data.nodes.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    nodes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Sources",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const sourceIds = jsonData.data.sources.data.map(source => source.id);",
-									"pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    sources(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Sources",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"sourceIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Sources\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"sourceIds\")) {",
-									"    let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
-									"",
-									"    if (sourceIds.length > 0) {",
-									"        const sourceId = sourceIds.shift();",
-									"        pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
-									"        pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"sourceIds\")",
-									"    pm.collectionVariables.unset(\"fedGovRepSourceId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $sourceId: UUID!\n){\n    deleteSource(\n        input: {\n            id: $sourceId\n        }\n    )\n}",
-								"variables": "{\n    \"sourceId\": \"{{fedGovRepSourceId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Sources",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Sources\", function () {",
-									"    pm.expect(jsonData.data.sources.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    sources(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Providers",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const providerIds = jsonData.data.providers.data.map(provider => provider.id);",
-									"pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    providers(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Providers",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"providerIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Providers\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"providerIds\")) {",
-									"    let providerIds = JSON.parse(pm.collectionVariables.get(\"providerIds\"))",
-									"",
-									"    if (providerIds.length > 0) {",
-									"        const providerId = providerIds.shift();",
-									"        pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds));",
-									"        pm.collectionVariables.set(\"providerId\", providerId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"providerIds\")",
-									"    pm.collectionVariables.unset(\"providerId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $providerId: UUID!\n){\n    deleteProvider(\n        input: {\n            id: $providerId\n        }\n    )\n}",
-								"variables": "{\n    \"providerId\": \"{{providerId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Providers",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Providers\", function () {",
-									"    pm.expect(jsonData.data.providers.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    providers(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Find Originators",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"const originatorIds = jsonData.data.originators.data.map(originator => originator.id);",
-									"pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds))",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    originators(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Originators",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"originatorIds\")) {",
-									"    pm.execution.setNextRequest(\"Delete Originators\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"if (pm.collectionVariables.has(\"originatorIds\")) {",
-									"    let originatorIds = JSON.parse(pm.collectionVariables.get(\"originatorIds\"))",
-									"",
-									"    if (originatorIds.length > 0) {",
-									"        const originatorId = originatorIds.shift();",
-									"        pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds));",
-									"        pm.collectionVariables.set(\"botOriginatorId\", originatorId)",
-									"    } else {",
-									"        skip()",
-									"    }",
-									"} else {",
-									"    skip()",
-									"}",
-									"",
-									"function skip() {",
-									"    pm.execution.skipRequest()",
-									"    pm.collectionVariables.unset(\"originatorIds\")",
-									"    pm.collectionVariables.unset(\"botOriginatorId\")",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $botOriginatorId: UUID!\n){\n    deleteOriginator(\n        input: {\n            id: $botOriginatorId\n        }\n    )\n}",
-								"variables": "{\n    \"botOriginatorId\": \"{{botOriginatorId}}\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Test Find Originators",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(pm.response.text());",
-									"",
-									"pm.test(\"Test Find Originators\", function () {",
-									"    pm.expect(jsonData.data.originators.totalSize).to.eq(0)",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "query {\n    originators(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-								"variables": ""
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "Create",
 			"item": [
 				{
@@ -1233,7 +36,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1277,7 +81,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1321,7 +126,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1370,7 +176,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1414,7 +221,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1458,7 +266,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1502,7 +311,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1546,7 +356,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1590,7 +401,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1634,7 +446,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1678,7 +491,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1722,7 +536,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1766,7 +581,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1810,7 +626,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1854,7 +671,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1898,7 +716,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1942,7 +761,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -1986,7 +806,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2030,7 +851,8 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2073,7 +895,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2116,7 +939,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2159,7 +983,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2202,7 +1027,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2326,7 +1152,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2371,7 +1198,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2416,7 +1244,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2461,7 +1290,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2506,7 +1336,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2551,7 +1382,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2596,7 +1428,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2639,7 +1472,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2682,7 +1516,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2725,7 +1560,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2768,7 +1604,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2811,7 +1648,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2854,7 +1692,8 @@
 									{
 										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
-										"type": "text"
+										"type": "text",
+										"disabled": true
 									}
 								],
 								"body": {
@@ -2875,6 +1714,1286 @@
 							"response": []
 						}
 					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"if (pm.environment.get(\"INCLUDE_USER_DN_HEADER\") === \"true\") {",
+							"    let userDnValue = pm.environment.get(\"USER_DN_VALUE\");",
+							"    if (userDnValue) { // Ensure user_dn_value is actually set in the environment",
+							"        pm.request.headers.add({ key: \"user_dn\", value: userDnValue });",
+							"    } else {",
+							"        console.warn(\"Warning: 'include_user_dn_header' is true, but 'user_dn_value' is not set in the environment.\");",
+							"    }",
+							"} else {",
+							"    pm.request.headers.remove(\"user_dn\"); // Ensure header is removed if present from previous runs",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Delete",
+			"item": [
+				{
+					"name": "Find Relationships",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const relationshipIds = jsonData.data.relationships.data.map(relationship => relationship.id);",
+									"pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    relationships(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Relationships",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"relationshipIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Relationships\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"relationshipIds\")) {",
+									"    let relationshipIds = JSON.parse(pm.collectionVariables.get(\"relationshipIds\"))",
+									"",
+									"    if (relationshipIds.length > 0) {",
+									"        const relationshipId = relationshipIds.shift();",
+									"        pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds));",
+									"        pm.collectionVariables.set(\"relationshipId\", relationshipId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"relationshipIds\")",
+									"    pm.collectionVariables.unset(\"relationshipId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $relationshipId: UUID!\n){\n    deleteRelationship(\n        input: {\n            id: $relationshipId\n        }\n    )\n}",
+								"variables": "{\n    \"relationshipId\": \"{{relationshipId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Relationships",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Relationships\", function () {",
+									"    pm.expect(jsonData.data.relationships.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    relationships(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Attributes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const attributeIds = jsonData.data.attributes.data.map(attribute => attribute.id);",
+									"pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    attributes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Attributes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"attributeIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Attributes\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"attributeIds\")) {",
+									"    let attributeIds = JSON.parse(pm.collectionVariables.get(\"attributeIds\"))",
+									"",
+									"    if (attributeIds.length > 0) {",
+									"        const attributeId = attributeIds.shift();",
+									"        pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds));",
+									"        pm.collectionVariables.set(\"attributeId\", attributeId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"attributeIds\")",
+									"    pm.collectionVariables.unset(\"attributeId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $attributeId: UUID!\n){\n    deleteAttribute(\n        input: {\n            id: $attributeId\n        }\n    )\n}",
+								"variables": "{\n    \"attributeId\": \"{{attributeId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Attributes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Attributes\", function () {",
+									"    pm.expect(jsonData.data.attributes.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    attributes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Observations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const observationIds = jsonData.data.observations.data.map(observation => observation.id);",
+									"pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    observations(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Observations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"observationIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Observations\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"observationIds\")) {",
+									"    let observationIds = JSON.parse(pm.collectionVariables.get(\"observationIds\"))",
+									"",
+									"    if (observationIds.length > 0) {",
+									"        const observationId = observationIds.shift();",
+									"        pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds));",
+									"        pm.collectionVariables.set(\"observationId\", observationId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"observationIds\")",
+									"    pm.collectionVariables.unset(\"observationId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $observationId: UUID!\n){\n    deleteObservation(\n        input: {\n            id: $observationId\n        }\n    )\n}",
+								"variables": "{\n    \"observationId\": \"{{observationId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Observations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Observations\", function () {",
+									"    pm.expect(jsonData.data.observations.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    observations(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Nodes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const nodeIds = jsonData.data.nodes.data.map(node => node.id);",
+									"pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    nodes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Nodes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"nodeIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Nodes\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"nodeIds\")) {",
+									"    let nodeIds = JSON.parse(pm.collectionVariables.get(\"nodeIds\"))",
+									"",
+									"    if (nodeIds.length > 0) {",
+									"        const nodeId = nodeIds.shift();",
+									"        pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds));",
+									"        pm.collectionVariables.set(\"nodeId\", nodeId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"nodeIds\")",
+									"    pm.collectionVariables.unset(\"nodeId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $nodeId: UUID!\n){\n    deleteNode(\n        input: {\n            id: $nodeId\n        }\n    )\n}",
+								"variables": "{\n    \"nodeId\": \"{{nodeId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Nodes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Nodes\", function () {",
+									"    pm.expect(jsonData.data.nodes.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    nodes(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Sources",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const sourceIds = jsonData.data.sources.data.map(source => source.id);",
+									"pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    sources(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Sources",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"sourceIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Sources\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"sourceIds\")) {",
+									"    let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
+									"",
+									"    if (sourceIds.length > 0) {",
+									"        const sourceId = sourceIds.shift();",
+									"        pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
+									"        pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"sourceIds\")",
+									"    pm.collectionVariables.unset(\"fedGovRepSourceId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $sourceId: UUID!\n){\n    deleteSource(\n        input: {\n            id: $sourceId\n        }\n    )\n}",
+								"variables": "{\n    \"sourceId\": \"{{fedGovRepSourceId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Sources",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Sources\", function () {",
+									"    pm.expect(jsonData.data.sources.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    sources(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Providers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const providerIds = jsonData.data.providers.data.map(provider => provider.id);",
+									"pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    providers(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Providers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"providerIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Providers\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"providerIds\")) {",
+									"    let providerIds = JSON.parse(pm.collectionVariables.get(\"providerIds\"))",
+									"",
+									"    if (providerIds.length > 0) {",
+									"        const providerId = providerIds.shift();",
+									"        pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds));",
+									"        pm.collectionVariables.set(\"providerId\", providerId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"providerIds\")",
+									"    pm.collectionVariables.unset(\"providerId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $providerId: UUID!\n){\n    deleteProvider(\n        input: {\n            id: $providerId\n        }\n    )\n}",
+								"variables": "{\n    \"providerId\": \"{{providerId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Providers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Providers\", function () {",
+									"    pm.expect(jsonData.data.providers.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    providers(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Originators",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"const originatorIds = jsonData.data.originators.data.map(originator => originator.id);",
+									"pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds))",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    originators(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Originators",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"originatorIds\")) {",
+									"    pm.execution.setNextRequest(\"Delete Originators\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.collectionVariables.has(\"originatorIds\")) {",
+									"    let originatorIds = JSON.parse(pm.collectionVariables.get(\"originatorIds\"))",
+									"",
+									"    if (originatorIds.length > 0) {",
+									"        const originatorId = originatorIds.shift();",
+									"        pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds));",
+									"        pm.collectionVariables.set(\"botOriginatorId\", originatorId)",
+									"    } else {",
+									"        skip()",
+									"    }",
+									"} else {",
+									"    skip()",
+									"}",
+									"",
+									"function skip() {",
+									"    pm.execution.skipRequest()",
+									"    pm.collectionVariables.unset(\"originatorIds\")",
+									"    pm.collectionVariables.unset(\"botOriginatorId\")",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $botOriginatorId: UUID!\n){\n    deleteOriginator(\n        input: {\n            id: $botOriginatorId\n        }\n    )\n}",
+								"variables": "{\n    \"botOriginatorId\": \"{{botOriginatorId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Find Originators",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"",
+									"pm.test(\"Test Find Originators\", function () {",
+									"    pm.expect(jsonData.data.originators.totalSize).to.eq(0)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query {\n    originators(\n        query: {\n            tags: [\"{{myTestTag}}\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"if (pm.environment.get(\"INCLUDE_USER_DN_HEADER\") === \"true\") {",
+							"    let userDnValue = pm.environment.get(\"USER_DN_VALUE\");",
+							"    if (userDnValue) { // Ensure user_dn_value is actually set in the environment",
+							"        pm.request.headers.add({ key: \"user_dn\", value: userDnValue });",
+							"    } else {",
+							"        console.warn(\"Warning: 'include_user_dn_header' is true, but 'user_dn_value' is not set in the environment.\");",
+							"    }",
+							"} else {",
+							"    pm.request.headers.remove(\"user_dn\"); // Ensure header is removed if present from previous runs",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		}
