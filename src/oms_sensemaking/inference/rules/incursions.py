@@ -1,4 +1,3 @@
-import json
 
 from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import (
