@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 > *Galadriel-INC-2*
 
 ### Added
+- Mil Symbol now updates the node's symbolIdCode with the 2525-C SDIC
 - Mil Symbol enrichment can now look at controlling parent node's affiliation
 
 ### Changed
