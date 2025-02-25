@@ -123,6 +123,10 @@ class Settings(BaseSettings):
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
+    incursion_tags: list[str] = Field(
+        ["oms_sensemaking", "inferred_attribute", "incursion_rule"], description="Incursion tags"
+    )
+    incursion_areas_of_interest_path: str = "./src/oms_sensemaking/inference/data/geos_of_interest.json"
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
     )
@@ -131,6 +135,9 @@ class Settings(BaseSettings):
     )
     inference_add_garrison_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
+    )
+    inference_incursion_attribute_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_participated_in_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
