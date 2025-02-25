@@ -7,8 +7,8 @@ from oms_sdk.generated.generated_graphql_client.enums import Action
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import (
+    AuditLogEvent,
     EventFilter,
-    ObjectEvent,
     ObjectType,
 )
 from oms_sensemaking.resolution.sensemaker import ResolutionSensemaker
@@ -32,5 +32,5 @@ class ResolutionSensemakerController(SensemakerController):
 
 
 class ResolutionQueueFilter(EventFilter):
-    def passes_filter(self, object_event: ObjectEvent):
-        return object_event.objectType == ObjectType.ATTRIBUTE.value and object_event.eventType == Action.CREATE.value
+    def passes_filter(self, audit_event: AuditLogEvent):
+        return audit_event.objectType == ObjectType.ATTRIBUTE.value and audit_event.action == Action.CREATE.value

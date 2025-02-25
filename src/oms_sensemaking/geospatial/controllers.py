@@ -14,7 +14,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track
 
@@ -28,7 +28,7 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer) -> None:
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer)
 
@@ -69,17 +69,17 @@ class GeospatialSensemakerController(SensemakerController):
 
         super().stop()
 
-    def handle_event(self, event: ObjectEvent) -> bool:
+    def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
 
         :param event: The event to process.
-        :return: True if the object event was successfully processed, False otherwise.
+        :return: True if the audit log event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
         point: Optional[Point] = None
 
-        LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
+        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         # extract info from OMS via API calls
         oms_obs: Optional[ObservationObservation] = self.get_oms_observation(event.objectId)
@@ -110,9 +110,7 @@ class GeospatialSensemakerController(SensemakerController):
                 db,
                 defaults=dict(
                     acm=oms_obs.acm,
-                    location=(
-                        f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'
-                    ),
+                    location=(f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'),
                     altitude=None,  # TODO include this
                     detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                     node_version=int(node_version),
@@ -216,5 +214,5 @@ class GeospatialSensemakerController(SensemakerController):
 
 
 class GeoQueueFilter(EventFilter):
-    def passes_filter(self, object_event: ObjectEvent):
-        return object_event.objectType == ObjectType.OBSERVATION.value and object_event.eventType == Action.CREATE.value
+    def passes_filter(self, audit_event: AuditLogEvent):
+        return audit_event.objectType == ObjectType.OBSERVATION.value and audit_event.action == Action.CREATE.value
