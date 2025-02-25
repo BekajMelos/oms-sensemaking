@@ -3,7 +3,6 @@ from typing import Iterable
 
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.inference.engine.engine import Engine
-from oms_sensemaking.inference.rules.add_garrison_attribute import AddOutOfGarrisonAttribute
 from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
@@ -17,7 +16,6 @@ class InferenceSensemaker(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute"),
-                                 AddOutOfGarrisonAttribute("AddOutOfGarrisonAttribute"),
                                  Incursion("Incursion")]}
         self.engine = Engine()
 
