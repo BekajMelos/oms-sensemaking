@@ -1,0 +1,148 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+PREFIX ingest_omsb_graphmart: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+INSERT {
+    GRAPH ${targetGraph} {
+      ?node_obj a ?equipment_inventory_class ;
+      rdfs:label ?node_name ;
+      ?has_unique_name ?node_name ;
+      ?operational_status ?status ;
+      ?controlled_by ?controlling_obj_id1 ;
+      ?controlled_by ?controlling_obj_id2 ;
+      ?has_continuant_part_at_some_time ?cont_part_obj_id1 ;
+      ?has_continuant_part_at_some_time ?cont_part_obj_id2 ;
+      ?has_member_part_at_some_time ?member_part_obj_id1 ;
+      ?has_member_part_at_some_time ?member_part_obj_id2 ;
+      ?has_all_source_obj_id ?node_id ;
+      ?has_enterprise_obj_id ?node_id .
+    }
+}
+WHERE {
+  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+	?node_obj ingest_omsb_graphmart:Node.class_iri ?class_iri  ;
+		ingest_omsb_graphmart:Node.name ?node_name ;
+        ingest_omsb_graphmart:Node.id ?node_id ;
+
+    FILTER (?class_iri IN (
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems"
+      ) ) .
+    
+    ##########
+    # STATUS #
+    #########
+    OPTIONAL {
+      ?opstat_attribute_obj ingest_omsb_graphmart:Attribute.node_id ?node_id ;
+      	ingest_omsb_graphmart:Attribute.attribute_value ?status ;
+        ingest_omsb_graphmart:Attribute.attribute_iri ?opstat_attribute_iri ;
+     FILTER(?opstat_attribute_iri IN (
+          "https://foundry.ai.mil/DICO/v3.1.0/Operational_Status", 
+          "https://foundry.ai.mil/INDOPACOM/v5/Operational_Status",
+          "https://foundry.ai.mil/MIDB_GST/v1/Operational_Status",
+          "https://foundry.ai.mil/DICO/v3.1.0/Status",
+          "https://foundry.ai.mil/INDOPACOM/v5/Status",
+          "https://foundry.ai.mil/MIDB_GST/v1/Status"
+          # More to follow ...
+        ) ) .
+    }
+
+    #################
+    # CONTROLLED BY # (ie. my node is "controlled by" another node)
+    ################
+    OPTIONAL {	?controlled_by_obj ingest_omsb_graphmart:Relationship.start_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.end_node_id ?controlling_node_id1 ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?controlled_by_iri ;
+      FILTER (?controlled_by_iri IN (
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy",
+        "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled__by",
+        "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_primarily_by"
+          # More to follow ...
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?controlling_node_id1)) AS ?controlling_obj_id1 )
+    }
+    
+    ############
+    # CONTROLS # (ie. another node "controls" my node)
+    ###########
+    OPTIONAL {	?controls_obj ingest_omsb_graphmart:Relationship.start_node_id ?controlling_node_id2 ;
+      			ingest_omsb_graphmart:Relationship.end_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?controls_iri ;
+      FILTER (?controls_iri IN (
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/controls",
+        "https://foundry.ai.mil/MIDB/V3.3/commands_or_controls",
+        "https://foundry.ai.mil/MIDB/V3.3/commands_or_controls_primarily"
+          # More to follow ...
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?controlling_node_id2)) AS ?controlling_obj_id2 )
+    }
+    
+    ######################
+    # CONTINUANT PART OF # (ie. another node is "continuant part of" my node)
+    #####################
+    OPTIONAL {	?cont_part_of_obj ingest_omsb_graphmart:Relationship.end_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.start_node_id ?cont_part_node_id1 ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?cont_part_of_iri ;
+      FILTER (?cont_part_of_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000176", #continuant part of at some time
+          "http://purl.obolibrary.org/obo/BFO_0000177" #continuant part of at all times
+          # More to follow ...
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?cont_part_node_id1)) AS ?cont_part_obj_id1 )
+    }
+    
+    ######################
+    # HAS CONTINUANT PART # (ie. my node "has continuant part" that is another node)
+    #####################
+    OPTIONAL {	?has_cont_part_obj ingest_omsb_graphmart:Relationship.end_node_id ?cont_part_node_id2 ;
+      			ingest_omsb_graphmart:Relationship.start_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?has_cont_part_iri ;
+      FILTER (?has_cont_part_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000178", #has continuant part of at some time
+          "http://purl.obolibrary.org/obo/BFO_0000110" #has continuant part of at all times
+          # More to follow ...
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?cont_part_node_id2)) AS ?cont_part_obj_id2 )
+    }
+    
+    ####################
+    # has member part  #
+    ####################
+    
+    OPTIONAL { ?has_member_part_obj ingest_omsb_graphmart:Relationship.start_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.end_node_id ?member_part_node_id1 ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?has_member_part_obj_iri ;
+      FILTER (?has_member_part_obj_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000115", #has member part at some time
+          "http://purl.obolibrary.org/obo/BFO_0000172" #has member part at all times
+          # more to follow
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?member_part_node_id1)) AS ?member_part_obj_id1 )
+    }
+    ####################
+    # member part of  #
+    ####################
+    
+    OPTIONAL { ?member_part_of_obj ingest_omsb_graphmart:Relationship.start_node_id ?member_part_node_id2 ;
+      			ingest_omsb_graphmart:Relationship.end_node_id ?node_id ;
+      			ingest_omsb_graphmart:Relationship.object_property_iri ?member_part_of_obj_iri ;
+      FILTER (?member_part_of_obj_iri IN (
+          "http://purl.obolibrary.org/obo/BFO_0000129", #member part of at some time
+          "http://purl.obolibrary.org/obo/BFO_0000173" #member part of at all times
+          # more to follow
+        )) .
+      BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?member_part_node_id2)) AS ?member_part_obj_id2 )
+    }    
+    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
+    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems") AS ?equipment_inventory_class)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000178") AS ?has_continuant_part_at_some_time)
+    BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000115") AS ?has_member_part_at_some_time)
+    BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasOperationalStatus") AS ?operational_status)
+    BIND(IRI("https://foundry.ai.mil/ontology/4901-001/DefenseIntelligenceCoreOntology/hasAllSourceObjectID") AS ?has_all_source_obj_id)
+    BIND(IRI("https://foundry.ai.mil/ontology/4901-001/DefenseIntelligenceCoreOntology/hasEnterpriseObjectID") AS ?has_enterprise_obj_id)
+    BIND(IRI("https://foundry.ai.mil/ontology/4901-001/DefenseIntelligenceCoreOntology/hasUniqueName") AS ?has_unique_name)
+    
+  } }
