@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Optional, Union
 from uuid import UUID
 
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
@@ -26,6 +26,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateSourceInput,
     DeleteByIdInput,
     IdQuery,
+    IriQuery,
     NodeNode,
     NodeQuery,
     NodesNodes,
@@ -33,6 +34,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationObservation,
     ObservationQuery,
     ObservationsObservations,
+    OntologyClassOntologyClass,
     OriginatorQuery,
     OriginatorsOriginators,
     ProviderQuery,
@@ -250,6 +252,23 @@ class OmsCrudTool:
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
+    def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
+        """
+        Given a node id and a list of IRIs, get the attribute values from OMS
+
+        :param node_id: Node id to get attributes for
+        :param iris: List of IRIs to get values for on the node
+        :return: List of matching Attribute objects
+        """
+        query: AttributeQuery = AttributeQuery(
+            attributeIris=iris,
+            nodeIds=[node_id]
+        )
+        attributes_response = self.get_attributes(query)
+        if attributes_response and attributes_response.data:
+            return attributes_response.data
+        return []
+
     def rehydrate_oms_obj(
             self,
             object_id: UUID,
@@ -268,6 +287,14 @@ class OmsCrudTool:
         }
 
         return obj_getter_mapping[object_type](object_id)
+
+    def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
+        """Get the Ontology Class for a given iri
+
+        :param iri: Iri to get ontology data for
+        :return: Optional OntologyClass object
+        """
+        return self.oms_client.ontology_class(query=IriQuery(iri=iri))
 
     def create_test_source(
         self,

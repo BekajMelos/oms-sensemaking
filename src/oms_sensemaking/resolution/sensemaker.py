@@ -8,7 +8,6 @@ from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
-    AttributeQuery,
     CreateRelationshipInput,
     NodeAttributeQuery,
     NodeAttributeSubQuery,
@@ -74,7 +73,7 @@ class DuplicateFacility:
         # Get this nodes info and make sure we satisfy the requirements
         other_iris: List[str] = copy.copy(self.duplicate_facility_iris)
         other_iris.remove(current_iri)
-        duplicate_facility_attributes.extend(self.get_node_attribute_by_iri(attribute.nodeId, other_iris))
+        duplicate_facility_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris))
 
         if len(duplicate_facility_attributes) != len(self.duplicate_facility_iris):
             LOGGER.debug("Node does not have all required fields for Duplicate Facility Matching. Ignoring.")
@@ -145,24 +144,6 @@ class DuplicateFacility:
             LOGGER.debug("Sensemaker has already tagged this node")
             return True
         return False
-
-
-    def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
-        """
-        Given a node id and a list of IRIs, get the attribute values from OMS
-
-        :param node_id: Node id to get attributes for
-        :param iris: List of IRIs to get values for on the node
-        :return: List of matching Attribute objects
-        """
-        query: AttributeQuery = AttributeQuery(
-            attributeIris=iris,
-            nodeIds=[node_id]
-        )
-        attributes_response = self.oms_crud_tool.get_attributes(query)
-        if attributes_response and attributes_response.data:
-            return attributes_response.data
-        return []
 
 
     def find_duplicates(self, attributes: List[AttributeAttribute]) -> List[NodeNode]:
