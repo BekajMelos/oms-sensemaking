@@ -1,6 +1,5 @@
 """Tests for the "semantic" API."""
 
-from typing import Optional
 from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
@@ -67,9 +66,7 @@ def create_attribute(client: TestClient) -> UUID:
     return attribute_id
 
 
-def create_relationship(
-    client: TestClient, start_node_id: Optional[UUID] = None, end_node_id: Optional[UUID] = None
-) -> UUID:
+def create_relationship(client: TestClient, start_node_id: UUID | None = None, end_node_id: UUID | None = None) -> UUID:
     """
     Create and validate a Relationship.
 

@@ -3,7 +3,6 @@
 import copy
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -35,7 +34,7 @@ class DupFinding(FindingBase):
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.RESOLUTION_DUPLICATE)
     start_node_id: UUID
     end_node_id: UUID
-    acm: Dict
+    acm: dict
 
     def __str__(self):
         return str(self.to_dict())
@@ -43,7 +42,7 @@ class DupFinding(FindingBase):
     def __repr__(self):
         return self.__str__()
 
-    def get_acm(self) -> Dict:
+    def get_acm(self) -> dict:
         return self.acm
 
 
@@ -51,12 +50,11 @@ class DuplicateFacility:
     """Class to help find duplicate facilities in OMSB"""
 
     def __init__(self, oms_crud_tool: OmsCrudTool):
-
         self.oms_crud_tool = oms_crud_tool
 
         self.duplicate_facility_iris = SETTINGS.duplicate_facility_iris
 
-    def meets_criteria(self, attribute: AttributeAttribute) -> List[AttributeAttribute]:
+    def meets_criteria(self, attribute: AttributeAttribute) -> list[AttributeAttribute]:
         """
         Gather the criteria needed to check for duplicates in OMSB.
 
@@ -72,7 +70,7 @@ class DuplicateFacility:
             return []
 
         # Get this nodes info and make sure we satisfy the requirements
-        other_iris: List[str] = copy.copy(self.duplicate_facility_iris)
+        other_iris: list[str] = copy.copy(self.duplicate_facility_iris)
         other_iris.remove(current_iri)
         duplicate_facility_attributes.extend(self.get_node_attribute_by_iri(attribute.nodeId, other_iris))
 
@@ -82,7 +80,7 @@ class DuplicateFacility:
 
         return duplicate_facility_attributes
 
-    def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: List[NodeNode]) -> List[DupFinding]:
+    def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: list[NodeNode]) -> list[DupFinding]:
         """
         Create and return duplicate finding objects from matched nodes
 
@@ -95,16 +93,11 @@ class DuplicateFacility:
         dups = []
 
         for node in nodes:
-
             # Ignore the node we're currently looking at
             if node.id == current_node_id:
                 continue
 
-            dup = DupFinding(
-                start_node_id=current_node_id,
-                end_node_id=node.id,
-                acm=node.acm
-            )
+            dup = DupFinding(start_node_id=current_node_id, end_node_id=node.id, acm=node.acm)
             dups.append(dup)
 
             rel: CreateRelationshipInput = CreateRelationshipInput(
@@ -115,7 +108,7 @@ class DuplicateFacility:
                 confidence=Confidence.HIGH.value,
                 sourceId=attribute.sourceId,
                 acm=attribute.acm,
-                objectPropertyIri=SETTINGS.resolution_relationship_iri
+                objectPropertyIri=SETTINGS.resolution_relationship_iri,
             )
             self.oms_crud_tool.create_relationship(rel)
             LOGGER.info(f"Resolution Sensemaker found duplicates {current_node_id}, {node.id}")
@@ -131,13 +124,8 @@ class DuplicateFacility:
         """
 
         query: RelationshipQuery = RelationshipQuery(
-            name=StringQuery(
-                    equals=SETTINGS.resolution_relationship_name,
-                    ignoreCase=True
-                ),
-            nodes=RelationshipNodeQuery(
-                startNodeIds=[current_node_id]
-            )
+            name=StringQuery(equals=SETTINGS.resolution_relationship_name, ignoreCase=True),
+            nodes=RelationshipNodeQuery(startNodeIds=[current_node_id]),
         )
 
         existing_relationships = self.oms_crud_tool.get_relationships(query)
@@ -146,8 +134,7 @@ class DuplicateFacility:
             return True
         return False
 
-
-    def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
+    def get_node_attribute_by_iri(self, node_id: UUID, iris: list[str]) -> list[AttributeAttribute]:
         """
         Given a node id and a list of IRIs, get the attribute values from OMS
 
@@ -155,17 +142,13 @@ class DuplicateFacility:
         :param iris: List of IRIs to get values for on the node
         :return: List of matching Attribute objects
         """
-        query: AttributeQuery = AttributeQuery(
-            attributeIris=iris,
-            nodeIds=[node_id]
-        )
+        query: AttributeQuery = AttributeQuery(attributeIris=iris, nodeIds=[node_id])
         attributes_response = self.oms_crud_tool.get_attributes(query)
         if attributes_response and attributes_response.data:
             return attributes_response.data
         return []
 
-
-    def find_duplicates(self, attributes: List[AttributeAttribute]) -> List[NodeNode]:
+    def find_duplicates(self, attributes: list[AttributeAttribute]) -> list[NodeNode]:
         """
         Deteremine if there are matching objects in OMSB
 
@@ -173,28 +156,21 @@ class DuplicateFacility:
         :return: List of duplicate nodes
         """
 
-        node_attribute_subqueries: List[NodeAttributeSubQuery] = [
+        node_attribute_subqueries: list[NodeAttributeSubQuery] = [
             NodeAttributeSubQuery(
                 attributeIris=[attribute.attributeIri],
-                attributeValue=StringQuery(
-                    equals=attribute.attributeValue,
-                    ignoreCase=True
-                )
-            ) for attribute in attributes]
+                attributeValue=StringQuery(equals=attribute.attributeValue, ignoreCase=True),
+            )
+            for attribute in attributes
+        ]
 
-        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
-            hasMatch=node_attribute_subqueries[0]
-        )
+        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(hasMatch=node_attribute_subqueries[0])
         if len(node_attribute_subqueries) > 1:
             node_attribute_query.and_ = [
-                NodeAttributeQuery(
-                    hasMatch=subquery
-                )
-            for subquery in node_attribute_subqueries[1:]]
+                NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries[1:]
+            ]
 
-        query: NodeQuery = NodeQuery(
-            attributes=node_attribute_query
-        )
+        query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 
         nodes_response = self.oms_crud_tool.get_nodes(query)
 
@@ -225,16 +201,14 @@ class ResolutionSensemaker(Sensemaker):
         self.oms_crud_tool = oms_crud_tool
 
         # Register duplicate data checks
-        self.duplicate_checks = [
-            DuplicateFacility(self.oms_crud_tool)
-        ]
+        self.duplicate_checks = [DuplicateFacility(self.oms_crud_tool)]
 
-    def process_data(self, attribute: AttributeAttribute) -> List[DupFinding]:
+    def process_data(self, attribute: AttributeAttribute) -> list[DupFinding]:
         """
         Determine if a created Node is the same as an existing note and suggest that they are merged
 
         :param attribute: The attribute to analyze.
-        :return: List[DupFinding] List of duplicates found
+        :return: list[DupFinding] List of duplicates found
         """
         LOGGER.info("Running Resolution Sensemaker")
         LOGGER.debug(f"{attribute.attributeIri}: {attribute.attributeValue}")
@@ -242,12 +216,11 @@ class ResolutionSensemaker(Sensemaker):
         results = []
 
         for dup in self.duplicate_checks:
-            criterion: List[AttributeAttribute] = dup.meets_criteria(attribute)
+            criterion: list[AttributeAttribute] = dup.meets_criteria(attribute)
             if criterion:
+                dups: list[NodeNode] = dup.find_duplicates(criterion)
 
-                dups: List[NodeNode] = dup.find_duplicates(criterion)
-
-                dup_findings: List[DupFinding] = dup.create_duplicate_findings(attribute, dups)
+                dup_findings: list[DupFinding] = dup.create_duplicate_findings(attribute, dups)
                 results.extend(dup_findings)
 
         return results

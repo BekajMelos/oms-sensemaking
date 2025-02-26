@@ -1,7 +1,8 @@
 """Tests for co-travler sensemaker."""
 
+from collections.abc import Generator
 from datetime import datetime
-from typing import Iterator, List
+from typing import Any
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -19,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.geospatial.sensemakers.cotravel import Cotravel
 from oms_sensemaking.models.geo import Point, Track
@@ -62,71 +64,208 @@ TRACK_UUID1 = uuid4()
 TRACK_UUID2 = uuid4()
 TRACK_UUID3 = uuid4()
 TRACK_UUID4 = uuid4()
-DATA: list = [  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, detection_time, track_id
+DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, detection_time, Obs confidence
     # Track 1
-    [51.482286, -0.165222, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-    TRACK_UUID1],
-    [51.466103, -0.210562, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
-    TRACK_UUID1],
-    [51.487613, -0.229466, None, "London", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-    TRACK_UUID1],
-    # point that shouldn't be included in the cotravel
-    [50, 0, None, "English Channel", NODE_UUID1, uuid4(), datetime.fromisoformat("2024-03-20T12:30:00-04:00"),
-     TRACK_UUID1],
+    TRACK_UUID1: [
+        [
+            51.482286,
+            -0.165222,
+            None,
+            "London",
+            NODE_UUID1,
+            uuid4(),
+            datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            51.466103,
+            -0.210562,
+            None,
+            "London",
+            NODE_UUID1,
+            uuid4(),
+            datetime.fromisoformat("2024-03-20T12:10:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            51.487613,
+            -0.229466,
+            None,
+            "London",
+            NODE_UUID1,
+            uuid4(),
+            datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
+            Confidence.HIGH,
+        ],
+        # point that shouldn't be included in the cotravel
+        [
+            50,
+            0,
+            None,
+            "English Channel",
+            NODE_UUID1,
+            uuid4(),
+            datetime.fromisoformat("2024-03-20T12:30:00-04:00"),
+            Confidence.HIGH,
+        ],
+    ],
     # Track 2
-    [41.399953, 2.217167, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:10:00-04:00"),
-    TRACK_UUID2],
-    [41.467810, 2.289575, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:00:00-04:00"),
-    TRACK_UUID2],
-    [41.356069, 2.183748, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:20:00-04:00"),
-    TRACK_UUID2],
-    [41.296465, 2.130487, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-08-20T16:30:00-04:00"),
-    TRACK_UUID2],
+    TRACK_UUID2: [
+        [
+            41.399953,
+            2.217167,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:10:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            41.467810,
+            2.289575,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:00:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            41.356069,
+            2.183748,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:20:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            41.296465,
+            2.130487,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:30:00-04:00"),
+            Confidence.HIGH,
+        ],
+    ],
     # Track 3
-    [41.467811, 2.289576, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:19:00-04:00"),
-    TRACK_UUID3],
-    [41.399954, 2.217168, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:29:00-04:00"),
-    TRACK_UUID3],
-    [41.356070, 2.183749, None, "Barcelona", NODE_UUID3, uuid4(), datetime.fromisoformat("2024-08-20T16:39:00-04:00"),
-    TRACK_UUID3],
+    TRACK_UUID3: [
+        [
+            41.467811,
+            2.289576,
+            None,
+            "Barcelona",
+            NODE_UUID3,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:19:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            41.399954,
+            2.217168,
+            None,
+            "Barcelona",
+            NODE_UUID3,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:29:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            41.356070,
+            2.183749,
+            None,
+            "Barcelona",
+            NODE_UUID3,
+            uuid4(),
+            datetime.fromisoformat("2024-08-20T16:39:00-04:00"),
+            Confidence.HIGH,
+        ],
+    ],
     # Track 4
-    [38.252533, 15.650729, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:00:00-04:00"),
-    TRACK_UUID4],
-    [38.228556, 15.610534, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:10:00-04:00"),
-    TRACK_UUID4],
-    [38.185378, 15.594253, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:20:00-04:00"),
-    TRACK_UUID4],
-    [38.142175, 15.578989, None, "Barcelona", NODE_UUID2, uuid4(), datetime.fromisoformat("2024-09-10T05:30:00-04:00"),
-    TRACK_UUID4],
-]
+    TRACK_UUID4: [
+        [
+            38.252533,
+            15.650729,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-09-10T05:00:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            38.228556,
+            15.610534,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-09-10T05:10:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            38.185378,
+            15.594253,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-09-10T05:20:00-04:00"),
+            Confidence.HIGH,
+        ],
+        [
+            38.142175,
+            15.578989,
+            None,
+            "Barcelona",
+            NODE_UUID2,
+            uuid4(),
+            datetime.fromisoformat("2024-09-10T05:30:00-04:00"),
+            Confidence.HIGH,
+        ],
+    ],
+}
 
 
-@pytest.fixture
-def tester_db(db: Session) -> Iterator[Session]:
-    for row in DATA:
-        point: Point = Point(
-            node_id=row[4],
-            node_version=1,
-            observation_id=row[5],
-            observation_version=1,
-            location=f"POINT({row[1]} {row[0]})",  # lng lat
-            altitude=row[2],
-            detection_time=row[6],
-            acm=DEFAULT_ACM,
-            source_id=SOURCE_ID,
-            track_id=row[7]
+@pytest.fixture(scope="function")
+def tester_db(db: Session) -> Generator[Session, Any, None]:
+    for track_uuid, rows in DATA.items():
+        points: list[Point] = []
+        for row in rows:
+            point, _ = Point.get_or_create(
+                session=db,
+                node_id=row[4],
+                node_version=1,
+                observation_id=row[5],
+                observation_version=1,
+                location=f"POINT({row[1]} {row[0]})",  # lng lat
+                altitude=row[2],
+                detection_time=row[6],
+                acm=DEFAULT_ACM,
+                source_id=SOURCE_ID,
+                observation_confidence=row[7],
+            )
+            points.append(point)
+        Track.get_or_create(
+            session=db,
+            defaults=dict(
+                points=points,
+                node_id=points[0].node_id,
+                algorithm="cotravel_test_track",
+            ),
+            track_uuid=track_uuid,
         )
-
-        db.add(point)
-
-    db.commit()
 
     yield db
 
 
-def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -138,8 +277,8 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         node_version=1,
         observation_id=uuid4(),
         observation_version=1,
+        observation_confidence=Confidence.HIGH,
         source_id=uuid4(),
-        track_id=track_id
     )
 
     p2 = Point(
@@ -151,8 +290,8 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         node_version=1,
         observation_id=uuid4(),
         observation_version=1,
+        observation_confidence=Confidence.HIGH,
         source_id=uuid4(),
-        track_id=track_id
     )
 
     p3 = Point(
@@ -164,12 +303,17 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         node_version=1,
         observation_id=uuid4(),
         observation_version=1,
+        observation_confidence=Confidence.HIGH,
         source_id=uuid4(),
-        track_id=track_id
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_uuid,
+    )
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -179,7 +323,7 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -247,7 +391,9 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
 
     # check that cotravels exist in Findings table
     findings = (
-        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value))
+        .scalars()
+        .all()
     )
 
     assert len(findings) == 1
@@ -255,9 +401,9 @@ def test_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     assert findings[0].algorithm_configuration
 
 
-def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -270,7 +416,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p2 = Point(
@@ -283,7 +429,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p3 = Point(
@@ -296,11 +442,16 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_uuid,
+    )
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -311,7 +462,7 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 2
     cotravels = sorted(cotravels, key=lambda cotravel: cotravel.true_cotravel)  # check lag_lead first
@@ -439,7 +590,9 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
 
     # check that cotravels exist in Findings table
     findings = (
-        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value))
+        .scalars()
+        .all()
     )
 
     assert len(findings) == 2
@@ -447,9 +600,9 @@ def test_multiple_cotravel_success(mock_oms_client, tester_db, db, mock_oms_crud
     assert findings[0].algorithm_configuration
 
 
-def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
 
     # 35 minutes behind fixture track
     p1 = Point(
@@ -462,7 +615,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p2 = Point(
@@ -475,7 +628,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p3 = Point(
@@ -488,11 +641,16 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_uuid,
+    )
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -502,7 +660,7 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
@@ -570,7 +728,9 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
 
     # check that cotravels exist in Findings table
     findings = (
-        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value))
+        .scalars()
+        .all()
     )
 
     assert len(findings) == 1
@@ -578,9 +738,9 @@ def test_lag_lead_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     assert findings[0].algorithm_configuration
 
 
-def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool):
+def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
 
     # 95 minutes behind fixture track
     p1 = Point(
@@ -593,7 +753,7 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p2 = Point(
@@ -606,7 +766,7 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p3 = Point(
@@ -619,20 +779,25 @@ def test_cotravel_too_far_behind(mock_oms_client, tester_db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_uuid,
+    )
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 0
 
 
 def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, tester_db, db, mock_oms_crud_tool):
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
 
     # 10 minutes behind fixture track
     p1 = Point(
@@ -645,7 +810,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p2 = Point(
@@ -658,7 +823,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     p3 = Point(
@@ -671,7 +836,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # past observational threshold so shouldn't be added
@@ -685,11 +850,16 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3, p4],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_uuid,
+    )
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -699,7 +869,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: List[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]

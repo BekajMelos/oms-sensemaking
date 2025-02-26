@@ -1,6 +1,7 @@
 """Resolution Controller Unit Tests"""
+
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable
 from unittest import mock
 from uuid import uuid4
 
@@ -28,21 +29,14 @@ def mock_res_controller():
 @mock.patch("oms_sensemaking.core.controllers.as_completed")
 @mock.patch("oms_sensemaking.core.controllers.ThreadPoolExecutor")
 def test_res_controller(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
-    mock_res_controller: ResolutionSensemakerController):
-
+    mock_executor: ThreadPoolExecutor, mock_as_completed: Callable, mock_res_controller: ResolutionSensemakerController
+):
     # register the sensemaker without starting the listener
     mock_res_controller.register("resolution", ResolutionSensemaker(mock_res_controller.oms_crud_tool))
 
     # mock oms call
     oms_attribute = AttributeAttribute.model_construct(
-        id=uuid4(),
-        attributeIri="test",
-        attributeValue="test",
-        nodeId=uuid4(),
-        sourceId=uuid4(),
-        acm=DEFAULT_ACM
+        id=uuid4(), attributeIri="test", attributeValue="test", nodeId=uuid4(), sourceId=uuid4(), acm=DEFAULT_ACM
     )
 
     mock_res_controller.oms_crud_tool.get_attribute = mock.MagicMock()
@@ -64,7 +58,4 @@ def test_res_controller(
     mock_res_controller.handle_event(object_event)
 
     mock_res_controller.oms_crud_tool.get_attribute.assert_called_with(oms_attribute.id)
-    instance.submit.assert_called_with(
-        mock_res_controller._registry["resolution"].execute,
-        oms_attribute
-    )
+    instance.submit.assert_called_with(mock_res_controller._registry["resolution"].execute, oms_attribute)

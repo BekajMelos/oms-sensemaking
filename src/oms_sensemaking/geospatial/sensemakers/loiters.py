@@ -3,10 +3,8 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import List
 from uuid import UUID, uuid4
 
-from geolib import geohash
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeInput,
@@ -79,12 +77,12 @@ class Loiter(FindingBase):
 
 
 class LoiterOmsPublisher(OmsPublisher):
-    def format_nodes(self, track: Track, loiters: List[Loiter]) -> list[CreateNodeInput]:
+    def format_nodes(self, track: Track, loiters: list[Loiter]) -> list[CreateNodeInput]:
         """
         Format Node Objects to publish to OMS
 
         :param track: Track in which the loiter was found
-        :param loiters: List of Loiter events
+        :param loiters: list of Loiter events
         :return: CreateNodeInput objects
         """
         formatted_nodes = []
@@ -104,12 +102,12 @@ class LoiterOmsPublisher(OmsPublisher):
 
         return formatted_nodes
 
-    def format_relationships(self, track: Track, loiters: List[Loiter]) -> list[CreateRelationshipInput]:
+    def format_relationships(self, track: Track, loiters: list[Loiter]) -> list[CreateRelationshipInput]:
         """
         Format Relationship Objects to publish to OMS
 
         :param track: Track in which the loiter was found
-        :param loiters: List of Loiter events
+        :param loiters: list of Loiter events
         :return: CreateRelationshipInput objects
         """
 
@@ -131,12 +129,12 @@ class LoiterOmsPublisher(OmsPublisher):
 
         return formatted_relationships
 
-    def format_attributes(self, track: Track, loiters: List[Loiter]) -> list[CreateAttributeInput]:
+    def format_attributes(self, track: Track, loiters: list[Loiter]) -> list[CreateAttributeInput]:
         """
         Format Attribute Objects to publish to OMS
 
         :param track: Track in which the loiter was found
-        :param loiters: List of Loiter events
+        :param loiters: list of Loiter events
         :return: CreateAttributeInput objects
         """
         formatted_attributes = []
@@ -199,7 +197,7 @@ class LoiterSensemaker(Sensemaker):
         add it to the list to be returned.
 
         :param data: The track to analyze.
-        :return: List[Loiter] list of loiter events found
+        :return: list[Loiter] list of loiter events found
         """
         LOGGER.debug(f"Detecting Loiters in {data.node_id}")
         confirmed_loiters: list[Loiter] = []
@@ -211,7 +209,7 @@ class LoiterSensemaker(Sensemaker):
             LOGGER.debug(f"Prospective Loiter: {point_geohash}: {potential_loiters}")
             for potential_loiter in potential_loiters:
                 time_diff = abs(potential_loiter.latest_time - potential_loiter.start_time)
-                if time_diff >= LOITER_MIN_TIME:
+                if time_diff >= timedelta(seconds=self.config["loiter_min_time"]):
                     # if craft loitered long enough
                     loiter_points: list[Point] = []
                     for point in data.points:
@@ -234,8 +232,8 @@ class LoiterSensemaker(Sensemaker):
                     confirmed_loiters.append(loiter)
 
         if confirmed_loiters:
-            track_id = data.points[0].track_id
-            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_id}")
+            track_uuid = data.track_uuid
+            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_uuid}")
 
         for loiter in confirmed_loiters:
             LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)
@@ -252,15 +250,13 @@ class LoiterSensemaker(Sensemaker):
         (PotentialLoiters). Keep adding points to a prospective loiter if they are within the
         geohash and the time threshold. Avoid accidentally removing valid loiters
 
-        :param points: List of track points
+        :param points: list of track points
         :return: Map of geohashes to a list of potential loiters within that geohash
         """
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-            point_geohash_low = geohash.encode(
-                lat=point.coordinates[1], lon=point.coordinates[0], precision=SETTINGS.geohash_low
-            )
+            point_geohash_low = point.geohash[: SETTINGS.geohash_low]
 
             if point_geohash_low in prospective_loiters:
                 # existing geohash

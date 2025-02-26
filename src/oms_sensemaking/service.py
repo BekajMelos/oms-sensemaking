@@ -4,7 +4,6 @@ import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
 from threading import Thread
-from typing import Tuple
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
@@ -41,9 +40,11 @@ def get_controllers() -> list[SensemakerController]:
             SQSListener("ResolutionSQSListener", SETTINGS.sqs_res_queue_url, event_filter=ResolutionQueueFilter())
         ),
         MilSymbolSensemakerController(
-            SQSListener("MilSymbolSQSListener",
-                        SETTINGS.mil_symbol_settings.sqs_mil_symbol_queue_url,
-                        event_filter=MilSymbolQueueFilter())
+            SQSListener(
+                "MilSymbolSQSListener",
+                SETTINGS.mil_symbol_settings.sqs_mil_symbol_queue_url,
+                event_filter=MilSymbolQueueFilter(),
+            )
         ),
         SemanticSensemakerController(NoOpEventConsumer()),
     ]
@@ -62,7 +63,7 @@ async def lifespan(application: FastAPI):
     """
     # startup
     LOGGER.info("Initializing sensemaker controllers")
-    controllers: list[Tuple[SensemakerController, Thread]] = []
+    controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
