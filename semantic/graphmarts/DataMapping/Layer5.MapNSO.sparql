@@ -1,0 +1,54 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+PREFIX ingest_omsb_graphmart: <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Model#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+INSERT {
+    GRAPH ${targetGraph} {
+      ?mat_art a ?mat_art_class ;
+      	rdfs:label ?node_name ;
+        ?located_at ?observed_geometry ;
+      	?nso ?nso_bool ;
+      	# very unsure of this triple
+      	?start	?time ;
+      	# Still using node.id as a placeholder for all source obj
+      	?has_all_source_obj_id ?node_id .
+  }
+}
+WHERE {
+  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+	?mat_art_node ingest_omsb_graphmart:Node.class_iri ?object  ;
+		ingest_omsb_graphmart:Node.name ?node_name ;
+        ingest_omsb_graphmart:Node.id ?node_id ;
+    	ingest_omsb_graphmart:Node.is_nso ?nso_bool
+
+    FILTER (?object IN (
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Artifact"
+    ) ) .
+
+    # the OPTIONAL is because not all nodes have an observation assoc'd w/ them in OMSB2
+	OPTIONAL {    ?observation_obj ingest_omsb_graphmart:Observation.node_id ?node_id  ;
+		ingest_omsb_graphmart:Observation.geometry ?observed_geometry .
+    }
+    
+    # start (this is temporary, unsure of what true IRI is for Start Date attribute, will
+    # change in the future most likely)
+    OPTIONAL {    ?time_obj ingest_omsb_graphmart:Attribute.node_id ?node_id  ;
+                  ingest_omsb_graphmart:Attribute.attribute_value ?time ;
+                  ingest_omsb_graphmart:Attribute.attribute_iri ?start_attribute_iri ;
+      FILTER (?start_attribute_iri IN (
+          "https://foundry.ai.mil/DICO/v3.1.0/Start_Time"
+      ) )
+    }
+    
+    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
+    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    BIND(IRI("https://foundry.ai.mil/MIDB_GST/v1/Located_At") AS ?located_at)
+    BIND(IRI("https://foundry.ai.mil/DICO/v3.1.0/Start_Time") AS ?start)
+    BIND(IRI("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object") AS ?nso)
+    BIND(IRI("http://www.ontologyrepository.com/CommonCoreOntologies/Artifact") AS ?mat_art_class)
+    BIND (IRI ( CONCAT ( "https://blackcape.io/2025/01/omsdiekm/", ?node_id)) as ?mat_art)
+    BIND(IRI("https://foundry.ai.mil/ontology/4901-001/DefenseIntelligenceCoreOntology/hasAllSourceObjectID") AS ?has_all_source_obj_id)
+  }
+}
