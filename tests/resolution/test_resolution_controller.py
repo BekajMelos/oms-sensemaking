@@ -50,7 +50,7 @@ def test_res_controller(
     mock_as_completed.return_value = []
 
     audit_event = AuditLogEvent(
-        userDn="test",
+        userId="test",
         objectId=oms_attribute.id,
         objectType=ObjectType.ATTRIBUTE,
         action=Action.CREATE,

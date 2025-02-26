@@ -50,7 +50,7 @@ def test_mil_sym_controller(
     mock_as_completed.return_value = []
 
     audit_event = AuditLogEvent(
-        userDn="test",
+        userId="test",
         objectId=oms_node.id,
         objectType=ObjectType.NODE,
         action=Action.CREATE,
