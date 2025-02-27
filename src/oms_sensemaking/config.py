@@ -264,7 +264,7 @@ class Settings(BaseSettings):
         60,
         description="Length of time bins in seconds for grouping Points in track weaver."
     )
-    confidence_weight_unknown: float = Field(1.0, description="Weight assigned to UNKNOWN confidence.")
+    confidence_weight_unknown: float = Field(0.5, description="Weight assigned to UNKNOWN confidence.")
     confidence_weight_high: float = Field(1.0, description="Weight assigned to HIGH confidence.")
     confidence_weight_moderate: float = Field(0.5, description="Weight assigned to MODERATE confidence.")
     confidence_weight_low: float = Field(0.25, description="Weight assigned to LOW confidence.")
