@@ -7,7 +7,6 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
-    AttributesAttributes,
     NodeNode,
     NodesNodes,
     RelationshipRelationship,
@@ -101,7 +100,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
         acm=DEFAULT_ACM
     )
     # mock osuffix already existing and be_number being sent
-    mock_oms_crud_tool.get_attributes.return_value = AttributesAttributes.model_construct(data=[new_osuffix_attribute])
+    mock_oms_crud_tool.get_node_attribute_by_iri.return_value = [new_osuffix_attribute]
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[])
     assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
 

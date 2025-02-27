@@ -4,6 +4,7 @@ from typing import Iterable
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.inference.engine.engine import Engine
 from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
+from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 LOGGER = logging.getLogger(__name__)
@@ -14,7 +15,8 @@ class InferenceSensemaker(Sensemaker):
         """Create a new instance of InferenceSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute")]}
+        self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute"),
+                                 Incursion("Incursion")]}
         self.engine = Engine()
 
         for rule in self.config.get("rules", []):
