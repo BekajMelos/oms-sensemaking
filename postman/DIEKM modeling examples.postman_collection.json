@@ -1739,6 +1739,7 @@
 							"}",
 							"",
 							"function skip_folder() {",
+							"    console.log(\"Missing MY_TEST_TAG and/or MY_PREFIX\")",
 							"    pm.execution.skipRequest()",
 							"}"
 						]
