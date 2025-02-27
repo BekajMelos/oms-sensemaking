@@ -2,7 +2,7 @@
 import logging
 from typing import Dict, List, Optional
 
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode
 
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 
@@ -35,7 +35,7 @@ class MilSymbol2525D(MilSymbol):
     def enrich(self,
                context_attr: Optional[AttributeAttribute],
                affiliation_attr: Optional[AttributeAttribute],
-               iri: str,
+               oms_node: NodeNode,
                ancestor_iris: List[str],
                status_attr: Optional[AttributeAttribute]) -> None:
         """Enrich the code given node attribute data
@@ -49,7 +49,7 @@ class MilSymbol2525D(MilSymbol):
 
         self.enrich_context(context_attr)
         self.enrich_affiliation(affiliation_attr)
-        self.enrich_dimension(iri, ancestor_iris)
+        self.enrich_dimension(oms_node, ancestor_iris)
         self.enrich_status(status_attr)
 
     def enrich_context(self, context_attr: Optional[AttributeAttribute]) -> None:
@@ -66,6 +66,7 @@ class MilSymbol2525D(MilSymbol):
                 if context in context_list:
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
                     self.source_ids.put((3, context_attr.sourceId))
+                    self.acms.append(context_attr.acm)
                     LOGGER.debug(f'Updated context: {code} b/c {context}')
                     break
 
@@ -82,13 +83,14 @@ class MilSymbol2525D(MilSymbol):
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
+                    self.acms.append(affiliation_attr.acm)
                     LOGGER.debug(f'Updated std identity: {code} b/c {node_standard_identity}')
                     break
 
         # TODO if no affiliation and derivative node
         # look for parent relationship http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy
 
-    def enrich_dimension(self, iri: str, ancestor_iris: List[str]) -> None:
+    def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
         """Update Dimension
 
         Use node's IRIs to update list. If not found and is Unknown, use ancestor IRIs
@@ -109,11 +111,12 @@ class MilSymbol2525D(MilSymbol):
                 if current_iri in dimension_iris:
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_1, code[1])
+                    self.acms.append(oms_node.acm)
                     LOGGER.debug(f'Updated dimension: {code} b/c {current_iri}')
                     return True
             return False
 
-        if update_dimension(iri):
+        if update_dimension(oms_node.classIri):
             return
 
         dimension_code = self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0] + self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0]
@@ -138,5 +141,6 @@ class MilSymbol2525D(MilSymbol):
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))
+                    self.acms.append(status_attr.acm)
                     LOGGER.debug(f'Updated status: {code} b/c {status}')
                     break
