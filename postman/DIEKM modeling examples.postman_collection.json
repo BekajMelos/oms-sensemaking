@@ -1071,7 +1071,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{FUNCTION_IRI}}\"\n            attributeValue: \"{{MY_PREFIX}} Function\"\n            attributeDisplayValue: \"Test Function\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
+										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{FUNCTION_IRI}}\"\n            attributeValue: \"{{MY_PREFIX}} Function\"\n            attributeDisplayValue: \"Test Function\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
 										"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 									}
 								},
@@ -1108,7 +1108,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{OPERATIONAL_STATUS_IRI}}\"\n            attributeValue: \"{{MY_PREFIX}} Status\"\n            attributeDisplayValue: \"Test Status\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: ADMIN\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
+										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateAttribute(\n        input: {\n            attributeIri: \"{{OPERATIONAL_STATUS_IRI}}\"\n            attributeValue: \"{{MY_PREFIX}} Status\"\n            attributeDisplayValue: \"Test Status\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            labels: [SENSEMAKING]\n            sourceType: SINGLE_SOURCE\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n            isMutable: true\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        attributeValue\n        confidence\n        attributeIri\n    }\n}",
 										"variables": "{\n    \"nodeAId\": \"{{shipyardId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 									}
 								},
@@ -1732,6 +1732,14 @@
 							"    }",
 							"} else {",
 							"    pm.request.headers.remove(\"user_dn\"); // Ensure header is removed if present from previous runs",
+							"}",
+							"",
+							"if (!pm.environment.get(\"MY_TEST_TAG\") || !pm.environment.get(\"MY_PREFIX\")) {",
+							"    skip_folder()",
+							"}",
+							"",
+							"function skip_folder() {",
+							"    pm.execution.skipRequest()",
 							"}"
 						]
 					}
