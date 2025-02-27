@@ -121,10 +121,10 @@ class Settings(BaseSettings):
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Inference Sensemaker tags"
+        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
     incursion_tags: list[str] = Field(
-        ["oms_sensemaking", "inferred_attribute", "incursion_rule"], description="Incursion tags"
+        ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
     )
     inference_incursion_areas_of_interest_path: str = Field(
         "./data/areas_of_interest.json", description="Path to areas of interest file"
