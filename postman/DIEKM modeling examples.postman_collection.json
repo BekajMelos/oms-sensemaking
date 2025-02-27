@@ -1750,7 +1750,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{myPrefix}} Material Artifact Alpha\"\n            classIri: \"{{MATERIAL_ARTIFACT_IRI}}\"\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+										"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{MY_PREFIX}} Material Artifact Alpha\"\n            classIri: \"{{MATERIAL_ARTIFACT_IRI}}\"\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
 										"variables": ""
 									}
 								},
@@ -1796,7 +1796,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateObservation(\n        input: {\n            classIri: \"{{GEOSPATIAL_LOCATION_IRI}}\"\n            tags: [\"DIEKM Testing\", \"{{myTestTag}}\"]\n            confidence: UNKNOWN\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            geometry: {\n                type: \"Point\",\n                coordinates: [391.288931, 117.245939]\n            }\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        classIri\n    }\n}",
+										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateObservation(\n        input: {\n            classIri: \"{{GEOSPATIAL_LOCATION_IRI}}\"\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            confidence: UNKNOWN\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            geometry: {\n                type: \"Point\",\n                coordinates: [391.288931, 117.245939]\n            }\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        classIri\n    }\n}",
 										"variables": "{\n    \"nodeAId\": \"{{ArtifactAlpha}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 									}
 								},
@@ -3124,6 +3124,160 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "botOriginatorId",
+			"value": ""
+		},
+		{
+			"key": "usAFProviderId",
+			"value": ""
+		},
+		{
+			"key": "fedGovRepSourceId",
+			"value": ""
+		},
+		{
+			"key": "battalionAlphaId",
+			"value": ""
+		},
+		{
+			"key": "battalionBetaId",
+			"value": ""
+		},
+		{
+			"key": "battalionDeltaId",
+			"value": ""
+		},
+		{
+			"key": "battalionGammaId",
+			"value": ""
+		},
+		{
+			"key": "tankAlphaId",
+			"value": ""
+		},
+		{
+			"key": "tankAlphaLocation1",
+			"value": ""
+		},
+		{
+			"key": "tankDeltaId",
+			"value": ""
+		},
+		{
+			"key": "tankDeltaLocation1",
+			"value": ""
+		},
+		{
+			"key": "battleshipId",
+			"value": ""
+		},
+		{
+			"key": "fordCarrierId",
+			"value": ""
+		},
+		{
+			"key": "shipyardId",
+			"value": ""
+		},
+		{
+			"key": "hangarId",
+			"value": ""
+		},
+		{
+			"key": "continuantId1",
+			"value": ""
+		},
+		{
+			"key": "allegianceRelationshipId",
+			"value": ""
+		},
+		{
+			"key": "AfUnitAlphaId",
+			"value": ""
+		},
+		{
+			"key": "AfUnitBetaId",
+			"value": ""
+		},
+		{
+			"key": "InventoryAlphaId",
+			"value": ""
+		},
+		{
+			"key": "InventoryBetaId",
+			"value": ""
+		},
+		{
+			"key": "JetAlphaId",
+			"value": ""
+		},
+		{
+			"key": "JetBetaId",
+			"value": ""
+		},
+		{
+			"key": "continuantId2",
+			"value": ""
+		},
+		{
+			"key": "ArtifactAlpha",
+			"value": ""
+		},
+		{
+			"key": "ArtifactAlphaLocation1",
+			"value": ""
+		},
+		{
+			"key": "relationshipIds",
+			"value": ""
+		},
+		{
+			"key": "relationshipId",
+			"value": ""
+		},
+		{
+			"key": "attributeIds",
+			"value": ""
+		},
+		{
+			"key": "attributeId",
+			"value": ""
+		},
+		{
+			"key": "observationIds",
+			"value": ""
+		},
+		{
+			"key": "observationId",
+			"value": ""
+		},
+		{
+			"key": "nodeIds",
+			"value": ""
+		},
+		{
+			"key": "nodeId",
+			"value": ""
+		},
+		{
+			"key": "sourceIds",
+			"value": ""
+		},
+		{
+			"key": "providerIds",
+			"value": ""
+		},
+		{
+			"key": "providerId",
+			"value": ""
+		},
+		{
+			"key": "originatorIds",
+			"value": ""
 		}
 	]
 }
