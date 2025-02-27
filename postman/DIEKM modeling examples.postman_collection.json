@@ -1,6 +1,10 @@
 {
 	"info": {
+<<<<<<< HEAD
 		"_postman_id": "091b19dd-a913-490e-800c-b537a98cc200",
+=======
+		"_postman_id": "54abac2a-f9d9-4e13-89e2-e23782f8d536",
+>>>>>>> main
 		"name": "DIEKM modeling examples",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "41174150"
@@ -1714,6 +1718,7 @@
 							"response": []
 						}
 					]
+<<<<<<< HEAD
 				},
 				{
 					"name": "NSO",
@@ -1811,6 +1816,8 @@
 							"response": []
 						}
 					]
+=======
+>>>>>>> main
 				}
 			],
 			"event": [
