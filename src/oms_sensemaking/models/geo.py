@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from functools import cached_property, reduce
 from operator import mul
 
+import geopy.distance
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
@@ -34,7 +35,6 @@ from oms_sensemaking.config import SETTINGS
 from .base import AuditMixin, BaseORM, OmsObservationMixin, SecurityMarkingMixin, UtcDateTime
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
 
 track_points_table = Table(
     "track_points",
@@ -459,8 +459,6 @@ def _filter_teleportation(points: list[Point]) -> list[Point]:
     """
     from logging import getLogger
 
-    from geoalchemy2.functions import ST_Distance
-
     logger = getLogger(__name__)
 
     for i in range(1, len(points)):
@@ -469,7 +467,10 @@ def _filter_teleportation(points: list[Point]) -> list[Point]:
         prev_point = points[i - 1]
 
         time_delta = current_point.detection_time - prev_point.detection_time
-        distance: float = ST_Distance(current_point.location, prev_point.location).scalar()
+        distance: float = geopy.distance.geodesic(
+            (current_point.coordinates[1], current_point.coordinates[0]),
+            (prev_point.coordinates[1], prev_point.coordinates[0]),
+        ).meters
         relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
 
         # If the distance between two points is very large and the time between them is very small, it's likely that the
