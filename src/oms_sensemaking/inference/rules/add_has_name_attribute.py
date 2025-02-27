@@ -1,3 +1,6 @@
+import uuid
+from dataclasses import dataclass, field
+
 from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
 )
@@ -9,8 +12,20 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.sensemakers import FindingBase
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+from oms_sensemaking.models.sensemaking import FindingType
+
+
+@dataclass
+class AddHasNameFinding(FindingBase):
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_HAS_NAME)
+    acm: dict
+    attr_id: uuid.UUID
+
+    def get_acm(self) -> dict:
+        return self.acm
 
 
 class AddHasNameAttribute(BaseRule):
@@ -20,26 +35,32 @@ class AddHasNameAttribute(BaseRule):
     pointing to the node
     """
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, name: str = ""):
+        super().__init__(name)
+        self.version = (1, 0, 0)
+        self.config = {
+            "inference_add_has_name_attribute_iri": SETTINGS.inference_add_has_name_attribute_iri,
+            "inference_add_has_name_attribute_meta_data_iri": SETTINGS.inference_add_has_name_attribute_meta_data_iri,
+            "inference_tags": SETTINGS.inference_tags,
+        }
 
-    def evaluate(self, input: RuleContext) -> bool:
+    def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Determine if the Attribute is a Name attribute for a node
         """
 
         return (
-            input.attribute
-            and input.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
-            and input.attribute.attributeValue
+            rule_context.attribute
+            and rule_context.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
+            and rule_context.attribute.attributeValue
         )
 
-    def action(self, input: RuleContext):
+    def action(self, rule_context: RuleContext):
         """
         Create a metadata attribute for a node that indicates that it has a name
         """
 
-        attr = input.attribute
+        attr = rule_context.attribute
         attribute = CreateAttributeInput(
             attributeIri=SETTINGS.inference_add_has_name_attribute_meta_data_iri,
             attributeValue="true",
@@ -51,14 +72,17 @@ class AddHasNameAttribute(BaseRule):
             tags=SETTINGS.inference_tags,
         )
 
-        oms_client.create_attribute(attribute)
+        response = oms_client.create_attribute(attribute)
 
-    def has_action_already_ran(self, input: RuleContext):
+        finding = AddHasNameFinding(attr.acm, response.id)
+        self._finding_writer.save_findings([finding], self)
+
+    def has_action_already_ran(self, rule_context: RuleContext):
         """
         Determine if a metadata attribute has already been created for a node
         """
 
-        attr = input.attribute
+        attr = rule_context.attribute
         if not attr:
             return False
 

@@ -56,6 +56,9 @@ build-docs:  ## Build project documentation static site.
 version:  ## Display the project version
 	@echo $(shell source .venv/bin/activate && python -m setuptools_scm)
 
+list-versions: ## Display the tagged versions
+	@git tag -n
+
 up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
 	docker compose --profile local up -d ${DOCKER_FLAGS}
 

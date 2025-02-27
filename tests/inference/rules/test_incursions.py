@@ -1,5 +1,4 @@
 import copy
-import json
 from unittest.mock import MagicMock
 
 import pytest
@@ -50,8 +49,8 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.nodeId = "parent_node_id"
-    attr.geometry = json.dumps(areas_of_interest[0])
+    attr.nodeId = "incurring_object_id"
+    attr.geometry = areas_of_interest[0]
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     return attr
@@ -71,8 +70,8 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.nodeId = "parent_node_id"
-    attr.geometry = json.dumps(areas_of_interest[0])
+    attr.nodeId = "incurring_object_id"
+    attr.geometry = areas_of_interest[0]
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     return attr
@@ -83,7 +82,7 @@ def observational_node_region1(mocker: MockerFixture):
     """
     Incoming observation
     """
-    geometry = {"coordinates": [-157.20314345121238, 20.32200240882949], "type": "Point"}
+    geometry = {"coordinates": [-155.6235, 19.7023], "type": "Point"}
 
     obs = mocker.Mock(spec=ObservationObservation)
     obs.id = "obs_id"
@@ -93,7 +92,7 @@ def observational_node_region1(mocker: MockerFixture):
     obs.className = "className"
     obs.confidence = Confidence.MODERATE
     obs.sourceId = "obs_sourceId"
-    obs.nodeId = "parent_node_id"
+    obs.nodeId = "incurring_object_id"
     obs.geometry = geometry
     obs.startTime = "2024-01-01T00:00:00+00:00"
     obs.endTime = "2025-01-01T00:00:00+00:00"
@@ -116,7 +115,7 @@ def observational_node_region2(mocker: MockerFixture):
     obs.className = "className"
     obs.confidence = Confidence.MODERATE
     obs.sourceId = "obs_sourceId"
-    obs.nodeId = "parent_node_id"
+    obs.nodeId = "incurring_object_id"
     obs.geometry = geometry
     obs.startTime = "2024-01-01T00:00:00+00:00"
     obs.endTime = "2025-01-01T00:00:00+00:00"
@@ -139,7 +138,7 @@ def no_inc_observational_node(mocker: MockerFixture):
     obs.className = "className"
     obs.confidence = Confidence.MODERATE
     obs.sourceId = "obs_sourceId"
-    obs.nodeId = "parent_node_id"
+    obs.nodeId = "incurring_object_id"
     obs.geometry = geometry
     obs.startTime = "2024-01-01T00:00:00+00:00"
     obs.endTime = "2025-01-01T00:00:00+00:00"
@@ -148,25 +147,25 @@ def no_inc_observational_node(mocker: MockerFixture):
 
 
 @pytest.fixture
-def parent_node(mocker: MockerFixture):
+def incurring_object(mocker: MockerFixture):
     """
     A parent node of observational_node_region1
     """
     node = mocker.Mock(spec=NodeNode)
-    node.id = "parent_node_id"  # Base Node
+    node.id = "incurring_object_id"
     node.name = "Base Node"
     node.geoQuery = "some query"
     node.relationships = "another query"
-    node.tier = "DERIVATIVE"  # idk what this should be
+    node.tier = "DERIVATIVE"
 
     return node
 
 
 # Mock methods
 @pytest.fixture
-def mock_get_node(mocker: MockerFixture, parent_node):
+def mock_get_node(mocker: MockerFixture, incurring_object):
     mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_node")
-    mock_get_node.return_value = parent_node
+    mock_get_node.return_value = incurring_object
     return mock_get_node
 
 
@@ -249,7 +248,7 @@ def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_acti
 
 def test_new_incursion_region1(
     observational_node_region1,
-    parent_node,
+    incurring_object,
     mock_get_node,
     mock_get_attributes,
     mock_create_activity,
@@ -265,8 +264,8 @@ def test_new_incursion_region1(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
-            nodeIds=[parent_node.id],
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )
     )
@@ -277,10 +276,10 @@ def test_new_incursion_region1(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region1.confidence,
             sourceId=observational_node_region1.sourceId,  # change to config value
-            nodeId=parent_node.id,
+            nodeId=incurring_object.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(areas_of_interest[0]),
+            geometry=areas_of_interest[0],
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
@@ -302,7 +301,7 @@ def test_new_incursion_region1(
 
 def test_new_incursion_region2(
     observational_node_region2,
-    parent_node,
+    incurring_object,
     mock_get_node,
     mock_get_attributes,
     mock_create_activity,
@@ -318,8 +317,8 @@ def test_new_incursion_region2(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[1])),
-            nodeIds=[parent_node.id],
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
+            nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )
     )
@@ -330,10 +329,10 @@ def test_new_incursion_region2(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region2.confidence,
             sourceId=observational_node_region2.sourceId,
-            nodeId=parent_node.id,
+            nodeId=incurring_object.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
-            geometry=json.dumps(areas_of_interest[1]),
+            geometry=areas_of_interest[1],
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
@@ -355,7 +354,7 @@ def test_new_incursion_region2(
 
 def test_two_existing_incursions(
     observational_node_region1,
-    parent_node,
+    incurring_object,
     attribute1,
     attribute2,
     mock_get_node,
@@ -380,24 +379,24 @@ def test_two_existing_incursions(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=json.dumps(areas_of_interest[0])),
-            nodeIds=[parent_node.id],
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            nodeIds=[incurring_object.id],
             tags=SETTINGS.incursion_tags,
         )
     )
 
     mock_get_observations.assert_called_with(
         ObservationQuery(
-            nodeId=[parent_node.id],
-            startTime=TimeQuery(gte=attribute2.valueEnd),
-            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            nodeId=[incurring_object.id],
+            startTime=TimeQuery(gt=attribute2.valueEnd),
+            endTime=TimeQuery(lt=observational_node_region1.startTime),
         )
     )
     mock_update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute1.id,
-            startTime=observational_node_region1.startTime,
-            endTime=observational_node_region1.endTime,
+            valueStart=observational_node_region1.startTime,
+            valueEnd=observational_node_region1.endTime,
         )
     )
     mock_update_activity.assert_called_with(
@@ -412,7 +411,7 @@ def test_two_existing_incursions(
 
 def test_existing_incursion_nonoverlapping_time(
     observational_node_region1,
-    parent_node,
+    incurring_object,
     attribute2,
     mock_get_node,
     mock_get_attributes,
@@ -435,16 +434,16 @@ def test_existing_incursion_nonoverlapping_time(
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_observations.assert_called_with(
         ObservationQuery(
-            nodeId=[parent_node.id],
-            startTime=TimeQuery(gte=attribute2.valueEnd),
-            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            nodeId=[incurring_object.id],
+            startTime=TimeQuery(gt=attribute2.valueEnd),
+            endTime=TimeQuery(lt=observational_node_region1.startTime),
         )
     )
     mock_update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute2.id,
-            startTime=attribute2.valueStart,
-            endTime=observational_node_region1.endTime,
+            valueStart=attribute2.valueStart,
+            valueEnd=observational_node_region1.endTime,
         )
     )
     mock_update_activity.assert_called_with(

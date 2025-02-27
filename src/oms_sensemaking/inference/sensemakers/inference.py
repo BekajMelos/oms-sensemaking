@@ -4,6 +4,7 @@ from typing import Iterable
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.inference.engine.engine import Engine
 from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
+from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 LOGGER = logging.getLogger(__name__)
@@ -14,7 +15,8 @@ class InferenceSensemaker(Sensemaker):
         """Create a new instance of InferenceSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute")]}
+        self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute"),
+                                 Incursion("Incursion")]}
         self.engine = Engine()
 
         for rule in self.config.get("rules", []):
@@ -30,10 +32,8 @@ class InferenceSensemaker(Sensemaker):
 
         self.engine.execute_rules(data)
 
-        # TODO Figure out what to do with findings, process_data is called in
-        # the base class and is expected to return findings, but the important
-        # config+algorithm data for Inference is in the rules
+        # process_data is called in the base class and is expected to return findings,
+        # but the important config+algorithm data for Inference is in the rules
+        # the rules self publish and save findings, there's nothing more to do here
 
-        # return data
-        # purposefully do not return any results for now
         return []

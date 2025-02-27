@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from threading import Lock
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, List, Protocol, Tuple
 
 import httpx
 from geoalchemy2 import WKBElement
@@ -117,7 +117,17 @@ class FindingBase(ABC):
         raise NotImplementedError
 
 
-class Sensemaker(ABC):
+class SensemakerMetaData(Protocol):
+    name: str
+    config: dict
+    version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
+    executed_at: datetime
+
+    @property
+    def version_string(self) -> str: ...
+
+
+class Sensemaker(ABC, SensemakerMetaData):
     """Abstract Sensemaker base class."""
 
     def __init__(self, *args, **kwargs) -> None:
@@ -131,6 +141,7 @@ class Sensemaker(ABC):
         #: The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
         self.version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
         self.executed_at: datetime
+        self._finding_writer = FindingWriter()
 
     def setup(self):
         """
@@ -186,33 +197,7 @@ class Sensemaker(ABC):
         return results
 
     def save_findings(self, finding_objects: Iterable[FindingBase]) -> None:
-        """
-        Write the findings to the sensemaking db
-
-        :param finding_objects: List of finding objects to write as findings
-        """
-
-        if finding_objects:
-            LOGGER.info(f"Saving findings from {self.name} {self.version_string} to DB")
-
-        findings: List = []
-        for finding_object in finding_objects:
-            finding = Finding(
-                acm=finding_object.get_acm(),
-                algorithm_name=self.name,
-                algorithm_version=f"{self.version[0]}.{self.version[1]}.{self.version[2]}",
-                algorithm_configuration=self.config,
-                executed_at=self.executed_at,
-                finding_type=finding_object.FINDING_TYPE,
-                finding_data=finding_object.to_dict(),
-                oms_version=SETTINGS.omsb_version,
-                published_at=datetime.now(tz=timezone.utc),
-            )
-            findings.append(finding)
-
-        with db_session() as db:
-            db.add_all(findings)
-            db.commit()
+        self._finding_writer.save_findings(finding_objects, self)
 
     @abstractmethod
     # TODO: enforce common return format
@@ -225,3 +210,34 @@ class Sensemaker(ABC):
         logic. Subclasses must override this method.
         """
         raise NotImplementedError()
+
+
+class FindingWriter:
+    def save_findings(self, finding_objects: Iterable[FindingBase], alg_meta_data: SensemakerMetaData) -> None:
+        """
+        Write the findings to the sensemaking db
+
+        :param finding_objects: List of finding objects to write as findings
+        """
+
+        if finding_objects:
+            LOGGER.info(f"Saving findings from {alg_meta_data.name} {alg_meta_data.version_string} to DB")
+
+        findings: List = []
+        for finding_object in finding_objects:
+            finding = Finding(
+                acm=finding_object.get_acm(),
+                algorithm_name=alg_meta_data.name,
+                algorithm_version=f"{alg_meta_data.version[0]}.{alg_meta_data.version[1]}.{alg_meta_data.version[2]}",
+                algorithm_configuration=alg_meta_data.config,
+                executed_at=alg_meta_data.executed_at,
+                finding_type=finding_object.FINDING_TYPE,
+                finding_data=finding_object.to_dict(),
+                oms_version=SETTINGS.omsb_version,
+                published_at=datetime.now(tz=timezone.utc),
+            )
+            findings.append(finding)
+
+        with db_session() as db:
+            db.add_all(findings)
+            db.commit()

@@ -8,12 +8,12 @@
 
 ##### Service Variables
 
-| Variable Name       | Example | Description                                                    | Docker Compose |
-|:--------------------|:--------|:---------------------------------------------------------------|:--------------:|
-| `APP_LOG_LEVEL`     | `DEBUG` | Option to set log level                                        | Yes            |
-| `RELOAD_APP`        | `1`     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
-| `ROOT_PATH`         | `/`     | BaseUrl for serving the project at                             | No             |
-| `UVICRON_ROOT_PATH` | `/`     | Uvicorn baseUrl for serving the project                        | Yes            |
+| Variable Name       | Example                     | Description                                                    | Docker Compose |
+|:--------------------|:----------------------------|:---------------------------------------------------------------|:--------------:|
+| `APP_LOG_LEVEL`     | `DEBUG`                     | Option to set log level                                        | Yes            |
+| `RELOAD_APP`        | `1`                         | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
+| `ROOT_PATH`         | `/services/sensemaking/1.0` | BaseUrl for serving the project at                             | No             |
+| `UVICORN_ROOT_PATH` | `/services/sensemaking/1.0` | Uvicorn baseUrl for serving the project                        | Yes            |
 
 
 ##### Database Settings
@@ -87,7 +87,7 @@
 | `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_IRI`            | `https://foundry.ai.mil/INDOPACOM/v5/Name`                                                        | Iri to find for the HasNameAttribute rule                      | No             |
 | `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_META_DATA_IRI`  | `https://foundry.ai.mil/MIDB_GST/v1/MDN`                                                          | Iri to apply for the HasNameAttribute rule                     | No             |
 | `INFERENCE_ADD_GARRISON_ATTRIBUTE_IRI`            | `https://blackcape.io/PLACEHOLDER/inGarrison`                                                     | Iri to apply to objects that are in their garrison             | No             |
-| `INFERENCE_INCURSION_IRI`                         | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion rule                            | No             |
+| `INFERENCE_INCURSION_ATTRIBUTE_IRI`                         | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion rule                            | No             |
 | `INFERENCE_PARTICIPATED_IN_IRI`                   | `https://blackcape.io/PLACEHOLDER/participatedIn`                                                 | Iri to determine if an object participated in an observation   | No             |
 | `INFERENCE_GARRISON_LOCATION_IRI`                 | `https://blackcape.io/PLACEHOLDER/garrisonedLocation`                                             | Iri for relationship between an object and its garrison        | No             |
 | `INFERENCE_ADD_IN_GARRISON_IRI`                   | `https://blackcape.io/PLACEHOLDER/isgarrisonedAt`                                                 | Iri for attribute showing that an object is out of garrison    | No             |
@@ -98,3 +98,7 @@
 | `RESOLUTION_RELATIONSHIP_NAME`                    | `Same As`                                                                                         | Relationship IRI for resolution sensemaker suggestions         | No             |
 | `RESOLUTION_RELATIONSHIP_IRI`                     | `https://foundry.ai.mil/MIDB/V3.3/relates_to`                                                     | Iri to set for the Resolution Finding URL                      | No             |
 | `DUPLICATE_FACILITY_IRIS`                         | `'["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"]'`| Iris to match on when looking for duplicate facilities         | No             |
+| `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL` | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger` | Resolution SQS Queue URL                 | Yes            |
+| `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True` | Toggle on/off Entity Resolution                 | No            |
+| `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS` | '["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]' | List of Affiliation IRIs to enrich from                 | No            |
+| `MIL_SYMBOL_SETTINGS__STATUS_IRIS` | '["https://foundry.ai.mil/DICO/v3.1.0/Condition"]' | List of Status IRIs to enrich from                 | No            |
