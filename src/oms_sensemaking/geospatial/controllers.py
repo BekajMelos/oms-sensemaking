@@ -4,6 +4,7 @@ import logging
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
+from operator import attrgetter
 from threading import Event, Timer
 from uuid import UUID, uuid4
 
@@ -168,6 +169,7 @@ class GeospatialSensemakerController(SensemakerController):
                     with db_session() as db:
                         try:
                             points = self.track_node_buffer[track_uuid]
+                            points.sort(key=attrgetter("detection_time"))
                             type_counter = Counter(type(p.observation_id) for p in points)
                             LOGGER.info("Observation ID types before common sense: %s", type_counter)
                             if SETTINGS.apply_common_sense_filters:
