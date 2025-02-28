@@ -1809,6 +1809,52 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Create Artifact Alpha Start Date",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Start Date of Artifact Alpha Set\", function () {",
+											"    pm.expect(jsonData.data.createObservation.id).to.exist;",
+											"});",
+											"pm.collectionVariables.set(\"ArtifactAlphaStartTime1\",jsonData.data.createObservation.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateObservation(\n        input: {\n            classIri: \"{{START_DATE_IRI}}\"\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            confidence: UNKNOWN\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            geometry: {\n                type: \"Point\",\n                coordinates: [391.288931, 117.245939]\n            }\n            startTime: \"2025-02-28T15:30:00Z\" \n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        classIri\n    }\n}",
+										"variables": "{\n    \"nodeAId\": \"{{ArtifactAlpha}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
