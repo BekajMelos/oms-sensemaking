@@ -1,7 +1,7 @@
 """Geospatial sensemaker controller."""
 
 import logging
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from threading import Event, Timer
@@ -127,10 +127,10 @@ class GeospatialSensemakerController(SensemakerController):
                     node_version=int(node_version),
                     observation_version=int(oms_obs.version),
                 ),
-                node_id=oms_obs.nodeId,
-                observation_id=oms_obs.id,
+                node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
+                observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),
                 observation_confidence=oms_obs.confidence,
-                source_id=oms_obs.sourceId,
+                source_id=oms_obs.sourceId if type(oms_obs.sourceId) is UUID else UUID(oms_obs.sourceId),
                 # TODO: Multiply by source weight if available
                 weight=self.confidence_weight_map[oms_obs.confidence],
             )
@@ -168,12 +168,18 @@ class GeospatialSensemakerController(SensemakerController):
                     with db_session() as db:
                         try:
                             points = self.track_node_buffer[track_uuid]
+                            type_counter = Counter(type(p.observation_id) for p in points)
+                            LOGGER.info("Observation ID types before common sense: %s", type_counter)
                             if SETTINGS.apply_common_sense_filters:
                                 # Get the IRI for the node
                                 iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
                                 points = apply_common_sense_filters(points, iri)
+                                type_counter = Counter(type(p.observation_id) for p in points)
+                                LOGGER.info("Observation ID types after common sense: %s", type_counter)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
+                            type_counter = Counter(type(oid) for oid in weaved_track.observation_ids)
+                            LOGGER.info("Observation ID types after track weaving: %s", type_counter)
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
@@ -197,8 +203,6 @@ class GeospatialSensemakerController(SensemakerController):
                             # make sure errors are caught
                             for future in as_completed(futures):
                                 _ = future.result()
-
-                            executor.shutdown(wait=True)
                     except Exception:
                         LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
                     finally:
