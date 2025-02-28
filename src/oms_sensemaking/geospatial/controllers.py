@@ -1,7 +1,7 @@
 """Geospatial sensemaker controller."""
 
 import logging
-from collections import Counter, defaultdict
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from operator import attrgetter
@@ -22,7 +22,8 @@ from oms_sensemaking.models.geo import (
     TimeBinTrackWeaver,
     Track,
     TrackWeaverBase,
-    apply_common_sense_filters,
+    filter_altitude_by_iri,
+    filter_teleportation,
 )
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -167,21 +168,20 @@ class GeospatialSensemakerController(SensemakerController):
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
                     with db_session() as db:
+                        db.expire_on_commit = False
                         try:
                             points = self.track_node_buffer[track_uuid]
                             points.sort(key=attrgetter("detection_time"))
-                            type_counter = Counter(type(p.observation_id) for p in points)
-                            LOGGER.info("Observation ID types before common sense: %s", type_counter)
+                            # TODO: Determine if changes to track weights during filtering are being saved to the DB
                             if SETTINGS.apply_common_sense_filters:
                                 # Get the IRI for the node
                                 iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
-                                points = apply_common_sense_filters(points, iri)
-                                type_counter = Counter(type(p.observation_id) for p in points)
-                                LOGGER.info("Observation ID types after common sense: %s", type_counter)
+                                points = filter_altitude_by_iri(points, iri)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
-                            type_counter = Counter(type(oid) for oid in weaved_track.observation_ids)
-                            LOGGER.info("Observation ID types after track weaving: %s", type_counter)
+                            # TODO: Changes to point weight here don't matter.
+                            # filter_teleportation needs to remove points.
+                            weaved_track.points = filter_teleportation(weaved_track.points)
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,

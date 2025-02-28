@@ -314,10 +314,14 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         time_bins = {
             k: tuple(g)
             for k, g in itertools.groupby(
-                (p for p in points if p.weight),
+                (p for p in points if p.weight > 0),
                 key=lambda x: x.detection_time.timestamp() // self.config["time_bin_size_seconds"],
             )
         }
+        LOGGER.info(
+            "Applying time bin weighted average to %s points with weight > 0.",
+            sum(len(bp) for bp in time_bins.values()),
+        )
         confidence_map = SETTINGS.confidence_weight_map
         weighted_points: list[Point] = []
         with db_session() as db:
@@ -329,7 +333,9 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
                 # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
-                LOGGER.info(f"Averaging {len(bin_points)} points: {', '.join(str(p.coordinates) for p in bin_points)}")
+                LOGGER.info(
+                    f"Averaging {len(bin_points)} bin points: {', '.join(str(p.coordinates) for p in bin_points)}"
+                )
                 acm_rollup = aac_client.get_acm_rollup([{"ACM": point.acm} for point in bin_points])
                 point_dict = {
                     "node_id": bin_points[0].node_id,
@@ -438,71 +444,60 @@ def apply_common_sense_filters(points: list[Point], iri: str) -> list[Point]:
     :param iri: The IRI of the object being tracked.
     :return: The filtered track
     """
-    from logging import getLogger
-
-    logger = getLogger(__name__)
 
     if not SETTINGS.apply_common_sense_filters:
-        logger.info("Common sense filters are disabled. Skipping.")
+        LOGGER.info("Common sense filters are disabled. Skipping.")
         return points
-
-    filtered_points = _filter_altitude_by_iri(_filter_teleportation(points), iri)
+    LOGGER.info(f"Applying common sense filters to {len(points)} Points...")
+    filtered_points = filter_altitude_by_iri(points, iri)
+    filtered_points = filter_teleportation(filtered_points)
+    LOGGER.info(f"Returning {len(filtered_points)} Points after common sense filtering.")
     return filtered_points
 
 
-def _filter_teleportation(points: list[Point]) -> list[Point]:
-    """
-    Filter points that are likely the result of teleportation.
-
-    :param points: The list of points to filter teleport anomalies from.
-    :return: The filtered points. Points that are likely the result of teleportation have their weights assigned to 0.
-    """
-    from logging import getLogger
-
-    logger = getLogger(__name__)
-
-    for i in range(1, len(points)):
-        # get the current and previous points
-        current_point = points[i]
-        prev_point = points[i - 1]
-
-        time_delta = current_point.detection_time - prev_point.detection_time
+def filter_teleportation(points: list[Point]) -> list[Point]:
+    good_points = filter(lambda x: x.weight > 0, points)
+    last_good_point = next(good_points)
+    for cur_point in good_points:
+        time_delta = cur_point.detection_time - last_good_point.detection_time
         distance: float = geopy.distance.geodesic(
-            (current_point.coordinates[1], current_point.coordinates[0]),
-            (prev_point.coordinates[1], prev_point.coordinates[0]),
+            (cur_point.coordinates[1], cur_point.coordinates[0]),
+            (last_good_point.coordinates[1], last_good_point.coordinates[0]),
         ).meters
         relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
-
-        # If the distance between two points is very large and the time between them is very small, it's likely that the
-        # object teleported. We don't want to include these points in the track, but we'll still keep them in the
-        # sensemaking db.
-        distance_exceeded = distance > SETTINGS.distance_threshold_meters
-        time_within_threshold = time_delta.total_seconds() < SETTINGS.time_threshold_seconds
-        velocity_within_threshold = 0 < relative_velocity < SETTINGS.relative_velocity_threshold_mps
-        if (distance_exceeded and time_within_threshold) or velocity_within_threshold:
-            logger.debug(
-                "Removing point %s due to teleportation: distance=%s, time_delta=%s",
-                current_point.observation_id,
-                distance,
-                time_delta,
+        if time_delta.total_seconds() < SETTINGS.time_threshold_seconds:
+            # Too little time resolution to accurately compare points.
+            # Allow current point but don't update last good point.
+            LOGGER.info(
+                "Skipping point due to time delta %s s less than threshold %s s.",
+                round(time_delta.total_seconds(), 1),
+                SETTINGS.time_threshold_seconds,
             )
-            points[i].weight *= 0
+            continue
+        if relative_velocity > SETTINGS.relative_velocity_threshold_mps:
+            # Too fast, kill the current point and don't update the last good point.
+            LOGGER.info(
+                "Filtered due to relative velocity %s mps exceeding threshold %s mps.",
+                round(relative_velocity, 1),
+                SETTINGS.relative_velocity_threshold_mps,
+            )
+            cur_point.weight = 0
+            continue
+        # Made it through all checks. Update last good point for next comparison.
+        LOGGER.info("Point accepted. Updating last good point...")
+        last_good_point = cur_point
     return points
 
 
-def _filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
+def filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
     """
     Filter out points that drastically deviate in elevation.
 
     :param track: The track to filter altitude discrepancies from.
     :return: The filtered track.
     """
-    from logging import getLogger
-
-    logger = getLogger(__name__)
-
     if "aircraft" not in iri.lower():
-        logger.debug("Skipping altitude filtering for non-aircraft track.")
+        LOGGER.info("Skipping altitude filtering for non-aircraft track.")
         return points
 
     for i in range(1, len(points)):
@@ -511,12 +506,12 @@ def _filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
         prev_point = points[i - 1]
         # if either point doesn't have an altitude, skip this filter
         if current_point.altitude is None or prev_point.altitude is None:
-            logger.debug("Skipping altitude filter for point %s", current_point.observation_id)
+            LOGGER.info("Skipping altitude filter for point %s", current_point.observation_id)
             continue
 
         # Check if the altitude is negative, zero, or exceeds the maximum altitude threshold.
         if current_point.altitude < 0:
-            logger.debug(
+            LOGGER.info(
                 "Removing point %s due to negative altitude: altitude=%s",
                 current_point.observation_id,
                 current_point.altitude,
@@ -524,7 +519,7 @@ def _filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
             points[i].weight *= 0
             continue
         elif current_point.altitude > SETTINGS.altitude_threshold_meters:
-            logger.debug(
+            LOGGER.info(
                 "Removing point %s due to altitude exceeding maximum: altitude=%s",
                 current_point.observation_id,
                 current_point.altitude,
@@ -533,7 +528,7 @@ def _filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
 
         # Check if the change in altitude between this point and the previous is large.
         if abs(current_point.altitude - prev_point.altitude) > SETTINGS.altitude_deviation_threshold_meters:
-            logger.debug(
+            LOGGER.info(
                 "Removing point %s due to altitude discrepancy: altitude=%s, prev_altitude=%s",
                 current_point.observation_id,
                 current_point.altitude,
