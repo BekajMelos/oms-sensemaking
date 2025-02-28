@@ -448,10 +448,8 @@ def apply_common_sense_filters(points: list[Point], iri: str) -> list[Point]:
     if not SETTINGS.apply_common_sense_filters:
         LOGGER.info("Common sense filters are disabled. Skipping.")
         return points
-    LOGGER.info(f"Applying common sense filters to {len(points)} Points...")
     filtered_points = filter_altitude_by_iri(points, iri)
     filtered_points = filter_teleportation(filtered_points)
-    LOGGER.info(f"Returning {len(filtered_points)} Points after common sense filtering.")
     return filtered_points
 
 
