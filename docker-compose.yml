@@ -78,7 +78,6 @@ services:
   #       trace being logged. This can be ignored, since the purpose of this
   #       configuration is to provide a minimal omsb for development & testing.
   omsb2:
-    platform: linux/amd64
     image: tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
     environment:
       # PostgreSQL/PostGIS variables
