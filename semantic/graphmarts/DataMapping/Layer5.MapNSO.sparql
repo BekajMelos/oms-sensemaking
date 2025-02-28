@@ -10,7 +10,6 @@ INSERT {
       	rdfs:label ?node_name ;
         ?located_at ?observed_geometry ;
       	?nso ?nso_bool ;
-      	# very unsure of this triple
       	?start	?time ;
       	# Still using node.id as a placeholder for all source obj
       	?has_all_source_obj_id ?node_id .
@@ -29,17 +28,8 @@ WHERE {
 
     # the OPTIONAL is because not all nodes have an observation assoc'd w/ them in OMSB2
 	OPTIONAL {    ?observation_obj ingest_omsb_graphmart:Observation.node_id ?node_id  ;
-		ingest_omsb_graphmart:Observation.geometry ?observed_geometry .
-    }
-    
-    # start (this is temporary, unsure of what true IRI is for Start Date attribute, will
-    # change in the future most likely)
-    OPTIONAL {    ?time_obj ingest_omsb_graphmart:Attribute.node_id ?node_id  ;
-                  ingest_omsb_graphmart:Attribute.attribute_value ?time ;
-                  ingest_omsb_graphmart:Attribute.attribute_iri ?start_attribute_iri ;
-      FILTER (?start_attribute_iri IN (
-          "https://foundry.ai.mil/DICO/v3.1.0/Start_Time"
-      ) )
+		ingest_omsb_graphmart:Observation.geometry ?observed_geometry ;
+      	ingest_omsb_graphmart:Observation.start_time ?time .
     }
     
     # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
