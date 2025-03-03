@@ -90,14 +90,42 @@ class LogConfig(BaseSettings):
         }
 
 
-
 class MilSymbolSettings(BaseModel):
+    symbol_attribute_iri: str = Field(
+        "https://foundry.ai.mil/INDOPACOM/v5/Icon", description="Military Symbol Sensemaker tags")
+    mil_symbol_sensemaker_tags: List[str] = Field(
+        ["Oms Sensemaking", "Military Symbol Sensemaker"],
+        description="Military Symbol Sensemaker tags"
+    )
     sqs_mil_symbol_queue_url: str = Field(
         "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger",
         description="the SQS Resolution Queue URL",
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger"]
     )
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
+    affiliation_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"], description="Affiliation IRI")
+    status_iris: List[str] = Field(["https://foundry.ai.mil/DICO/v3.1.0/Condition"], description="Status IRI")
+
+    # War, Pending, Unknown, Present
+    default_2525c_code: str = Field(
+        "SUZP------*****", description="Default 2525C code")
+    # Reality, Pending, Unknown, Present, Military
+    default_2525d_code: str = Field(
+       "10-0-0-00-0-0-00-000000-00-00", description="Default 2525C code")
+
+    # TODO should we skip a default since these are random
+    is_reality_context_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted"],
+        description="Attribute Iri to look for 'is reality' context")
+    is_exercise_context_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB_GST/v1/Target_Validated"],
+        description="Attribute Iri to look for 'is exercise' context")
+    is_simulation_context_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
+        description="Attribute Iri to look for 'is simulation' context")
+
+    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path the the rules config file")
 
 
 class Settings(BaseSettings):
@@ -123,6 +151,12 @@ class Settings(BaseSettings):
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
+    incursion_tags: list[str] = Field(
+        ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
+    )
+    inference_incursion_areas_of_interest_path: str = Field(
+        "./data/areas_of_interest.json", description="Path to areas of interest file"
+    )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
     )
@@ -131,6 +165,9 @@ class Settings(BaseSettings):
     )
     inference_add_garrison_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
+    )
+    inference_incursion_attribute_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_participated_in_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
