@@ -8,8 +8,8 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import (
+    AuditLogEvent,
     EventFilter,
-    ObjectEvent,
 )
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker
 
@@ -26,7 +26,6 @@ class MilSymbolSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.mil_symbol_settings.enable_mil_symbol_sensemaker:
-
             with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
                 mil_symbol_rules = json.load(fd)
 
@@ -34,6 +33,9 @@ class MilSymbolSensemakerController(SensemakerController):
 
         super().start()
 
+
 class MilSymbolQueueFilter(EventFilter):
-    def passes_filter(self, object_event: ObjectEvent):
-        return object_event.objectType == ObjectType.NODE.value and object_event.eventType == Action.CREATE.value
+    def passes_filter(self, audit_event: AuditLogEvent):
+        handled_object_types = [ObjectType.NODE.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types

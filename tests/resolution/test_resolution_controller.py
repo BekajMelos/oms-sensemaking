@@ -1,4 +1,5 @@
 """Resolution Controller Unit Tests"""
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 from unittest import mock
@@ -9,7 +10,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, ObjectType
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.events import ObjectEvent, SQSListener
+from oms_sensemaking.core.events import AuditLogEvent, SQSListener
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemaker,
@@ -28,21 +29,14 @@ def mock_res_controller():
 @mock.patch("oms_sensemaking.core.controllers.as_completed")
 @mock.patch("oms_sensemaking.core.controllers.ThreadPoolExecutor")
 def test_res_controller(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
-    mock_res_controller: ResolutionSensemakerController):
-
+    mock_executor: ThreadPoolExecutor, mock_as_completed: Callable, mock_res_controller: ResolutionSensemakerController
+):
     # register the sensemaker without starting the listener
     mock_res_controller.register("resolution", ResolutionSensemaker(mock_res_controller.oms_crud_tool))
 
     # mock oms call
     oms_attribute = AttributeAttribute.model_construct(
-        id=uuid4(),
-        attributeIri="test",
-        attributeValue="test",
-        nodeId=uuid4(),
-        sourceId=uuid4(),
-        acm=DEFAULT_ACM
+        id=uuid4(), attributeIri="test", attributeValue="test", nodeId=uuid4(), sourceId=uuid4(), acm=DEFAULT_ACM
     )
 
     mock_res_controller.oms_crud_tool.get_attribute = mock.MagicMock()
@@ -55,16 +49,13 @@ def test_res_controller(
     mock_executor.return_value.__enter__.return_value = instance
     mock_as_completed.return_value = []
 
-    object_event = ObjectEvent(
-        userDn="test",
+    audit_event = AuditLogEvent(
+        userId="test",
         objectId=oms_attribute.id,
         objectType=ObjectType.ATTRIBUTE,
-        eventType=Action.CREATE,
+        action=Action.CREATE,
     )
-    mock_res_controller.handle_event(object_event)
+    mock_res_controller.handle_event(audit_event)
 
     mock_res_controller.oms_crud_tool.get_attribute.assert_called_with(oms_attribute.id)
-    instance.submit.assert_called_with(
-        mock_res_controller._registry["resolution"].execute,
-        oms_attribute
-    )
+    instance.submit.assert_called_with(mock_res_controller._registry["resolution"].execute, oms_attribute)
