@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
@@ -7,14 +8,14 @@ from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
 LOGGER = logging.getLogger(__name__)
 
 
-def to_2525c(code_2525d: MilSymbol2525D) -> MilSymbol2525C:
+def to_2525c(code_2525d: MilSymbol2525D, settings: Dict) -> MilSymbol2525C:
 
-        code_2525c = MilSymbol2525C(SETTINGS.mil_symbol_settings.default_2525c_code)
+        code_2525c = MilSymbol2525C(SETTINGS.mil_symbol_settings.default_2525c_code, settings)
 
         # convert standard identity
         standard_identity = code_2525d.code[MilSymbol2525D.MIL_SYM_2525D_STD_IDENTITY_IDX]
-        standard_identity_list = MilSymbol2525D.STANDARD_IDENTITY_LISTS[standard_identity]
-        for code, other_standard_identity_list in MilSymbol2525C.STANDARD_IDENTITY_LISTS.items():
+        standard_identity_list = settings["MIL_SYMBOL_2525D"]["STANDARD_IDENTITY_LISTS"][standard_identity]
+        for code, other_standard_identity_list in settings["MIL_SYMBOL_2525C"]["STANDARD_IDENTITY_LISTS"].items():
             # if the lists have values in common then that's the equivalent code
             if set(standard_identity_list) & set(other_standard_identity_list):
                 code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525C_STD_IDENTITY_IDX, code)
@@ -24,8 +25,8 @@ def to_2525c(code_2525d: MilSymbol2525D) -> MilSymbol2525C:
         # convert dimension
         dimension = (code_2525d.code[MilSymbol2525D.MIL_SYM_2525D_DIMENSION_IDX_0] +
                      code_2525d.code[MilSymbol2525D.MIL_SYM_2525D_DIMENSION_IDX_1])
-        dimension_list = MilSymbol2525D.DIMENSION_IRIS[dimension]
-        for code, other_dimension_list in MilSymbol2525C.DIMENSION_IRIS.items():
+        dimension_list = settings["MIL_SYMBOL_2525D"]["DIMENSION_IRIS"][dimension]
+        for code, other_dimension_list in settings["MIL_SYMBOL_2525C"]["DIMENSION_IRIS"].items():
             # if the lists have values in common then that's the equivalent code
             if set(dimension_list) & set(other_dimension_list):
                 code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525C_DIMENSION_IDX, code)
@@ -34,8 +35,8 @@ def to_2525c(code_2525d: MilSymbol2525D) -> MilSymbol2525C:
 
         # convert status
         status = code_2525d.code[MilSymbol2525D.MIL_SYM_2525D_STATUS_IDX]
-        status_list = MilSymbol2525D.STATUS_LISTS[status]
-        for code, other_status_list in MilSymbol2525C.STATUS_LISTS.items():
+        status_list = settings["MIL_SYMBOL_2525D"]["STATUS_LISTS"][status]
+        for code, other_status_list in settings["MIL_SYMBOL_2525C"]["STATUS_LISTS"].items():
             # if the lists have values in common then that's the equivalent code
             if set(status_list) & set(other_status_list):
                 code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525C_STATUS_IDX, code)
@@ -45,13 +46,13 @@ def to_2525c(code_2525d: MilSymbol2525D) -> MilSymbol2525C:
         return code_2525c
 
 
-def to_2525d(code_2525c: MilSymbol2525C) -> MilSymbol2525D:
-    code_2525d = MilSymbol2525D(SETTINGS.mil_symbol_settings.default_2525d_code)
+def to_2525d(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525D:
+    code_2525d = MilSymbol2525D(SETTINGS.mil_symbol_settings.default_2525d_code, settings)
 
     # convert standard identity
     standard_identity = code_2525c.code[MilSymbol2525C.MIL_SYM_2525C_STD_IDENTITY_IDX]
-    standard_identity_list = MilSymbol2525C.STANDARD_IDENTITY_LISTS[standard_identity]
-    for code, other_standard_identity_list in MilSymbol2525D.STANDARD_IDENTITY_LISTS.items():
+    standard_identity_list = settings["MIL_SYMBOL_2525C"]["STANDARD_IDENTITY_LISTS"][standard_identity]
+    for code, other_standard_identity_list in settings["MIL_SYMBOL_2525D"]["STANDARD_IDENTITY_LISTS"].items():
         # if the lists have values in common then that's the equivalent code
         if set(standard_identity_list) & set(other_standard_identity_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
@@ -60,8 +61,8 @@ def to_2525d(code_2525c: MilSymbol2525C) -> MilSymbol2525D:
 
     # convert dimension
     dimension = code_2525c.code[MilSymbol2525C.MIL_SYM_2525C_DIMENSION_IDX]
-    dimension_list = MilSymbol2525C.DIMENSION_IRIS[dimension]
-    for code, other_dimension_list in MilSymbol2525D.DIMENSION_IRIS.items():
+    dimension_list = settings["MIL_SYMBOL_2525C"]["DIMENSION_IRIS"][dimension]
+    for code, other_dimension_list in settings["MIL_SYMBOL_2525D"]["DIMENSION_IRIS"].items():
         # if the lists have values in common then that's the equivalent code
         if set(dimension_list) & set(other_dimension_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
@@ -71,8 +72,8 @@ def to_2525d(code_2525c: MilSymbol2525C) -> MilSymbol2525D:
 
     # convert status
     status = code_2525c.code[MilSymbol2525C.MIL_SYM_2525C_STATUS_IDX]
-    status_list = MilSymbol2525C.STATUS_LISTS[status]
-    for code, other_status_list in MilSymbol2525D.STATUS_LISTS.items():
+    status_list = settings["MIL_SYMBOL_2525C"]["STATUS_LISTS"][status]
+    for code, other_status_list in settings["MIL_SYMBOL_2525D"]["STATUS_LISTS"].items():
         # if the lists have values in common then that's the equivalent code
         if set(status_list) & set(other_status_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_STATUS_IDX, code)

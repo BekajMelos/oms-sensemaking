@@ -1,6 +1,6 @@
 """MilSymbol Controller Unit Tests"""
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable
+from typing import Callable, Dict
 from unittest import mock
 from uuid import uuid4
 
@@ -31,10 +31,11 @@ def mock_mil_sym_controller():
 def test_mil_sym_controller(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
-    mock_mil_sym_controller: MilSymbolSensemakerController):
+    mock_mil_sym_controller: MilSymbolSensemakerController,
+    mil_symbol_rules: Dict):
 
     # register the sensemaker without starting the listener
-    mock_mil_sym_controller.register("mil_symbol", MilSymbolSensemaker(OmsCrudTool()))
+    mock_mil_sym_controller.register("mil_symbol", MilSymbolSensemaker(OmsCrudTool(), mil_symbol_rules))
 
     # mock oms call
     oms_node = NodeNode.model_construct(
