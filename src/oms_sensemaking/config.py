@@ -158,7 +158,7 @@ class Settings(BaseSettings):
         "./data/areas_of_interest.json", description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion class (placeholder)"
+        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
     )
     inference_incursion_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
