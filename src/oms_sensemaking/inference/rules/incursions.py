@@ -220,6 +220,7 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
             state=ActivityState.UNKNOWN,
