@@ -125,6 +125,8 @@ class MilSymbolSettings(BaseModel):
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
         description="Attribute Iri to look for 'is simulation' context")
 
+    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path the the rules config file")
+
 
 class Settings(BaseSettings):
     """Settings class."""
