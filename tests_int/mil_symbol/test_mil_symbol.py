@@ -73,6 +73,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
         oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
@@ -115,6 +116,11 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
         oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=[
+            "http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle",
+            "http://purl.obolibrary.org/obo/BFO_0000040"
+            ])
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
@@ -156,6 +162,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
         oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
