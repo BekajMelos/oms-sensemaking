@@ -10,7 +10,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, ObjectType
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.events import ObjectEvent, SQSListener
+from oms_sensemaking.core.events import AuditLogEvent, SQSListener
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemaker,
@@ -49,13 +49,13 @@ def test_res_controller(
     mock_executor.return_value.__enter__.return_value = instance
     mock_as_completed.return_value = []
 
-    object_event = ObjectEvent(
-        userDn="test",
+    audit_event = AuditLogEvent(
+        userId="test",
         objectId=oms_attribute.id,
         objectType=ObjectType.ATTRIBUTE,
-        eventType=Action.CREATE,
+        action=Action.CREATE,
     )
-    mock_res_controller.handle_event(object_event)
+    mock_res_controller.handle_event(audit_event)
 
     mock_res_controller.oms_crud_tool.get_attribute.assert_called_with(oms_attribute.id)
     instance.submit.assert_called_with(mock_res_controller._registry["resolution"].execute, oms_attribute)

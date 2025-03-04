@@ -19,22 +19,22 @@ from oms_sensemaking.config import SETTINGS
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class ObjectEvent:
-    """Represents an object event from OMS."""
+class AuditLogEvent:
+    """Represents an audit log event from OMS."""
 
-    def __init__(self, userDn: str, objectId: UUID, objectType: ObjectType, eventType: Action):
+    def __init__(self, userId: str, objectId: UUID, objectType: ObjectType, action: Action):
         """
-        Create a new instance of ObjectEvent.
+        Create a new instance of AuditLogEvent.
 
-        :param userDn: The distinguished name (DN) of the user that triggered the event.
-        :param objectId: The unique if of the object in OMS.
+        :param userId: The id of the user that triggered the event.
+        :param objectId: The unique id of the object in OMS.
         :param objectType: The type of object that the event was triggered on.
-        :param eventType: They type of event (e.g. create, update, or delete).
+        :param action: They type of event (e.g. create, update, or delete).
         """
-        self.userDn: str = userDn
+        self.userId: str = userId
         self.objectId: UUID = objectId
         self.objectType: ObjectType = objectType
-        self.eventType: Action = eventType
+        self.action: Action = action
 
     def to_json(self) -> str:
         """Return a JSON representation of the event."""
@@ -43,22 +43,22 @@ class ObjectEvent:
     @staticmethod
     def from_dict(data: dict):
         """
-        Create a new instance of ObjectEvent from a dictionary.
+        Create a new instance of AuditLogEvent from a dictionary.
 
         This function will set the ``objectType`` to ``ATTRIBUTE`` by default,
         if ``objectType`` is not set or returns None.
         """
-        return ObjectEvent(
-            str(data.get("userDn")),
+        return AuditLogEvent(
+            str(data.get("userId")),
             UUID(data.get("objectId", "")),
             ObjectType(data.get("objectType", "ATTRIBUTE")),
-            Action(data.get("eventType", "")),
+            Action(data.get("action", "")),
         )
 
     @classmethod
     def from_json(cls, json_data: str):
         """
-        Create a new instance of ObjectEvent from a JSON string.
+        Create a new instance of AuditLogEvent from a JSON string.
 
         This function will set the ``objectType`` to ``ATTRIBUTE`` by default,
         if ``objectType`` is not set or returns None.
@@ -66,14 +66,14 @@ class ObjectEvent:
         return cls.from_dict(json.loads(json_data))
 
 
-EVENT_HANDLER = Callable[[ObjectEvent], bool]
+EVENT_HANDLER = Callable[[AuditLogEvent], bool]
 
 
 class EventFilter(Protocol):
-    def passes_filter(self, object_event: ObjectEvent) -> bool: ...
+    def passes_filter(self, audit_log_event: AuditLogEvent) -> bool: ...
 
 
-class ObjectEventConsumer(ABC):
+class AuditLogEventConsumer(ABC):
     """Provides a client interface to a data source (i.e. a data producer)."""
 
     def __init__(self, handle_event: EVENT_HANDLER | None = None):
@@ -99,7 +99,7 @@ class ObjectEventConsumer(ABC):
         This method should be overridden by subclasses to begin producing
         """
         if self.__data_consumer is None:
-            self.__data_consumer = Thread(target=self.process_object_events)
+            self.__data_consumer = Thread(target=self.process_audit_log_events)
             self.stopped.clear()
             self.__data_consumer.start()
 
@@ -112,18 +112,18 @@ class ObjectEventConsumer(ABC):
             self.__data_consumer.join()
 
     @abstractmethod
-    def process_object_events(self) -> None:
+    def process_audit_log_events(self) -> None:
         """
-        Process object events from a data source.
+        Process audit log events from a data source.
 
         Subclasses should override this and call ``self.event_handler.handle_event`` for
-        each ``ObjectEvent`` processed.
+        each ``AuditLogEvent`` processed.
         """
         raise NotImplementedError()
 
 
-class BaseSQSListener(ObjectEventConsumer):
-    """An abstract base class for SQS object event consumers."""
+class BaseSQSListener(AuditLogEventConsumer):
+    """An abstract base class for SQS audit log event consumers."""
 
     def __init__(
         self,
@@ -150,18 +150,18 @@ class BaseSQSListener(ObjectEventConsumer):
         )
 
     @abstractmethod
-    def process_object_events(self) -> None:
+    def process_audit_log_events(self) -> None:
         """
-        Process object events from an SQS queue.
+        Process audit log events from an SQS queue.
 
         Subclasses should override this and call ``self.event_handler.handle_event`` for
-        each ``ObjectEvent`` processed.
+        each ``AuditLogEvent`` processed.
         """
         raise NotImplementedError()
 
 
 class SQSListener(BaseSQSListener):
-    """An SQS ObjectEventConsumer that consumes OMS events."""
+    """An SQS AuditLogEventConsumer that consumes OMS events."""
 
     def __init__(
         self,
@@ -170,11 +170,11 @@ class SQSListener(BaseSQSListener):
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
-        """Create a new instance of SqsObjectEventConsumer."""
+        """Create a new instance of SqsAuditLogEventConsumer."""
         super().__init__(name, queue_url, handle_event, event_filter)
 
-    def process_object_events(self) -> None:
-        """Process object events from OMS."""
+    def process_audit_log_events(self) -> None:
+        """Process audit log events from OMS."""
         if not callable(self.handle_event):
             raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
 
@@ -207,57 +207,55 @@ class SQSListener(BaseSQSListener):
                     continue
 
                 for message in response["Messages"]:
-                    object_event: ObjectEvent = ObjectEvent.from_json((message["Body"]))
-
-                    if self._event_filter and not self._event_filter.passes_filter(object_event):
+                    audit_log: AuditLogEvent = AuditLogEvent.from_json((message["Body"]))
+                    if self._event_filter and not self._event_filter.passes_filter(audit_log):
                         LOGGER.warning(
-                            f"{self._name} Filtered {object_event.eventType} {object_event.objectType}:"
-                            + f"{object_event.objectId} from queue {self._queue_url}"
+                            f"{self._name} Filtered {audit_log.action} {audit_log.objectType}:"
+                            + f"{audit_log.objectId} from queue {self._queue_url}"
                         )
                         self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
                         continue
 
                     LOGGER.info(
-                        f"{self._name} Received {object_event.eventType} {object_event.objectType}:"
-                        + f"{object_event.objectId}"
+                        f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}"
                     )
 
-                    if self.handle_event(object_event):
+                    if self.handle_event(audit_log):
                         # Delete received message from queue - required, so you don't get the same message
-                        LOGGER.info(f"Deleting processed object {object_event.objectId} from {self._queue_url}")
+                        LOGGER.info(f"Deleting processed object {audit_log.objectId} from {self._queue_url}")
                         self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
                     else:
-                        LOGGER.warning("object event was not processed successfully.")
+                        LOGGER.warning("audit log event was not processed successfully.")
 
 
-class DummyObjectEventConsumer(ObjectEventConsumer):
-    """A simple object event consumer for testing purposes."""
+class DummyAuditLogEventConsumer(AuditLogEventConsumer):
+    """A simple audit log event consumer for testing purposes."""
 
     def __init__(self, handle_event: EVENT_HANDLER | None = None):
-        """Create a new instance of DummyObjectEventConsumer."""
+        """Create a new instance of DummyAuditLogEventConsumer."""
         super().__init__(handle_event)
 
-    def process_object_events(self) -> None:
+    def process_audit_log_events(self) -> None:
         """Mimics event processing."""
         count: int = 0
         LOGGER.info("subscribing to SQS events")
 
         while not self.stopped.is_set():
             sleep(5)
-            event: ObjectEvent = ObjectEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, Action.CREATE)
+            event: AuditLogEvent = AuditLogEvent(SETTINGS.user_dn, uuid4(), ObjectType.ATTRIBUTE, Action.CREATE)
 
             if callable(self.handle_event):
                 self.handle_event(event)
                 count = count + 1
 
 
-class NoOpEventConsumer(ObjectEventConsumer):
-    """A simple object event consumer intended as a placeholder."""
+class NoOpEventConsumer(AuditLogEventConsumer):
+    """A simple audit log event consumer intended as a placeholder."""
 
     def __init__(self, handle_event: EVENT_HANDLER | None = None):
         """Create a new instance ofr NoOpEventConsumer."""
         super().__init__(handle_event)
 
-    def process_object_events(self) -> None:
+    def process_audit_log_events(self) -> None:
         """No-Op."""
         pass

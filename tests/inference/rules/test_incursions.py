@@ -288,6 +288,7 @@ def test_new_incursion_region1(
         CreateActivityInput(
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[0]}",
             state=ActivityState.UNKNOWN,
@@ -341,6 +342,7 @@ def test_new_incursion_region2(
         CreateActivityInput(
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[1]}",
             state=ActivityState.UNKNOWN,
