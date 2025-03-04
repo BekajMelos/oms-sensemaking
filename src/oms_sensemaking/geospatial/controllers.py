@@ -15,7 +15,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import EventFilter, ObjectEvent, ObjectEventConsumer
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import (
     Point,
@@ -36,7 +36,7 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: ObjectEventConsumer) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer) -> None:
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer)
 
@@ -82,17 +82,17 @@ class GeospatialSensemakerController(SensemakerController):
 
         super().stop()
 
-    def handle_event(self, event: ObjectEvent) -> bool:
+    def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
 
         :param event: The event to process.
-        :return: True if the object event was successfully processed, False otherwise.
+        :return: True if the audit log event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
         point: Point | None = None
 
-        LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
+        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         # extract info from OMS via API calls
         oms_obs: ObservationObservation | None = self.get_oms_observation(event.objectId)
@@ -242,5 +242,7 @@ class GeospatialSensemakerController(SensemakerController):
 
 
 class GeoQueueFilter(EventFilter):
-    def passes_filter(self, object_event: ObjectEvent):
-        return object_event.objectType == ObjectType.OBSERVATION.value and object_event.eventType == Action.CREATE.value
+    def passes_filter(self, audit_event: AuditLogEvent):
+        handled_object_types = [ObjectType.OBSERVATION.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types

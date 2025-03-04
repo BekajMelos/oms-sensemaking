@@ -1,0 +1,111 @@
+{
+    "MIL_SYMBOL_2525C": {
+        "STANDARD_IDENTITY_LISTS":  {
+            "P": ["pending"],
+            "U": ["unknown"],
+            "A": ["assumed friend", "assumed friendly"],
+            "F": ["friend", "friendly"],
+            "N": ["neutral"],
+            "S": ["suspect", "assumed hostile"],
+            "H": ["hostile"],
+            "G": ["exercise pending"],
+            "W": ["exercise unknown"],
+            "M": ["exercise assumed friend", "exercise assumed friendly"],
+            "D": ["exercise friend", "exercise friendly"],
+            "L": ["exercise neutral"],
+            "J": ["joker"],
+            "K": ["faker"]
+        },
+        "DIMENSION_IRIS": {
+            "P": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
+            "A": [
+                "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+                "http://omsb/test/Plane",
+                "http://omsb/test/Helicopter",
+                "http://omsb/test/Apache"
+            ],
+            "G": [
+                "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle",
+                "http://omsb/test/Tank",
+                "http://omsb/test/LAV",
+                "http://schema.dia.mil/DefenseIntelligenceCoreOntology/CivilianInstallation",
+                "http://schema.dia.mil/DefenseIntelligenceCoreOntology/Installation",
+                "http://schema.dia.mil/DefenseIntelligenceCoreOntology/MilitaryInstallation"
+            ],
+            "S": ["http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"],
+            "U": ["http://omsb/test/Submarine"],
+            "F": [],
+            "X": [],
+            "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"]
+        },
+        "STATUS_LISTS": {
+            "A": ["anticipated", "planned"],
+            "P": ["present"],
+            "C": ["fully capable"],
+            "D": ["damaged"],
+            "X": ["destroyed"],
+            "F": ["full to capacity"]
+        }
+    },
+    "MIL_SYMBOL_2525D": {
+        "CONTEXT_LISTS": {
+            "0": ["https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted"],
+            "1": ["https://foundry.ai.mil/MIDB_GST/v1/Target_Validated"],
+            "2": ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"]
+        },
+        "STANDARD_IDENTITY_LISTS": {
+            "0": ["pending"],
+            "1": ["unknown"],
+            "2": ["assumed friend", "assumed friendly"],
+            "3": ["friend", "friendly"],
+            "4": ["neutral"],
+            "5": ["suspect", "joker", "assumed hostile"],
+            "6": ["hostile", "faker"]
+        },
+        "DIMENSION_IRIS": {
+            "00": ["http://purl.obolibrary.org/obo/BFO_0000040"],
+            "01": [
+                "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+                "http://omsb/test/Plane",
+                "http://omsb/test/Helicopter",
+                "http://omsb/test/Apache"
+                ],
+            "02": [],
+            "05": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
+            "06": [],
+            "10": [
+                "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle",
+                "http://omsb/test/Tank",
+                "http://omsb/test/LAV"
+                ],
+            "11": ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/CivilianInstallation"],
+            "15": [],
+            "20": [
+                "http://schema.dia.mil/DefenseIntelligenceCoreOntology/Installation",
+                "http://schema.dia.mil/DefenseIntelligenceCoreOntology/MilitaryInstallation"
+                ],
+            "25": [],
+            "30": ["http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"],
+            "35": ["http://omsb/test/Submarine"],
+            "36": [],
+            "40": [],
+            "45": [],
+            "46": [],
+            "47": [],
+            "50": [],
+            "51": [],
+            "52": [],
+            "53": [],
+            "54": [],
+            "60": []
+        },
+        "STATUS_LISTS": {
+            "0": ["present"],
+            "1": ["suspect", "anticipated", "planned"],
+            "2": ["ready", "fully capable"],
+            "3": ["damaged"],
+            "4": ["destroyed"],
+            "5": ["full to capacity"]
+        }
+    }
+}

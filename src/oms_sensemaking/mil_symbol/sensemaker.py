@@ -56,14 +56,13 @@ class MilSymbolSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of MilSymbolSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config = {
-            # TODO
-        }
+        self.config = SETTINGS.mil_symbol_settings.model_dump()
+        self.settings = settings
         self.oms_crud_tool = oms_crud_tool
 
     def process_data(self, oms_node: NodeNode) -> List[SymbolCodeUpdate]:
@@ -85,11 +84,11 @@ class MilSymbolSensemaker(Sensemaker):
 
         trimmed_symbol_id_code = symbol_id_code.replace("-", "")
         if len(trimmed_symbol_id_code) == 20 and re.match(r'^([\d]{20})$', trimmed_symbol_id_code):
-            code_2525d = MilSymbol2525D(trimmed_symbol_id_code)
-            code_2525c = to_2525c(code_2525d)
+            code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
+            code_2525c = to_2525c(code_2525d, self.settings)
         elif len(symbol_id_code) == 15:
-            code_2525c = MilSymbol2525C(symbol_id_code)
-            code_2525d = to_2525d(code_2525c)
+            code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
+            code_2525d = to_2525d(code_2525c, self.settings)
         else:
             LOGGER.info(f"Unsupported SDIC for {symbol_id_code}")
             return []

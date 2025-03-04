@@ -1,99 +1,15 @@
 """Military Symbol Standard 2525D."""
 import logging
-from typing import Optional
+from typing import Dict, Optional
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute
 
-from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MilSymbol2525D(MilSymbol):
-
-    # Context Settings
-    CONTEXT_LISTS = {
-        "0": SETTINGS.mil_symbol_settings.is_reality_context_iris,
-        "1": SETTINGS.mil_symbol_settings.is_exercise_context_iris,
-        "2": SETTINGS.mil_symbol_settings.is_simulation_context_iris
-    }
-
-    # Standard Identity Settings
-    PENDING_STANDARD_IDENTITIES = ["pending"]
-    UNKNOWN_STANDARD_IDENTITIES = ["unknown"]
-    ASSUMED_FRIENDLY_STANDARD_IDENTITIES = ["assumed friend", "assumed friendly"]
-    FRIENDLY_STANDARD_IDENTITIES = ["friend", "friendly"]
-    NEUTRAL_STANDARD_IDENTITIES = ["neutral"]
-    SUSPECT_STANDARD_IDENTITIES = ["suspect", "joker", "assumed hostile"]
-    HOSTILE_STANDARD_IDENTITIES = ["hostile", "faker"]
-
-    STANDARD_IDENTITY_LISTS = {
-        "0": PENDING_STANDARD_IDENTITIES,
-        "1": UNKNOWN_STANDARD_IDENTITIES,
-        "2": ASSUMED_FRIENDLY_STANDARD_IDENTITIES,
-        "3": FRIENDLY_STANDARD_IDENTITIES,
-        "4": NEUTRAL_STANDARD_IDENTITIES,
-        "5": SUSPECT_STANDARD_IDENTITIES,
-        "6": HOSTILE_STANDARD_IDENTITIES
-    }
-
-    # Dimension Settings
-    # Should include high level IRIs and exceptions
-    DIMENSION_IRIS = {
-        "00": ["http://purl.obolibrary.org/obo/BFO_0000040"],
-        "01": [
-            "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
-            "http://omsb/test/Plane",
-            "http://omsb/test/Helicopter",
-            "http://omsb/test/Apache"
-            ],
-        "02": [],  # air missile
-        "05": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
-        "06": [],  # space missile
-        "10": [
-            "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle",
-            "http://omsb/test/Tank",
-            "http://omsb/test/LAV",
-            ],
-        "11": ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/CivilianInstallation"],
-        "15": [],  # land equipiment
-        "20": [
-            "http://schema.dia.mil/DefenseIntelligenceCoreOntology/Installation",
-            "http://schema.dia.mil/DefenseIntelligenceCoreOntology/MilitaryInstallation"
-            ],
-        "25": [],  # control measure
-        "30": ["http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"],
-        "35": ["http://omsb/test/Submarine"],  # subsurface
-        "36": [],  # mine warfare
-        "40": [],  # activities
-        "45": [],  # meteorological - atmospheric
-        "46": [],  # meteorological - oceanographic
-        "47": [],  # meteorological - space
-        "50": [],  # signals intelligence - space
-        "51": [],  # signals intelligence - air
-        "52": [],  # signals intelligence - land
-        "53": [],  # signals intelligence - surface
-        "54": [],  # signals intelligence - subsurface
-        "60": [],  # cyberspace
-    }
-
-    # Status Settings
-    PRESENT_STATUSES = ["present"]
-    SUSPECT_STATUSES = ["suspect", "planned", "anticipated"]
-    READY_STATUSES = ["ready", "fully capable"]
-    DAMAGED_STATUSES = ["damaged"]
-    DESTROYED_STATUSES = ["destroyed"]
-    FULL_TO_CAPACITY_STATUSES = ["full to capacity"]
-
-    STATUS_LISTS = {
-        "0": PRESENT_STATUSES,
-        "1": SUSPECT_STATUSES,
-        "2": READY_STATUSES,
-        "3": DAMAGED_STATUSES,
-        "4": DESTROYED_STATUSES,
-        "5": FULL_TO_CAPACITY_STATUSES
-    }
 
     # E.g.  10000100000000000000
     MIL_SYM_2525D_CONTEXT_IDX = 2
@@ -103,8 +19,8 @@ class MilSymbol2525D(MilSymbol):
     MIL_SYM_2525D_STATUS_IDX = 6
 
 
-    def __init__(self, code: str) -> None:
-        super().__init__(code)
+    def __init__(self, code: str, settings: Dict) -> None:
+        super().__init__(code, settings)
         self.code = code.replace("-", "")
 
     @property
@@ -141,7 +57,7 @@ class MilSymbol2525D(MilSymbol):
 
         if context_attr:
             context = context_attr.attributeIri
-            for code, context_list in self.CONTEXT_LISTS.items():
+            for code, context_list in self.settings["MIL_SYMBOL_2525D"]["CONTEXT_LISTS"].items():
                 # TODO ignore case?
                 if context in context_list:
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
@@ -158,7 +74,7 @@ class MilSymbol2525D(MilSymbol):
 
         if affiliation_attr:
             node_standard_identity = affiliation_attr.attributeValue
-            for code, standard_identity_list in self.STANDARD_IDENTITY_LISTS.items():
+            for code, standard_identity_list in self.settings["MIL_SYMBOL_2525D"]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
@@ -178,7 +94,7 @@ class MilSymbol2525D(MilSymbol):
         # TODO I think this should check all parent iris for a match
 
         # TODO ignore case?
-        for code, dimension_list in self.DIMENSION_IRIS.items():
+        for code, dimension_list in self.settings["MIL_SYMBOL_2525D"]["DIMENSION_IRIS"].items():
             if iri in dimension_list:
                 self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
                 self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_1, code[1])
@@ -194,7 +110,7 @@ class MilSymbol2525D(MilSymbol):
 
         if status_attr:
             status = status_attr.attributeValue
-            for code, status_list in self.STATUS_LISTS.items():
+            for code, status_list in self.settings["MIL_SYMBOL_2525D"]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))

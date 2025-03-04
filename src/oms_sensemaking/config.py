@@ -126,6 +126,8 @@ class MilSymbolSettings(BaseModel):
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
         description="Attribute Iri to look for 'is simulation' context")
 
+    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path the the rules config file")
+
 
 class Settings(BaseSettings):
     """Settings class."""
@@ -156,6 +158,12 @@ class Settings(BaseSettings):
     inference_incursion_areas_of_interest_path: str = Field(
         "./data/areas_of_interest.json", description="Path to areas of interest file"
     )
+    inference_incursion_class_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
+    )
+    inference_incursion_attribute_iri: str = Field(
+        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
+    )
     inference_add_has_name_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
     )
@@ -164,9 +172,6 @@ class Settings(BaseSettings):
     )
     inference_add_garrison_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
-    )
-    inference_incursion_attribute_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_participated_in_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
@@ -366,7 +371,7 @@ class Settings(BaseSettings):
 
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-12", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-14", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
