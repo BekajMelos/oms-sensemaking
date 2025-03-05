@@ -4,12 +4,12 @@ from oms_sdk.generated.generated_graphql_client.attribute import AttributeAttrib
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pytest_mock import MockerFixture
 
-from oms_sensemaking.core.events import DummyObjectEventConsumer, ObjectEvent
+from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer
 from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
 
 def test_handle_event(mocker: MockerFixture):
-    consumer = DummyObjectEventConsumer()
+    consumer = DummyAuditLogEventConsumer()
     controller = InferenceSensemakerController(consumer)
 
     mock_attribute = mocker.Mock(spec=AttributeAttribute)
@@ -17,7 +17,7 @@ def test_handle_event(mocker: MockerFixture):
     mock = mocker.patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_attribute")
     mock.return_value = mock_attribute
 
-    attribute = ObjectEvent("dn", UUID(mock_attribute.id), ObjectType.ATTRIBUTE, Action.CREATE)
+    attribute = AuditLogEvent("dn", UUID(mock_attribute.id), ObjectType.ATTRIBUTE, Action.CREATE)
     processed_successfully = controller.handle_event(attribute)
 
     assert processed_successfully, "Inference Controller should handle attributes"

@@ -27,8 +27,8 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
     mock_observation.nodeId = uuid4()
 
     # We will pass this into the handle_event function. We only care about objectId
-    mock_object_event = mock.Mock()
-    mock_object_event.objectId = uuid4()
+    mock_audit_log_event = mock.Mock()
+    mock_audit_log_event.objectId = uuid4()
 
     # This method is hit during handle_event and it's nodeId is needed
     mocker.patch.object(mock_geo_controller, "get_oms_observation").return_value = mock_observation
@@ -40,8 +40,8 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
     # Set the logger level to WARNING. This is the level we are sending our AttributeError message
     caplog.set_level(logging.WARNING)
 
-    # Run handle_event with our mock_object_event from above. Should render False
-    handled = mock_geo_controller.handle_event(mock_object_event)
+    # Run handle_event with our mock_audit_log_event from above. Should render False
+    handled = mock_geo_controller.handle_event(mock_audit_log_event)
 
     # Assertions
     assert "No node found. Unable to process observation." in caplog.text

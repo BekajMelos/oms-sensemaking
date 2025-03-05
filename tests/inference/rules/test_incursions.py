@@ -23,14 +23,14 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
+from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
 @pytest.fixture
 def areas_of_interest():
-    features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+    features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
     return [feature["geometry"] for feature in features]
 
 
@@ -288,6 +288,7 @@ def test_new_incursion_region1(
         CreateActivityInput(
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[0]}",
             state=ActivityState.UNKNOWN,
@@ -341,6 +342,7 @@ def test_new_incursion_region2(
         CreateActivityInput(
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[1]}",
             state=ActivityState.UNKNOWN,

@@ -4,7 +4,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
-from oms_sensemaking.core.events import ObjectEvent, ObjectEventConsumer
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 
@@ -14,7 +14,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class SensemakerController:
     """Base class for sensemaker controllers."""
 
-    def __init__(self, event_consumer: ObjectEventConsumer, *args, **kwargs) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer, *args, **kwargs) -> None:
         """
         Create a new instance of the SensemakerController.
 
@@ -22,11 +22,18 @@ class SensemakerController:
         threads can wait on ``Sensemaker.stopped`` until it is set. For example::
 
             class SomeController(SensemakerController):
-                def handle_event(self, event: ObjectEvent) -> bool:
-                    print(f"Received {event.eventType} for {event.objectType}(id={event.objectId})")
+                def handle_event(
+                    self, event: AuditLogEvent
+                ) -> bool:
+                    print(
+                        f"Received {event.eventType} for {event.objectType}(id={event.objectId})"
+                    )
                     return True
 
-            controller: SensemakerController = SomeController(DummyObjectEventConsumer)
+
+            controller: SensemakerController = SomeController(
+                DummyAuditLogEventConsumer
+            )
             controller.start()
             controller.stopped.wait()  # block until controller has been stopped
 
@@ -40,7 +47,7 @@ class SensemakerController:
             raise TypeError("event_consumer must have a value")
 
         self._registry: dict[str, Sensemaker] = {}
-        self.event_consumer: ObjectEventConsumer = event_consumer
+        self.event_consumer: AuditLogEventConsumer = event_consumer
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
         self.oms_crud_tool: OmsCrudTool = OmsCrudTool()
@@ -103,7 +110,7 @@ class SensemakerController:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
-    def handle_event(self, event: ObjectEvent) -> bool:
+    def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
 
@@ -113,7 +120,7 @@ class SensemakerController:
         :param event: The event to process.
         """
 
-        LOGGER.debug("Received ObjectEvent(objectId=%s)", event.objectId)
+        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         # extract info from OMS via API calls
         oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)

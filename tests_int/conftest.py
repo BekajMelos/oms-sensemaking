@@ -1,8 +1,8 @@
 """PyTest Configuration."""
-
+import json
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Iterator
+from typing import Dict, Iterator
 from unittest import mock
 
 import pytest
@@ -102,3 +102,9 @@ def mock_oms_crud_tool(mock_oms_client, mock_source):
     oms_crud_tool.oms_client = mock_oms_client
 
     return oms_crud_tool
+
+@pytest.fixture
+def mil_symbol_rules() -> Dict:
+    with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
+        rules = json.load(fd)
+    return rules

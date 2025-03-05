@@ -23,7 +23,7 @@ from shapely.geometry import shape
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest import features_list_from_geojson
+from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
@@ -90,7 +90,7 @@ class Incursion(BaseRule):
 
     def __init__(self, name: str):
         self.name = name
-        self.features = features_list_from_geojson(SETTINGS.incursion_areas_of_interest_path)
+        self.features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -220,6 +220,7 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
             state=ActivityState.UNKNOWN,
