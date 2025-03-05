@@ -324,11 +324,12 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         )
         confidence_map = SETTINGS.confidence_weight_map
         weighted_points: list[Point] = []
+        # db_session is used to persist averaged Points to the DB, but the returned Track is up to the caller to handle
         with db_session() as db:
             db.expire_on_commit = False
             for bin_points in time_bins.values():
                 if len(bin_points) == 1:
-                    weighted_points.extend(bin_points)
+                    weighted_points.append(bin_points[0])
                     continue
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
@@ -454,9 +455,9 @@ def apply_common_sense_filters(points: list[Point], iri: str) -> list[Point]:
 
 
 def filter_teleportation(points: list[Point]) -> list[Point]:
-    good_points = filter(lambda x: x.weight > 0, points)
-    last_good_point = next(good_points)
-    for cur_point in good_points:
+    last_good_point = points[0]
+    bad_points = []
+    for cur_point in points:
         time_delta = cur_point.detection_time - last_good_point.detection_time
         distance: float = geopy.distance.geodesic(
             (cur_point.coordinates[1], cur_point.coordinates[0]),
@@ -480,10 +481,12 @@ def filter_teleportation(points: list[Point]) -> list[Point]:
                 SETTINGS.relative_velocity_threshold_mps,
             )
             cur_point.weight = 0
+            bad_points.append(cur_point)
             continue
         # Made it through all checks. Update last good point for next comparison.
         LOGGER.info("Point accepted. Updating last good point...")
         last_good_point = cur_point
+    points = [p for p in points if p not in bad_points]
     return points
 
 
