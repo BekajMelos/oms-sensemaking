@@ -94,7 +94,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
                 confidence=Confidence.HIGH.value,
-                acm=oms_node.acm,
+                acm=symbol.acm,
                 nodeId=oms_node.id,
                 sourceId=mock_source.id
             )
@@ -141,7 +141,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
                 confidence=Confidence.HIGH.value,
-                acm=oms_node.acm,
+                acm=symbol.acm,
                 nodeId=oms_node.id,
                 sourceId=mock_source.id
             )
@@ -184,7 +184,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
                 confidence=Confidence.HIGH.value,
-                acm=oms_node.acm,
+                acm=symbol.acm,
                 nodeId=oms_node.id,
                 sourceId=mock_source.id
             )
