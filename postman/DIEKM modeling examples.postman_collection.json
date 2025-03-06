@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "54abac2a-f9d9-4e13-89e2-e23782f8d536",
+		"_postman_id": "591cc042-71d9-4629-852b-64205df95923",
 		"name": "DIEKM modeling examples",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33002351"
+		"_exporter_id": "41174150"
 	},
 	"item": [
 		{
@@ -1701,6 +1701,103 @@
 									"graphql": {
 										"query": "mutation ($nodeAId: UUID!, $nodeBId: UUID!, $af01SourceId: UUID!) {\n\tcreateRelationship(\n        input: {\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            name: \"controls\",\n            startNodeId: $nodeBId,\n            endNodeId: $nodeAId,\n            sourceId: $af01SourceId\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"},\n            confidence: HIGH,\n            objectPropertyIri: \"{{CONTROLS_IRI}}\"\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        name\n        startNodeId\n        endNodeId\n        confidence\n        objectPropertyIri\n        objectPropertyName\n    }\n}",
 										"variables": "{\n    \"nodeAId\": \"{{InventoryBetaId}}\",\n    \"nodeBId\": \"{{AfUnitBetaId}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "NSO",
+					"item": [
+						{
+							"name": "Create Artifact",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Create Artifact Alpha\", function () {",
+											"    pm.expect(jsonData.data.createNode.id).to.exist;",
+											"});",
+											"pm.collectionVariables.set(\"ArtifactAlpha\",jsonData.data.createNode.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation {\n\tcreateNode(\n        input: {\n            name: \"{{MY_PREFIX}} Material Artifact Alpha\"\n            classIri: \"{{MATERIAL_ARTIFACT_IRI}}\"\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        guideId\n        name\n        tier\n        isNso\n        classIri\n        ifcCodes\n        allegiance\n    }\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Artifact Location",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Location of Artifact Alpha Created and Start Time Set\", function () {",
+											"    pm.expect(jsonData.data.createObservation.id).to.exist;",
+											"});",
+											"pm.collectionVariables.set(\"ArtifactAlphaLocation1\",jsonData.data.createObservation.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($nodeAId: UUID!, $af01SourceId: UUID!){\n\tcreateObservation(\n        input: {\n            classIri: \"{{GEOSPATIAL_LOCATION_IRI}}\"\n            tags: [\"DIEKM Testing\", \"{{MY_TEST_TAG}}\"]\n            confidence: UNKNOWN\n            sourceId: $af01SourceId\n            nodeId: $nodeAId\n            geometry: {\n                type: \"Point\",\n                coordinates: [391.288931, 117.245939]\n            }\n            startTime: \"2025-02-28T15:30:00Z\"\n            acm: {version:\"2.1.0\",classif:\"U\",owner_prod:[\"USA\"],atom_energy:[],sar_id:[],sci_ctrls:[],disponly_to:[\"\"],dissem_ctrls:[\"\"],non_ic:[],rel_to:[],fgi_open:[],fgi_protect:[],portion:\"U\",banner:\"UNCLASSIFIED\",dissem_countries:[\"USA\"],accms:[],macs:[],oc_attribs:[{orgs:[],missions:[],regions:[]}],f_clearance:[\"u\"],f_sci_ctrls:[],f_accms:[],f_oc_org:[],f_regions:[],f_missions:[],f_share:[],f_sar_id:[],f_atom_energy:[],f_macs:[],disp_only:\"\"}\n        }\n  \t) {\n        id\n        version\n        acm\n        tags\n        classIri\n    }\n}",
+										"variables": "{\n    \"nodeAId\": \"{{ArtifactAlpha}}\",\n    \"af01SourceId\": \"{{fedGovRepSourceId}}\"\n}"
 									}
 								},
 								"url": {
