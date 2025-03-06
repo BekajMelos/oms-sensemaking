@@ -388,25 +388,6 @@ def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
     return db.execute(select(Track).filter_by(track_uuid=track_uuid)).unique().scalar_one()
 
 
-def apply_common_sense_filters(points: list[Point], iri: str) -> list[Point]:
-    """
-    Apply common sense filters to the track to identify any outlying points. Runs the following filters:
-    - <b>Teleportation</b>: Removes points that are likely the result of teleportation.
-    - <b>Altitude</b>: Removes points with negative or extreme altitude/altitude change.
-
-    :param track: The track to apply common sense filters to.
-    :param iri: The IRI of the object being tracked.
-    :return: The filtered track
-    """
-
-    if not SETTINGS.apply_common_sense_filters:
-        LOGGER.info("Common sense filters are disabled. Skipping.")
-        return points
-    filtered_points = filter_altitude_by_iri(points, iri)
-    filtered_points = filter_teleportation(filtered_points)
-    return filtered_points
-
-
 def filter_teleportation(points: list[Point]) -> list[Point]:
     last_good_point = points[0]
     bad_points = []
