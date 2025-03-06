@@ -424,12 +424,12 @@ def filter_teleportation(points: list[Point]) -> list[Point]:
         if last_altitude_point is not None and cur_point.altitude is not None:
             # Check if the vertical movement between this point and the previous is large.
             time_delta = cur_point.detection_time - last_altitude_point.detection_time
-            altitude_rate = abs(cur_point.altitude - last_altitude_point.altitude) / time_delta.total_seconds()
+            altitude_rate = abs(cur_point.altitude - last_altitude_point.altitude) / time_delta.total_seconds()  # type: ignore[operator]
             if altitude_rate > SETTINGS.altitude_deviation_threshold_mps:
                 LOGGER.info(
                     "Removing point %s due to altitude rate deviation: altitude diff=%s, time=%s, rate=%s",
                     cur_point.observation_id,
-                    abs(cur_point.altitude - last_altitude_point.altitude),
+                    abs(cur_point.altitude - last_altitude_point.altitude),  # type: ignore[operator]
                     time_delta,
                     altitude_rate,
                 )
