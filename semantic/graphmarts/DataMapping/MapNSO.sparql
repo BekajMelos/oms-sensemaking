@@ -16,7 +16,6 @@ INSERT {
   }
 }
 WHERE {
-  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
 	?mat_art_node ingest_omsb_graphmart:Node.class_iri ?object  ;
 		ingest_omsb_graphmart:Node.name ?node_name ;
         ingest_omsb_graphmart:Node.id ?node_id ;
@@ -40,5 +39,4 @@ WHERE {
     BIND(IRI("http://www.ontologyrepository.com/CommonCoreOntologies/Artifact") AS ?mat_art_class)
     BIND (IRI ( CONCAT ( "https://blackcape.io/2025/01/omsdiekm/", ?node_id)) as ?mat_art)
     BIND(IRI("https://foundry.ai.mil/ontology/4901-001/DefenseIntelligenceCoreOntology/hasAllSourceObjectID") AS ?has_all_source_obj_id)
-  }
 }
