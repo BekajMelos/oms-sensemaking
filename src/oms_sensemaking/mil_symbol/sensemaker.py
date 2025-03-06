@@ -85,7 +85,7 @@ class MilSymbolSensemaker(Sensemaker):
         trimmed_symbol_id_code = symbol_id_code.replace("-", "")
         if len(trimmed_symbol_id_code) == 20 and re.match(r'^([\d]{20})$', trimmed_symbol_id_code):
             code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
-            code_2525c = to_2525c(code_2525d, self.settings)
+            code_2525c = to_2525c(code_2525d,self.settings)
         elif len(symbol_id_code) == 15:
             code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
             code_2525d = to_2525d(code_2525c, self.settings)
@@ -102,8 +102,8 @@ class MilSymbolSensemaker(Sensemaker):
         status_attr = self.get_status(oms_node)
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
 
-        code_2525d.enrich(context_attr, affiliation_attr, oms_node.classIri, ancestor_iris, status_attr)
-        code_2525c.enrich(affiliation_attr, oms_node.classIri, ancestor_iris, status_attr)
+        code_2525d.enrich(context_attr, affiliation_attr, oms_node, ancestor_iris, status_attr)
+        code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr)
 
         LOGGER.info(f"Enriched 2525C: {code_2525c.formatted_code}")
         LOGGER.info(f"Enriched 2525D: {code_2525d.formatted_code}")
@@ -111,13 +111,14 @@ class MilSymbolSensemaker(Sensemaker):
         symbol_code_update_d = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525d.formatted_code,
-            acm=oms_node.acm
+            acm=code_2525d.get_acm(),
+
         )
 
         symbol_code_update_c = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525c.formatted_code,
-            acm=oms_node.acm
+            acm=code_2525c.get_acm()
         )
 
         results: List[SymbolCodeUpdate] = [symbol_code_update_d, symbol_code_update_c]
@@ -271,7 +272,7 @@ class MilSymbolSensemaker(Sensemaker):
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol_code_update.new_symbol_id_code,
                 confidence=Confidence.HIGH.value,
-                acm=oms_node.acm,
+                acm=symbol_code_update.get_acm(),
                 nodeId=oms_node.id,
                 sourceId=source_id
             )
