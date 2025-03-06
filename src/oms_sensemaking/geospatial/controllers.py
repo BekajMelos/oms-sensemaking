@@ -123,7 +123,12 @@ class GeospatialSensemakerController(SensemakerController):
                 defaults=dict(
                     acm=oms_obs.acm,
                     location=(f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'),
-                    altitude=oms_obs.geometry["coordinates"][2] if oms_obs.geometry["coordinates"][2:] else None,
+                    altitude=None,
+                    # The below line can cause Shapely methods to fail if only some points have a Z coordinate.
+                    #   Mismatched coordinate array lengths (2 vs 3) will break the LineString and MultiLineString
+                    #   methods used by sensemakers to output results. This must be dealt with before we can handle
+                    #   unreliable altitudes in OMS observations.
+                    # altitude=oms_obs.geometry["coordinates"][2] if oms_obs.geometry["coordinates"][2:] else None,
                     detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                     node_version=int(node_version),
                     observation_version=int(oms_obs.version),
