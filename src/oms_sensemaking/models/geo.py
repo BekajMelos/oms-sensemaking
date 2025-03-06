@@ -504,5 +504,7 @@ def filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
                 altitude_rate,
             )
             cur_point.weight = 0
+            continue
+        last_good_point = cur_point
 
     return points
