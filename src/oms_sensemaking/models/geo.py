@@ -390,8 +390,11 @@ def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
 
 def filter_teleportation(points: list[Point]) -> list[Point]:
     last_good_point = points[0]
+    last_altitude_point: Point | None = None
     bad_points = []
     for cur_point in points[1:]:
+        if last_good_point.altitude is not None:
+            last_altitude_point = last_good_point
         time_delta = cur_point.detection_time - last_good_point.detection_time
         distance: float = geopy.distance.geodesic(
             (cur_point.coordinates[1], cur_point.coordinates[0]),
@@ -418,6 +421,21 @@ def filter_teleportation(points: list[Point]) -> list[Point]:
             cur_point.weight = 0
             bad_points.append(cur_point)
             continue
+        if last_altitude_point is not None and cur_point.altitude is not None:
+            # Check if the vertical movement between this point and the previous is large.
+            time_delta = cur_point.detection_time - last_altitude_point.detection_time
+            altitude_rate = abs(cur_point.altitude - last_altitude_point.altitude) / time_delta.total_seconds()
+            if altitude_rate > SETTINGS.altitude_deviation_threshold_mps:
+                LOGGER.info(
+                    "Removing point %s due to altitude rate deviation: altitude diff=%s, time=%s, rate=%s",
+                    cur_point.observation_id,
+                    abs(cur_point.altitude - last_altitude_point.altitude),
+                    time_delta,
+                    altitude_rate,
+                )
+                cur_point.weight = 0
+                bad_points.append(cur_point)
+                continue
         # Made it through all checks. Update last good point for next comparison.
         last_good_point = cur_point
     if bad_points:
@@ -430,54 +448,35 @@ def filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
     """
     Filter out points that drastically deviate in elevation.
 
-    :param track: The track to filter altitude discrepancies from.
-    :return: The filtered track.
+    :param points: The points to filter altitude discrepancies from.
+    :param iri: The IRI of the object of the observations.
+    :return: The filtered points.
     """
     if "aircraft" not in iri.lower():
         LOGGER.info("Skipping altitude filtering for non-aircraft track.")
         return points
 
-    last_good_point: Point | None = None
-    for cur_point in points:
+    for point in points:
         # if current point doesn't have an altitude, skip this filter
-        if cur_point.altitude is None:
+        if point.altitude is None:
             # LOGGER.info("Skipping altitude filter for point %s", cur_point.observation_id)
             continue
 
-        # Check if the altitude is negative, zero, or exceeds the maximum altitude threshold.
-        if cur_point.altitude < 0:
+        # Check if the altitude is negative or exceeds the maximum altitude threshold.
+        if point.altitude < 0:
             LOGGER.info(
                 "Removing point %s due to negative altitude: altitude=%s",
-                cur_point.observation_id,
-                cur_point.altitude,
+                point.observation_id,
+                point.altitude,
             )
-            cur_point.weight = 0
+            point.weight = 0
             continue
-        elif cur_point.altitude > SETTINGS.altitude_threshold_meters:
+        elif point.altitude > SETTINGS.altitude_threshold_meters:
             LOGGER.info(
                 "Removing point %s due to altitude exceeding maximum: altitude=%s",
-                cur_point.observation_id,
-                cur_point.altitude,
+                point.observation_id,
+                point.altitude,
             )
-            cur_point.weight = 0
+            point.weight = 0
             continue
-        # Ensure we have a last_good_point for comparison
-        if last_good_point is None:
-            last_good_point = cur_point
-            continue
-        # Check if the vertical movement between this point and the previous is large.
-        time_delta = cur_point.detection_time - last_good_point.detection_time
-        altitude_rate = abs(cur_point.altitude - last_good_point.altitude) / time_delta.total_seconds()
-        if altitude_rate > SETTINGS.altitude_deviation_threshold_mps:
-            LOGGER.info(
-                "Removing point %s due to altitude deviation: altitude diff=%s, time=%s, rate=%s",
-                cur_point.observation_id,
-                abs(cur_point.altitude - last_good_point.altitude),
-                time_delta,
-                altitude_rate,
-            )
-            cur_point.weight = 0
-            continue
-        last_good_point = cur_point
-
     return points
