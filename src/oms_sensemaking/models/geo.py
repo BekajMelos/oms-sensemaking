@@ -317,10 +317,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 key=lambda x: x.detection_time.timestamp() // self.config["time_bin_size_seconds"],
             )
         }
-        # LOGGER.info(
-        #     "Applying time bin weighted average to %s points with weight > 0.",
-        #     sum(len(bp) for bp in time_bins.values()),
-        # )
         confidence_map = SETTINGS.confidence_weight_map
         weighted_points: list[Point] = []
         # db_session is used to persist averaged Points to the DB, but the returned Track is up to the caller to handle
@@ -333,9 +329,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
                 # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
-                # LOGGER.info(
-                #     f"Averaging {len(bin_points)} bin points: {', '.join(str(p.coordinates) for p in bin_points)}"
-                # )
                 acm_rollup = aac_client.get_acm_rollup([{"ACM": point.acm} for point in bin_points])
                 point_dict = {
                     "node_id": bin_points[0].node_id,
@@ -367,7 +360,6 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 point_dict["weight"] = reduce(mul, (point.weight for point in bin_points))
                 weighted_point, _ = Point.get_or_create(db, defaults=None, **point_dict)
                 weighted_points.append(weighted_point)
-                # LOGGER.info(f"Averaged point: {weighted_point.coordinates}")
         return Track(
             points=weighted_points,
             node_id=weighted_points[0].node_id,
@@ -466,9 +458,9 @@ def filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
 
     last_good_point: Point | None = None
     for cur_point in points:
-        # if either point doesn't have an altitude, skip this filter
+        # if current point doesn't have an altitude, skip this filter
         if cur_point.altitude is None:
-            LOGGER.info("Skipping altitude filter for point %s", cur_point.observation_id)
+            # LOGGER.info("Skipping altitude filter for point %s", cur_point.observation_id)
             continue
 
         # Check if the altitude is negative, zero, or exceeds the maximum altitude threshold.
