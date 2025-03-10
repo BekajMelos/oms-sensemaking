@@ -260,11 +260,16 @@ class Settings(BaseSettings):
                                           description="Tag for OMSB objects from the geospatial sensemakers")
     # Track Filtering Settings
     apply_common_sense_filters: bool = Field(True, description="Toggle on/off Common Sense Filters")
-    distance_threshold_meters: float = Field(1000.0, description="Threshold for distance between Track Points.")
     altitude_threshold_meters: float = Field(20000.0, description="Maximum altitude.")
-    altitude_deviation_threshold_meters: float = Field(300.0, description="Threshold for altitude deviation.")
-    time_threshold_seconds: int = Field(5, description="Threshold for time between Track Points.")
-    relative_velocity_threshold_mps: float = Field(250.0, description="Threshold for relative velocity.")
+    altitude_deviation_threshold_mps: float = Field(300.0, description="Threshold for altitude rate deviation.")
+    time_threshold_seconds: int = Field(
+        5,
+        description="Track Points closer than this value in seconds will not be compared for filtering" \
+            " due to resolution concerns.")
+    relative_velocity_threshold_mps: float = Field(
+        600.0,
+        description="Relative velocity above this value in mps is considered teleportation."
+    )
 
     # Track Weaver Settings
     time_bin_size_seconds: int = Field(

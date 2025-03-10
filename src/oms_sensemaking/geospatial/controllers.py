@@ -1,5 +1,6 @@
 """Geospatial sensemaker controller."""
 
+import json
 import logging
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,6 +12,7 @@ from uuid import UUID, uuid4
 from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
+from shapely import LineString
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
@@ -22,7 +24,8 @@ from oms_sensemaking.models.geo import (
     TimeBinTrackWeaver,
     Track,
     TrackWeaverBase,
-    apply_common_sense_filters,
+    filter_altitude_by_iri,
+    filter_teleportation,
 )
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -172,15 +175,18 @@ class GeospatialSensemakerController(SensemakerController):
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
                     with db_session() as db:
+                        db.expire_on_commit = False
                         try:
                             points = self.track_node_buffer[track_uuid]
                             points.sort(key=attrgetter("detection_time"))
                             if SETTINGS.apply_common_sense_filters:
                                 # Get the IRI for the node
                                 iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
-                                points = apply_common_sense_filters(points, iri)
+                                points = filter_altitude_by_iri(points, iri)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
+                            # Changes to point weight here aren't enough. filter_teleportation needs to remove points.
+                            weaved_track.points = filter_teleportation(weaved_track.points)
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
@@ -189,6 +195,48 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
+                            LOGGER.info("GeoJSON features:")
+                            LOGGER.info(
+                                json.dumps(
+                                    {
+                                        "type": "FeatureCollection",
+                                        "features": [
+                                            {
+                                                "type": "Feature",
+                                                "properties": {
+                                                    "name": "Original Points",
+                                                    "num_points": len(points),
+                                                    "stroke": "#ff0000",
+                                                    "stroke-width": 2,
+                                                    "stroke-opacity": 1,
+                                                },
+                                                "geometry": LineString(
+                                                    [point.coordinates for point in points]
+                                                ).__geo_interface__,
+                                                "id": 0,
+                                            },
+                                            {
+                                                "type": "Feature",
+                                                "properties": {
+                                                    "name": "Weaved Track",
+                                                    "algorithm": track.algorithm,
+                                                    "num_points": len(track.points),
+                                                    "average_point_weight": round(
+                                                        sum(p.weight for p in track.points) / len(track.points), 2
+                                                    ),
+                                                    "stroke": "#00ff1e",
+                                                    "stroke-width": 2,
+                                                    "stroke-opacity": 1,
+                                                },
+                                                "geometry": LineString(
+                                                    [point.coordinates for point in track.points]
+                                                ).__geo_interface__,
+                                                "id": 1,
+                                            },
+                                        ],
+                                    }
+                                )
+                            )
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
