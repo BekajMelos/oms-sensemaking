@@ -114,7 +114,7 @@ pipeline {
                                 --secret id=mynetrc,src=.netrc \
                                 --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
                                 .
-                            docker push ${artDockerUrl}/${DOCKER_PROD_IMAGE}
+                            docker push --all-tags ${artDockerUrl}/${DOCKER_PROD_IMAGE}
                         '''
                     }
                 }
