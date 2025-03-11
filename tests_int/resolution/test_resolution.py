@@ -24,8 +24,8 @@ BE_NUMBER_IRI = "https://foundry.ai.mil/MIDB_GST/v1/BE_Number"
 BE_NUMBER = "ABCD1234"
 OSUFFIX_IRI = "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"
 OSUFFIX = "12345"
-VIN_IRI = "https://foundry.ai.mil/DICO/v3.1.0/VIN"
-VIN = "VIN123"
+EQUIPMENT_CODE_IRI = "https://foundry.ai.mil/DICO/v3.1.0/Equipment_Code"
+EQUIPMENT_CODE = "eqpCode123"
 
 
 @pytest.fixture
@@ -52,17 +52,17 @@ def tester_db():
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
-    original_car_node = NodeNode.model_construct(
+    original_equipment_node = NodeNode.model_construct(
         id=uuid4(),
         acm=DEFAULT_ACM,
-        name="original_car_node",
+        name="original_equipment_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/CarType"
+        classIri="https://foundry.ai.mil/NIEM/v5.2/EquipmentType"
     )
-    original_vin_attribute = AttributeAttribute.model_construct(
-        attributeIri=VIN_IRI,
-        attributeValue=VIN,
-        nodeId=original_car_node.id,
+    original_equipment_code_attribute = AttributeAttribute.model_construct(
+        attributeIri=EQUIPMENT_CODE_IRI,
+        attributeValue=EQUIPMENT_CODE,
+        nodeId=original_equipment_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
@@ -70,8 +70,8 @@ def tester_db():
     return [original_facility_node,
            original_be_number_attribute,
            original_osuffix_attribute,
-           original_car_node,
-           original_vin_attribute]
+           original_equipment_node,
+           original_equipment_code_attribute]
 
 
 def test_resolution_sensemaker(db, mock_source, tester_db):
@@ -85,12 +85,12 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
         tier=ObjectTier.PRIMARY,
         classIri="https://foundry.ai.mil/NIEM/v5.2/FacilityType"
     )
-    new_car_node = NodeNode.model_construct(
+    new_equipment_node = NodeNode.model_construct(
         id=uuid4(),
         acm=DEFAULT_ACM,
-        name="new_car_node",
+        name="new_equipment_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/CarType"
+        classIri="https://foundry.ai.mil/NIEM/v5.2/EquipmentType"
     )
     # Get Relationships Mock
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
@@ -142,19 +142,19 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert len(dups) == 1
 
 
-    # Test Success. Matching car nodes with be number and osuffix. Criteria met with matching nodes
-    new_vin_attribute = AttributeAttribute.model_construct(
-        attributeIri=VIN_IRI,
-        attributeValue=VIN,
-        nodeId=new_car_node.id,
+    # Test Success. Matching equipment nodes with be number and osuffix. Criteria met with matching nodes
+    new_equipment_code_attribute = AttributeAttribute.model_construct(
+        attributeIri=EQUIPMENT_CODE_IRI,
+        attributeValue=EQUIPMENT_CODE,
+        nodeId=new_equipment_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
-    # mock vin being sent, and matching nodes being returned
+    # mock equipment code being sent, and matching nodes being returned
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[3]])
-    mock_oms_crud_tool.get_node.return_value = new_car_node
+    mock_oms_crud_tool.get_node.return_value = new_equipment_node
 
-    dups = ResolutionSensemaker(mock_oms_crud_tool).execute(new_vin_attribute)
+    dups = ResolutionSensemaker(mock_oms_crud_tool).execute(new_equipment_code_attribute)
     assert len(dups) == 1
 
 
@@ -182,5 +182,5 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert findings[0].finding_data["start_node_id"] == str(new_facility_node.id)
     assert findings[0].finding_data["end_node_id"] == str(tester_db[0].id)
     assert findings[1].acm == tester_db[4].acm
-    assert findings[1].finding_data["start_node_id"] == str(new_car_node.id)
+    assert findings[1].finding_data["start_node_id"] == str(new_equipment_node.id)
     assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
