@@ -24,59 +24,85 @@ BE_NUMBER_IRI = "https://foundry.ai.mil/MIDB_GST/v1/BE_Number"
 BE_NUMBER = "ABCD1234"
 OSUFFIX_IRI = "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"
 OSUFFIX = "12345"
+VIN_IRI = "https://foundry.ai.mil/DICO/v3.1.0/VIN"
+VIN = "VIN123"
 
 
 @pytest.fixture
 def tester_db():
 
-    original_node = NodeNode.model_construct(
+    original_facility_node = NodeNode.model_construct(
         id=uuid4(),
         acm=DEFAULT_ACM,
-        name="original_node",
+        name="original_facility_node",
         tier=ObjectTier.PRIMARY,
         classIri="https://foundry.ai.mil/NIEM/v5.2/FacilityType"
     )
     original_be_number_attribute = AttributeAttribute.model_construct(
         attributeIri=BE_NUMBER_IRI,
         attributeValue=BE_NUMBER,
-        nodeId=original_node.id,
+        nodeId=original_facility_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
     original_osuffix_attribute = AttributeAttribute.model_construct(
         attributeIri=OSUFFIX_IRI,
         attributeValue=OSUFFIX,
-        nodeId=original_node.id,
+        nodeId=original_facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    original_car_node = NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="original_car_node",
+        tier=ObjectTier.PRIMARY,
+        classIri="https://foundry.ai.mil/NIEM/v5.2/CarType"
+    )
+    original_vin_attribute = AttributeAttribute.model_construct(
+        attributeIri=VIN_IRI,
+        attributeValue=VIN,
+        nodeId=original_car_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
 
-    return original_node, original_be_number_attribute, original_osuffix_attribute
+    return [original_facility_node,
+           original_be_number_attribute,
+           original_osuffix_attribute,
+           original_car_node,
+           original_vin_attribute]
 
 
 def test_resolution_sensemaker(db, mock_source, tester_db):
     """Test Resolution Sensemaker"""
 
     mock_oms_crud_tool = mock.MagicMock(spec=OmsCrudTool)
-    new_node = NodeNode.model_construct(
+    new_facility_node = NodeNode.model_construct(
         id=uuid4(),
         acm=DEFAULT_ACM,
-        name="new_node",
+        name="new_facility_node",
         tier=ObjectTier.PRIMARY,
         classIri="https://foundry.ai.mil/NIEM/v5.2/FacilityType"
     )
-
+    new_car_node = NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="new_car_node",
+        tier=ObjectTier.PRIMARY,
+        classIri="https://foundry.ai.mil/NIEM/v5.2/CarType"
+    )
     # Get Relationships Mock
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
 
     # Get Node Mock
-    mock_oms_crud_tool.get_node.return_value = new_node
+    mock_oms_crud_tool.get_node.return_value = new_facility_node
 
     # Test unsupported attribute is ignored
     unsupported_attribute = AttributeAttribute.model_construct(
         attributeIri="test",
         attributeValue="test",
-        nodeId=new_node.id,
+        nodeId=new_facility_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
@@ -87,18 +113,18 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     new_be_number_attribute = AttributeAttribute.model_construct(
         attributeIri=BE_NUMBER_IRI,
         attributeValue=BE_NUMBER,
-        nodeId=new_node.id,
+        nodeId=new_facility_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
     assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
 
 
-    # Test Failure. Matching nodes with be number and osuffix. Criteria met but no matching nodes
+    # Test Failure. Matching facility nodes with be number and osuffix. Criteria met but no matching nodes
     new_osuffix_attribute = AttributeAttribute.model_construct(
         attributeIri=OSUFFIX_IRI,
         attributeValue=OSUFFIX,
-        nodeId=new_node.id,
+        nodeId=new_facility_node.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
@@ -108,7 +134,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
 
 
-    # Test Success. Matching nodes with be number and osuffix. Criteria met with matching nodes
+    # Test Success. Matching facility nodes with be number and osuffix. Criteria met with matching nodes
     # mock osuffix already existing and be_number being sent, and matching nodes being returned
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[0]])
 
@@ -116,12 +142,30 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert len(dups) == 1
 
 
+    # Test Success. Matching car nodes with be number and osuffix. Criteria met with matching nodes
+    new_vin_attribute = AttributeAttribute.model_construct(
+        attributeIri=VIN_IRI,
+        attributeValue=VIN,
+        nodeId=new_car_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    # mock vin being sent, and matching nodes being returned
+    mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[3]])
+    mock_oms_crud_tool.get_node.return_value = new_car_node
+
+    dups = ResolutionSensemaker(mock_oms_crud_tool).execute(new_vin_attribute)
+    assert len(dups) == 1
+
+
     # Test Failure. Getting the same data again should not return new duplicates
     # mock has_already_ran seeing the relationship
     new_relationship = RelationshipRelationship.model_construct(
         name=SETTINGS.resolution_relationship_name,
-        startNodeId=new_node.id,
+        startNodeId=new_facility_node.id,
     )
+    mock_oms_crud_tool.get_node.return_value = new_facility_node
+    mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[0]])
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(
         data=[new_relationship])
     assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
@@ -133,7 +177,10 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
             )
         ).scalars().all()
 
-    assert len(findings) == 1
+    assert len(findings) == 2
     assert findings[0].acm == tester_db[1].acm
-    assert findings[0].finding_data["start_node_id"] == str(new_node.id)
+    assert findings[0].finding_data["start_node_id"] == str(new_facility_node.id)
     assert findings[0].finding_data["end_node_id"] == str(tester_db[0].id)
+    assert findings[1].acm == tester_db[4].acm
+    assert findings[1].finding_data["start_node_id"] == str(new_car_node.id)
+    assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
