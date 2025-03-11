@@ -81,7 +81,8 @@ class DuplicateObject:
         if len(duplicate_identifiers) > 1:
             other_iris: List[str] = copy.copy(duplicate_identifiers)
             other_iris.remove(current_iri)
-            duplicate_object_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris))
+            duplicate_object_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId,
+                                                                                            other_iris))
 
             if len(duplicate_object_attributes) != len(duplicate_identifiers):
                 LOGGER.debug("Node does not have all required fields for Duplicate Object Matching. Ignoring.")
