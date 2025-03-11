@@ -69,6 +69,9 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     # Get Relationships Mock
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
 
+    # Get Node Mock
+    mock_oms_crud_tool.get_node.return_value = new_node
+
     # Test unsupported attribute is ignored
     unsupported_attribute = AttributeAttribute.model_construct(
         attributeIri="test",

@@ -46,14 +46,14 @@ class DupFinding(FindingBase):
         return self.acm
 
 
-class DuplicateFacility:
-    """Class to help find duplicate facilities in OMSB"""
+class DuplicateObject:
+    """Class to help find duplicate objects in OMSB"""
 
     def __init__(self, oms_crud_tool: OmsCrudTool):
 
         self.oms_crud_tool = oms_crud_tool
 
-        self.duplicate_facility_iris = SETTINGS.duplicate_facility_iris
+        self.duplicate_object_iris = SETTINGS.duplicate_object_iris
 
     def meets_criteria(self, attribute: AttributeAttribute) -> List[AttributeAttribute]:
         """
@@ -65,21 +65,28 @@ class DuplicateFacility:
         """
         current_iri = attribute.attributeIri
         current_node_id = attribute.nodeId
-        duplicate_facility_attributes = [attribute]
+        duplicate_object_attributes = [attribute]
+        class_iri = self.oms_crud_tool.get_node(current_node_id).classIri
 
-        if attribute.attributeIri not in self.duplicate_facility_iris or self.has_already_ran(current_node_id):
+        already_ran = self.has_already_ran(current_node_id)
+        object_class_in_config = class_iri in self.duplicate_object_iris
+        if object_class_in_config:
+            duplicate_identifiers = self.duplicate_object_iris[class_iri]
+            attribute_in_duplicate_identifiers = attribute.attributeIri in duplicate_identifiers
+
+        if not object_class_in_config or not attribute_in_duplicate_identifiers or already_ran:
             return []
 
         # Get this nodes info and make sure we satisfy the requirements
-        other_iris: List[str] = copy.copy(self.duplicate_facility_iris)
+        other_iris: List[str] = copy.copy(duplicate_identifiers)
         other_iris.remove(current_iri)
-        duplicate_facility_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris))
+        duplicate_object_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris))
 
-        if len(duplicate_facility_attributes) != len(self.duplicate_facility_iris):
-            LOGGER.debug("Node does not have all required fields for Duplicate Facility Matching. Ignoring.")
+        if len(duplicate_object_attributes) != len(duplicate_identifiers):
+            LOGGER.debug("Node does not have all required fields for Duplicate Object Matching. Ignoring.")
             return []
 
-        return duplicate_facility_attributes
+        return duplicate_object_attributes
 
     def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: List[NodeNode]) -> List[DupFinding]:
         """
@@ -207,7 +214,7 @@ class ResolutionSensemaker(Sensemaker):
 
         # Register duplicate data checks
         self.duplicate_checks = [
-            DuplicateFacility(self.oms_crud_tool)
+            DuplicateObject(self.oms_crud_tool)
         ]
 
     def process_data(self, attribute: AttributeAttribute) -> List[DupFinding]:

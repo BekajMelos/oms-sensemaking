@@ -335,13 +335,9 @@ class Settings(BaseSettings):
                                            description="Relationship IRI for resolution sensemaker suggestions")
     resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    duplicate_facility_iris: List[str] = Field(
-        [
-            "https://foundry.ai.mil/MIDB_GST/v1/BE_Number",
-            "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
-        ],
-        description="List of fields that must match to be a duplicate Facility")
-
+    duplicate_object_iris: dict = Field(
+        description="Dictionary mapping object class to list of required duplicate identifiers"
+    )
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
