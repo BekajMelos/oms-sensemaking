@@ -23,4 +23,4 @@ Mention if there are new dependencies or resources needed to verify this branch.
 - [ ] I have performed a self-review of my code
 - [ ] If it is a core feature, I have added thorough tests.
 - [ ] I have updated environment variables in the docs
-- [ ] I've updated the Change Log
+- [ ] I've updated the changelog
