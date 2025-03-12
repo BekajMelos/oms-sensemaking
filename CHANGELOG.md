@@ -27,6 +27,5 @@ All notable changes to this project will be documented in this file.
 
 
 
-
 [Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.1.0...main
 [0.1.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.1.0
