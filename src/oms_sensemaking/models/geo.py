@@ -407,7 +407,7 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
     if oms_obs.geometry["type"] == "LineString":
         start_time = isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc)
         end_time = isoparse(oms_obs.endTime).replace(tzinfo=timezone.utc)
-        # Reverse lon/lat to lat/lon to use geopy distance calc
+        # Always remember to convert lon/lat to lat/lon to use geopy distance calc
         total_distance: float = gd.geodesic(
             *(gd.lonlat(*obs_coords) for obs_coords in oms_obs["geometry"]["coordinates"])
         ).meters
