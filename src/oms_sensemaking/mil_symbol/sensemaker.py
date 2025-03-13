@@ -11,7 +11,13 @@ from oms_sdk.generated.generated_graphql_client import (
     Confidence,
     CreateAttributeInput,
     NodeNode,
+    NodeQuery,
+    NodeRelationshipQuery,
+    NodeRelationshipSubQuery,
+    NodesNodes,
+    ObjectTier,
     OntologyClassOntologyClass,
+    RelationshipDirection,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -195,15 +201,54 @@ class MilSymbolSensemaker(Sensemaker):
         :return: The Node's standard identity
         """
 
-        # TODO there could be multiple IRIs for affiliation
-
-        affiliation_attr: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+        affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
             oms_node.id,
             SETTINGS.mil_symbol_settings.affiliation_iris
             )
 
-        if affiliation_attr:
-            return affiliation_attr[0]
+        if affiliation_attrs:
+            return affiliation_attrs[0]
+
+        if oms_node.tier != ObjectTier.DERIVATIVE:
+            return None
+
+        # look for parent relationship
+        parent_nodes: NodesNodes = self.oms_crud_tool.get_nodes(
+            NodeQuery(
+                relationships=NodeRelationshipQuery(
+                    or_=[
+                        NodeRelationshipQuery(
+                            hasMatch=NodeRelationshipSubQuery(
+                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
+                                relatedNodeIds=[oms_node.id],
+                                direction=RelationshipDirection.OUTGOING
+                            )
+                        ),
+                        NodeRelationshipQuery(
+                            hasMatch=NodeRelationshipSubQuery(
+                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
+                                relatedNodeIds=[oms_node.id],
+                                direction=RelationshipDirection.INCOMING
+                            )
+                        )
+                    ]
+                )
+            )
+        )
+
+        LOGGER.debug('Affiliation code is still unknown. Checking ancestor related controlling nodes')
+
+        if not parent_nodes.data:
+            return None
+
+        for node in parent_nodes.data:
+            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+                node.id,
+                SETTINGS.mil_symbol_settings.affiliation_iris
+            )
+
+            if parent_affiliation_attrs:
+                return parent_affiliation_attrs[0]
 
         return None
 
