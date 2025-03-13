@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Aircraft",
+    "iri_search_pattern": "aircraft",
+    "altitude_threshold_meters": 20000.0,
+    "altitude_deviation_threshold_mps": 300.0,
+    "time_threshold_seconds": 5,
+    "relative_velocity_threshold_mps": 600.0
+  }
+]

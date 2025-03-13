@@ -126,7 +126,7 @@ class MilSymbolSettings(BaseModel):
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
         description="Attribute Iri to look for 'is simulation' context")
 
-    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path the the rules config file")
+    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
 
 class Settings(BaseSettings):
@@ -258,17 +258,11 @@ class Settings(BaseSettings):
     )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
-    # Track Filtering Settings
+    # Common Sense Filtering Settings
     apply_common_sense_filters: bool = Field(True, description="Toggle on/off Common Sense Filters")
-    altitude_threshold_meters: float = Field(20000.0, description="Maximum altitude.")
-    altitude_deviation_threshold_mps: float = Field(300.0, description="Threshold for altitude rate deviation.")
-    time_threshold_seconds: int = Field(
-        5,
-        description="Track Points closer than this value in seconds will not be compared for filtering" \
-            " due to resolution concerns.")
-    relative_velocity_threshold_mps: float = Field(
-        600.0,
-        description="Relative velocity above this value in mps is considered teleportation."
+    common_sense_filter_rules_file_path: str = Field(
+        "./data/common_sense_filter_rules.json",
+        description="Path to the rules config file",
     )
 
     # Track Weaver Settings
