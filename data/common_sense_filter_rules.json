@@ -6,5 +6,11 @@
     "altitude_deviation_threshold_mps": 300.0,
     "time_threshold_seconds": 5,
     "relative_velocity_threshold_mps": 600.0
+  },
+  {
+    "name": "Surface Vessels",
+    "iri_search_pattern": "vessel",
+    "time_threshold_seconds": 5,
+    "relative_velocity_threshold_mps": 250.0
   }
 ]
