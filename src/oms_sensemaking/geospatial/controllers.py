@@ -19,14 +19,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import (
-    Point,
-    TimeBinTrackWeaver,
-    Track,
-    TrackWeaverBase,
-    filter_altitude_by_iri,
-    filter_teleportation,
-)
+from oms_sensemaking.models.geo import CommonSenseFilter, Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -52,6 +45,15 @@ class GeospatialSensemakerController(SensemakerController):
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
         self.confidence_weight_map = SETTINGS.confidence_weight_map
+
+        filter_path = SETTINGS.common_sense_filter_rules_file_path
+        with open(filter_path, mode="r") as f:
+            filter_configs: list[dict] = json.load(f)
+        self.common_sense_filters = [CommonSenseFilter.model_validate(config) for config in filter_configs]
+        LOGGER.info(
+            "GeospatialSensemakerController succesfully loaded common sense filters: %s",
+            [csf.name for csf in self.common_sense_filters],
+        )
 
     def start(self) -> None:
         """Start the controller."""
@@ -177,16 +179,19 @@ class GeospatialSensemakerController(SensemakerController):
                     with db_session() as db:
                         db.expire_on_commit = False
                         try:
+                            iri = ""
                             points = self.track_node_buffer[track_uuid]
                             points.sort(key=attrgetter("detection_time"))
                             if SETTINGS.apply_common_sense_filters:
                                 # Get the IRI for the node
                                 iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
-                                points = filter_altitude_by_iri(points, iri)
+                                for csf in self.common_sense_filters:
+                                    points = csf.filter_points_altitude(points, iri)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
-                            # Changes to point weight here aren't enough. filter_teleportation needs to remove points.
-                            weaved_track.points = filter_teleportation(weaved_track.points)
+                            if SETTINGS.apply_common_sense_filters:
+                                for csf in self.common_sense_filters:
+                                    weaved_track.points = csf.filter_points_teleportation(weaved_track.points, iri)
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
