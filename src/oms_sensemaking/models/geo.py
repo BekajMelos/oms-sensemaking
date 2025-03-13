@@ -9,7 +9,6 @@ from collections.abc import Iterable
 from datetime import UTC, datetime
 from functools import cached_property, reduce
 from operator import mul
-from typing import Any
 
 import geopy.distance
 from geoalchemy2 import Geometry
@@ -17,7 +16,7 @@ from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
@@ -382,10 +381,10 @@ class CommonSenseFilter(BaseModel):
     altitude_deviation_threshold_mps: float | None = None
     time_threshold_seconds: int | None = None
     relative_velocity_threshold_mps: float | None = None
-    regex: re.Pattern[str] = Field(exclude=True, init=False)
 
-    def model_post_init(self, __context: Any) -> None:
-        self.regex = re.compile(self.iri_search_pattern, flags=re.IGNORECASE)
+    @cached_property
+    def regex(self) -> re.Pattern[str]:
+        return re.compile(self.iri_search_pattern, flags=re.IGNORECASE)
 
     def filter_points_altitude(self, points: list[Point], iri: str) -> list[Point]:
         """
