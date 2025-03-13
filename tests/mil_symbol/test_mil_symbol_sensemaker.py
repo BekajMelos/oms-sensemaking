@@ -38,13 +38,13 @@ def oms_node() -> NodeNode:
     return node
 
 
-def create_attribute(attribute_iri = None, attribute_value = None) -> AttributeAttribute:
+def create_attribute(attribute_iri = None, attribute_value = None, acm=DEFAULT_ACM) -> AttributeAttribute:
     attr = AttributeAttribute.model_construct(
         id=uuid4(),
         attributeIri=attribute_iri,
         attributeValue=attribute_value,
         sourceId=uuid4(),
-        acm=DEFAULT_ACM
+        acm=acm
     )
 
     return attr
@@ -364,3 +364,34 @@ def test_dimension_enrichment(
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
+
+
+@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.aac_client')
+def test_acms(
+        mock_aac_client: mock.MagicMock,
+        mock_oms_crud_tool: OmsCrudTool,
+        oms_node: NodeNode,
+        mil_symbol_rules: Dict,
+        ts_acm: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+    # case 1
+    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
+        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true",
+        acm=ts_acm))
+    sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+    oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
+    oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
+
+    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols) == 2
+    code_d, code_c = symbols
+    assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
+    assert code_c.new_symbol_id_code == "SHSD------*****"
+    mock_aac_client.get_acm_rollup.assert_any_call([
+        {"ACM": ts_acm}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM},
+    ])

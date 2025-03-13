@@ -17,6 +17,36 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 @pytest.fixture
+def ts_acm():
+    acm = {
+        "classif": "TS",
+        "classif_type": "US",
+        "owner_prod": [
+            "USA"
+        ],
+        "sci_ctrls": [
+            "TK"
+        ],
+        "dissem_ctrls": [
+            "NF"
+        ],
+        "rsrc_elem": False,
+        "ex_from_rollup": False,
+        "portion": "TS//TK//NF",
+        "banner": "TOP SECRET//TK//NOFORN",
+        "dissem_countries": [
+            "USA"
+        ],
+        "f_clearance": [
+            "ts"
+        ],
+        "f_sci_ctrls": [
+            "tk"
+        ]
+    }
+    return acm
+
+@pytest.fixture
 def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
