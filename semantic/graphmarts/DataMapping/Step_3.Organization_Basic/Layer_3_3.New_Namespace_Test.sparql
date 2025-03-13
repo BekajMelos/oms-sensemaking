@@ -38,8 +38,9 @@ INSERT {
         ?allegiance_country_instance rdfs:label ?allegiance_object_string . 
     }
 }
-WHERE { 
-  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+WHERE {
+  ## REMOVING HARDCODED GRAPH URI 20250225
+  ## GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
 	?node_record_uri ingest_omsb_graphmart:Node.class_iri ?object_class_iri  ;
         # flagging for viewers that I don't have to use OPTIONAL below
         # bc I know that both name & id are NOT NULL fields in the node table 
@@ -104,5 +105,6 @@ WHERE {
     BIND(IRI("http://www.ontologyrepository.com/CommonCoreOntologies/Country") as ?cco_country_class)
     BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/tempspace/", ?allegiance_object_string)) as ?allegiance_country_instance)  
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasAllegianceTo") as ?allegiance_object_property)
-  }
+  ## REMOVING HARDCODED GRAPH URI 20250225
+  ## }
 }
