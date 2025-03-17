@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 > *Galadriel-INC-2?*
 
 ### Added
-- None 
+- Common sense filtering by node IRI.
 
 ### Changed
 - None
