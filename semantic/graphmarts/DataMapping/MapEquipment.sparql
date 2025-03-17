@@ -20,7 +20,8 @@ INSERT {
     }
 }
 WHERE {
-  GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
+  ## REMOVING HARDCODED GRAPH URI 20250225
+  ## GRAPH <http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81> {
 	?eqp_node_obj ingest_omsb_graphmart:Node.class_iri ?object  ;
         # flagging for viewers that I don't have to use OPTIONAL below
         # bc I know that both name & id are NOT NULL fields in the node table 
@@ -138,5 +139,6 @@ WHERE {
     BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000176") AS ?continuant_part_of_at_some_time)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/hasOperationalStatus") AS ?operational_status)
     BIND (IRI ( CONCAT ( "https://blackcape.io/2025/01/omsdiekm/", ?node_id)) as ?eqp_object)
-  }
+  ## REMOVING HARDCODED GRAPH URI 20250225
+  ## }
 }
