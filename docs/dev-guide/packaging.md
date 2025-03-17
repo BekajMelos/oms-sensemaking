@@ -86,9 +86,9 @@ To cut new release:
     The format for the git tag is `vMAJOR.MINOR.PATCH`.
 
         git checkout main
-        git tag -a -m 'Release 1.2.3' v1.2.3
+        git tag -a -m 'Release 1.2.3 (Galadriel-INC-1)' v1.2.3
         git push
-        git push --tags
+        git push origin tag v1.2.3
 
 2. (optional) Create build artifacts
 
@@ -123,4 +123,4 @@ To cut new release:
       reference them in the release notes.
 
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
-[Development Environment]: dev.md 
+[Development Environment]: dev.md
