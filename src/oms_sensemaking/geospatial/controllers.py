@@ -1,6 +1,5 @@
 """Geospatial sensemaker controller."""
 
-import json
 import logging
 import traceback
 from collections import defaultdict
@@ -12,7 +11,6 @@ from uuid import UUID, uuid4
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
-from shapely import LineString
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
@@ -93,7 +91,6 @@ class GeospatialSensemakerController(SensemakerController):
         :return: True if the audit log event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
-        point: Point | None = None
 
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
@@ -205,48 +202,48 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
-                            LOGGER.info("GeoJSON features:")
-                            LOGGER.info(
-                                json.dumps(
-                                    {
-                                        "type": "FeatureCollection",
-                                        "features": [
-                                            {
-                                                "type": "Feature",
-                                                "properties": {
-                                                    "name": "Original Points",
-                                                    "num_points": len(points),
-                                                    "stroke": "#ff0000",
-                                                    "stroke-width": 2,
-                                                    "stroke-opacity": 1,
-                                                },
-                                                "geometry": LineString(
-                                                    [point.coordinates for point in points]
-                                                ).__geo_interface__,
-                                                "id": 0,
-                                            },
-                                            {
-                                                "type": "Feature",
-                                                "properties": {
-                                                    "name": "Weaved Track",
-                                                    "algorithm": track.algorithm,
-                                                    "num_points": len(track.points),
-                                                    "average_point_weight": round(
-                                                        sum(p.weight for p in track.points) / len(track.points), 2
-                                                    ),
-                                                    "stroke": "#00ff1e",
-                                                    "stroke-width": 2,
-                                                    "stroke-opacity": 1,
-                                                },
-                                                "geometry": LineString(
-                                                    [point.coordinates for point in track.points]
-                                                ).__geo_interface__,
-                                                "id": 1,
-                                            },
-                                        ],
-                                    }
-                                )
-                            )
+                            # LOGGER.info("GeoJSON features:")
+                            # LOGGER.info(
+                            #     json.dumps(
+                            #         {
+                            #             "type": "FeatureCollection",
+                            #             "features": [
+                            #                 {
+                            #                     "type": "Feature",
+                            #                     "properties": {
+                            #                         "name": "Original Points",
+                            #                         "num_points": len(points),
+                            #                         "stroke": "#ff0000",
+                            #                         "stroke-width": 2,
+                            #                         "stroke-opacity": 1,
+                            #                     },
+                            #                     "geometry": LineString(
+                            #                         [point.coordinates for point in points]
+                            #                     ).__geo_interface__,
+                            #                     "id": 0,
+                            #                 },
+                            #                 {
+                            #                     "type": "Feature",
+                            #                     "properties": {
+                            #                         "name": "Weaved Track",
+                            #                         "algorithm": track.algorithm,
+                            #                         "num_points": len(track.points),
+                            #                         "average_point_weight": round(
+                            #                             sum(p.weight for p in track.points) / len(track.points), 2
+                            #                         ),
+                            #                         "stroke": "#00ff1e",
+                            #                         "stroke-width": 2,
+                            #                         "stroke-opacity": 1,
+                            #                     },
+                            #                     "geometry": LineString(
+                            #                         [point.coordinates for point in track.points]
+                            #                     ).__geo_interface__,
+                            #                     "id": 1,
+                            #                 },
+                            #             ],
+                            #         }
+                            #     )
+                            # )
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
@@ -287,12 +284,12 @@ class GeospatialSensemakerController(SensemakerController):
         oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
         # Filter observations
-        # Only process if there is an observation and it has a geojson point
+        # Only process if there is an observation and it has a geojson Point or LineString
         if not oms_obs:
             return None
 
-        can_handle_geometry = oms_obs.geometry["type"].lower() != "point"
-        if can_handle_geometry:
+        cannot_handle_geometry = oms_obs.geometry["type"].lower() not in ("point", "linestring")
+        if cannot_handle_geometry:
             return None
 
         return oms_obs
