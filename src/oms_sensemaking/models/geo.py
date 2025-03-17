@@ -409,11 +409,12 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         end_time = isoparse(oms_obs.endTime).replace(tzinfo=timezone.utc)
         # Always remember to convert lon/lat to lat/lon to use geopy distance calc
         total_distance: float = gd.geodesic(
-            *(gd.lonlat(*obs_coords) for obs_coords in oms_obs["geometry"]["coordinates"])
+            *(gd.lonlat(*obs_coords) for obs_coords in oms_obs.geometry["coordinates"])
         ).meters
         total_time = end_time - start_time
         # Handle 0 elapsed time by giving all points the same time
-        if total_time == 0:
+        if total_time.total_seconds() == 0:
+            LOGGER.info("Handling 0 elapsed time...")
             return [
                 {
                     "detection_time": start_time,
@@ -423,6 +424,7 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
             ]
         # Handle 0 movement by dividing the time evenly across points
         if total_distance == 0:
+            LOGGER.info("Handling 0 distance...")
             timed_coords: list[TimedCoords] = [
                 {
                     "detection_time": start_time + total_time * (idx / len(oms_obs.geometry["coordinates"])),
@@ -435,18 +437,24 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
             return timed_coords
         average_velocity_mps = total_distance / total_time.total_seconds()
         # Assuming constant velocity: coordinate times are proportional to distance travelled so far
+        LOGGER.info("Handling non-zero time and distance")
         timed_coords = [
+            {
+                "detection_time": start_time,
+                "coordinates": oms_obs.geometry["coordinates"][0],
+            }
+        ] + [
             {
                 "detection_time": start_time
                 + timedelta(
                     seconds=gd.geodesic(
-                        *(gd.lonlat(*coords) for coords in oms_obs.geometry["coordinates"][:idx])
+                        *(gd.lonlat(*coords) for coords in oms_obs.geometry["coordinates"][: idx + 1])
                     ).meters
                     / average_velocity_mps
                 ),
-                "coordinates": coordinates,
+                "coordinates": oms_obs.geometry["coordinates"][idx],
             }
-            for idx, coordinates in enumerate(oms_obs.geometry["coordinates"])
+            for idx in range(1, len(oms_obs.geometry["coordinates"]))
         ]
         # Eliminate rounding errors on final coordinate time
         timed_coords[-1]["detection_time"] = end_time
