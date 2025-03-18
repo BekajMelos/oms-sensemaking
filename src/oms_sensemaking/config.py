@@ -335,7 +335,9 @@ class Settings(BaseSettings):
                                            description="Relationship IRI for resolution sensemaker suggestions")
     resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    duplicate_object_iris: dict = Field({},
+    duplicate_object_iris: dict = Field({
+            "https://foundry.ai.mil/NIEM/v5.2/FacilityType": ["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"]
+        },
         description="Dictionary mapping object class to list of required duplicate identifiers"
     )
 
