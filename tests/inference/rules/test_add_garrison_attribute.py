@@ -230,13 +230,13 @@ def test_action_creates_attribute(
     )
 
 
-@pytest.mark.skip(reason="implement with grimlock inc 10 updates")
+#@pytest.mark.skip(reason="implement with grimlock inc 10 updates")
 def test_action_out_of_garrison():
     # Create new final mock attribute object with far away geo coordinates
     return True
 
 
-@pytest.mark.skip(reason="implement with grimlock inc 10 updates")
+#@pytest.mark.skip(reason="implement with grimlock inc 10 updates")
 def test_dynamic_node_no_garrison():
     # Create dynamic node without a "garrisoned at" IRI
     return True

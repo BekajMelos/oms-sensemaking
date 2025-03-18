@@ -95,6 +95,8 @@ class Incursion(BaseRule):
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
+
+        :param rule_context: Rule context object containing the observation to evaluate
         """
         if rule_context.observation:
             obs = rule_context.observation
