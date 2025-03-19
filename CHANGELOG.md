@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 > *Galadriel-INC-2?*
 
 ### Added
-- None 
+- Mil Symbol enrichment can now look at controlling parent node's affiliation
 
 ### Changed
 - None

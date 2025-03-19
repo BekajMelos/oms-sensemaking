@@ -2,7 +2,10 @@
 import logging
 from typing import Dict, List, Optional
 
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode
+from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
+    NodeNode,
+)
 
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 
@@ -87,14 +90,12 @@ class MilSymbol2525D(MilSymbol):
                     LOGGER.debug(f'Updated std identity: {code} b/c {node_standard_identity}')
                     break
 
-        # TODO if no affiliation and derivative node
-        # look for parent relationship http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy
-
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
         """Update Dimension
 
         Use node's IRIs to update list. If not found and is Unknown, use ancestor IRIs
 
+        :param oms_node: Node being processed
         :param iri: Node's class iri
         :return: None
         """
