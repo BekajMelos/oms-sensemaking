@@ -199,6 +199,7 @@ class SQSListener(BaseSQSListener):
                     )
                 except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
                     LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
+                    sleep(SETTINGS.sqs_read_wait_seconds)
                     break
 
                 if "Messages" not in response:

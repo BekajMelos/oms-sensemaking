@@ -18,6 +18,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObjectTier,
     OntologyClassOntologyClass,
     RelationshipDirection,
+    UpdateNodeInput,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -128,6 +129,8 @@ class MilSymbolSensemaker(Sensemaker):
         )
 
         results: List[SymbolCodeUpdate] = [symbol_code_update_d, symbol_code_update_c]
+
+        self.update_oms_node(oms_node, code_2525c.code)
 
         # We need to have used sourced attributes in order to publish
         if not code_2525d.source_ids.empty():
@@ -324,3 +327,16 @@ class MilSymbolSensemaker(Sensemaker):
             self.oms_crud_tool.create_attribute(attribute)
 
         LOGGER.info(f"Mil Symbol Sensemaker updated symbol codes for {oms_node.id}")
+
+    def update_oms_node(self, oms_node: NodeNode, code: str) -> None:
+        """Update the Oms Node with the new code
+
+        :param oms_node: Node to update
+        :param code: code to set for symbolIdCode
+        :return: None
+        """
+        update_node_input = UpdateNodeInput(
+            id=oms_node.id,
+            symbolIdCode=code
+        )
+        self.oms_crud_tool.update_node(update_node_input)
