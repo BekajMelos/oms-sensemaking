@@ -427,16 +427,18 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
             LOGGER.info("Handling 0 distance...")
             timed_coords: list[TimedCoords] = [
                 {
-                    "detection_time": start_time + total_time * (idx / len(oms_obs.geometry["coordinates"])),
+                    "detection_time": start_time + total_time * idx / (len(oms_obs.geometry["coordinates"]) - 1),
                     "coordinates": coordinates,
                 }
-                for idx, coordinates in enumerate(oms_obs.geometry["coordinates"], start=1)
+                for idx, coordinates in enumerate(oms_obs.geometry["coordinates"])
             ]
             # Eliminate rounding errors on final coordinate time
             timed_coords[-1]["detection_time"] = end_time
             return timed_coords
         average_velocity_mps = total_distance / total_time.total_seconds()
         # Assuming constant velocity: coordinate times are proportional to distance travelled so far
+        # The start point needs special handling because calling gd.geodesic() with a single coordinate
+        # raises an exception
         LOGGER.info("Handling non-zero time and distance")
         timed_coords = [
             {
