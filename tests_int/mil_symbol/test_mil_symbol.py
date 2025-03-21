@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateNodeInput,
     NodeNode,
     ObjectTier,
+    UpdateNodeInput,
 )
 from sqlalchemy import delete, select
 
@@ -60,6 +61,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     # mock create_attribute
     oms_crud_tool.create_attribute = mock.MagicMock()
+    oms_crud_tool.update_node = mock.MagicMock()
 
     # case 1
     oms_node = create_node(
@@ -77,6 +79,13 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
+
+    oms_crud_tool.update_node.assert_any_call(
+            UpdateNodeInput(
+                id=oms_node.id,
+                symbolIdCode=symbols[1].new_symbol_id_code
+            )
+        )
 
     # check that symbols exist in Findings table
     findings = db.execute(
@@ -125,6 +134,13 @@ def test_execute(mock_source, db, mil_symbol_rules):
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
 
+    oms_crud_tool.update_node.assert_any_call(
+            UpdateNodeInput(
+                id=oms_node.id,
+                symbolIdCode=symbols[1].new_symbol_id_code
+            )
+        )
+
     # check that symbols exist in Findings table
     findings = db.execute(
         select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
@@ -167,6 +183,13 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 2
+
+    oms_crud_tool.update_node.assert_any_call(
+            UpdateNodeInput(
+                id=oms_node.id,
+                symbolIdCode=symbols[1].new_symbol_id_code
+            )
+        )
 
     # check that symbols exist in Findings table
     findings = db.execute(

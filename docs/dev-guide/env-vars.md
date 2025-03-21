@@ -31,6 +31,7 @@
 | `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                 | Yes            |
 | `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                     | Yes            |
 | `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admmin user           | Yes            |
+| `POSTGRES_PORT`           | `5432`                         | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests).           | Yes            |
 | `PGUSER`                      | `appuser`                         | [psql] The *regular* PostgreSQL user                  | Yes            |
 | `PGPASSWORD`                  | `xxxxxx`                          | [psql] The password for the *regular* PostgreSQL user | Yes            |
 | `PGDATABASE`                  | `oms_sensemaking`                 | [psql] The database to connect to                     | Yes            |
@@ -43,7 +44,7 @@
 
 | Variable Name           | Example                                             | Description                           | Docker Compose |
 |:------------------------|:----------------------------------------------------|:--------------------------------------|:--------------:|
-| `AWS_ENDPOINT_URL`      | `http://localhost:4566` or `http://localstack:4566` | AWS Endpoint                          | No             |
+| `AWS_ENDPOINT_URL`      | `http://localhost:4566` or `http://localstack:4566` or `http://<your_ip>:4566` | AWS Endpoint                          | No             |
 | `AWS_ACCESS_KEY_ID`     | `FAKE`                                              | AWS Access Key                        | No             |
 | `AWS_SECRET_ACCESS_KEY` | `FAKE`                                              | AWS Secret Key                        | No             |
 | `AWS_REGION_NAME`       | `us-east-1`                                         | AWS Region                            | No             |
@@ -93,6 +94,8 @@
 | `WITHIN_METERS`                                     | `3000.0`                                                                                          | Used to define the search space for potential similar tracks   | No             |
 | `SQS_GEO_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger`          | Geospatial SQS Queue URL                                       | Yes            |
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
+| `CORENLP_EXPOSE_PORT`                               | `9000`                                                                                            | Port to use for the core-nlp service. When set, this will expose the port to the host                           | Yes            |
+| `CORENLP_HOST`                               | `localhost:9000`                                                                                            | Host and port to connect to Core NLP                           | Yes            |
 | `INFERENCE_TAGS`                                    | `'["Oms Sensemaking", "Inferred Data"]'`                                                          | Tags Inference Sensemaker adds to data                         | No             |
 | `INFERENCE_INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
 | `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_IRI`              | `https://foundry.ai.mil/INDOPACOM/v5/Name`                                                        | Iri to find for the HasNameAttribute rule                      | No             |
