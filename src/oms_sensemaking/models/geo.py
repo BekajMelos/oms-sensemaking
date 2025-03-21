@@ -391,7 +391,7 @@ class CommonSenseFilter(BaseModel):
         Set Point weights to 0 if altitudes are out of range for the IRI.
         Operates on each Point individually.
 
-        :param track: A Track instance to be mutated (teleportations removed from points list)
+        :param points: A list of Point objects to be filtered
         :param iri: IRI of the node for determining eligibility (assumed valid for all Points)
         """
         if self.regex.search(iri) is None:
@@ -427,7 +427,7 @@ class CommonSenseFilter(BaseModel):
         Remove Points that represent teleportations accoring to configured settings.
         Operation is order-dependent. First Point is assumed to be good.
 
-        :param track: A Track instance to be mutated (teleportations removed from points list)
+        :param points: A list of Point objects to be filtered
         :param iri: IRI of the node for determining eligibility (assumed valid for all Points)
         """
         if self.regex.search(iri) is None:
