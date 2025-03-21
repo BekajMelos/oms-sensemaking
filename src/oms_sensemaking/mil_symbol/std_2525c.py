@@ -33,7 +33,8 @@ class MilSymbol2525C(MilSymbol):
         """Enrich the code given node attribute data
 
         :param affiliation_attr: Optional Attribute for the affiliation
-        :param iri: Node's class iris current iri and parent list
+        :param oms_node: Node we are processing
+        :param ancestor_iris: Node's ancestor iri list
         :param status_attr: Optional Attribute for the status
         """
 
@@ -48,8 +49,6 @@ class MilSymbol2525C(MilSymbol):
         :return: None
         """
 
-        # TODO there could be multiple IRIs for affiliation
-
         if affiliation_attr:
             node_standard_identity = affiliation_attr.attributeValue
             for code, standard_identity_list in self.settings["MIL_SYMBOL_2525C"]["STANDARD_IDENTITY_LISTS"].items():
@@ -59,9 +58,6 @@ class MilSymbol2525C(MilSymbol):
                     self.acms.append(affiliation_attr.acm)
                     LOGGER.debug(f'Updated std identity: {code} b/c {node_standard_identity}')
                     break
-
-        # TODO handle if no affiliation and derivative node
-        # look for parent relationship http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy
 
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
         """Update Dimension
