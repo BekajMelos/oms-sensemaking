@@ -8,7 +8,7 @@ services:
       - 5001:${UVICORN_PORT:-8443}
     environment:
       # AWS
-      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-http://localstack:4566}
       #SQS_GEO_QUEUE_URL: ${SQS_GEO_QUEUE_URL}
 
       # database config
@@ -42,7 +42,7 @@ services:
     image: postgis/postgis:16-3.4-alpine
     platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
     ports:
-      - 5432:5432
+      - "${POSTGRES_PORT:-}:5432"
     environment:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -169,7 +169,7 @@ services:
       dockerfile: docker/corenlp/Dockerfile
     image: corenlp:latest
     ports:
-      - "9000:9000"
+      - "${CORENLP_EXPOSE_PORT:-}:9000"
     environment:
       ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
 
