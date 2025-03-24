@@ -169,14 +169,15 @@ class Settings(BaseSettings):
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
-    inference_add_garrison_attribute_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
+    inference_geo_attribute_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation", description="IRI for geo attribute"
     )
-    inference_participated_in_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
+    inference_garrisoned_in_iri: str = Field(
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn",
+        description="IRI for garrison node relationship"
     )
-    inference_garrison_location_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/garrisonedLocation", description="IRI for garrisoned at (Primary/Derivative)"
+    inference_garrison_class_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for garrison class"
     )
     inference_add_in_garrison_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"

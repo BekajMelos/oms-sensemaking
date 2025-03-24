@@ -261,7 +261,7 @@ def test_new_incursion_region1(
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_attributes.assert_called_with(
         AttributeQuery(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
@@ -315,7 +315,7 @@ def test_new_incursion_region2(
     rule.action(RuleContext(observation=observational_node_region2))
     mock_get_attributes.assert_called_with(
         AttributeQuery(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
@@ -378,7 +378,7 @@ def test_two_existing_incursions(
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_attributes.assert_called_with(
         AttributeQuery(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),

@@ -50,7 +50,7 @@ class IncursionTimeframe:
 
     def object_observed_between_incursion_and_observation_times(
         self,
-        incurring_object: NodesNodesData,
+        incurring_object: NodeNode,
         observation: ObservationObservation,
     ) -> bool:
         """
@@ -128,7 +128,7 @@ class Incursion(BaseRule):
         if geo_of_interest:
             # Check for existing incursions in the relevant geo of interest
             attribute_query = AttributeQuery(
-                attributeIri=SETTINGS.inference_incursion_attribute_iri,
+                attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
                 geometry=GeoQuery(queryGeoJson=geo_of_interest),
