@@ -2,7 +2,6 @@
 
 import itertools
 import logging
-import re
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
@@ -376,28 +375,20 @@ class CommonSenseFilter(BaseModel):
     """
 
     name: str
-    iri_search_pattern: str
+    iri: str
     altitude_threshold_meters: float | None = None
     altitude_deviation_threshold_mps: float | None = None
     time_threshold_seconds: int | None = None
     relative_velocity_threshold_mps: float | None = None
 
-    @cached_property
-    def regex(self) -> re.Pattern[str]:
-        return re.compile(self.iri_search_pattern, flags=re.IGNORECASE)
-
-    def filter_points_altitude(self, points: list[Point], iri: str) -> list[Point]:
+    def filter_points(self, points: list[Point]) -> list[Point]:
         """
-        Set Point weights to 0 if altitudes are out of range for the IRI.
-        Operates on each Point individually.
+        Filter Point objects based on their individual attributes.
+        Set Point weights to 0 if attributes are out of range for the IRI.
+        Currently operates on altitude_threshold_meters.
 
         :param points: A list of Point objects to be filtered
-        :param iri: IRI of the node for determining eligibility (assumed valid for all Points)
         """
-        if self.regex.search(iri) is None:
-            LOGGER.info(f"Skipping {self.name} altitude filter")
-            return points
-
         for point in points:
             # if current point doesn't have an altitude, skip this filter
             if point.altitude is None:
@@ -422,18 +413,15 @@ class CommonSenseFilter(BaseModel):
                 continue
         return points
 
-    def filter_points_teleportation(self, points: list[Point], iri: str) -> list[Point]:
+    def filter_point_deltas(self, points: list[Point]) -> list[Point]:
         """
-        Remove Points that represent teleportations accoring to configured settings.
+        Remove Points based on deltas from previous Point accoring to configured settings.
         Operation is order-dependent. First Point is assumed to be good.
+        Currently operates on time_threshold_seconds, altitude_deviation_threshold_mps,
+            and relative_velocity_threshold_mps.
 
         :param points: A list of Point objects to be filtered
-        :param iri: IRI of the node for determining eligibility (assumed valid for all Points)
         """
-        if self.regex.search(iri) is None:
-            LOGGER.info(f"Skipping {self.name} teleportation filter")
-            return points
-
         last_good_point = points[0]
         last_altitude_point: Point | None = None
         bad_points = []

@@ -44,7 +44,7 @@ DEFAULT_ACM = {
 def common_sense_filter() -> CommonSenseFilter:
     return CommonSenseFilter(
         name="Test Filter",
-        iri_search_pattern="aircraft",
+        iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
         altitude_threshold_meters=200,
         altitude_deviation_threshold_mps=10,
         time_threshold_seconds=5,
@@ -100,40 +100,36 @@ def test_filter(common_sense_filter: CommonSenseFilter):
 
     # No filtering
     points = create_test_points()
-    points = common_sense_filter.filter_points_altitude(points=points, iri="iri_aircraft")
-    assert tuple(p.weight for p in points) == (1.0, 1.0, 1.0)
-
-    # No matching IRI
-    points[1].altitude = 205
-    points = common_sense_filter.filter_points_altitude(points=points, iri="iri_vessel")
+    points = common_sense_filter.filter_points(points=points)
     assert tuple(p.weight for p in points) == (1.0, 1.0, 1.0)
 
     # Altitude too high
-    points = common_sense_filter.filter_points_altitude(points=points, iri="iri_aircraft")
+    points[1].altitude = 205
+    points = common_sense_filter.filter_points(points=points)
     assert tuple(p.weight for p in points) == (1.0, 0.0, 1.0)
 
     # Altitude too low
     points = create_test_points()
     points[0].altitude = -5
-    points = common_sense_filter.filter_points_altitude(points=points, iri="iri_aircraft")
+    points = common_sense_filter.filter_points(points=points)
     assert tuple(p.weight for p in points) == (0.0, 1.0, 1.0)
 
     # No teleportations
     original_points = create_test_points()
-    original_points = common_sense_filter.filter_points_teleportation(points=original_points, iri="iri_aircraft")
+    original_points = common_sense_filter.filter_point_deltas(points=original_points)
     assert len(original_points) == 3
 
     # Altitude rate exceeded
     new_points = create_test_points()
     new_points[1].altitude = 195
-    new_points = common_sense_filter.filter_points_teleportation(points=new_points, iri="iri_aircraft")
+    new_points = common_sense_filter.filter_point_deltas(points=new_points)
     assert new_points == [original_points[0], original_points[2]]
 
     # Time delta too small
     new_points = create_test_points()
     new_points[1].altitude = 195
     new_points[1].detection_time = datetime.fromisoformat("2024-03-20T12:35:01-04:00")
-    new_points = common_sense_filter.filter_points_teleportation(points=new_points, iri="iri_aircraft")
+    new_points = common_sense_filter.filter_point_deltas(points=new_points)
     assert len(new_points) == 3
 
     # Horizontal teleportation
@@ -150,5 +146,5 @@ def test_filter(common_sense_filter: CommonSenseFilter):
         source_id=source_ids[2],
         observation_confidence=Confidence.HIGH,
     )
-    new_points = common_sense_filter.filter_points_teleportation(points=new_points, iri="iri_aircraft")
+    new_points = common_sense_filter.filter_point_deltas(points=new_points)
     assert new_points == [original_points[0], original_points[1]]
