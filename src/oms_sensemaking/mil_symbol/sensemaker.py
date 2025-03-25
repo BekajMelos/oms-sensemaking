@@ -86,28 +86,9 @@ class MilSymbolSensemaker(Sensemaker):
         :return: List of Mil Symbol Code updates
         """
 
-        # get the node, either from the input (as the node already) or the linked node of the attribute
-        if isinstance(oms_object, NodeNode | CreateNodeCreateNode | RestoreNodeRestoreNode | UpdateNodeUpdateNode):
-            LOGGER.info("Checking for MilSymbol enrichment based on Node input.")
-            oms_node = oms_object
-        elif isinstance(
-            oms_object,
-            AttributeAttribute |
-            CreateAttributeCreateAttribute |
-            RestoreAttributeRestoreAttribute |
-            UpdateAttributeUpdateAttribute
-        ):
-            LOGGER.info("Checking for MilSymbol enrichment based on Attribute input.")
-            try:
-                LOGGER.info("Getting linked Node from Attribute nodeId.")
-                oms_node = self.oms_crud_tool.get_node(oms_object.nodeId)
-            except AttributeError:
-                LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
-                return []
-        else:
-            LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
+        oms_node = self.get_node_from_input(oms_object)
+        if oms_node is None:
             return []
-
         symbol_id_code = self.get_starting_symbol_id_code(oms_node)
         if not symbol_id_code:
             symbol_id_code = SETTINGS.mil_symbol_settings.default_2525d_code
@@ -367,3 +348,30 @@ class MilSymbolSensemaker(Sensemaker):
             symbolIdCode=code
         )
         self.oms_crud_tool.update_node(update_node_input)
+
+    def get_node_from_input(self, oms_object: AttributeAttribute | NodeNode) -> Optional[NodeNode]:
+        """Get an OMS Node based on the input type
+
+        :param oms_object: The Node to return or the Attribute used to find the Node
+        :return: An OMS Node
+        """
+        if isinstance(oms_object, NodeNode | CreateNodeCreateNode | RestoreNodeRestoreNode | UpdateNodeUpdateNode):
+            LOGGER.info("Checking for MilSymbol enrichment based on Node input.")
+            return oms_object
+        elif isinstance(
+            oms_object,
+            AttributeAttribute |
+            CreateAttributeCreateAttribute |
+            RestoreAttributeRestoreAttribute |
+            UpdateAttributeUpdateAttribute
+        ):
+            LOGGER.info("Checking for MilSymbol enrichment based on Attribute input.")
+            try:
+                LOGGER.info("Getting linked Node from Attribute nodeId.")
+                return self.oms_crud_tool.get_node(oms_object.nodeId)
+            except AttributeError:
+                LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
+                return None
+        else:
+            LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
+            return None
