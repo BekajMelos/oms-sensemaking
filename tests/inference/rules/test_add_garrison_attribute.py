@@ -225,11 +225,12 @@ def test_new_in_garrison(
     mock_get_relationships,
     mock_get_activities,
     mock_create_activity,
+    geo_attribute1
 ):
     # Scenario: Observation input yields new in garrison activity
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [geo_attribute1]
-    mock_get_relationships.return_value = mock_attribute_response
+    mock_get_attributes.return_value = mock_attribute_response
     rule = AddOutOfGarrisonAttribute("garrison rule")
 
     rule.action(RuleContext(observation=observational_node))
