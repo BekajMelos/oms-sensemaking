@@ -261,7 +261,7 @@ class GeospatialSensemakerController(SensemakerController):
         """
 
         iris = set()
-        iris_to_check = SimpleQueue()
+        iris_to_check: SimpleQueue = SimpleQueue()
         iris_to_check.put_nowait(oms_node.classIri)
         while not iris_to_check.empty():
             current_iri = iris_to_check.get_nowait()
