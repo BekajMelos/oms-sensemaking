@@ -106,6 +106,13 @@ class MilSymbolSettings(BaseModel):
     affiliation_iris: List[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"], description="Affiliation IRI")
     status_iris: List[str] = Field(["https://foundry.ai.mil/DICO/v3.1.0/Condition"], description="Status IRI")
+    affiliation_controlled_by_iris: List[str] = Field(
+        ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy"],
+        description="Relationship IRIs used to search for controlling/commanding nodes")
+    affiliation_controls_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"],
+        description="Relationship IRIs used to search for controlling/commanding nodes"
+    )
 
     # War, Pending, Unknown, Present
     default_2525c_code: str = Field(
