@@ -1,7 +1,6 @@
 """Resolution Sensemakers."""
 
 import copy
-import json
 import logging
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -61,16 +60,13 @@ class ResolutionSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, duplicate_object_iris, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {}
         self.oms_crud_tool = oms_crud_tool
-
-        with open(SETTINGS.duplicate_object_iris_file_path) as fd:
-            duplicate_object_iris = json.load(fd)
         self.duplicate_object_iris = duplicate_object_iris
 
     def process_data(self, attribute: AttributeAttribute) -> List[DupFinding]:

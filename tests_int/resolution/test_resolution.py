@@ -1,5 +1,6 @@
 """Tests for resolution sensemaker."""
 
+import json
 from unittest import mock
 from uuid import uuid4
 
@@ -76,7 +77,8 @@ def tester_db():
 
 def test_resolution_sensemaker(db, mock_source, tester_db):
     """Test Resolution Sensemaker"""
-
+    with open(SETTINGS.duplicate_object_iris_file_path) as fd:
+            duplicate_object_iris = json.load(fd)
     mock_oms_crud_tool = mock.MagicMock(spec=OmsCrudTool)
     new_facility_node = NodeNode.model_construct(
         id=uuid4(),
@@ -106,7 +108,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
-    assert ResolutionSensemaker(mock_oms_crud_tool).execute(unsupported_attribute) == []
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(unsupported_attribute) == []
 
 
     # Test Failure. BE_NUMBER given but no OSUFFIX in DB. Criteria not met
@@ -117,7 +119,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
-    assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_be_number_attribute) == []
 
 
     # Test Failure. Matching facility nodes with be number and osuffix. Criteria met but no matching nodes
@@ -131,14 +133,14 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     # mock osuffix already existing and be_number being sent
     mock_oms_crud_tool.get_node_attribute_by_iri.return_value = [new_osuffix_attribute]
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[])
-    assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_be_number_attribute) == []
 
 
     # Test Success. Matching facility nodes with be number and osuffix. Criteria met with matching nodes
     # mock osuffix already existing and be_number being sent, and matching nodes being returned
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[0]])
 
-    dups = ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute)
+    dups = ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_be_number_attribute)
     assert len(dups) == 1
 
 
@@ -154,7 +156,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[3]])
     mock_oms_crud_tool.get_node.return_value = new_equipment_node
 
-    dups = ResolutionSensemaker(mock_oms_crud_tool).execute(new_equipment_code_attribute)
+    dups = ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_equipment_code_attribute)
     assert len(dups) == 1
 
 
@@ -168,7 +170,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[0]])
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(
         data=[new_relationship])
-    assert ResolutionSensemaker(mock_oms_crud_tool).execute(new_be_number_attribute) == []
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_be_number_attribute) == []
 
     # check that duplicates exist in Findings table
     findings = db.execute(
