@@ -17,9 +17,7 @@ class InferenceSensemaker(Sensemaker):
         """Create a new instance of InferenceSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.config = {
-            "rules": []
-        }
+        self.config = {"rules": []}
         self.engine = Engine()
         rule_mappings = {
             "toggle_add_garrison_rule": AddOutOfGarrisonAttribute("AddOutOfGarrisonAttribute"),
