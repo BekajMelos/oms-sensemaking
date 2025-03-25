@@ -46,14 +46,48 @@ class DupFinding(FindingBase):
         return self.acm
 
 
-class DuplicateFacility:
-    """Class to help find duplicate facilities in OMSB"""
+class ResolutionSensemaker(Sensemaker):
+    """
+    A sensemaker for detecting duplicate nodes in omsb.
 
-    def __init__(self, oms_crud_tool: OmsCrudTool):
+    Algorithm ChangeLog
+    ===================
 
+    [1.0.0]
+
+    - Update making duplicate object checks configurable
+    - Initial "resolution" algorithm implementation.
+
+    """
+
+    def __init__(self, duplicate_object_iris, oms_crud_tool: OmsCrudTool) -> None:
+        """Create a new instance of ResolutionSensemaker."""
+        super().__init__()
+        self.version = (1, 0, 0)
+        self.name = self.__class__.__name__
+        self.config = {}
         self.oms_crud_tool = oms_crud_tool
+        self.duplicate_object_iris = duplicate_object_iris
 
-        self.duplicate_facility_iris = SETTINGS.duplicate_facility_iris
+    def process_data(self, attribute: AttributeAttribute) -> List[DupFinding]:
+        """
+        Determine if a created Node is the same as an existing note and suggest that they are merged
+
+        :param attribute: The attribute to analyze.
+        :return: List[DupFinding] List of duplicates found
+        """
+        LOGGER.info("Running Resolution Sensemaker")
+        LOGGER.debug(f"{attribute.attributeIri}: {attribute.attributeValue}")
+
+        results = []
+
+        criterion: List[AttributeAttribute] = self.meets_criteria(attribute)
+        if criterion:
+            dups: List[NodeNode] = self.find_duplicates(criterion)
+            dup_findings: List[DupFinding] = self.create_duplicate_findings(attribute, dups)
+            results.extend(dup_findings)
+
+        return results
 
     def meets_criteria(self, attribute: AttributeAttribute) -> List[AttributeAttribute]:
         """
@@ -65,21 +99,30 @@ class DuplicateFacility:
         """
         current_iri = attribute.attributeIri
         current_node_id = attribute.nodeId
-        duplicate_facility_attributes = [attribute]
+        duplicate_object_attributes = [attribute]
+        class_iri = self.oms_crud_tool.get_node(current_node_id).classIri
 
-        if attribute.attributeIri not in self.duplicate_facility_iris or self.has_already_ran(current_node_id):
+        already_ran = self.has_already_ran(current_node_id)
+        object_class_in_config = class_iri in self.duplicate_object_iris
+        if object_class_in_config:
+            duplicate_identifiers = self.duplicate_object_iris[class_iri]
+            attribute_in_duplicate_identifiers = attribute.attributeIri in duplicate_identifiers
+
+        if not object_class_in_config or not attribute_in_duplicate_identifiers or already_ran:
             return []
 
         # Get this nodes info and make sure we satisfy the requirements
-        other_iris: List[str] = copy.copy(self.duplicate_facility_iris)
-        other_iris.remove(current_iri)
-        duplicate_facility_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris))
+        if len(duplicate_identifiers) > 1:
+            other_iris: List[str] = copy.copy(duplicate_identifiers)
+            other_iris.remove(current_iri)
+            duplicate_object_attributes.extend(self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId,
+                                                                                            other_iris))
 
-        if len(duplicate_facility_attributes) != len(self.duplicate_facility_iris):
-            LOGGER.debug("Node does not have all required fields for Duplicate Facility Matching. Ignoring.")
-            return []
+            if len(duplicate_object_attributes) != len(duplicate_identifiers):
+                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching. Ignoring.")
+                return []
 
-        return duplicate_facility_attributes
+        return duplicate_object_attributes
 
     def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: List[NodeNode]) -> List[DupFinding]:
         """
@@ -182,53 +225,3 @@ class DuplicateFacility:
         if nodes_response and nodes_response.data:
             return nodes_response.data
         return []
-
-
-class ResolutionSensemaker(Sensemaker):
-    """
-    A sensemaker for detecting duplicate nodes in omsb.
-
-    Algorithm ChangeLog
-    ===================
-
-    [1.0.0]
-
-    - Initial "resolution" algorithm implementation.
-
-    """
-
-    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
-        """Create a new instance of ResolutionSensemaker."""
-        super().__init__()
-        self.version = (1, 0, 0)
-        self.name = self.__class__.__name__
-        self.config = {}
-        self.oms_crud_tool = oms_crud_tool
-
-        # Register duplicate data checks
-        self.duplicate_checks = [
-            DuplicateFacility(self.oms_crud_tool)
-        ]
-
-    def process_data(self, attribute: AttributeAttribute) -> List[DupFinding]:
-        """
-        Determine if a created Node is the same as an existing note and suggest that they are merged
-
-        :param attribute: The attribute to analyze.
-        :return: List[DupFinding] List of duplicates found
-        """
-        LOGGER.info("Running Resolution Sensemaker")
-        LOGGER.debug(f"{attribute.attributeIri}: {attribute.attributeValue}")
-
-        results = []
-
-        for dup in self.duplicate_checks:
-            criterion: List[AttributeAttribute] = dup.meets_criteria(attribute)
-            if criterion:
-
-                dups: List[NodeNode] = dup.find_duplicates(criterion)
-
-                dup_findings: List[DupFinding] = dup.create_duplicate_findings(attribute, dups)
-                results.extend(dup_findings)
-
-        return results
