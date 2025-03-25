@@ -56,6 +56,7 @@ class ResolutionSensemaker(Sensemaker):
 
     [1.0.0]
 
+    - Update making duplicate object checks configurable
     - Initial "resolution" algorithm implementation.
 
     """
