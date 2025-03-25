@@ -9,7 +9,9 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributeType,
     Confidence,
+    CreateAttributeCreateAttribute,
     CreateAttributeInput,
+    CreateNodeCreateNode,
     NodeNode,
     NodeQuery,
     NodeRelationshipQuery,
@@ -18,7 +20,11 @@ from oms_sdk.generated.generated_graphql_client import (
     ObjectTier,
     OntologyClassOntologyClass,
     RelationshipDirection,
+    RestoreAttributeRestoreAttribute,
+    RestoreNodeRestoreNode,
+    UpdateAttributeUpdateAttribute,
     UpdateNodeInput,
+    UpdateNodeUpdateNode,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -72,13 +78,35 @@ class MilSymbolSensemaker(Sensemaker):
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, oms_node: NodeNode) -> List[SymbolCodeUpdate]:
+    def process_data(self, oms_object: AttributeAttribute | NodeNode) -> List[SymbolCodeUpdate]:
         """
         Update a Node's symbol code based on its attributes and metadata
 
-        :param oms_node: The node to analyze.
+        :param oms_object: The attribute or node to analyze.
         :return: List of Mil Symbol Code updates
         """
+
+        # get the node, either from the input (as the node already) or the linked node of the attribute
+        if isinstance(oms_object, NodeNode | CreateNodeCreateNode | RestoreNodeRestoreNode | UpdateNodeUpdateNode):
+            LOGGER.info("Checking for MilSymbol enrichment based on Node input.")
+            oms_node = oms_object
+        elif isinstance(
+            oms_object,
+            AttributeAttribute |
+            CreateAttributeCreateAttribute |
+            RestoreAttributeRestoreAttribute |
+            UpdateAttributeUpdateAttribute
+        ):
+            LOGGER.info("Checking for MilSymbol enrichment based on Attribute input.")
+            try:
+                LOGGER.info("Getting linked Node from Attribute nodeId.")
+                oms_node = self.oms_crud_tool.get_node(oms_object.nodeId)
+            except AttributeError:
+                LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
+                return []
+        else:
+            LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
+            return []
 
         symbol_id_code = self.get_starting_symbol_id_code(oms_node)
         if not symbol_id_code:
@@ -119,7 +147,6 @@ class MilSymbolSensemaker(Sensemaker):
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525d.formatted_code,
             acm=code_2525d.get_acm(),
-
         )
 
         symbol_code_update_c = SymbolCodeUpdate(

@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateNodeInput,
     NodeNode,
     ObjectTier,
+    RelationshipRelationship,
     UpdateNodeInput,
 )
 from sqlalchemy import delete, select
@@ -22,7 +23,6 @@ from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 
 def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str) -> NodeNode:
-
     create_node_input = CreateNodeInput(
         acm=DEFAULT_ACM,
         name="test node",
@@ -55,7 +55,6 @@ def create_attribute(
 
 
 def test_execute(mock_source, db, mil_symbol_rules):
-
     oms_crud_tool = OmsCrudTool()
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
 
@@ -111,7 +110,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     # clear findings
     findings = db.execute(delete(Finding))
-
 
     # case 2
     oms_node = create_node(
@@ -215,3 +213,72 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     # clear findings
     findings = db.execute(delete(Finding))
+
+    # case 4 (Attribute Update)
+    oms_node = create_node(
+        oms_crud_tool,
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft",
+        "10-0-0-01-0-0-00-000000-00-00"
+    )
+
+    oms_attribute = create_attribute(
+        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source)
+
+    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source))
+    sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+
+    # test an Attribute being executed by the Sensemaker
+    symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_attribute)
+    assert len(symbols) == 2
+
+    oms_crud_tool.update_node.assert_any_call(
+            UpdateNodeInput(
+                id=oms_node.id,
+                symbolIdCode=symbols[1].new_symbol_id_code
+            )
+        )
+
+    # check that symbols exist in Findings table
+    findings = db.execute(
+        select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
+
+    assert len(findings) == 2
+    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-4-05-0-0-00-000000-00-00"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SNPP------*****"
+
+    for symbol in symbols:
+        oms_crud_tool.create_attribute.assert_any_call(
+            CreateAttributeInput(
+                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+                attributeType=AttributeType.STRING,
+                attributeValue=symbol.new_symbol_id_code,
+                confidence=Confidence.HIGH.value,
+                acm=symbol.acm,
+                nodeId=oms_node.id,
+                sourceId=mock_source.id
+            )
+        )
+
+    # clear findings
+    findings = db.execute(delete(Finding))
+
+    # case 5 (Wrong Input Type)
+    oms_relationship = RelationshipRelationship.model_construct(
+        name=SETTINGS.resolution_relationship_name,
+        startNodeId=oms_node.id,
+    )
+
+    symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_relationship)
+    assert len(symbols) == 0
+
+    # check that symbols do not exist in Findings table
+    findings = db.execute(
+        select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
+
+    assert len(findings) == 0
