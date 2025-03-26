@@ -23,8 +23,6 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
-IN_GARRISON_NAME = "In garrison"
-OUT_OF_GARRISON_NAME = "Out of garrison"
 
 class GarrisonObservation:
     def __init__(self, obs: ObservationObservation):
@@ -79,7 +77,7 @@ class ActivityTimeframe:
 
         return part_of_existing_activity
 
-class AddOutOfGarrisonAttribute(BaseRule):
+class InOrOutOfGarrison(BaseRule):
     """
     Detect when a node is in or out of garrison and create/update the appropriate activity
     """

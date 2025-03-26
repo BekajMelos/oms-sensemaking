@@ -23,7 +23,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.rules.add_garrison_attribute import AddOutOfGarrisonAttribute
+from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
@@ -302,7 +302,7 @@ def mock_get_observations(mocker: MockerFixture, observational_node2):
 # Tests
 def test_evaluate_input(observational_node):
     """Test to verify valid inputs are recognized as such"""
-    rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = InOrOutOfGarrison("garrison rule")
 
     # Rule should only be ran against observations
     assert not rule.evaluate(RuleContext()), "should only run for observations"
@@ -328,7 +328,7 @@ def test_new_in_garrison(
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [geo_attribute1]
     mock_get_attributes.return_value = mock_attribute_response
-    rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node))
     mock_get_attributes.assert_called_with(
@@ -366,7 +366,7 @@ def test_new_out_garrison(
     mock_attribute_response.data = [geo_attribute1]
     mock_get_attributes.return_value = mock_attribute_response
 
-    rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node2))
     mock_get_attributes.assert_called_with(
@@ -411,7 +411,7 @@ def test_update_in_garrison(
     mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
     mock_get_activities.return_value = mock_activity_response
 
-    rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node))
     mock_get_relationships.assert_called_with(
@@ -472,7 +472,7 @@ def test_update_out_garrison(
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
 
-    rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node2))
     mock_get_relationships.assert_called_with(
