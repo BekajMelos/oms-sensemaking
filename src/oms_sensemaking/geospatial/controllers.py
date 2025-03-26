@@ -202,7 +202,7 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
-                            # self.log_geojson(points=points, track=track)
+                            self.log_track_comparison(points=points, track=track)
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
@@ -277,9 +277,9 @@ class GeospatialSensemakerController(SensemakerController):
         return iris
 
     @classmethod
-    def log_geojson(cls, points: list[Point], track: Track):
-        LOGGER.info("GeoJSON features:")
-        LOGGER.info(
+    def log_track_comparison(cls, points: list[Point], track: Track):
+        LOGGER.debug("GeoJSON features:")
+        LOGGER.debug(
             json.dumps(
                 {
                     "type": "FeatureCollection",
