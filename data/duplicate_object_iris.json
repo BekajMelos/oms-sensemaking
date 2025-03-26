@@ -1,0 +1,4 @@
+{
+  "https://foundry.ai.mil/NIEM/v5.2/FacilityType": ["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"],
+  "https://foundry.ai.mil/NIEM/v5.2/EquipmentType": ["https://foundry.ai.mil/DICO/v3.1.0/Equipment_Code"]
+}
