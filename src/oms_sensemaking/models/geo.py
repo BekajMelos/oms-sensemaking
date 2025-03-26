@@ -17,6 +17,7 @@ from geoalchemy2.shape import to_shape
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
+from pydantic import BaseModel
 from shapely import LineString
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
@@ -375,6 +376,126 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         )
 
 
+class CommonSenseFilter(BaseModel):
+    """
+    A filter object for applying IRI-specific point attribute and point delta thresholds.
+    """
+
+    name: str
+    iri: str
+    altitude_threshold_meters: float | None = None
+    altitude_deviation_threshold_mps: float | None = None
+    time_threshold_seconds: int | None = None
+    relative_velocity_threshold_mps: float | None = None
+
+    def filter_points(self, points: list[Point]) -> list[Point]:
+        """
+        Filter Point objects based on their individual attributes.
+        Set Point weights to 0 if attributes are out of range for the IRI.
+        Currently operates on altitude_threshold_meters.
+
+        :param points: A list of Point objects to be filtered
+        """
+        for point in points:
+            # if current point doesn't have an altitude, skip this filter
+            if point.altitude is None:
+                continue
+
+            # Check if the altitude is negative or exceeds the maximum altitude threshold.
+            if point.altitude < 0:
+                LOGGER.debug(
+                    "Removing point %s due to negative altitude: altitude=%s",
+                    point.observation_id,
+                    point.altitude,
+                )
+                point.weight = 0
+                continue
+            elif self.altitude_threshold_meters and point.altitude > self.altitude_threshold_meters:
+                LOGGER.debug(
+                    "Removing point %s due to altitude exceeding maximum: altitude=%s",
+                    point.observation_id,
+                    point.altitude,
+                )
+                point.weight = 0
+                continue
+        return points
+
+    def filter_point_deltas(self, points: list[Point]) -> list[Point]:
+        """
+        Remove Points based on deltas from previous Point accoring to configured settings.
+        Operation is order-dependent. First Point is assumed to be good.
+        Currently operates on time_threshold_seconds, altitude_deviation_threshold_mps,
+            and relative_velocity_threshold_mps.
+
+        :param points: A list of Point objects to be filtered
+        """
+        last_good_point = points[0]
+        last_altitude_point: Point | None = None
+        bad_points = []
+        for cur_point in points[1:]:
+            if last_good_point.altitude is not None:
+                last_altitude_point = last_good_point
+            time_delta = abs(cur_point.detection_time - last_good_point.detection_time)
+            distance: float = gd.geodesic(
+                (cur_point.coordinates[1], cur_point.coordinates[0]),
+                (last_good_point.coordinates[1], last_good_point.coordinates[0]),
+            ).meters
+            relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
+            if self.time_threshold_seconds is not None and time_delta.total_seconds() < self.time_threshold_seconds:
+                # Too little time resolution to accurately compare points.
+                # Allow current point but don't update last good point.
+                LOGGER.debug(
+                    "Skipping point due to time delta %s s less than threshold %s s.",
+                    round(time_delta.total_seconds(), 1),
+                    self.time_threshold_seconds,
+                )
+                continue
+            if (
+                self.relative_velocity_threshold_mps is not None
+                and relative_velocity > self.relative_velocity_threshold_mps
+            ):
+                # Too fast, kill the current point and don't update the last good point.
+                LOGGER.debug(
+                    "Filtered point_id (%s) due to relative velocity %s mps exceeding threshold %s mps.",
+                    cur_point.point_id,
+                    round(relative_velocity, 1),
+                    self.relative_velocity_threshold_mps,
+                )
+                cur_point.weight = 0
+                bad_points.append(cur_point)
+                continue
+            if (
+                self.altitude_deviation_threshold_mps is not None
+                and last_altitude_point is not None
+                and cur_point.altitude is not None
+            ):
+                # Check if the vertical movement between this point and the previous is large.
+                time_delta = cur_point.detection_time - last_altitude_point.detection_time
+                altitude_delta = abs(cur_point.altitude - last_altitude_point.altitude)  # type: ignore[operator]
+                altitude_rate = altitude_delta / time_delta.total_seconds()
+                if altitude_rate > self.altitude_deviation_threshold_mps:
+                    LOGGER.debug(
+                        (
+                            "Removing point %s due to altitude rate deviation: "
+                            "altitude diff=%s, time=%s, rate=%s, threshold=%s"
+                        ),
+                        cur_point.observation_id,
+                        altitude_delta,
+                        time_delta,
+                        altitude_rate,
+                        self.altitude_deviation_threshold_mps,
+                    )
+                    cur_point.weight = 0
+                    bad_points.append(cur_point)
+                    continue
+            # Made it through all checks. Update last good point for next comparison.
+            last_good_point = cur_point
+        if bad_points:
+            LOGGER.debug(f"Removed {len(bad_points)} of {len(points)} points.")
+        points = [p for p in points if p not in bad_points]
+        return points
+
+
 def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:
     # Consume input iterables into reusable collection type
     values = tuple(values)
@@ -461,97 +582,3 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         timed_coords[-1]["detection_time"] = end_time
         return timed_coords
     return []
-
-
-def filter_teleportation(points: list[Point]) -> list[Point]:
-    last_good_point = points[0]
-    last_altitude_point: Point | None = None
-    bad_points = []
-    for cur_point in points[1:]:
-        if last_good_point.altitude is not None:
-            last_altitude_point = last_good_point
-        time_delta = cur_point.detection_time - last_good_point.detection_time
-        distance: float = gd.geodesic(
-            (cur_point.coordinates[1], cur_point.coordinates[0]),
-            (last_good_point.coordinates[1], last_good_point.coordinates[0]),
-        ).meters
-        relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
-        if time_delta.total_seconds() < SETTINGS.time_threshold_seconds:
-            # Too little time resolution to accurately compare points.
-            # Allow current point but don't update last good point.
-            LOGGER.info(
-                "Skipping point due to time delta %s s less than threshold %s s.",
-                round(time_delta.total_seconds(), 1),
-                SETTINGS.time_threshold_seconds,
-            )
-            continue
-        if relative_velocity > SETTINGS.relative_velocity_threshold_mps:
-            # Too fast, kill the current point and don't update the last good point.
-            LOGGER.info(
-                "Filtered point_id (%s) due to relative velocity %s mps exceeding threshold %s mps.",
-                cur_point.point_id,
-                round(relative_velocity, 1),
-                SETTINGS.relative_velocity_threshold_mps,
-            )
-            cur_point.weight = 0
-            bad_points.append(cur_point)
-            continue
-        if last_altitude_point is not None and cur_point.altitude is not None:
-            # Check if the vertical movement between this point and the previous is large.
-            time_delta = cur_point.detection_time - last_altitude_point.detection_time
-            altitude_rate = abs(cur_point.altitude - last_altitude_point.altitude) / time_delta.total_seconds()  # type: ignore[operator]
-            if altitude_rate > SETTINGS.altitude_deviation_threshold_mps:
-                LOGGER.info(
-                    "Removing point %s due to altitude rate deviation: altitude diff=%s, time=%s, rate=%s",
-                    cur_point.observation_id,
-                    abs(cur_point.altitude - last_altitude_point.altitude),  # type: ignore[operator]
-                    time_delta,
-                    altitude_rate,
-                )
-                cur_point.weight = 0
-                bad_points.append(cur_point)
-                continue
-        # Made it through all checks. Update last good point for next comparison.
-        last_good_point = cur_point
-    if bad_points:
-        LOGGER.info(f"Removed {len(bad_points)} of {len(points)} points.")
-    points = [p for p in points if p not in bad_points]
-    return points
-
-
-def filter_altitude_by_iri(points: list[Point], iri: str) -> list[Point]:
-    """
-    Filter out points that drastically deviate in elevation.
-
-    :param points: The points to filter altitude discrepancies from.
-    :param iri: The IRI of the object of the observations.
-    :return: The filtered points.
-    """
-    if "aircraft" not in iri.lower():
-        LOGGER.info("Skipping altitude filtering for non-aircraft track.")
-        return points
-
-    for point in points:
-        # if current point doesn't have an altitude, skip this filter
-        if point.altitude is None:
-            # LOGGER.info("Skipping altitude filter for point %s", cur_point.observation_id)
-            continue
-
-        # Check if the altitude is negative or exceeds the maximum altitude threshold.
-        if point.altitude < 0:
-            LOGGER.info(
-                "Removing point %s due to negative altitude: altitude=%s",
-                point.observation_id,
-                point.altitude,
-            )
-            point.weight = 0
-            continue
-        elif point.altitude > SETTINGS.altitude_threshold_meters:
-            LOGGER.info(
-                "Removing point %s due to altitude exceeding maximum: altitude=%s",
-                point.observation_id,
-                point.altitude,
-            )
-            point.weight = 0
-            continue
-    return points
