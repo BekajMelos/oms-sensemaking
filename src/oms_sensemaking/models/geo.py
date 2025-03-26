@@ -370,7 +370,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
 
 class CommonSenseFilter(BaseModel):
     """
-    A filter object for applying IRI-specific altitude and teleportation thresholds.
+    A filter object for applying IRI-specific point attribute and point delta thresholds.
     """
 
     name: str
