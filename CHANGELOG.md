@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- None
+- Duplicate object checks in the Resolution sensemaker are now configurable 
 
 ### Changed
 - None
