@@ -40,16 +40,19 @@ def create_attribute(
         oms_node: NodeNode,
         attribute_iri: str,
         attribute_value: str,
+        attribute_name: str,
         mock_source) -> AttributeAttribute:
 
     attr = AttributeAttribute.model_construct(
         attributeType=AttributeType.STRING,
         attributeValue=attribute_value,
+        attributeName=attribute_name,
         attributeIri=attribute_iri,
         acm=DEFAULT_ACM,
         sourceId=mock_source.id,
         confidence=Confidence.HIGH,
-        nodeId=oms_node.id
+        nodeId=oms_node.id,
+        tags=[]
     )
     return attr
 
@@ -69,11 +72,11 @@ def test_execute(mock_source, db, mil_symbol_rules):
         "10-0-0-30-0-0-32-000000-00-00"
     )
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source))
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", "Target_Vetted", mock_source))
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", "Affiliation", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", "Condition", mock_source))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
@@ -101,6 +104,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
+                attributeName="Icon",
                 confidence=Confidence.HIGH.value,
                 acm=symbol.acm,
                 nodeId=oms_node.id,
@@ -118,11 +122,11 @@ def test_execute(mock_source, db, mil_symbol_rules):
         "10-0-0-01-0-0-00-000000-00-00"
     )
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", "true", mock_source))
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", "true", "Target Vetted", mock_source))
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", "Affiliation", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", "Condition", mock_source))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=[
             "http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle",
@@ -154,6 +158,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
+                attributeName="Icon",
                 confidence=Confidence.HIGH.value,
                 acm=symbol.acm,
                 nodeId=oms_node.id,
@@ -171,11 +176,11 @@ def test_execute(mock_source, db, mil_symbol_rules):
         "10-0-0-01-0-0-00-000000-00-00"
     )
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source))
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", "Target Vetted", mock_source))
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", "Affiliation", mock_source))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", "Condition", mock_source))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
 
@@ -204,6 +209,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
+                attributeName="Icon",
                 confidence=Confidence.HIGH.value,
                 acm=symbol.acm,
                 nodeId=oms_node.id,
@@ -222,13 +228,13 @@ def test_execute(mock_source, db, mil_symbol_rules):
     )
 
     oms_attribute = create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source)
+        oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", "Affiliation", mock_source)
 
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source))
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", "Target Vetted", mock_source))
     sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
-        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source))
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", "Condition", mock_source))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
 
@@ -258,6 +264,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
+                attributeName="Icon",
                 confidence=Confidence.HIGH.value,
                 acm=symbol.acm,
                 nodeId=oms_node.id,

@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    AttributeQuery,
     AttributeType,
     Confidence,
     CreateAttributeCreateAttribute,
@@ -22,6 +23,8 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
+    StringQuery,
+    UpdateAttributeInput,
     UpdateAttributeUpdateAttribute,
     UpdateNodeInput,
     UpdateNodeUpdateNode,
@@ -86,6 +89,8 @@ class MilSymbolSensemaker(Sensemaker):
         :return: List of Mil Symbol Code updates
         """
 
+        if self.is_attribute_to_ignore(oms_object):
+            return []
         oms_node = self.get_node_from_input(oms_object)
         if oms_node is None:
             return []
@@ -108,6 +113,9 @@ class MilSymbolSensemaker(Sensemaker):
         else:
             LOGGER.info(f"Unsupported SDIC for {symbol_id_code}")
             return []
+
+        # use this to compare codes before and after enrichment to determine if we need to publish
+        before_enrich_2525d = code_2525d.formatted_code
 
         LOGGER.info(f"2525D before enrichment: {code_2525d.formatted_code}")
         LOGGER.info(f"2525C before enrichment: {code_2525c.formatted_code}")
@@ -141,7 +149,8 @@ class MilSymbolSensemaker(Sensemaker):
         self.update_oms_node(oms_node, code_2525c.code)
 
         # We need to have used sourced attributes in order to publish
-        if not code_2525d.source_ids.empty():
+        # And only publish if there was a change in the symbol
+        if not code_2525d.source_ids.empty() and symbol_code_update_d.new_symbol_id_code != before_enrich_2525d:
             source = code_2525d.source_ids.get()[1]
             self.publish_attributes(oms_node, results, source)
 
@@ -320,19 +329,39 @@ class MilSymbolSensemaker(Sensemaker):
         :return: None
         """
 
-        for symbol_code_update in symbol_code_updates:
+        # to avoid having more than two Icon attributes (one 2525C, one 2525D), first check
+        # for existing Icon attributes. Update if they exist, otherwise create new ones
+        attribute_query = AttributeQuery(
+            nodeIds=[oms_node.id],
+            attributeName=StringQuery(contains="ICON", ignoreCase=True)
+        )
+        attributes = self.oms_crud_tool.get_attributes(attribute_query)
+        if attributes and attributes.data:
+            try:
+                for (existing_icon, symbol_code_update) in zip(attributes.data, symbol_code_updates, strict=True):
+                    update_attribute_input = UpdateAttributeInput(
+                        id=existing_icon.id,
+                        attributeValue=symbol_code_update.new_symbol_id_code
+                    )
+                    self.oms_crud_tool.update_attribute(
+                        update_attribute_input
+                    )
+            except ValueError:
+                LOGGER.exception("Unable to update Icon Attributes.")
+        else:
+            for symbol_code_update in symbol_code_updates:
 
-            attribute: CreateAttributeInput = CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol_code_update.new_symbol_id_code,
-                confidence=Confidence.HIGH.value,
-                acm=symbol_code_update.get_acm(),
-                nodeId=oms_node.id,
-                sourceId=source_id
-            )
-            self.oms_crud_tool.create_attribute(attribute)
+                attribute: CreateAttributeInput = CreateAttributeInput(
+                    tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                    attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+                    attributeType=AttributeType.STRING,
+                    attributeValue=symbol_code_update.new_symbol_id_code,
+                    confidence=Confidence.HIGH.value,
+                    acm=symbol_code_update.get_acm(),
+                    nodeId=oms_node.id,
+                    sourceId=source_id
+                )
+                self.oms_crud_tool.create_attribute(attribute)
 
         LOGGER.info(f"Mil Symbol Sensemaker updated symbol codes for {oms_node.id}")
 
@@ -355,16 +384,10 @@ class MilSymbolSensemaker(Sensemaker):
         :param oms_object: The Node to return or the Attribute used to find the Node
         :return: An OMS Node
         """
-        if isinstance(oms_object, NodeNode | CreateNodeCreateNode | RestoreNodeRestoreNode | UpdateNodeUpdateNode):
+        if self.is_node(oms_object):
             LOGGER.info("Checking for MilSymbol enrichment based on Node input.")
             return oms_object
-        elif isinstance(
-            oms_object,
-            AttributeAttribute |
-            CreateAttributeCreateAttribute |
-            RestoreAttributeRestoreAttribute |
-            UpdateAttributeUpdateAttribute
-        ):
+        elif self.is_attribute(oms_object):
             LOGGER.info("Checking for MilSymbol enrichment based on Attribute input.")
             try:
                 LOGGER.info("Getting linked Node from Attribute nodeId.")
@@ -375,3 +398,53 @@ class MilSymbolSensemaker(Sensemaker):
         else:
             LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
             return None
+
+    def is_node(self, oms_object: NodeNode | AttributeAttribute) -> bool:
+        """Check if the input is a NodeNode or object that has same properties
+
+        :param oms_object: The object to check against Node properties
+        :return: bool
+        """
+
+        return isinstance(oms_object, NodeNode | CreateNodeCreateNode | RestoreNodeRestoreNode | UpdateNodeUpdateNode)
+
+    def is_attribute(self, oms_object: NodeNode | AttributeAttribute) -> bool:
+        """Check if the input is an AttributeAttribute or object that has same properties
+
+        :param oms_object: The object to check against Attribute properties
+        :return: bool
+        """
+
+        return isinstance(oms_object,
+                          AttributeAttribute |
+                          CreateAttributeCreateAttribute |
+                          RestoreAttributeRestoreAttribute |
+                          UpdateAttributeUpdateAttribute)
+
+    def has_mil_symbol_sensemaker_tags(self, tags: List[str]):
+        """
+        Checks to see if an attribute has been tagged by this Sensemaker.
+
+        :param tags: List of strings representing the tags of the attribute
+        :return: boolean
+        """
+
+        set_tags = set([t.lower() for t in tags])
+        set_mil_symbol_tags = set([t.lower() for t in SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags])
+        return bool(set_tags.intersection(set_mil_symbol_tags))
+
+    def is_attribute_to_ignore(self, oms_object: NodeNode | AttributeAttribute):
+        """
+        Checks to see if an attribute should be processed by this Sensemaker.
+        Attributes that are Icon's or have already been tagged by this Sensemaker should be ignored.
+
+        :param tags: List of strings representing the tags of the attribute
+        :return: boolean
+        """
+
+        if self.is_attribute(oms_object) and (
+            "ICON" in oms_object.attributeName.upper() or
+            self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
+                LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
+                return True
+        return False

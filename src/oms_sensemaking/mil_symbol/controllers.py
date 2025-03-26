@@ -36,6 +36,12 @@ class MilSymbolSensemakerController(SensemakerController):
 
 class MilSymbolQueueFilter(EventFilter):
     def passes_filter(self, audit_event: AuditLogEvent):
-        handled_object_types = [ObjectType.ATTRIBUTE.value, ObjectType.NODE.value]
-        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value]
-        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types
+        return self.passes_node_filter(audit_event) or self.passes_attribute_filter(audit_event)
+
+    def passes_node_filter(self, audit_event: AuditLogEvent):
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        return audit_event.objectType == ObjectType.NODE.value and audit_event.action in handled_event_types
+
+    def passes_attribute_filter(self, audit_event: AuditLogEvent):
+        handled_event_types = [Action.CREATE.value, Action.UPDATE.value]
+        return audit_event.objectType == ObjectType.ATTRIBUTE.value and audit_event.action in handled_event_types
