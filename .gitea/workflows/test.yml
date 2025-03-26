@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       USER_DN: "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"
-      CERT_PATH: ./pki/test10.pem
-      KEY_PATH: ./pki/test10.key
+      CERT_PATH: ./etc/pki/test10.pem
+      KEY_PATH: ./etc/pki/test10.key
       OMSB_URL: https://tex.gerbil-cloud.ts.net:30000/services/oms-bridge/2.0/graphql
 
     steps:
@@ -75,12 +75,17 @@ jobs:
           PIP_INDEX_URL: https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
           PIP_EXTRA_INDEX_URL: https://pypi.org/simple
         run: |
+          sudo apt-get update
+          sudo apt-get install -y bsdmainutils
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip wheel
           pip install -e ".[dev,test]"
+      - name: Decrypt SSL Key
+        run: |
+          bin/transcrypt -p ${{ secrets.TRANSCRYPT_PW }} -c aes-256-cbc -y
       - name: Test with pytest
         run: |
           source .venv/bin/activate
           pytest tests --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
-        continue-on-error: true
+        continue-on-error: false

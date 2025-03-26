@@ -1,5 +1,6 @@
 """Resolution Controller Unit Tests"""
 
+import json
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from unittest import mock
@@ -31,8 +32,13 @@ def mock_res_controller():
 def test_res_controller(
     mock_executor: ThreadPoolExecutor, mock_as_completed: Callable, mock_res_controller: ResolutionSensemakerController
 ):
+    # set duplicate object iris dictionary
+    with open(SETTINGS.duplicate_object_iris_file_path) as fd:
+        duplicate_object_iris = json.load(fd)
     # register the sensemaker without starting the listener
-    mock_res_controller.register("resolution", ResolutionSensemaker(mock_res_controller.oms_crud_tool))
+    mock_res_controller.register(
+        "resolution", ResolutionSensemaker(duplicate_object_iris, mock_res_controller.oms_crud_tool)
+    )
 
     # mock oms call
     oms_attribute = AttributeAttribute.model_construct(

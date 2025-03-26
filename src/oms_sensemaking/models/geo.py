@@ -6,8 +6,7 @@ import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from datetime import UTC, datetime
-from functools import cached_property, reduce
-from operator import mul
+from functools import cached_property
 
 import geopy.distance
 from geoalchemy2 import Geometry
@@ -357,8 +356,8 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                     if weight == confidence_val:
                         confidence_level = confidence
                 point_dict["observation_confidence"] = confidence_level
-                # Multiply parent Point weights to get new Point weight [0.0 - 1.0]
-                point_dict["weight"] = reduce(mul, (point.weight for point in bin_points))
+                # Average parent Point weights to get new Point weight [0.0 - 1.0]
+                point_dict["weight"] = sum(point.weight for point in bin_points) / len(bin_points)
                 weighted_point, _ = Point.get_or_create(db, defaults=None, **point_dict)
                 weighted_points.append(weighted_point)
         return Track(
