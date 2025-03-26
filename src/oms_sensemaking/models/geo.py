@@ -534,7 +534,7 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         total_time = end_time - start_time
         # Handle 0 elapsed time by giving all points the same time
         if total_time.total_seconds() == 0:
-            LOGGER.info("Handling 0 elapsed time...")
+            LOGGER.debug("Handling 0 elapsed time...")
             return [
                 {
                     "detection_time": start_time,
@@ -544,7 +544,7 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
             ]
         # Handle 0 movement by dividing the time evenly across points
         if total_distance == 0:
-            LOGGER.info("Handling 0 distance...")
+            LOGGER.debug("Handling 0 distance...")
             timed_coords: list[TimedCoords] = [
                 {
                     "detection_time": start_time + total_time * idx / (len(oms_obs.geometry["coordinates"]) - 1),
@@ -559,7 +559,7 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         # Assuming constant velocity: coordinate times are proportional to distance travelled so far
         # The start point needs special handling because calling gd.geodesic() with a single coordinate
         # raises an exception
-        LOGGER.info("Handling non-zero time and distance")
+        LOGGER.debug("Handling non-zero time and distance")
         timed_coords = [
             {
                 "detection_time": start_time,
