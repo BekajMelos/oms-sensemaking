@@ -2,46 +2,69 @@
 
 ### Steps to see Sensemaker objects with Chronicle
 
-1. Repos needed: `chronicle-ui`, `dime-local-dev-env`, `oms-data-gen` (for Geospatial), `oms-sensemaking`
+1. Repos needed: `chronicle-ui`, `oms-bridge`, `oms-data-gen` (for Geospatial), `oms-sensemaking`
 2. In `oms-sensemaking`
-    1. Update the `.env` file to include the desired `OMSB_VERSION`
-    2. For Geospatial Sensemakers:
-        1. Update the `.env` to set the SQS queue to the aorTrigger (we're temporarily using that queue)
-            * `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/aorTrigger"`
-    2. Run `docker compose up -d`
-    3. Navigate to the API at https://localhost:5001/docs
+    1. Deteremine your IP address: `ipconfig getifaddr en0`
+    2. Update the `.env` with the following values. _Please note the uncommented and commented settings_
+        * `# POSTGRES_PORT=5432`
+        * `AWS_ENDPOINT_URL="http://<your_ip_address>:4566"`
+        * `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+        * `# CORENLP_EXPOSE_PORT=9000`
+        * `CORENLP_HOST=corenlp:9000`
+        * `# SQS_RES_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+        * `# MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+        * `OMSB_VERSION=<OMSB_VERSION>`
+        * `OMSB_URL="https://<your_ip_address>:8443/graphql"`
+        * `AAC_URL="http://<your_ip_address>:5022"`
+    3. Set the sensemaker sqs queue url. `oms-bridge` does not support all of our SQS Queues, so only one sensemaker can be used at a time at the moment.
+        1. Update the `.env` to set the SQS queue to the wfsTrigger (we're temporarily using that queue)
+            * Set the appropriate QUEUE_URL to the wfsTrigger
+            * URL should be `"http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+            * QUEUE Settings are `SQS_GEO_QUEUE_URL`, `SQS_RES_QUEUE_URL`, `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`
+            * Example for the Geo sensemakers: `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+    4. Run `docker compose up -d`
+    5. Navigate to the API at https://localhost:5001/docs
         1. If you are having issues getting the app to load, compare your `.env` with the `.env.template`
-3. In `dime-local-dev-env`
-    1. Follow `dime-local-dev-env` setup steps: https://tex.gerbil-cloud.ts.net:3000/DevOps/dime-local-dev-env#quick-start
-    2. Run `git checkout omsb-grimlock`
-    3. copy `.env.CHRONICLE` to `.env`
-    4. In `.env` update `IMAGE_OMS_BRIDGE` to point to the same `OMSB_VERSION` as the `.env` in Sensemaking
-    5. For Geospatial Sensemakers:
-        1. Comment out the `oms-aor` service in the `docker-compose.yml` so that service doesn't take items
-           from the queue.
-    6. Run `make up`. This may take a few minutes. You can follow the `omsb2` logs with `make logs c=omsb2`
-4. In `chronicle-ui`
-   1. Follow the chronicle setup steps in the readme: https://tex.gerbil-cloud.ts.net:3000/oms/chronicle-ui#setup
-   2. Git checkout main
-   3. Run `npm install` and `npm start`
-   4. Navigate to the chronicle page at https://localhost/apps/chronicle
+3. In `chronicle-ui`
+   1. Follow the chronicle _Setup_ steps in the readme and specifically the _Setup env w/ `oms-bridge`_ instructions
+       * https://tex.gerbil-cloud.ts.net:3000/oms/chronicle-ui#setup
+   2. Run `npm install` and `npm start`
+   3. Navigate to the chronicle page at http://localhost:5173/
       1. If you have issues getting the page to load, ensure you have downloaded all certificates from `chronicle-ui/etc/test-certs` and marked them as 'trusted'. To do this:
          1. Open the 'Keychain Access' app on your Macbook (`CMD+Space --> 'Keychain Access'`)
          2. Click 'login' on the left sidebar
          3. The downloaded certificates from the Chronicle repo should be listed
          4. For each cert, double click the name, click the arrow next to 'Trust', and select 'Always Trust' from the first dropdown next to 'When using this certificate'
          5. If you are still having issues, try closing/reopening Chrome and/or restarting your Macbook
-5. Connect `dime-local-dev-env` to the sensemaking container
-   1. Run `docker network ls`
-   2. Copy the NETWORK ID from the result of that command
-      ```
-           NETWORK ID     NAME                         DRIVER    SCOPE
-           2defa7295a06   dime-local-dev-env_default   bridge    local
-      ```
-   3. Run `docker ps` to find the name of the Sensemaking container
-      1. It should be `oms-sensemaking-oms_sensemaking-1` or something similar
-   4. Run `docker network connect <dime-local-network-ID-here> <sensemaking-container-name-here>`
-6. Trigger Sensemaker execution
+4. In `oms-bridge`
+    1. Follow the  `oms-bridge` _Setup_ and _Running Docker Only Environment_ steps. Choose the branch/tag for the
+       version of OMS you are working with.
+       * https://tex.gerbil-cloud.ts.net:3000/oms/oms-bridge#
+    2. Create a `.env.` and include the following
+        ```
+        COMPOSE_PROFILES=remote
+        OMSB_CORS_ALLOWED_ORIGIN=http://localhost:8000
+        OMSB_TAG=INC-14   # your preferred version
+        ```
+    3. For SQS Listening Sensemakers:
+        1. Updates to `docker-compose.yml`
+            * Comment out the `wfs-service` service so that service doesn't take items from the queue.
+            * Remove the IP Addresses from the `localstack` ports
+            ```
+            localstack:
+                container_name: localstack
+                image: ${DOCKER_REGISTRY}/localstack/localstack:4.0.3
+                ports:
+                - "4566:4566"            # LocalStack Gateway             # remove "127.0.0.1:"
+                - "4510-4559:4510-4559"  # external services port range   # remove "127.0.0.1:"
+            ```
+    4. Run `make refresh`. This may take a few minutes.
+      * You can follow the `graphql` logs with `make dockerlogs c=graphql`
+          * Look for "OMS Bridge Started!"
+      * You can follow the `localstack` logs with `make dockerlogs c=localstack`
+          * Look for "Ready."
+      * When restarting `oms-bridge` the next time, you use `make dockerrefresh`
+5. Trigger Sensemaker execution
     1. For NLP Sensemakers:
        1. Now you should be able to run the Sensemaking API endpoints and view the results published to OMS in Chronicle
             1. Make sure to create an Originator, Provider, and Source in Chronicle so that you can copy a valid source ID for the NLP API call. To do this:
@@ -168,14 +191,14 @@
         ```
 
         - Additionally, a `Report` Object should exist and have a `Relationship: describes` to every single Entity that it produced.
-    2. For Geospatial Sensemakers:
+    2. For SQS Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):
         1. In `oms-data-gen` (Needed for Geospatial Sensemaker Data):
             1. Follow the setup steps in the readme: https://tex.gerbil-cloud.ts.net:3000/oms/oms-data-gen/
                 1. Update the `.env` to set the `OMSB_URL` and `PKCS12_PASSWORD`
-                    * `OMSB_URL="https://localhost:8020/graphql"`
+                    * `OMSB_URL="https://localhost:8443/graphql"`
                     * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `oms-sensemaking`)
         2. Run the `adsb` script to start sending geo data to omsb. Example scripts
-            * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 30 -o 18 -t 1 -i N11QN` (Known Loiter)
-            * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 45 -t 3 -i N24211 -i N965NN -i N8318F` (Known Cotravel and Lag-Lead)
+            * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 30 -o 18 -t 1 -i N11QN` (Known Loiter and node with proper attributes for Mil Symbol)
+            * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 45 -t 3 -i N24211 -i N965NN -i N8318F` (Known Cotravel and Lag-Lead and node with proper attributes for Mil Symbol)
         3. Observe Geo Points being captured by the sensemakers in the oms-sensemaking container. Upon completion,
-           Nodes will be created in `OMS Bridge` and should be visible in `Chronicle`.
+           objects will be created in `OMS Bridge` and should be visible in `Chronicle`.

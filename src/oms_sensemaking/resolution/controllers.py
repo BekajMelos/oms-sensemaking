@@ -1,5 +1,6 @@
 """Resolution sensemaker controller."""
 
+import json
 import logging
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
@@ -26,7 +27,9 @@ class ResolutionSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.enable_resolution_sensemaker:
-            self.register("resolution", ResolutionSensemaker(self.oms_crud_tool))
+            with open(SETTINGS.duplicate_object_iris_file_path) as fd:
+                duplicate_object_iris = json.load(fd)
+            self.register("resolution", ResolutionSensemaker(duplicate_object_iris, self.oms_crud_tool))
 
         super().start()
 

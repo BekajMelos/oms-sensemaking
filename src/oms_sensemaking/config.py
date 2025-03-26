@@ -106,6 +106,13 @@ class MilSymbolSettings(BaseModel):
     affiliation_iris: List[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"], description="Affiliation IRI")
     status_iris: List[str] = Field(["https://foundry.ai.mil/DICO/v3.1.0/Condition"], description="Status IRI")
+    affiliation_controlled_by_iris: List[str] = Field(
+        ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy"],
+        description="Relationship IRIs used to search for controlling/commanding nodes")
+    affiliation_controls_iris: List[str] = Field(
+        ["https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"],
+        description="Relationship IRIs used to search for controlling/commanding nodes"
+    )
 
     # War, Pending, Unknown, Present
     default_2525c_code: str = Field(
@@ -340,13 +347,9 @@ class Settings(BaseSettings):
                                            description="Relationship IRI for resolution sensemaker suggestions")
     resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    duplicate_facility_iris: List[str] = Field(
-        [
-            "https://foundry.ai.mil/MIDB_GST/v1/BE_Number",
-            "https://foundry.ai.mil/DICO/v3.1.0/OSuffix",
-        ],
-        description="List of fields that must match to be a duplicate Facility")
-
+    duplicate_object_iris_file_path: str = Field(
+        "./data/duplicate_object_iris.json", description="Path to file containing duplicate object iris dictionary"
+    )
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
