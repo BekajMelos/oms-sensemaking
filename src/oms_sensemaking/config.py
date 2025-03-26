@@ -174,13 +174,17 @@ class Settings(BaseSettings):
     )
     inference_garrisoned_in_iri: str = Field(
         "http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn",
-        description="IRI for garrison node relationship"
+        description="IRI for relationship between an object and its garrison"
     )
     inference_garrison_class_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for garrison class"
+        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+        description="IRI for garrison activity class"
     )
-    inference_add_in_garrison_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"
+    inference_in_garrison_activity_name: str = Field(
+        "In Garrison", description="Name for In Garrison activities"
+    )
+    inference_out_of_garrison_activity_name: str = Field(
+        "Out of Garrison", description="Name for Out of Garrison activities"
     )
     garrison_distance_kilometers: int = 2000
 

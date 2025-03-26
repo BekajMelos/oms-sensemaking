@@ -4,27 +4,25 @@ from unittest.mock import MagicMock
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
+    ActivitiesActivitiesData,
     ActivityState,
     AttributeAttribute,
     AttributeQuery,
     AttributeType,
     Confidence,
     CreateActivityInput,
-    CreateAttributeInput,
-    GeoQuery,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
+    RelationshipNodeQuery,
+    RelationshipQuery,
     RelationshipRelationship,
-    StringQuery,
     TimeQuery,
     UpdateActivityInput,
-    UpdateAttributeInput,
 )
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.add_garrison_attribute import AddOutOfGarrisonAttribute
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
@@ -69,8 +67,8 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.nodeId = "incurring_object_id"
     attr.geometry = areas_of_interest[0]
-    attr.valueStart = "2022-01-01T00:00:00+00:00"
-    attr.valueEnd = "2023-01-01T00:00:00+00:00"
+    attr.valueStart = "2020-01-01T00:00:00+00:00"
+    attr.valueEnd = "2026-01-01T00:00:00+00:00"
     return attr
 
 
@@ -89,13 +87,34 @@ def observational_node(mocker: MockerFixture):
     obs.className = "className"
     obs.confidence = Confidence.MODERATE
     obs.sourceId = "obs_sourceId"
-    obs.nodeId = "garrison_object_id"
+    obs.nodeId = "initial_object_id"
     obs.geometry = geometry
-    obs.startTime = "2024-01-01T00:00:00+00:00"
+    obs.startTime = "2025-01-01T00:00:00+00:00"
     obs.endTime = "2025-01-01T00:00:00+00:00"
 
     return obs
 
+@pytest.fixture
+def observational_node2(mocker: MockerFixture):
+    """
+    Incoming observation
+    """
+    geometry = {"coordinates": [-77.10218105866703, 38.88589179856498], "type": "Point"}
+
+    obs = mocker.Mock(spec=ObservationObservation)
+    obs.id = "obs2_id"
+    obs.version = "version"
+    obs.acm = "acm"
+    obs.classIri = "classIri"
+    obs.className = "className"
+    obs.confidence = Confidence.MODERATE
+    obs.sourceId = "obs_sourceId"
+    obs.nodeId = "initial_object_id"
+    obs.geometry = geometry
+    obs.startTime = "2024-01-01T00:00:00+00:00"
+    obs.endTime = "2024-01-01T00:00:00+00:00"
+
+    return obs
 
 @pytest.fixture
 def garrison_object(mocker: MockerFixture):
@@ -145,6 +164,85 @@ def garrison_relationship(mocker: MockerFixture):
 
     return relationship
 
+@pytest.fixture
+def in_garrison_activity1(mocker: MockerFixture):
+    """
+    Mock in garrison activity
+    """
+    activity = mocker.Mock(spec=ActivitiesActivitiesData)
+    activity.id = "in_garrison_activity1_id"
+    activity.version = "version"
+    activity.acm = "acm"
+    activity.classIri = SETTINGS.inference_garrison_class_iri
+    activity.name = SETTINGS.inference_in_garrison_activity_name
+    activity.className = "class name"
+    activity.state = ActivityState.IN_GARRISON
+    activity.nodeId = "initial_object_id"
+    activity.observationIds = ["some_obs_id"]
+    activity.startTime = "2022-01-01T00:00:00+00:00"
+    activity.endTime = "2023-01-01T00:00:00+00:00"
+
+    return activity
+
+@pytest.fixture
+def in_garrison_activity2(mocker: MockerFixture):
+    """
+    Mock in garrison activity
+    """
+    activity = mocker.Mock(spec=ActivitiesActivitiesData)
+    activity.id = "in_garrison_activity2_id"
+    activity.version = "1"
+    activity.acm = "acm"
+    activity.classIri = SETTINGS.inference_garrison_class_iri
+    activity.name = SETTINGS.inference_in_garrison_activity_name
+    activity.className = "class name"
+    activity.state = ActivityState.IN_GARRISON
+    activity.nodeId = "initial_object_id"
+    activity.observationIds = ["some_obs_id"]
+    activity.startTime = "2025-01-01T00:00:00+00:00"
+    activity.endTime = "2026-05-01T00:00:00+00:00"
+
+    return activity
+
+@pytest.fixture
+def out_garrison_activity1(mocker: MockerFixture):
+    """
+    Mock out of garrison activity
+    """
+    activity = mocker.Mock(spec=ActivitiesActivitiesData)
+    activity.id = "out_garrison_activity1_id"
+    activity.version = "version"
+    activity.acm = "acm"
+    activity.classIri = SETTINGS.inference_garrison_class_iri
+    activity.name = SETTINGS.inference_out_of_garrison_activity_name
+    activity.className = "class name"
+    activity.state = ActivityState.OUT_OF_GARRISON
+    activity.nodeId = "initial_object_id"
+    activity.observationIds = ["some_obs_id"]
+    activity.startTime = "2025-01-01T00:00:00+00:00"
+    activity.endTime = "2027-01-01T00:00:00+00:00"
+
+    return activity
+
+@pytest.fixture
+def out_garrison_activity2(mocker: MockerFixture):
+    """
+    Mock out of garrison activity
+    """
+    activity = mocker.Mock(spec=ActivitiesActivitiesData)
+    activity.id = "out_garrison_activity2_id"
+    activity.version = "1"
+    activity.acm = "acm"
+    activity.classIri = SETTINGS.inference_garrison_class_iri
+    activity.name = SETTINGS.inference_out_of_garrison_activity_name
+    activity.className = "class name"
+    activity.state = ActivityState.OUT_OF_GARRISON
+    activity.nodeId = "initial_object_id"
+    activity.observationIds = ["some_obs_id"]
+    activity.startTime = "2025-01-01T00:00:00+00:00"
+    activity.endTime = "2026-05-01T00:00:00+00:00"
+
+    return activity
 
 # Mock methods
 @pytest.fixture
@@ -172,11 +270,10 @@ def mock_get_activities(mocker: MockerFixture):
     return mock_get_activities
 
 @pytest.fixture
-def mock_get_relationships(mocker: MockerFixture):
+def mock_get_relationships(mocker: MockerFixture, garrison_relationship):
     mock_get_relationships = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_relationships")
     mock_relationship_response = MagicMock()
-    mock_relationship = MagicMock()
-    mock_relationship_response.data = [mock_relationship]
+    mock_relationship_response.data = [garrison_relationship]
     mock_get_relationships.return_value = mock_relationship_response
     return mock_get_relationships
 
@@ -194,10 +291,10 @@ def mock_update_activity(mocker: MockerFixture):
 
 
 @pytest.fixture
-def mock_get_observations(mocker: MockerFixture, observational_node):
+def mock_get_observations(mocker: MockerFixture, observational_node2):
     mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_observations")
     mock_observation_response = MagicMock()
-    mock_observation_response.data = [observational_node]
+    mock_observation_response.data = [observational_node2]
     mock_get_observations.return_value = mock_observation_response
     return mock_get_observations
 
@@ -245,7 +342,7 @@ def test_new_in_garrison(
         CreateActivityInput(
             acm=observational_node.acm,
             classIri=SETTINGS.inference_incursion_class_iri,
-            name="In garrison",
+            name=SETTINGS.inference_in_garrison_activity_name,
             state=ActivityState.IN_GARRISON,
             nodeId=observational_node.nodeId,
             observationIds=[observational_node.id],
@@ -254,160 +351,157 @@ def test_new_in_garrison(
         )
     )
 
+def test_new_out_garrison(
+    observational_node2,
+    garrison_object,
+    mock_get_node,
+    mock_get_attributes,
+    mock_get_relationships,
+    mock_get_activities,
+    mock_create_activity,
+    geo_attribute1
+):
+    # Scenario: Observation input yields new out of garrison activity
+    mock_attribute_response = MagicMock()
+    mock_attribute_response.data = [geo_attribute1]
+    mock_get_attributes.return_value = mock_attribute_response
 
-# def test_new_incursion_region2(
-#     observational_node_region2,
-#     incurring_object,
-#     mock_get_node,
-#     mock_get_attributes,
-#     mock_create_activity,
-#     mock_create_attribute,
-#     areas_of_interest,
-# ):
-#     # Scenario: Observation input yields new incursion and activity in region2
-#     rule = AddOutOfGarrisonAttribute("garrison rule")
+    rule = AddOutOfGarrisonAttribute("garrison rule")
 
-#     rule.action(RuleContext(observation=observational_node_region2))
-#     mock_get_attributes.assert_called_with(
-#         AttributeQuery(
-#             attributeIris=[SETTINGS.inference_geo_attribute_iri],
-#             attributeValue=StringQuery(equals="Incursion"),
-#             attributeType={"is": AttributeType.GEOSPATIAL},
-#             geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
-#             nodeIds=[incurring_object.id],
-#             tags=SETTINGS.incursion_tags,
-#         )
-#     )
-#     mock_create_attribute.assert_called_with(
-#         CreateAttributeInput(
-#             attributeIri=SETTINGS.inference_incursion_attribute_iri,
-#             attributeValue="Incursion",
-#             attributeType=AttributeType.GEOSPATIAL,
-#             confidence=observational_node_region2.confidence,
-#             sourceId=observational_node_region2.sourceId,
-#             nodeId=incurring_object.id,
-#             acm=observational_node_region2.acm,
-#             tags=SETTINGS.incursion_tags,
-#             geometry=areas_of_interest[1],
-#             valueStart=observational_node_region2.startTime,
-#             valueEnd=observational_node_region2.endTime,
-#         )
-#     )
-#     mock_create_activity.assert_called_with(
-#         CreateActivityInput(
-#             acm=observational_node_region2.acm,
-#             tags=SETTINGS.incursion_tags,
-#             classIri=SETTINGS.inference_incursion_class_iri,
-#             name="Incursion",
-#             description=f"Incursion detected into {areas_of_interest[1]}",
-#             state=ActivityState.UNKNOWN,
-#             nodeId=observational_node_region2.nodeId,
-#             observationIds=[observational_node_region2.id],
-#             startTime=observational_node_region2.startTime,
-#             endTime=observational_node_region2.endTime,
-#         )
-#     )
+    rule.action(RuleContext(observation=observational_node2))
+    mock_get_attributes.assert_called_with(
+        AttributeQuery(
+            attributeIris=[SETTINGS.inference_geo_attribute_iri],
+            nodeIds=[garrison_object.id],
+        )
+    )
 
+    mock_create_activity.assert_called_with(
+        CreateActivityInput(
+            acm=observational_node2.acm,
+            classIri=SETTINGS.inference_incursion_class_iri,
+            name=SETTINGS.inference_out_of_garrison_activity_name,
+            state=ActivityState.OUT_OF_GARRISON,
+            nodeId=observational_node2.nodeId,
+            observationIds=["obs2_id"],
+            startTime=observational_node2.startTime,
+            endTime=observational_node2.endTime,
+        )
+    )
 
-# def test_two_existing_incursions(
-#     observational_node,
-#     incurring_object,
-#     geo_attribute1,
-#     attribute2,
-#     mock_get_node,
-#     mock_get_attributes,
-#     mock_get_activities,
-#     mock_get_observations,
-#     mock_update_attribute,
-#     mock_update_activity,
-#     areas_of_interest,
-# ):
-#     # Scenario: Two existing incursion attributes with same geo of interest- one that
-#     # is part of an incursion separate from the observation and one that is part of an
-#     # incursion including the observation, resulting in an attribute/activity update
-#     rule = AddOutOfGarrisonAttribute("garrison rule")
-#     mock_attribute_response = MagicMock()
-#     mock_attribute_response.data = [attribute2, geo_attribute1]
-#     mock_get_attributes.return_value = mock_attribute_response
+def test_update_in_garrison(
+    observational_node,
+    garrison_object,
+    mock_get_node,
+    mock_get_attributes,
+    mock_get_relationships,
+    mock_get_activities,
+    mock_get_observations,
+    mock_update_activity,
+    geo_attribute1,
+    in_garrison_activity1,
+    in_garrison_activity2
+):
+    # Scenario: Observation input yields updating an in garrison activity
+    mock_attribute_response = MagicMock()
+    mock_attribute_response.data = [geo_attribute1]
+    mock_get_attributes.return_value = mock_attribute_response
 
-#     rule.action(RuleContext(observation=observational_node))
-#     mock_get_attributes.assert_called_with(
-#         AttributeQuery(
-#             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-#             attributeValue=StringQuery(equals="Incursion"),
-#             attributeType={"is": AttributeType.GEOSPATIAL},
-#             geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
-#             nodeIds=[incurring_object.id],
-#             tags=SETTINGS.incursion_tags,
-#         )
-#     )
+    mock_activity_response = MagicMock()
+    mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
+    mock_get_activities.return_value = mock_activity_response
 
-#     mock_get_observations.assert_called_with(
-#         ObservationQuery(
-#             nodeId=[incurring_object.id],
-#             startTime=TimeQuery(gt=attribute2.valueEnd),
-#             endTime=TimeQuery(lt=observational_node.startTime),
-#         )
-#     )
-#     mock_update_attribute.assert_called_with(
-#         UpdateAttributeInput(
-#             id=geo_attribute1.id,
-#             valueStart=observational_node.startTime,
-#             valueEnd=observational_node.endTime,
-#         )
-#     )
-#     mock_update_activity.assert_called_with(
-#         UpdateActivityInput(
-#             id="activity_id",
-#             addObservationIds=[observational_node.id],
-#             startTime=observational_node.startTime,
-#             endTime=observational_node.endTime,
-#         )
-#     )
+    rule = AddOutOfGarrisonAttribute("garrison rule")
+
+    rule.action(RuleContext(observation=observational_node))
+    mock_get_relationships.assert_called_with(
+        RelationshipQuery(
+            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
+            nodes=RelationshipNodeQuery(
+                startNodeIds=["initial_object_id"]
+            )
+        )
+    )
+    mock_get_attributes.assert_called_with(
+        AttributeQuery(
+            attributeIris=[SETTINGS.inference_geo_attribute_iri],
+            nodeIds=[garrison_object.id],
+        )
+    )
+    mock_get_observations.assert_called_with(
+        ObservationQuery(
+            nodeId=["initial_object_id"],
+            startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
+            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00")
+        )
+    )
+    mock_update_activity.assert_called_with(
+        UpdateActivityInput(
+            id = in_garrison_activity2.id,
+            startTime = in_garrison_activity2.startTime,
+            endTime = in_garrison_activity2.endTime,
+            addObservationIds=[observational_node.id],
+            nodeId=observational_node.nodeId
+        )
+    )
 
 
-# def test_existing_incursion_nonoverlapping_time(
-#     observational_node,
-#     incurring_object,
-#     attribute2,
-#     mock_get_node,
-#     mock_get_attributes,
-#     mock_get_activities,
-#     mock_get_observations,
-#     mock_update_attribute,
-#     mock_update_activity,
-# ):
-#     # Scenario: One existing incursion attribute exists matching observation's geo of interest
-#     # with nonoverlapping time, resulting in attribute/activity updates
-#     rule = AddOutOfGarrisonAttribute("garrison rule")
+def test_update_out_garrison(
+    observational_node2,
+    garrison_object,
+    mock_get_node,
+    mock_get_attributes,
+    mock_get_relationships,
+    mock_get_activities,
+    mock_get_observations,
+    mock_update_activity,
+    geo_attribute1,
+    out_garrison_activity1
+):
+    # Scenario: Observation input yields updating an out of garrison activity
+    # that has non overlapping time with observation
+    mock_attribute_response = MagicMock()
+    mock_attribute_response.data = [geo_attribute1]
+    mock_get_attributes.return_value = mock_attribute_response
 
-#     mock_observation_response = MagicMock()
-#     mock_observation_response.data = []
-#     mock_get_observations.return_value = mock_observation_response
-#     mock_attribute_response = MagicMock()
-#     mock_attribute_response.data = [attribute2]
-#     mock_get_attributes.return_value = mock_attribute_response
+    mock_activity_response = MagicMock()
+    mock_activity_response.data = [out_garrison_activity1]
+    mock_get_activities.return_value = mock_activity_response
 
-#     rule.action(RuleContext(observation=observational_node))
-#     mock_get_observations.assert_called_with(
-#         ObservationQuery(
-#             nodeId=[incurring_object.id],
-#             startTime=TimeQuery(gt=attribute2.valueEnd),
-#             endTime=TimeQuery(lt=observational_node.startTime),
-#         )
-#     )
-#     mock_update_attribute.assert_called_with(
-#         UpdateAttributeInput(
-#             id=attribute2.id,
-#             valueStart=attribute2.valueStart,
-#             valueEnd=observational_node.endTime,
-#         )
-#     )
-#     mock_update_activity.assert_called_with(
-#         UpdateActivityInput(
-#             id="activity_id",
-#             addObservationIds=[observational_node.id],
-#             startTime=attribute2.valueStart,
-#             endTime=observational_node.endTime,
-#         )
-#     )
+    mock_observation_response = MagicMock()
+    mock_observation_response.data = []
+    mock_get_observations.return_value = mock_observation_response
+
+    rule = AddOutOfGarrisonAttribute("garrison rule")
+
+    rule.action(RuleContext(observation=observational_node2))
+    mock_get_relationships.assert_called_with(
+        RelationshipQuery(
+            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
+            nodes=RelationshipNodeQuery(
+                startNodeIds=["initial_object_id"]
+            )
+        )
+    )
+    mock_get_attributes.assert_called_with(
+        AttributeQuery(
+            attributeIris=[SETTINGS.inference_geo_attribute_iri],
+            nodeIds=[garrison_object.id],
+        )
+    )
+    mock_get_observations.assert_called_with(
+        ObservationQuery(
+            nodeId=["initial_object_id"],
+            startTime=TimeQuery(gt="2024-01-01T00:00:00+00:00"),
+            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00")
+        )
+    )
+    mock_update_activity.assert_called_with(
+        UpdateActivityInput(
+            id = out_garrison_activity1.id,
+            startTime = observational_node2.startTime,
+            endTime = out_garrison_activity1.endTime,
+            addObservationIds=[observational_node2.id],
+            nodeId=observational_node2.nodeId
+        )
+    )

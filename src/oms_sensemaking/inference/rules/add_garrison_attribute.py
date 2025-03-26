@@ -81,9 +81,7 @@ class ActivityTimeframe:
 
 class AddOutOfGarrisonAttribute(BaseRule):
     """
-    Detect when a node has a geolocation attribute,
-    when a node has a geolocation attribute, compare it to garrison and add/update a new OutOfGarrison attribute
-    pointing to the node **** CHANGE NAME AND DESCRIPTION
+    Detect when a node is in or out of garrison and create/update the appropriate activity
     """
 
     def __init__(self, name: str):
@@ -97,7 +95,6 @@ class AddOutOfGarrisonAttribute(BaseRule):
         """
         if rule_context.observation:
             obs = rule_context.observation
-        # Ensure object is right type ###### COME BACK TO THIS
 
         return rule_context.observation and obs.nodeId and obs.geometry
 
@@ -116,7 +113,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
         garrison_relationship_query = RelationshipQuery(
             objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
             nodes=RelationshipNodeQuery(
-                startNodeIds=[obs.id]
+                startNodeIds=[obs.nodeId]
             )
         )
         garrison_relationship_res = oms_client.get_relationships(garrison_relationship_query)
@@ -133,6 +130,8 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
         # Determine if object is in garrison
         object_coordinates = geo["coordinates"]
+        object_coordinates = [object_coordinates[1], object_coordinates[0]]
+        garrison_object_coordinates = [garrison_object_coordinates[1], garrison_object_coordinates[0]]
         distance = geodesic(object_coordinates, garrison_object_coordinates).kilometers
         in_garrison = distance < SETTINGS.garrison_distance_kilometers
 
@@ -145,10 +144,10 @@ class AddOutOfGarrisonAttribute(BaseRule):
         in_garrison: bool
     ):
         if in_garrison:
-            activity_name = IN_GARRISON_NAME
+            activity_name = SETTINGS.inference_in_garrison_activity_name
             activity_state = ActivityState.IN_GARRISON
         else:
-            activity_name = OUT_OF_GARRISON_NAME
+            activity_name = SETTINGS.inference_out_of_garrison_activity_name
             activity_state = ActivityState.OUT_OF_GARRISON
 
         activity_query = ActivityQuery(
@@ -161,7 +160,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
 
         matching_activity_found = False
 
-        enhanced_obs = GarrisonObservation(obs) #maybe change var name
+        enhanced_obs = GarrisonObservation(obs)
         for existing_activity in existing_activities:
             enhanced_activity = ActivityTimeframe(existing_activity)
             # Update existing activity if times overlap or if object stayed in/out of
@@ -194,6 +193,7 @@ class AddOutOfGarrisonAttribute(BaseRule):
             startTime=enhanced_activity.start_time.isoformat(),
             endTime=enhanced_activity.end_time.isoformat(),
             addObservationIds=[observation.id],
+            nodeId=observation.nodeId
         )
         oms_client.update_activity(updated_activity_input)
 
@@ -231,4 +231,5 @@ class AddOutOfGarrisonAttribute(BaseRule):
         activity_query = ActivityQuery(observationIds=[obs.id])
         activities = oms_client.get_activities(activity_query).data
 
-        return any(act.name == IN_GARRISON_NAME or act.name == OUT_OF_GARRISON_NAME for act in activities)
+        return any(act.name == SETTINGS.inference_in_garrison_activity_name
+                    or act.name == SETTINGS.inference_out_of_garrison_activity_name for act in activities)
