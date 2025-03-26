@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Aircraft",
+    "iri": "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+    "altitude_threshold_meters": 20000.0,
+    "altitude_deviation_threshold_mps": 300.0,
+    "time_threshold_seconds": 5,
+    "relative_velocity_threshold_mps": 600.0
+  },
+  {
+    "name": "Surface Vessels",
+    "iri": "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
+    "time_threshold_seconds": 5,
+    "relative_velocity_threshold_mps": 250.0
+  }
+]

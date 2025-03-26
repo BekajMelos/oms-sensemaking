@@ -6,10 +6,12 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from operator import attrgetter
+from queue import SimpleQueue
 from threading import Event, Timer
 from uuid import UUID, uuid4
 
 from dateutil.parser import isoparse
+from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from shapely import LineString
@@ -19,14 +21,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import (
-    Point,
-    TimeBinTrackWeaver,
-    Track,
-    TrackWeaverBase,
-    filter_altitude_by_iri,
-    filter_teleportation,
-)
+from oms_sensemaking.models.geo import CommonSenseFilter, Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -52,6 +47,15 @@ class GeospatialSensemakerController(SensemakerController):
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
         self.confidence_weight_map = SETTINGS.confidence_weight_map
+
+        filter_path = SETTINGS.common_sense_filter_rules_file_path
+        with open(filter_path, mode="r") as f:
+            filter_configs: list[dict] = json.load(f)
+        self.common_sense_filters = [CommonSenseFilter.model_validate(config) for config in filter_configs]
+        LOGGER.info(
+            "GeospatialSensemakerController succesfully loaded common sense filters: %s",
+            [csf.name for csf in self.common_sense_filters],
+        )
 
     def start(self) -> None:
         """Start the controller."""
@@ -179,14 +183,30 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             points = self.track_node_buffer[track_uuid]
                             points.sort(key=attrgetter("detection_time"))
-                            if SETTINGS.apply_common_sense_filters:
-                                # Get the IRI for the node
-                                iri = self.oms_crud_tool.get_node(points[0].node_id).classIri
-                                points = filter_altitude_by_iri(points, iri)
+                            # Get the IRI hierarchy for the node
+                            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+                            ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
+                            for csf in self.common_sense_filters:
+                                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                    LOGGER.debug(
+                                        "Running common sense filter %s on single points in track %s",
+                                        csf.name,
+                                        track_uuid,
+                                    )
+                                    points = csf.filter_points(points)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
-                            # Changes to point weight here aren't enough. filter_teleportation needs to remove points.
-                            weaved_track.points = filter_teleportation(weaved_track.points)
+                            for csf in self.common_sense_filters:
+                                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                    LOGGER.debug(
+                                        "Running common sense filter %s on point deltas in track %s",
+                                        csf.name,
+                                        track_uuid,
+                                    )
+                                    weaved_track.points = csf.filter_point_deltas(weaved_track.points)
+                            # Abort and do not clear buffer if final track has less than 2 points
+                            if len(weaved_track.points) < 2:
+                                continue
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
@@ -195,48 +215,7 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
-                            LOGGER.info("GeoJSON features:")
-                            LOGGER.info(
-                                json.dumps(
-                                    {
-                                        "type": "FeatureCollection",
-                                        "features": [
-                                            {
-                                                "type": "Feature",
-                                                "properties": {
-                                                    "name": "Original Points",
-                                                    "num_points": len(points),
-                                                    "stroke": "#ff0000",
-                                                    "stroke-width": 2,
-                                                    "stroke-opacity": 1,
-                                                },
-                                                "geometry": LineString(
-                                                    [point.coordinates for point in points]
-                                                ).__geo_interface__,
-                                                "id": 0,
-                                            },
-                                            {
-                                                "type": "Feature",
-                                                "properties": {
-                                                    "name": "Weaved Track",
-                                                    "algorithm": track.algorithm,
-                                                    "num_points": len(track.points),
-                                                    "average_point_weight": round(
-                                                        sum(p.weight for p in track.points) / len(track.points), 2
-                                                    ),
-                                                    "stroke": "#00ff1e",
-                                                    "stroke-width": 2,
-                                                    "stroke-opacity": 1,
-                                                },
-                                                "geometry": LineString(
-                                                    [point.coordinates for point in track.points]
-                                                ).__geo_interface__,
-                                                "id": 1,
-                                            },
-                                        ],
-                                    }
-                                )
-                            )
+                            self.log_track_comparison(points=points, track=track)
                         except ValueError as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
@@ -256,6 +235,7 @@ class GeospatialSensemakerController(SensemakerController):
                         LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
                     finally:
                         self.track_times[track_uuid] = None  # mark for removal
+                        self.track_node_buffer.pop(track_uuid)
                         for key, value in list(self.node_track_mapping.items()):
                             if value == track_uuid:
                                 del self.node_track_mapping[key]
@@ -286,6 +266,70 @@ class GeospatialSensemakerController(SensemakerController):
             return None
 
         return oms_obs
+
+    def get_node_ancestors_iris(self, oms_node: NodeNode) -> set[str]:
+        """Get ancestor's iris.
+
+        :param oms_node: Node to grab the status for
+        :return: The Node's ancestor's iri list
+        """
+
+        iris = set()
+        iris_to_check: SimpleQueue = SimpleQueue()
+        iris_to_check.put_nowait(oms_node.classIri)
+        while not iris_to_check.empty():
+            current_iri = iris_to_check.get_nowait()
+            ontology_class: OntologyClassOntologyClass | None = self.oms_crud_tool.get_ontology_class(iri=current_iri)
+
+            if not ontology_class or not ontology_class.parentOntologyClasses:
+                continue
+
+            for parent_ontology_class in ontology_class.parentOntologyClasses:
+                iris.add(parent_ontology_class.iri)
+                iris_to_check.put_nowait(parent_ontology_class.iri)
+
+        return iris
+
+    @classmethod
+    def log_track_comparison(cls, points: list[Point], track: Track):
+        LOGGER.debug("GeoJSON features:")
+        LOGGER.debug(
+            json.dumps(
+                {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Original Points",
+                                "num_points": len(points),
+                                "stroke": "#ff0000",
+                                "stroke-width": 2,
+                                "stroke-opacity": 1,
+                            },
+                            "geometry": LineString([point.coordinates for point in points]).__geo_interface__,
+                            "id": 0,
+                        },
+                        {
+                            "type": "Feature",
+                            "properties": {
+                                "name": "Weaved Track",
+                                "algorithm": track.algorithm,
+                                "num_points": len(track.points),
+                                "average_point_weight": round(
+                                    sum(p.weight for p in track.points) / len(track.points), 2
+                                ),
+                                "stroke": "#00ff1e",
+                                "stroke-width": 2,
+                                "stroke-opacity": 1,
+                            },
+                            "geometry": LineString([point.coordinates for point in track.points]).__geo_interface__,
+                            "id": 1,
+                        },
+                    ],
+                }
+            )
+        )
 
 
 class GeoQueueFilter(EventFilter):
