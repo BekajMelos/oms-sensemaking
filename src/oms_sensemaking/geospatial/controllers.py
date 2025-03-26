@@ -194,6 +194,9 @@ class GeospatialSensemakerController(SensemakerController):
                             for csf in self.common_sense_filters:
                                 if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
                                     weaved_track.points = csf.filter_point_deltas(weaved_track.points)
+                            # Abort and do not clear buffer if final track has less than 2 points
+                            if len(weaved_track.points) < 2:
+                                continue
                             track_dict = {
                                 "points": weaved_track.points,
                                 "node_id": weaved_track.node_id,
@@ -222,6 +225,7 @@ class GeospatialSensemakerController(SensemakerController):
                         LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
                     finally:
                         self.track_times[track_uuid] = None  # mark for removal
+                        self.track_node_buffer.pop(track_uuid)
                         for key, value in list(self.node_track_mapping.items()):
                             if value == track_uuid:
                                 del self.node_track_mapping[key]
