@@ -395,7 +395,7 @@ class CommonSenseFilter(BaseModel):
 
             # Check if the altitude is negative or exceeds the maximum altitude threshold.
             if point.altitude < 0:
-                LOGGER.info(
+                LOGGER.debug(
                     "Removing point %s due to negative altitude: altitude=%s",
                     point.observation_id,
                     point.altitude,
@@ -403,7 +403,7 @@ class CommonSenseFilter(BaseModel):
                 point.weight = 0
                 continue
             elif self.altitude_threshold_meters and point.altitude > self.altitude_threshold_meters:
-                LOGGER.info(
+                LOGGER.debug(
                     "Removing point %s due to altitude exceeding maximum: altitude=%s",
                     point.observation_id,
                     point.altitude,
@@ -436,7 +436,7 @@ class CommonSenseFilter(BaseModel):
             if self.time_threshold_seconds is not None and time_delta.total_seconds() < self.time_threshold_seconds:
                 # Too little time resolution to accurately compare points.
                 # Allow current point but don't update last good point.
-                LOGGER.info(
+                LOGGER.debug(
                     "Skipping point due to time delta %s s less than threshold %s s.",
                     round(time_delta.total_seconds(), 1),
                     self.time_threshold_seconds,
@@ -447,7 +447,7 @@ class CommonSenseFilter(BaseModel):
                 and relative_velocity > self.relative_velocity_threshold_mps
             ):
                 # Too fast, kill the current point and don't update the last good point.
-                LOGGER.info(
+                LOGGER.debug(
                     "Filtered point_id (%s) due to relative velocity %s mps exceeding threshold %s mps.",
                     cur_point.point_id,
                     round(relative_velocity, 1),
@@ -466,7 +466,7 @@ class CommonSenseFilter(BaseModel):
                 altitude_delta = abs(cur_point.altitude - last_altitude_point.altitude)  # type: ignore[operator]
                 altitude_rate = altitude_delta / time_delta.total_seconds()
                 if altitude_rate > self.altitude_deviation_threshold_mps:
-                    LOGGER.info(
+                    LOGGER.debug(
                         (
                             "Removing point %s due to altitude rate deviation: "
                             "altitude diff=%s, time=%s, rate=%s, threshold=%s"
@@ -483,7 +483,7 @@ class CommonSenseFilter(BaseModel):
             # Made it through all checks. Update last good point for next comparison.
             last_good_point = cur_point
         if bad_points:
-            LOGGER.info(f"Removed {len(bad_points)} of {len(points)} points.")
+            LOGGER.debug(f"Removed {len(bad_points)} of {len(points)} points.")
         points = [p for p in points if p not in bad_points]
         return points
 

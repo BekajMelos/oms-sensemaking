@@ -188,11 +188,21 @@ class GeospatialSensemakerController(SensemakerController):
                             ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
                             for csf in self.common_sense_filters:
                                 if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                    LOGGER.debug(
+                                        "Running common sense filter %s on single points in track %s",
+                                        csf.name,
+                                        track_uuid,
+                                    )
                                     points = csf.filter_points(points)
                             # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
                             weaved_track = self.track_weaver.execute(points)
                             for csf in self.common_sense_filters:
                                 if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                    LOGGER.debug(
+                                        "Running common sense filter %s on point deltas in track %s",
+                                        csf.name,
+                                        track_uuid,
+                                    )
                                     weaved_track.points = csf.filter_point_deltas(weaved_track.points)
                             # Abort and do not clear buffer if final track has less than 2 points
                             if len(weaved_track.points) < 2:
