@@ -34,7 +34,7 @@ The Geospatial Controller is responsible for getting new OMS observations using 
 from each observation, storing the Points in the local DB, and finally creating a Track after a configurable time has 
 elapsed from the last observation of a given node ID. Point and Track objects are only used internally by SenseMaker 
 algorithms and are never stored in OMS. All Points are given an initial weight by the controller based entirely on the 
-incoming observation's confidence attribute, although in the future, a global multiplier based on the observation’s 
+incoming observation's confidence attribute, although in the future, a global multiplier based on the observation's 
 source or provider could also be applied.
 
 ### Configuration
