@@ -44,7 +44,7 @@ or the Particle Filter, may be more appropriate.
 
 ### Application to Track Weaving
 
-For the track weaving problem, we’ve attempted to implement the EKF algorithm to correlate incoming radar points to 
+For the track weaving problem, we've attempted to implement the EKF algorithm to correlate incoming radar points to 
 define a single smoothed-out track as outlined in the problem statement. 
 Using the [Filterpy](https://filterpy.readthedocs.io/en/latest/index.html) library, we got an initial implementation 
 that mostly works. The following subsections outline the major milestones and challenges we faced.
@@ -52,7 +52,7 @@ that mostly works. The following subsections outline the major milestones and ch
 #### Milestone 1: Initial working implementation
 Since the data being fed to the Kalman filter is assumed to be from GPS, the initial state vector for the filter 
 consisted of only the point coordinates. We also considered including estimated velocity, heading, and altitude in the 
-state vector but determined that the extra complexity wasn’t strictly necessary for an initial implementation. Because 
+state vector but determined that the extra complexity wasn't strictly necessary for an initial implementation. Because 
 of this simplified state vector, the state transition, covariance, measurement noise, and process noise matrices were 
 set to identity matrices. The point weight was included as a divisor in the Kalman filter update step in the measurement
 and process noise matrix calculations.
@@ -66,7 +66,7 @@ the measurement vector. This provided major gains in noise reduction on the outp
 #### Milestone 3: Improvements to the model
 The next iteration of the Kalman filter lifecycle improved greatly upon earlier versions. The main difference comes from
 further updates to the noise matrix calculations. The process noise matrix was updated from an identity to one returned 
-by FilterPy’s `Q_discrete_white_noise` function, which could incorporate the time delta between points. Additionally, 
+by FilterPy's `Q_discrete_white_noise` function, which could incorporate the time delta between points. Additionally, 
 point weight values were reintroduced in the measurement noise matrix calculation.
 
 #### Milestone 4: Final improvements
@@ -92,7 +92,7 @@ Currently, the EKF Track Weaver uses the following default values:
 These can values be overridden through the `config` dictionary argument on `EKFTrackWeaver` instantiation.
 
 The resulting tracks are not published to OMS but form the inputs for the various SenseMakers to analyze. In the near term,
-we’re going to include the OMS observation IDs of all the inputs to track weaver with its output tracks so that SenseMakers
+we're going to include the OMS observation IDs of all the inputs to track weaver with its output tracks so that SenseMakers
 can publish relationships between their findings and the original observations. We can also include the TrackWeaver algorithm
 used for each input track as an attribute of the resulting findings for transparency.
 
@@ -101,6 +101,6 @@ Our first pass at the EKF TrackWeaver implementation involved just looking at th
 points and associating them with the given confidence scores of the source.  Here are our recommendations for the next 
 iteration(s) and different ideas to explore:
 
-- Use the given speed and heading of the points to better approximate the points’ position given all the incoming data.
+- Use the given speed and heading of the points to better approximate the points' position given all the incoming data.
 - Potentially explore other filters (e.g. Particle Filters or see how a simple alpha-beta filter could be fitted to the problem)
 - Build our own model of the state space that specializes in track prediction/smoothing.
