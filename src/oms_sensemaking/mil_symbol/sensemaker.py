@@ -429,6 +429,9 @@ class MilSymbolSensemaker(Sensemaker):
         :return: boolean
         """
 
+        if not tags:
+            return False
+
         set_tags = set([t.lower() for t in tags])
         set_mil_symbol_tags = set([t.lower() for t in SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags])
         return bool(set_tags.intersection(set_mil_symbol_tags))

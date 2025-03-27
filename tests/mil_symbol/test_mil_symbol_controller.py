@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Action, NodeNode, ObjectType
+from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, NodeNode, ObjectType
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import AuditLogEvent, SQSListener
@@ -60,3 +60,26 @@ def test_mil_sym_controller(
 
     mock_mil_sym_controller.oms_crud_tool.get_node.assert_called_with(oms_node.id)
     instance.submit.assert_called_with(mock_mil_sym_controller._registry["mil_symbol"].execute, oms_node)
+
+    # test attribute
+    oms_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
+        nodeId=oms_node.id, sourceId=uuid4(),
+        acm=DEFAULT_ACM)
+    mock_mil_sym_controller.oms_crud_tool.get_attribute = mock.MagicMock()
+    mock_mil_sym_controller.oms_crud_tool.get_attribute.return_value = oms_attribute
+
+    instance = mock.MagicMock()
+    mock_executor.return_value.__enter__.return_value = instance
+    mock_as_completed.return_value = []
+
+    audit_event_attribute = AuditLogEvent(
+        userId="test",
+        objectId=oms_attribute.id,
+        objectType=ObjectType.ATTRIBUTE,
+        action=Action.UPDATE,
+    )
+    mock_mil_sym_controller.handle_event(audit_event_attribute)
+
+    mock_mil_sym_controller.oms_crud_tool.get_attribute.assert_called_with(oms_attribute.id)
+    instance.submit.assert_called_with(mock_mil_sym_controller._registry["mil_symbol"].execute, oms_attribute)

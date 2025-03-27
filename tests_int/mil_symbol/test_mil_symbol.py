@@ -1,6 +1,7 @@
 """MilSymbol Sensemaker Integration Tests"""
-from typing import List
+from typing import List, Optional
 from unittest import mock
+from uuid import uuid4
 
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
@@ -12,6 +13,7 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeNode,
     ObjectTier,
     RelationshipRelationship,
+    SourceSource,
     UpdateNodeInput,
 )
 from sqlalchemy import delete, select
@@ -41,9 +43,12 @@ def create_attribute(
         attribute_iri: str,
         attribute_value: str,
         attribute_name: str,
-        mock_source) -> AttributeAttribute:
+        mock_source: SourceSource,
+        tags: Optional[List[str]] = None
+        ) -> AttributeAttribute:
 
     attr = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeType=AttributeType.STRING,
         attributeValue=attribute_value,
         attributeName=attribute_name,
@@ -52,7 +57,7 @@ def create_attribute(
         sourceId=mock_source.id,
         confidence=Confidence.HIGH,
         nodeId=oms_node.id,
-        tags=[]
+        tags=tags
     )
     return attr
 
@@ -275,7 +280,70 @@ def test_execute(mock_source, db, mil_symbol_rules):
     # clear findings
     findings = db.execute(delete(Finding))
 
-    # case 5 (Wrong Input Type)
+    # case 5 (Ignore due to Tags from this Sensemaker)
+    oms_node = create_node(
+        oms_crud_tool,
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft",
+        "10-0-0-01-0-0-00-000000-00-00"
+    )
+
+    oms_attribute = create_attribute(
+        oms_node,
+        SETTINGS.mil_symbol_settings.affiliation_iris[0],
+        "neutral",
+        "Affiliation",
+        mock_source,
+        # The sensemaker should ignore Attribute creates/updates it wrote
+        tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags)
+
+    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", "Target Vetted", mock_source))
+    sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", "Condition", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+
+    # test an Attribute being executed by the Sensemaker
+    symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_attribute)
+    assert len(symbols) == 0
+
+    # check that symbols exist in Findings table
+    findings = db.execute(
+        select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
+
+    assert len(findings) == 0
+
+    # case 6 (Ignore 'Icon' Attributes)
+    oms_node = create_node(
+        oms_crud_tool,
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft",
+        "10-0-0-01-0-0-00-000000-00-00"
+    )
+
+    # ICON's are published by this Sensemaker so it doesn't need to process them
+    oms_attribute = create_attribute(
+        oms_node, SETTINGS.mil_symbol_settings.symbol_attribute_iri, "SNPP------*****", "ICON", mock_source)
+
+    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
+        oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", "Target Vetted", mock_source))
+    sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(
+        oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", "Condition", mock_source))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+
+    # test an Attribute being executed by the Sensemaker
+    symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_attribute)
+    assert len(symbols) == 0
+
+    # check that symbols exist in Findings table
+    findings = db.execute(
+        select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
+
+    assert len(findings) == 0
+
+    # case 7 (Wrong Input Type)
     oms_relationship = RelationshipRelationship.model_construct(
         name=SETTINGS.resolution_relationship_name,
         startNodeId=oms_node.id,
@@ -289,3 +357,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
         select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
 
     assert len(findings) == 0
+
+    # ensure findings cleared at end of test cases
+    findings = db.execute(delete(Finding))
