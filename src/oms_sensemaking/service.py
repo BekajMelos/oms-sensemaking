@@ -8,7 +8,8 @@ from typing import Tuple
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
@@ -103,7 +104,7 @@ def create_app(config: Settings) -> FastAPI:
         description=__description__,
         version=__version__,
         lifespan=lifespan,
-        root_path=config.root_path,
+        root_path=config.root_path
     )
 
     # initialize gzip middleware
@@ -118,6 +119,12 @@ def create_app(config: Settings) -> FastAPI:
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
 
+    @application.get("/", response_class=HTMLResponse, include_in_schema=False)
+    async def custom_swagger_ui_html():
+        return get_swagger_ui_html(
+            openapi_url=application.openapi_url,
+            title=application.title + " - Swagger UI"
+        )
     return application
 
 
