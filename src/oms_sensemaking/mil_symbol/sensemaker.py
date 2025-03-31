@@ -23,7 +23,6 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
-    StringQuery,
     UpdateAttributeInput,
     UpdateAttributeUpdateAttribute,
     UpdateNodeInput,
@@ -330,10 +329,12 @@ class MilSymbolSensemaker(Sensemaker):
         """
 
         # to avoid having more than two Icon attributes (one 2525C, one 2525D), first check
-        # for existing Icon attributes. Update if they exist, otherwise create new ones
+        # for existing Icon attributes (based on the IRI this Sensemaker publishes).
+        # Update if they exist, otherwise create new ones
         attribute_query = AttributeQuery(
             nodeIds=[oms_node.id],
-            attributeName=StringQuery(contains="ICON", ignoreCase=True)
+            attributeIris=[SETTINGS.mil_symbol_settings.symbol_attribute_iri],
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags
         )
         attributes = self.oms_crud_tool.get_attributes(attribute_query)
         if attributes and attributes.data:
@@ -439,14 +440,15 @@ class MilSymbolSensemaker(Sensemaker):
     def is_attribute_to_ignore(self, oms_object: NodeNode | AttributeAttribute):
         """
         Checks to see if an attribute should be processed by this Sensemaker.
-        Attributes that are Icon's or have already been tagged by this Sensemaker should be ignored.
+        Attributes that have the same IRI as the one this Sensemaker publishes
+        or have already been tagged by this Sensemaker should be ignored.
 
         :param tags: List of strings representing the tags of the attribute
         :return: boolean
         """
 
         if self.is_attribute(oms_object) and (
-            "ICON" in oms_object.attributeName.upper() or
+            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or
             self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
                 LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
                 return True

@@ -43,5 +43,5 @@ class MilSymbolQueueFilter(EventFilter):
         return audit_event.objectType == ObjectType.NODE.value and audit_event.action in handled_event_types
 
     def passes_attribute_filter(self, audit_event: AuditLogEvent):
-        handled_event_types = [Action.CREATE.value, Action.UPDATE.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value]
         return audit_event.objectType == ObjectType.ATTRIBUTE.value and audit_event.action in handled_event_types
