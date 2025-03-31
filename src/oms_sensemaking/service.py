@@ -8,8 +8,7 @@ from typing import Tuple
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
