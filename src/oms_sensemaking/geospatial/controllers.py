@@ -158,7 +158,7 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             LOGGER.info(f"Track completed: {track_id}")
                             track: Track = get_track(db, track_id)
-                        except ValueError as e:
+                        except (ValueError, IndexError) as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
                             self.buffer[track_id] = None
