@@ -104,7 +104,8 @@ def create_app(config: Settings) -> FastAPI:
         description=__description__,
         version=__version__,
         lifespan=lifespan,
-        root_path=config.root_path
+        root_path=config.root_path,
+        docs_url="/"
     )
 
     # initialize gzip middleware
@@ -119,12 +120,6 @@ def create_app(config: Settings) -> FastAPI:
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
 
-    @application.get("/", response_class=HTMLResponse, include_in_schema=False)
-    async def custom_swagger_ui_html():
-        return get_swagger_ui_html(
-            openapi_url=application.openapi_url,
-            title=application.title + " - Swagger UI"
-        )
     return application
 
 
