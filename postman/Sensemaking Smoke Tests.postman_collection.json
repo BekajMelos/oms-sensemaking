@@ -1,0 +1,2465 @@
+{
+	"info": {
+		"_postman_id": "75f2e352-d378-4a20-8fba-604ea8af0409",
+		"name": "Sensemaking Smoke Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41174150"
+	},
+	"item": [
+		{
+			"name": "Geospatial",
+			"item": [
+				{
+					"name": "Loiter",
+					"item": [
+						{
+							"name": "Create",
+							"item": [
+								{
+									"name": "Create Originator",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Originator created\", function () {",
+													"    pm.expect(json.data.createOriginator.id).to.exist;",
+													"});",
+													"// Set the originator ID",
+													"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [\"Sensemaking Smoke Test\"]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Provider",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Provider created\", function () {",
+													"    pm.expect(json.data.createProvider.id).to.exist;",
+													"});",
+													"// Set the provider ID",
+													"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [\"Sensemaking Smoke Test\"]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Source",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Source created\", function () {",
+													"    pm.expect(json.data.createSource.id).to.exist;",
+													"});",
+													"// Set the source ID",
+													"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [\"Sensemaking Smoke Test\"],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Node",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Node created\", function () {",
+													"    pm.expect(json.data.createNode.id).to.exist;",
+													"});",
+													"// Set the node ID",
+													"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"Sensemaking Smoke Test\"]\n            labels: [SENSEMAKING]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 1 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId1\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.054606,\n                    51.513632\n                ]\n            }\n            startTime: \"2024-03-15T18:22:32.000Z\"\n            endTime: \"2024-03-15T18:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 2 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId2\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.188881,\n                    51.481851\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 3",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 3 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId3\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190917, \n                    51.481500\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 4",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 4 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId4\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192849,\n                    51.481375\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 5",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 5 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId5\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190697,\n                    51.480557\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 6",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 6 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId6\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192030,\n                    51.482643\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Observation 7",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Get the JSON response",
+													"var json = pm.response.json();",
+													"pm.test(\"Observation 7 Created\", function () {",
+													"    pm.expect(json.data.createObservation.id).to.exist;",
+													"});",
+													"// Set the attribute ID",
+													"pm.collectionVariables.set(\"loiterobservationId7\", json.data.createObservation.id);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.400326,\n                    51.477984\n                ]\n            }\n            startTime: \"2024-03-15T19:28:32.000Z\"\n            endTime: \"2024-03-15T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Loiter Node",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Set max retries",
+													"const maxRetries = 3;",
+													"",
+													"// Get current retry count (or initialize)",
+													"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+													"retryCount = parseInt(retryCount, 10);",
+													"",
+													"// Step 1: Check if we've exceeded the retry limit",
+													"if (retryCount >= maxRetries) {",
+													"    console.error(\"Max retries reached. Stopping execution.\");",
+													"    pm.environment.unset(\"retryCount\");",
+													"    postman.setNextRequest(null); // Stop execution",
+													"} else {",
+													"    // Step 2: Sleep for 30 seconds before making the request",
+													"    console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+													"",
+													"    const start = Date.now();",
+													"    while (Date.now() - start < 30000) {} // Blocking sleep for 30 sec",
+													"}",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Step 4: Check if request succeeded based on response data",
+													"let response = pm.response.json(); ",
+													"",
+													"// Validate if the response meets success criteria",
+													"let isValidResponse = response.data && ",
+													"                      response.data.nodes && ",
+													"                      response.data.nodes.data && ",
+													"                      response.data.nodes.data.length > 0 && ",
+													"                      response.data.nodes.totalSize > 0;",
+													"",
+													"if (isValidResponse) {",
+													"    pm.test(\"Response contains valid data\", function () {",
+													"        pm.expect(isValidResponse).to.be.true;",
+													"    });",
+													"    console.log(\"Valid response received. Stopping retries.\");",
+													"    pm.environment.unset(\"retryCount\"); // Reset on success",
+													"} else {",
+													"    console.warn(\"Invalid response received. Retrying...\");",
+													"",
+													"    // Step 5: Increment retry count",
+													"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+													"    retryCount = parseInt(retryCount, 10) + 1;",
+													"",
+													"    if (retryCount >= 3) {",
+													"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+													"        pm.environment.unset(\"retryCount\");",
+													"        postman.setNextRequest(null); // Stop execution",
+													"    } else {",
+													"        pm.environment.set(\"retryCount\", retryCount);",
+													"",
+													"        // Step 6: Retry request",
+													"        postman.setNextRequest(pm.info.requestName);",
+													"    }",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker_tag\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
+												"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Delete",
+							"item": [
+								{
+									"name": "Find Relationships",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const relationshipIds = jsonData.data.relationships.data.map(relationship => relationship.id);",
+													"pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds))"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    relationships(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Relationships",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"relationshipIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Relationships\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"relationshipIds\")) {",
+													"    let relationshipIds = JSON.parse(pm.collectionVariables.get(\"relationshipIds\"))",
+													"",
+													"    if (relationshipIds.length > 0) {",
+													"        const relationshipId = relationshipIds.shift();",
+													"        pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds));",
+													"        pm.collectionVariables.set(\"relationshipId\", relationshipId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"relationshipIds\")",
+													"    pm.collectionVariables.unset(\"relationshipId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $relationshipId: UUID!\n){\n    deleteRelationship(\n        input: {\n            id: $relationshipId\n        }\n    )\n}",
+												"variables": "{\n    \"relationshipId\": \"{{relationshipId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Relationships",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Relationships\", function () {",
+													"    pm.expect(jsonData.data.relationships.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    relationships(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Attributes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const attributeIds = jsonData.data.attributes.data.map(attribute => attribute.id);",
+													"pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    attributes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Attributes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"attributeIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Attributes\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"attributeIds\")) {",
+													"    let attributeIds = JSON.parse(pm.collectionVariables.get(\"attributeIds\"))",
+													"",
+													"    if (attributeIds.length > 0) {",
+													"        const attributeId = attributeIds.shift();",
+													"        pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds));",
+													"        pm.collectionVariables.set(\"attributeId\", attributeId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"attributeIds\")",
+													"    pm.collectionVariables.unset(\"attributeId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $attributeId: UUID!\n){\n    deleteAttribute(\n        input: {\n            id: $attributeId\n        }\n    )\n}",
+												"variables": "{\n    \"attributeId\": \"{{attributeId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Attributes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Attributes\", function () {",
+													"    pm.expect(jsonData.data.attributes.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    attributes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Observations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const observationIds = jsonData.data.observations.data.map(observation => observation.id);",
+													"pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    observations(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Observations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"observationIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Observations\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"observationIds\")) {",
+													"    let observationIds = JSON.parse(pm.collectionVariables.get(\"observationIds\"))",
+													"",
+													"    if (observationIds.length > 0) {",
+													"        const observationId = observationIds.shift();",
+													"        pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds));",
+													"        pm.collectionVariables.set(\"observationId\", observationId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"observationIds\")",
+													"    pm.collectionVariables.unset(\"observationId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $observationId: UUID!\n){\n    deleteObservation(\n        input: {\n            id: $observationId\n        }\n    )\n}",
+												"variables": "{\n    \"observationId\": \"{{observationId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Observations",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Observations\", function () {",
+													"    pm.expect(jsonData.data.observations.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    observations(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Nodes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const nodeIds = jsonData.data.nodes.data.map(node => node.id);",
+													"pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    nodes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Nodes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"nodeIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Nodes\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"nodeIds\")) {",
+													"    let nodeIds = JSON.parse(pm.collectionVariables.get(\"nodeIds\"))",
+													"",
+													"    if (nodeIds.length > 0) {",
+													"        const nodeId = nodeIds.shift();",
+													"        pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds));",
+													"        pm.collectionVariables.set(\"nodeId\", nodeId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"nodeIds\")",
+													"    pm.collectionVariables.unset(\"nodeId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $nodeId: UUID!\n){\n    deleteNode(\n        input: {\n            id: $nodeId\n        }\n    )\n}",
+												"variables": "{\n    \"nodeId\": \"{{nodeId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Nodes",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Nodes\", function () {",
+													"    pm.expect(jsonData.data.nodes.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    nodes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Sources",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const sourceIds = jsonData.data.sources.data.map(source => source.id);",
+													"pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    sources(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Sources",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"sourceIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Sources\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"sourceIds\")) {",
+													"    let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
+													"",
+													"    if (sourceIds.length > 0) {",
+													"        const sourceId = sourceIds.shift();",
+													"        pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
+													"        pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"sourceIds\")",
+													"    pm.collectionVariables.unset(\"fedGovRepSourceId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $sourceId: UUID!\n){\n    deleteSource(\n        input: {\n            id: $sourceId\n        }\n    )\n}",
+												"variables": "{\n    \"sourceId\": \"{{sourceId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Sources",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Sources\", function () {",
+													"    pm.expect(jsonData.data.sources.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    sources(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Providers",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const providerIds = jsonData.data.providers.data.map(provider => provider.id);",
+													"pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    providers(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Providers",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"providerIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Providers\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"providerIds\")) {",
+													"    let providerIds = JSON.parse(pm.collectionVariables.get(\"providerIds\"))",
+													"",
+													"    if (providerIds.length > 0) {",
+													"        const providerId = providerIds.shift();",
+													"        pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds));",
+													"        pm.collectionVariables.set(\"providerId\", providerId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"providerIds\")",
+													"    pm.collectionVariables.unset(\"providerId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $providerId: UUID!\n){\n    deleteProvider(\n        input: {\n            id: $providerId\n        }\n    )\n}",
+												"variables": "{\n    \"providerId\": \"{{providerId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Providers",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Providers\", function () {",
+													"    pm.expect(jsonData.data.providers.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    providers(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Find Originators",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"const originatorIds = jsonData.data.originators.data.map(originator => originator.id);",
+													"pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds))",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    originators(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Originators",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"originatorIds\")) {",
+													"    pm.execution.setNextRequest(\"Delete Originators\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"if (pm.collectionVariables.has(\"originatorIds\")) {",
+													"    let originatorIds = JSON.parse(pm.collectionVariables.get(\"originatorIds\"))",
+													"",
+													"    if (originatorIds.length > 0) {",
+													"        const originatorId = originatorIds.shift();",
+													"        pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds));",
+													"        pm.collectionVariables.set(\"botOriginatorId\", originatorId)",
+													"    } else {",
+													"        skip()",
+													"    }",
+													"} else {",
+													"    skip()",
+													"}",
+													"",
+													"function skip() {",
+													"    pm.execution.skipRequest()",
+													"    pm.collectionVariables.unset(\"originatorIds\")",
+													"    pm.collectionVariables.unset(\"botOriginatorId\")",
+													"}"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation (\n    $originatorId: UUID!\n){\n    deleteOriginator(\n        input: {\n            id: $originatorId\n        }\n    )\n}",
+												"variables": "{\n    \"originatorId\": \"{{originatorId}}\"\n}"
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Test Find Originators",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(pm.response.text());",
+													"",
+													"pm.test(\"Test Find Originators\", function () {",
+													"    pm.expect(jsonData.data.originators.totalSize).to.eq(0)",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "user_dn",
+												"value": "{{TS_USER_DN}}"
+											}
+										],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query {\n    originators(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
+												"variables": ""
+											}
+										},
+										"url": {
+											"raw": "https://{{GRAPHQL_ENDPOINT}}",
+											"protocol": "https",
+											"host": [
+												"{{GRAPHQL_ENDPOINT}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"var moment = require('moment');",
+					"",
+					"// Configure the current timestamp",
+					"pm.environment.set('currentdate', moment().toISOString());",
+					"",
+					"// If the node ID is not set, make it explicitly null, otherwise wrap with quotes",
+					"let nodeId = pm.collectionVariables.get(\"nodeId\");",
+					"if (!pm.collectionVariables.get(\"nodeId\")) {",
+					"    pm.collectionVariables.set(\"nodeId\", null);",
+					"}else{",
+					"    if(!nodeId.startsWith(\"\\\"\")){",
+					"        nodeId = \"\\\"\" + nodeId + \"\\\"\";",
+					"    }",
+					"    pm.collectionVariables.set(\"nodeId\",  nodeId);",
+					"}",
+					"",
+					"// If the observation ID is not set, make it explicitly null, otherwise wrap with quotes",
+					"let observationId = pm.collectionVariables.get(\"observationId\");",
+					"if (!pm.collectionVariables.get(\"observationId\")) {",
+					"    pm.collectionVariables.set(\"observationId\", null);",
+					"}else{",
+					"    if(!observationId.startsWith(\"\\\"\")){",
+					"        observationId = \"\\\"\" + observationId + \"\\\"\";",
+					"    }",
+					"    pm.collectionVariables.set(\"observationId\",  observationId);",
+					"}",
+					"",
+					"// If the activity ID is not set, make it explicitly null, otherwise wrap with quotes",
+					"let activityId = pm.collectionVariables.get(\"activityId\");",
+					"if (!pm.collectionVariables.get(\"activityId\")) {",
+					"    pm.collectionVariables.set(\"activityId\", null);",
+					"}else{",
+					"    if(!activityId.startsWith(\"\\\"\")){",
+					"        activityId = \"\\\"\" + activityId + \"\\\"\";",
+					"    }",
+					"    pm.collectionVariables.set(\"activityId\",  activityId);",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "originatorId",
+			"value": ""
+		},
+		{
+			"key": "userPreferencesId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "providerId",
+			"value": ""
+		},
+		{
+			"key": "sourceId",
+			"value": ""
+		},
+		{
+			"key": "attributeId",
+			"value": ""
+		},
+		{
+			"key": "nodeId",
+			"value": null,
+			"type": "string"
+		},
+		{
+			"key": "nodeIds",
+			"value": ""
+		},
+		{
+			"key": "relationshipId",
+			"value": ""
+		},
+		{
+			"key": "commentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "objectListId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "alertId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "resolvedObjectConfigId",
+			"value": ""
+		},
+		{
+			"key": "nodeIdentifierId",
+			"value": ""
+		},
+		{
+			"key": "pastDate",
+			"value": "2023-01-01T00:00:00+00:00",
+			"type": "string"
+		},
+		{
+			"key": "futureDate",
+			"value": "2028-01-01T00:00:00+00:00",
+			"type": "string"
+		},
+		{
+			"key": "auditFragment",
+			"value": "fragment auditFragment on AuditLog {\n    id\n    action\n    timestamp\n    userId\n    objectType\n    objectId\n    objectVersion\n    complexAuditId\n}",
+			"type": "string"
+		},
+		{
+			"key": "auditFullFragment",
+			"value": "{{auditFragment}}\nfragment auditFullFragment on AuditLog {\n    ...auditFragment\n    complexAudit {\n        id\n        action\n        timestamp\n        userId\n        auditJson\n        relatedAudits {\n            ... auditFragment\n        }\n    }\n    object {\n        __typename\n        id\n        version\n        acm\n        ... on Originator {\n            tags\n            originatorName: name\n            description\n        }\n        ... on Provider {\n            tags\n            providerName: name\n            description\n            defaultAcm\n            originatorId\n            url                \n        }\n        ... on Source {\n            tags\n            sourceName: name\n            sourceDescription: description\n            dateOfReport\n            dateOfInformation\n            primaryTopic\n            secondaryTopic\n            providerId\n            identifier\n            uri\n            dataAcm\n        }\n        ... on Attribute {\n            tags\n            attributeIri\n            attributeName\n            attributeValue\n            confidence\n            sourceId\n            nodeId\n            geo {\n                geoJson\n                mgrs\n            }\n            authorityValue\n            authoritySetBy\n            authoritySetAtTime\n            valueStart\n            valueEnd\n        }\n        ... on Node {\n            tags\n            guideId\n            nodeName: name\n            tier\n            classIri\n            className\n            ifcCodes\n            allegiance\n            allegianceAor\n            currentAor\n            isNso\n        }\n        ... on Relationship {\n            tags\n            relationshipName: name\n            startNodeId\n            endNodeId\n            confidence\n            objectPropertyIri\n            objectPropertyName\n        }\n        ... on ResolvedObjectConfig {\n            tags\n            classIri\n            defaultNameFormat\n        }\n        ... on NodeIdentifier {\n            nodeIdentifierProviderId: providerId\n            resolvedObjectConfigId\n            idAttributeIris\n            nameAttributeIris\n            nameFormat\n        }\n        ... on Comment {\n            targetObjectId\n            targetObjectType\n            owner\n            timeOfComment\n            contentType\n            contentBody\n        }\n        ... on Alert {\n            createdBy\n            createdAt\n            expiresAt\n            severity\n            summary\n            details\n        }\n        ... on ObjectList {\n            tags\n            isPublic\n            owners\n            groups\n            objectListName: name\n            objectListDescription: description\n            nodeIds\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "auditPageFragment",
+			"value": "{{auditFragment}}\nfragment auditPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "auditFullPageFragment",
+			"value": "{{auditFullFragment}}\nfragment auditFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "originatorFragment",
+			"value": "fragment originatorFragment on Originator {\n    id\n    version\n    acm\n    tags\n    name\n    description\n}",
+			"type": "string"
+		},
+		{
+			"key": "originatorFullFragment",
+			"value": "{{originatorFragment}}\n{{auditFragment}}\n{{providerFragment}}\nfragment originatorFullFragment on Originator {\n    ... originatorFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... originatorFragment\n        }\n    }\n    providers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "originatorPageFragment",
+			"value": "{{originatorFragment}}\nfragment originatorPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "originatorFullPageFragment",
+			"value": "{{originatorFullFragment}}\nfragment originatorFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "providerFragment",
+			"value": "fragment providerFragment on Provider {\n    id\n    version\n    acm\n    tags\n    name\n    url\n    description\n    originatorId\n    defaultAcm\n}",
+			"type": "string"
+		},
+		{
+			"key": "providerFullFragment",
+			"value": "{{providerFragment}}\n{{auditFragment}}\n{{originatorFragment}}\n{{sourceFragment}}\n{{nodeIdentifierFragment}}\nfragment providerFullFragment on Provider {\n    ... providerFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n    originator {\n        ... originatorFragment\n    }\n    sources (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    nodeIdentifiers (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"id\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "providerPageFragment",
+			"value": "{{providerFragment}}\nfragment providerPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "providerFullPageFragment",
+			"value": "{{providerFullFragment}}\nfragment providerFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "sourceFragment",
+			"value": "fragment sourceFragment on Source {\n    id\n    version\n    name\n    description\n    dateOfReport\n    dateOfInformation\n    primaryTopic\n    secondaryTopic\n    tags\n    providerId\n    acm\n    identifier\n    uri\n    dataAcm\n}",
+			"type": "string"
+		},
+		{
+			"key": "sourceFullFragment",
+			"value": "{{sourceFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\nfragment sourceFullFragment on Source {\n    ... sourceFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    attributes(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "sourcePageFragment",
+			"value": "{{sourceFragment}}\nfragment sourcePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "sourceFullPageFragment",
+			"value": "{{sourceFullFragment}}\nfragment sourceFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "attributeFragment",
+			"value": "fragment attributeFragment on Attribute {\n    id\n    version\n    acm\n    tags\n    labels\n    attributeIri\n    attributeName\n    attributeValue\n    attributeDisplayValue\n    attributeNormalizedValue\n    attributeType\n    geometry\n    confidence\n    sourceType\n    sourceId\n    nodeId\n    observationId\n    activityId\n    authorityValue\n    authoritySetBy\n    authoritySetAtTime\n    valueStart\n    valueEnd\n    isMutable\n    isReviewed\n    reviewedBy\n    reviewedAt\n}",
+			"type": "string"
+		},
+		{
+			"key": "attributeFullFragment",
+			"value": "{{attributeFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{ontologyAttributeFragment}}\n{{commentFragment}}\nfragment attributeFullFragment on Attribute {\n    ... attributeFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    observation {\n        ... observationFragment\n    }\n    activity {\n        ... activityFragment\n    }\n    ontologyAttribute {\n        ... ontologyAttributeFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "attributePageFragment",
+			"value": "{{attributeFragment}}\nfragment attributePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "attributeFullPageFragment",
+			"value": "{{attributeFullFragment}}\nfragment attributeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "observationFragment",
+			"value": "fragment observationFragment on Observation {\n    id\n    version\n    acm\n    tags\n    classIri\n    className\n    displayValue\n    confidence\n    sourceId\n    nodeId\n    geometry\n    startTime\n    endTime\n}",
+			"type": "string"
+		},
+		{
+			"key": "observationFullFragment",
+			"value": "{{observationFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{activityFragment}}\n{{attributeFragment}}\n{{ontologyClassFragment}}\nfragment observationFullFragment on Observation {\n    ... observationFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    activities(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "observationPageFragment",
+			"value": "{{observationFragment}}\nfragment observationPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "observationFullPageFragment",
+			"value": "{{observationFullFragment}}\nfragment observationFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "activityFragment",
+			"value": "fragment activityFragment on Activity {\n    id\n    version\n    acm\n    classIri\n    className\n    tags\n    name\n    description\n    state\n    sourceId\n    nodeId\n    observationIds\n    startTime\n    endTime\n}",
+			"type": "string"
+		},
+		{
+			"key": "activityFullFragment",
+			"value": "{{activityFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{commentFragment}}\n{{ontologyClassFragment}}\nfragment activityFullFragment on Activity {\n    ... activityFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"startTime\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "activityPageFragment",
+			"value": "{{activityFragment}}\nfragment activityPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "activityFullPageFragment",
+			"value": "{{activityFullFragment}}\nfragment activityFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeFragment",
+			"value": "fragment nodeFragment on Node {\n    id\n    version\n    acm\n    tags\n    nodeLabels: labels\n    guideId\n    name\n    tier\n    classIri\n    className\n    symbolIdCode\n    ifcCodes\n    allegiance\n    allegianceAor\n    currentAor\n    isNso\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeFullFragment",
+			"value": "{{nodeFragment}}\n{{auditFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\n{{objectListFragment}}\n{{ontologyClassFragment}}\n{{commentFragment}}\n{{nodeChangeFragment}}\nfragment nodeFullFragment on Node {\n    ... nodeFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    attributes (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    objectLists (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    permissions\n    latestKnownLocation {\n        ... observationFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodePageFragment",
+			"value": "{{nodeFragment}}\nfragment nodePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeFullPageFragment",
+			"value": "{{nodeFullFragment}}\nfragment nodeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeChangeFragment",
+			"value": "fragment nodeChangeFragment on NodeChange {\n    id\n    timestamp\n    userId\n    nodeId\n    nodeVersion\n    changeType\n    relatedObjectType\n    relatedObjectId\n    relatedObjectVersion\n    relatedObjectChangeAction\n}",
+			"type": "string"
+		},
+		{
+			"key": "relationshipFragment",
+			"value": "fragment relationshipFragment on Relationship {\n    id\n    version\n    acm\n    tags\n    labels\n    name\n    startNodeId\n    endNodeId\n    sourceId\n    confidence\n    objectPropertyIri\n    objectPropertyName\n}",
+			"type": "string"
+		},
+		{
+			"key": "relationshipFullFragment",
+			"value": "{{relationshipFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{ontologyRelationshipFragment}}\n{{commentFragment}}\nfragment relationshipFullFragment on Relationship {\n    ... relationshipFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    startNode {\n        ... nodeFragment\n    }\n    endNode {\n        ... nodeFragment\n    }\n    ontologyRelationship {\n        ... ontologyRelationshipFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "relationshipPageFragment",
+			"value": "{{relationshipFragment}}\nfragment relationshipPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "relationshipFullPageFragment",
+			"value": "{{relationshipFullFragment}}\nfragment relationshipFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "commentFragment",
+			"value": "fragment commentFragment on Comment {\n    id\n    version\n    acm\n    tags\n    targetObjectId\n    targetObjectType\n    owner\n    timeOfComment\n    contentType\n    contentBody\n}",
+			"type": "string"
+		},
+		{
+			"key": "commentFullFragment",
+			"value": "{{commentFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{relationshipFragment}}\n{{attributeFragment}}\nfragment commentFullFragment on Comment {\n    ... commentFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    targetObject {\n        ... on Node {\n            ... nodeFragment\n        }\n        ... on Relationship {\n            ... relationshipFragment\n        }\n        ... on Attribute {\n            ... attributeFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "commentPageFragment",
+			"value": "{{commentFragment}}\nfragment commentPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "commentFullPageFragment",
+			"value": "{{commentFullFragment}}\nfragment commentFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "objectListFragment",
+			"value": "fragment objectListFragment on ObjectList {\n    id\n    version\n    acm\n    tags\n    isPublic\n    owners\n    groups\n    name\n    description\n    nodeIds\n}",
+			"type": "string"
+		},
+		{
+			"key": "objectListFullFragment",
+			"value": "{{objectListFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{nodeChangeFragment}}\nfragment objectListFullFragment on ObjectList {\n    ... objectListFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    permissions\n    nodes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "objectListPageFragment",
+			"value": "{{objectListFragment}}\nfragment objectListPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "objectListFullPageFragment",
+			"value": "{{objectListFullFragment}}\nfragment objectListFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "alertFragment",
+			"value": "fragment alertFragment on Alert {\n    id\n    version\n    acm\n    tags\n    createdBy\n    createdAt\n    expiresAt\n    severity\n    summary\n    details\n}",
+			"type": "string"
+		},
+		{
+			"key": "alertFullFragment",
+			"value": "{{alertFragment}}\n{{auditFragment}}\nfragment alertFullFragment on Alert {\n    ... alertFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... alertFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "alertPageFragment",
+			"value": "{{alertFragment}}\nfragment alertPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "alertFullPageFragment",
+			"value": "{{alertFullFragment}}\nfragment alertFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "resolvedObjectConfigFragment",
+			"value": "fragment resolvedObjectConfigFragment on ResolvedObjectConfig {\n    id\n    version\n    acm\n    tags\n    classIri\n    defaultNameFormat\n}",
+			"type": "string"
+		},
+		{
+			"key": "resolvedObjectConfigFullFragment",
+			"value": "{{resolvedObjectConfigFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{nodeIdentifierFragment}}\nfragment resolvedObjectConfigFullFragment on ResolvedObjectConfig {\n    ... resolvedObjectConfigFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... resolvedObjectConfigFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    nodeIdentifiers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"providerId\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "resolvedObjectConfigPageFragment",
+			"value": "{{resolvedObjectConfigFragment}}\nfragment resolvedObjectConfigPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "resolvedObjectConfigFullPageFragment",
+			"value": "{{resolvedObjectConfigFullFragment}}\nfragment resolvedObjectConfigFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeIdentifierFragment",
+			"value": "fragment nodeIdentifierFragment on NodeIdentifier {\n    id\n    version\n    acm\n    tags\n    providerId\n    resolvedObjectConfigId\n    idAttributeIris\n    nameAttributeIris\n    nameFormat\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeIdentifierFullFragment",
+			"value": "{{nodeIdentifierFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{resolvedObjectConfigFragment}}\nfragment nodeIdentifierFullFragment on NodeIdentifier {\n    ... nodeIdentifierFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    resolvedObjectConfig {\n        ... resolvedObjectConfigFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeIdentifierPageFragment",
+			"value": "{{nodeIdentifierFragment}}\nfragment nodeIdentifierPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "nodeIdentifierFullPageFragment",
+			"value": "{{nodeIdentifierFullFragment}}\nfragment nodeIdentifierFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "ontologyAttributeFragment",
+			"value": "fragment ontologyAttributeFragment on OntologyAttribute {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    dataType\n}",
+			"type": "string"
+		},
+		{
+			"key": "ontologyClassFragment",
+			"value": "fragment ontologyClassFragment on OntologyClass {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    superclassIris\n    defaultIfc\n    defaultSymbolIdCode\n}",
+			"type": "string"
+		},
+		{
+			"key": "ontologyRelationshipFragment",
+			"value": "fragment ontologyRelationshipFragment on OntologyRelationship {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n}",
+			"type": "string"
+		},
+		{
+			"key": "userPreferencesFragment",
+			"value": "fragment userPreferencesFragment on UserPreferences {\n    id\n    version\n    acm\n    userId\n    appId\n    preferences\n    tags\n}",
+			"type": "string"
+		},
+		{
+			"key": "userPreferencesFullFragment",
+			"value": "{{userPreferencesFragment}}\n{{auditFragment}}\nfragment userPreferencesFullFragment on UserPreferences {\n    ... userPreferencesFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... userPreferencesFragment\n        }\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "userPreferencesPageFragment",
+			"value": "{{userPreferencesFragment}}\nfragment userPreferencesPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... userPreferencesFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "noQuoteNodeId",
+			"value": ""
+		},
+		{
+			"key": "observationId",
+			"value": null
+		},
+		{
+			"key": "activityId",
+			"value": null
+		},
+		{
+			"key": "baseballCardFragment",
+			"value": "fragment baseballCardFragment on BaseballCard {\n    id\n    version\n    acm\n    tags\n    name\n    classIri\n    className\n    attributeIris\n    relationshipIris\n}",
+			"type": "string"
+		},
+		{
+			"key": "baseballCardFullFragment",
+			"value": "{{baseballCardFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{ontologyAttributeFragment}}\n{{ontologyRelationshipFragment}}\nfragment baseballCardFullFragment on BaseballCard {\n    ... baseballCardFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... baseballCardFragment\n        }\n    }\n    ontologyClass {\n        ...ontologyClassFragment\n    }\n    ontologyAttributes {\n        ...ontologyAttributeFragment\n    }\n    ontologyRelationships {\n        ...ontologyRelationshipFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "baseballCardPageFragment",
+			"value": "{{baseballCardFragment}}\nfragment baseballCardPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "baseballCardFullPageFragment",
+			"value": "{{baseballCardFullFragment}}\nfragment baseballCardFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFullFragment\n    }\n}",
+			"type": "string"
+		},
+		{
+			"key": "baseballCardId",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId4",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId5",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId6",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "loiterobservationId7",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "relationshipIds",
+			"value": ""
+		},
+		{
+			"key": "attributeIds",
+			"value": ""
+		},
+		{
+			"key": "observationIds",
+			"value": ""
+		},
+		{
+			"key": "sourceIds",
+			"value": ""
+		},
+		{
+			"key": "providerIds",
+			"value": ""
+		},
+		{
+			"key": "originatorIds",
+			"value": ""
+		},
+		{
+			"key": "fedGovRepSourceId",
+			"value": ""
+		},
+		{
+			"key": "botOriginatorId",
+			"value": ""
+		}
+	]
+}
