@@ -155,6 +155,9 @@ class Settings(BaseSettings):
 
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
+    toggle_add_garrison_rule: bool = Field(False, description="Toggle on/off Add Garrison Attr. Rule")
+    toggle_add_has_name_rule: bool = Field(True, description="Toggle on/off Add Has Name Attr. Rule")
+    toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
