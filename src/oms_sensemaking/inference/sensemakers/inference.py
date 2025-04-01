@@ -27,8 +27,7 @@ class InferenceSensemaker(Sensemaker):
         for setting_name, rule in rule_mappings.items():
             if getattr(SETTINGS, setting_name, False):  # Check if toggle is True
                 self.config["rules"].append(rule)
-        for rule in self.config.get("rules", []):
-            self.engine.add_rule(rule)
+                self.engine.add_rule(rule)
 
     def process_data(self, data: RuleContext) -> Iterable[FindingBase]:
         """
