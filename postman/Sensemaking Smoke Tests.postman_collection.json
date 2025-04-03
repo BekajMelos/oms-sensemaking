@@ -13,1904 +13,1007 @@
 					"name": "Loiter",
 					"item": [
 						{
-							"name": "Create",
-							"item": [
+							"name": "Cleanup Test Data Before",
+							"event": [
 								{
-									"name": "Create Originator",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Originator created\", function () {",
-													"    pm.expect(json.data.createOriginator.id).to.exist;",
-													"});",
-													"// Set the originator ID",
-													"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
 										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [\"Sensemaking Smoke Test\"]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
+										"type": "text/javascript"
+									}
 								},
 								{
-									"name": "Create Provider",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Provider created\", function () {",
-													"    pm.expect(json.data.createProvider.id).to.exist;",
-													"});",
-													"// Set the provider ID",
-													"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
 										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [\"Sensemaking Smoke Test\"]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Source",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Source created\", function () {",
-													"    pm.expect(json.data.createSource.id).to.exist;",
-													"});",
-													"// Set the source ID",
-													"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [\"Sensemaking Smoke Test\"],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Node",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Node created\", function () {",
-													"    pm.expect(json.data.createNode.id).to.exist;",
-													"});",
-													"// Set the node ID",
-													"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [\"Sensemaking Smoke Test\"]\n            labels: [SENSEMAKING]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 1",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 1 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId1\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.054606,\n                    51.513632\n                ]\n            }\n            startTime: \"2024-03-15T18:22:32.000Z\"\n            endTime: \"2024-03-15T18:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 2",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 2 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId2\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.188881,\n                    51.481851\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 3",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 3 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId3\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190917, \n                    51.481500\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 4",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 4 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId4\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192849,\n                    51.481375\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 5",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 5 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId5\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190697,\n                    51.480557\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 6",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 6 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId6\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192030,\n                    51.482643\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Create Observation 7",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Get the JSON response",
-													"var json = pm.response.json();",
-													"pm.test(\"Observation 7 Created\", function () {",
-													"    pm.expect(json.data.createObservation.id).to.exist;",
-													"});",
-													"// Set the attribute ID",
-													"pm.collectionVariables.set(\"loiterobservationId7\", json.data.createObservation.id);"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [\"Sensemaking Smoke Test\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.400326,\n                    51.477984\n                ]\n            }\n            startTime: \"2024-03-15T19:28:32.000Z\"\n            endTime: \"2024-03-15T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-												"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Get Loiter Node",
-									"event": [
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"// Set max retries",
-													"const maxRetries = 3;",
-													"",
-													"// Get current retry count (or initialize)",
-													"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-													"retryCount = parseInt(retryCount, 10);",
-													"",
-													"// Step 1: Check if we've exceeded the retry limit",
-													"if (retryCount >= maxRetries) {",
-													"    console.error(\"Max retries reached. Stopping execution.\");",
-													"    pm.environment.unset(\"retryCount\");",
-													"    postman.setNextRequest(null); // Stop execution",
-													"} else {",
-													"    // Step 2: Sleep for 30 seconds before making the request",
-													"    console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-													"",
-													"    const start = Date.now();",
-													"    while (Date.now() - start < 30000) {} // Blocking sleep for 30 sec",
-													"}",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"// Step 4: Check if request succeeded based on response data",
-													"let response = pm.response.json(); ",
-													"",
-													"// Validate if the response meets success criteria",
-													"let isValidResponse = response.data && ",
-													"                      response.data.nodes && ",
-													"                      response.data.nodes.data && ",
-													"                      response.data.nodes.data.length > 0 && ",
-													"                      response.data.nodes.totalSize > 0;",
-													"",
-													"if (isValidResponse) {",
-													"    pm.test(\"Response contains valid data\", function () {",
-													"        pm.expect(isValidResponse).to.be.true;",
-													"    });",
-													"    console.log(\"Valid response received. Stopping retries.\");",
-													"    pm.environment.unset(\"retryCount\"); // Reset on success",
-													"} else {",
-													"    console.warn(\"Invalid response received. Retrying...\");",
-													"",
-													"    // Step 5: Increment retry count",
-													"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-													"    retryCount = parseInt(retryCount, 10) + 1;",
-													"",
-													"    if (retryCount >= 3) {",
-													"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-													"        pm.environment.unset(\"retryCount\");",
-													"        postman.setNextRequest(null); // Stop execution",
-													"    } else {",
-													"        pm.environment.set(\"retryCount\", retryCount);",
-													"",
-													"        // Step 6: Retry request",
-													"        postman.setNextRequest(pm.info.requestName);",
-													"    }",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}",
-												"type": "text"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker_tag\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
-												"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								}
-							]
-						},
-						{
-							"name": "Delete",
-							"item": [
-								{
-									"name": "Find Relationships",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const relationshipIds = jsonData.data.relationships.data.map(relationship => relationship.id);",
-													"pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds))"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    relationships(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Relationships",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"relationshipIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Relationships\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"relationshipIds\")) {",
-													"    let relationshipIds = JSON.parse(pm.collectionVariables.get(\"relationshipIds\"))",
-													"",
-													"    if (relationshipIds.length > 0) {",
-													"        const relationshipId = relationshipIds.shift();",
-													"        pm.collectionVariables.set(\"relationshipIds\", JSON.stringify(relationshipIds));",
-													"        pm.collectionVariables.set(\"relationshipId\", relationshipId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"relationshipIds\")",
-													"    pm.collectionVariables.unset(\"relationshipId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $relationshipId: UUID!\n){\n    deleteRelationship(\n        input: {\n            id: $relationshipId\n        }\n    )\n}",
-												"variables": "{\n    \"relationshipId\": \"{{relationshipId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Relationships",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Relationships\", function () {",
-													"    pm.expect(jsonData.data.relationships.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    relationships(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Attributes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const attributeIds = jsonData.data.attributes.data.map(attribute => attribute.id);",
-													"pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    attributes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Attributes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"attributeIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Attributes\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"attributeIds\")) {",
-													"    let attributeIds = JSON.parse(pm.collectionVariables.get(\"attributeIds\"))",
-													"",
-													"    if (attributeIds.length > 0) {",
-													"        const attributeId = attributeIds.shift();",
-													"        pm.collectionVariables.set(\"attributeIds\", JSON.stringify(attributeIds));",
-													"        pm.collectionVariables.set(\"attributeId\", attributeId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"attributeIds\")",
-													"    pm.collectionVariables.unset(\"attributeId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $attributeId: UUID!\n){\n    deleteAttribute(\n        input: {\n            id: $attributeId\n        }\n    )\n}",
-												"variables": "{\n    \"attributeId\": \"{{attributeId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Attributes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Attributes\", function () {",
-													"    pm.expect(jsonData.data.attributes.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    attributes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"attribute_name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Observations",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const observationIds = jsonData.data.observations.data.map(observation => observation.id);",
-													"pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    observations(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Observations",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"observationIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Observations\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"observationIds\")) {",
-													"    let observationIds = JSON.parse(pm.collectionVariables.get(\"observationIds\"))",
-													"",
-													"    if (observationIds.length > 0) {",
-													"        const observationId = observationIds.shift();",
-													"        pm.collectionVariables.set(\"observationIds\", JSON.stringify(observationIds));",
-													"        pm.collectionVariables.set(\"observationId\", observationId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"observationIds\")",
-													"    pm.collectionVariables.unset(\"observationId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $observationId: UUID!\n){\n    deleteObservation(\n        input: {\n            id: $observationId\n        }\n    )\n}",
-												"variables": "{\n    \"observationId\": \"{{observationId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Observations",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Observations\", function () {",
-													"    pm.expect(jsonData.data.observations.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    observations(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"display_value\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Nodes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const nodeIds = jsonData.data.nodes.data.map(node => node.id);",
-													"pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    nodes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Nodes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"nodeIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Nodes\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"nodeIds\")) {",
-													"    let nodeIds = JSON.parse(pm.collectionVariables.get(\"nodeIds\"))",
-													"",
-													"    if (nodeIds.length > 0) {",
-													"        const nodeId = nodeIds.shift();",
-													"        pm.collectionVariables.set(\"nodeIds\", JSON.stringify(nodeIds));",
-													"        pm.collectionVariables.set(\"nodeId\", nodeId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"nodeIds\")",
-													"    pm.collectionVariables.unset(\"nodeId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $nodeId: UUID!\n){\n    deleteNode(\n        input: {\n            id: $nodeId\n        }\n    )\n}",
-												"variables": "{\n    \"nodeId\": \"{{nodeId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Nodes",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Nodes\", function () {",
-													"    pm.expect(jsonData.data.nodes.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    nodes(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Sources",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const sourceIds = jsonData.data.sources.data.map(source => source.id);",
-													"pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    sources(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Sources",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"sourceIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Sources\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"sourceIds\")) {",
-													"    let sourceIds = JSON.parse(pm.collectionVariables.get(\"sourceIds\"))",
-													"",
-													"    if (sourceIds.length > 0) {",
-													"        const sourceId = sourceIds.shift();",
-													"        pm.collectionVariables.set(\"sourceIds\", JSON.stringify(sourceIds));",
-													"        pm.collectionVariables.set(\"fedGovRepSourceId\", sourceId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"sourceIds\")",
-													"    pm.collectionVariables.unset(\"fedGovRepSourceId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $sourceId: UUID!\n){\n    deleteSource(\n        input: {\n            id: $sourceId\n        }\n    )\n}",
-												"variables": "{\n    \"sourceId\": \"{{sourceId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Sources",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Sources\", function () {",
-													"    pm.expect(jsonData.data.sources.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    sources(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Providers",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const providerIds = jsonData.data.providers.data.map(provider => provider.id);",
-													"pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    providers(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Providers",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"providerIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Providers\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"providerIds\")) {",
-													"    let providerIds = JSON.parse(pm.collectionVariables.get(\"providerIds\"))",
-													"",
-													"    if (providerIds.length > 0) {",
-													"        const providerId = providerIds.shift();",
-													"        pm.collectionVariables.set(\"providerIds\", JSON.stringify(providerIds));",
-													"        pm.collectionVariables.set(\"providerId\", providerId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"providerIds\")",
-													"    pm.collectionVariables.unset(\"providerId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $providerId: UUID!\n){\n    deleteProvider(\n        input: {\n            id: $providerId\n        }\n    )\n}",
-												"variables": "{\n    \"providerId\": \"{{providerId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Providers",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Providers\", function () {",
-													"    pm.expect(jsonData.data.providers.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    providers(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Find Originators",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"const originatorIds = jsonData.data.originators.data.map(originator => originator.id);",
-													"pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds))",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    originators(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete Originators",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"originatorIds\")) {",
-													"    pm.execution.setNextRequest(\"Delete Originators\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										},
-										{
-											"listen": "prerequest",
-											"script": {
-												"exec": [
-													"if (pm.collectionVariables.has(\"originatorIds\")) {",
-													"    let originatorIds = JSON.parse(pm.collectionVariables.get(\"originatorIds\"))",
-													"",
-													"    if (originatorIds.length > 0) {",
-													"        const originatorId = originatorIds.shift();",
-													"        pm.collectionVariables.set(\"originatorIds\", JSON.stringify(originatorIds));",
-													"        pm.collectionVariables.set(\"botOriginatorId\", originatorId)",
-													"    } else {",
-													"        skip()",
-													"    }",
-													"} else {",
-													"    skip()",
-													"}",
-													"",
-													"function skip() {",
-													"    pm.execution.skipRequest()",
-													"    pm.collectionVariables.unset(\"originatorIds\")",
-													"    pm.collectionVariables.unset(\"botOriginatorId\")",
-													"}"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "mutation (\n    $originatorId: UUID!\n){\n    deleteOriginator(\n        input: {\n            id: $originatorId\n        }\n    )\n}",
-												"variables": "{\n    \"originatorId\": \"{{originatorId}}\"\n}"
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Test Find Originators",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"var jsonData = JSON.parse(pm.response.text());",
-													"",
-													"pm.test(\"Test Find Originators\", function () {",
-													"    pm.expect(jsonData.data.originators.totalSize).to.eq(0)",
-													"});",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "user_dn",
-												"value": "{{TS_USER_DN}}"
-											}
-										],
-										"body": {
-											"mode": "graphql",
-											"graphql": {
-												"query": "query {\n    originators(\n        query: {\n            tags: [\"Sensemaking Smoke Test\", \"geosensemaker_tag\"]\n            pageParams: {\n                page: 1\n                pageSize: 100\n                sortParams: [\n                    {\n                        field: \"name\"\n                    }\n                ]\n            }\n        }\n    ) {\n        totalSize\n        data {\n            id\n        }\n    }\n}\n",
-												"variables": ""
-											}
-										},
-										"url": {
-											"raw": "https://{{GRAPHQL_ENDPOINT}}",
-											"protocol": "https",
-											"host": [
-												"{{GRAPHQL_ENDPOINT}}"
-											]
-										}
-									},
-									"response": []
+										"type": "text/javascript"
+									}
 								}
 							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [SENSEMAKING]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 1 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId1\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.054606,\n                    51.513632\n                ]\n            }\n            startTime: \"2024-03-15T18:22:32.000Z\"\n            endTime: \"2024-03-15T18:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 2 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId2\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.188881,\n                    51.481851\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 3 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId3\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190917, \n                    51.481500\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 4",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 4 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId4\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192849,\n                    51.481375\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 5",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 5 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId5\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190697,\n                    51.480557\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 6",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 6 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId6\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192030,\n                    51.482643\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 7",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 7 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterobservationId7\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.400326,\n                    51.477984\n                ]\n            }\n            startTime: \"2024-03-15T19:28:32.000Z\"\n            endTime: \"2024-03-15T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Loiter Node",
 							"event": [
 								{
 									"listen": "prerequest",
 									"script": {
-										"type": "text/javascript",
-										"packages": {},
 										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"} else {",
+											"    // Step 2: Sleep for 30 seconds before making the request",
+											"    console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"    const start = Date.now();",
+											"    while (Date.now() - start < 30000) {} // Blocking sleep for 30 sec",
+											"}",
 											""
-										]
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
 									"listen": "test",
 									"script": {
-										"type": "text/javascript",
-										"packages": {},
 										"exec": [
-											""
-										]
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.nodes && ",
+											"                      response.data.nodes.data && ",
+											"                      response.data.nodes.data.length > 0 && ",
+											"                      response.data.nodes.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        postman.setNextRequest(null); // Stop execution",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
-							]
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker_tag\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
+										"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Loiter Node Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.relationships && ",
+											"                      response.data.relationships.data && ",
+											"                      response.data.relationships.data.length > 0 && ",
+											"                      response.data.relationships.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterrelId\", response.data.relationships.data[0].id);",
+											"pm.collectionVariables.set(\"loiternodeId\", response.data.relationships.data[0].startNodeId);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $endNodeId: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"endNodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Loiter Node Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Loiter Node Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"loiternodeId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"loiternodeId\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $nodeId: UUID!\n){\n\tupdateNode(\n        input: {\n            id: $nodeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"nodeId\": \"{{loiternodeId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Loiter Rel Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Loiter Node Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"loiterrelId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"loiterrelId\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{loiterrelId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Loiter Attribute",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.attributes && ",
+											"                      response.data.attributes.data && ",
+											"                      response.data.attributes.data.length > 0 && ",
+											"                      response.data.attributes.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"loiterattrId\", response.data.attributes.data[0].id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": \"{{loiternodeId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Loiter Attr Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Loiter Node Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"loiterattrId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"loiterattrId\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{loiterattrId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Loiter Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -2392,73 +1495,6 @@
 		},
 		{
 			"key": "baseballCardId",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId1",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId2",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId3",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId4",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId5",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId6",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "loiterobservationId7",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "relationshipIds",
-			"value": ""
-		},
-		{
-			"key": "attributeIds",
-			"value": ""
-		},
-		{
-			"key": "observationIds",
-			"value": ""
-		},
-		{
-			"key": "sourceIds",
-			"value": ""
-		},
-		{
-			"key": "providerIds",
-			"value": ""
-		},
-		{
-			"key": "originatorIds",
-			"value": ""
-		},
-		{
-			"key": "fedGovRepSourceId",
-			"value": ""
-		},
-		{
-			"key": "botOriginatorId",
 			"value": ""
 		}
 	]
