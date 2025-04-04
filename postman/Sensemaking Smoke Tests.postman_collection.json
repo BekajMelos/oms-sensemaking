@@ -651,8 +651,7 @@
 											"    // Step 2: Sleep for 30 seconds before making the request",
 											"    console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
 											"",
-											"    const start = Date.now();",
-											"    while (Date.now() - start < 30000) {} // Blocking sleep for 30 sec",
+											"    setTimeout(function(){}, 30000);",
 											"}",
 											""
 										],
