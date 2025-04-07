@@ -85,9 +85,12 @@ services:
     env_file:
       - ./docker/omsb/omsb.env
     environment:
-      - OMSB_SERVICE=init
-      - OMSB_ENABLE_LIQUIBASE=true
-      - POSTGRES_PASSWORD=
+      # - OMSB_SERVICE=init
+      # - OMSB_ENABLE_LIQUIBASE=true
+      # - POSTGRES_PASSWORD=
+      OMSB_SERVICE: init
+      OMSB_ENABLE_LIQUIDBASE: true
+      POSTGRES_PASSWORD:
     volumes:
       - ./etc/pki:/opt/oms-bridge/pki
     depends_on:
