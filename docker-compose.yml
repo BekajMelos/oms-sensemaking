@@ -55,8 +55,14 @@ services:
     volumes:
       - postgis:/var/lib/postgresql/data
       - ./etc/pki:/opt/common/pki:ro
+      - ./docker/postgis/initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
       - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   pgadmin:
     profiles:
@@ -73,6 +79,29 @@ services:
     depends_on:
       - postgis
 
+  omsb-init:
+    image: tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
+    container_name: omsb-init
+    env_file:
+      - ./docker/omsb/omsb.env
+    environment:
+      - OMSB_SERVICE=init
+      - OMSB_ENABLE_LIQUIBASE=true
+      - POSTGRES_PASSWORD=
+    volumes:
+      - ./etc/pki:/opt/oms-bridge/pki
+    depends_on:
+      postgis:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      aac2:
+        condition: service_started
+    profiles:
+      - local
+
   # NOTE: The omsb container should not require the "ess" or "guide" services,
   #       but it may try to resolve the hostnames, which results in a stack
   #       trace being logged. This can be ignored, since the purpose of this
@@ -83,6 +112,7 @@ services:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD:
+      OMSB_SERVICE: api
     env_file:
       - ./docker/omsb/omsb.env
     volumes:
@@ -100,6 +130,8 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
+      omsb-init:
+        condition: service_started
     profiles:
       - local
 
