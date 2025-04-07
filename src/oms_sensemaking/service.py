@@ -104,6 +104,7 @@ def create_app(config: Settings) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
         root_path=config.root_path,
+        docs_url="/"
     )
 
     # initialize gzip middleware

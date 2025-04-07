@@ -7,7 +7,6 @@ from oms_sensemaking.api.schemas.app_info import AppInfo
 router: APIRouter = APIRouter()
 
 
-@router.get('/', response_model=AppInfo, response_model_exclude_none=True)
 @router.get('/version.json', response_model=AppInfo, response_model_exclude_none=True)
 def about() -> AppInfo:
     """Return service information."""
