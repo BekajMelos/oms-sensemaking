@@ -229,7 +229,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -1236,7 +1236,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -1666,7 +1666,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
