@@ -8,8 +8,7 @@ All notable changes to this project will be documented in this file.
 - None
 
 ### Changed
-- None
-
+- Docker tag version number has missing `v`
 
 ## [0.3.0] - 2025-04-03
 
