@@ -21,11 +21,11 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.resolution.sensemaker import ResolutionSensemaker
 
-BE_NUMBER_IRI = "https://foundry.ai.mil/MIDB_GST/v1/BE_Number"
+BE_NUMBER_IRI = "https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"
 BE_NUMBER = "ABCD1234"
-OSUFFIX_IRI = "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"
+OSUFFIX_IRI = "https://foundry.ai.mil/ontology/4901-001/hasOSuffix"
 OSUFFIX = "12345"
-EQUIPMENT_CODE_IRI = "https://foundry.ai.mil/DICO/v3.1.0/Equipment_Code"
+EQUIPMENT_CODE_IRI = "https://foundry.ai.mil/ontology/meks/p-0000000050"
 EQUIPMENT_CODE = "eqpCode123"
 
 
@@ -37,7 +37,7 @@ def tester_db():
         acm=DEFAULT_ACM,
         name="original_facility_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/FacilityType"
+        classIri="https://foundry.ai.mil/ontology/4901-001/Facility"
     )
     original_be_number_attribute = AttributeAttribute.model_construct(
         attributeIri=BE_NUMBER_IRI,
@@ -58,7 +58,7 @@ def tester_db():
         acm=DEFAULT_ACM,
         name="original_equipment_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/EquipmentType"
+        classIri="https://foundry.ai.mil/ontology/4901-001/EquipmentItem"
     )
     original_equipment_code_attribute = AttributeAttribute.model_construct(
         attributeIri=EQUIPMENT_CODE_IRI,
@@ -85,14 +85,14 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
         acm=DEFAULT_ACM,
         name="new_facility_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/FacilityType"
+        classIri="https://foundry.ai.mil/ontology/4901-001/Facility"
     )
     new_equipment_node = NodeNode.model_construct(
         id=uuid4(),
         acm=DEFAULT_ACM,
         name="new_equipment_node",
         tier=ObjectTier.PRIMARY,
-        classIri="https://foundry.ai.mil/NIEM/v5.2/EquipmentType"
+        classIri="https://foundry.ai.mil/ontology/4901-001/EquipmentItem"
     )
     # Get Relationships Mock
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
