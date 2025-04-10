@@ -1,4 +1,4 @@
 {
-  "https://foundry.ai.mil/NIEM/v5.2/FacilityType": ["https://foundry.ai.mil/MIDB_GST/v1/BE_Number", "https://foundry.ai.mil/DICO/v3.1.0/OSuffix"],
-  "https://foundry.ai.mil/NIEM/v5.2/EquipmentType": ["https://foundry.ai.mil/DICO/v3.1.0/Equipment_Code"]
+  "https://foundry.ai.mil/ontology/4901-001/Facility": ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber", "https://foundry.ai.mil/ontology/4901-001/hasOSuffix"],
+  "https://foundry.ai.mil/ontology/4901-001/EquipmentItem": ["https://foundry.ai.mil/ontology/meks/p-0000000050"]
 }

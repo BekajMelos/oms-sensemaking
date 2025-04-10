@@ -177,7 +177,7 @@ class Settings(BaseSettings):
         "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_add_has_name_attribute_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
+        "https://foundry.ai.mil/ontology/4901-001/hasCommonName", description="IRI for Name attributes"
     )
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
@@ -266,7 +266,7 @@ class Settings(BaseSettings):
     geohash_high: int = Field(7, description="High geohash")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
     operated_by_iri: str = Field(
-        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy", description="IRI for Operated By"
+        "https://foundry.ai.mil/ontology/4901-001/operatedBy", description="IRI for Operated By"
     )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
