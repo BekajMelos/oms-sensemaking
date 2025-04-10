@@ -221,7 +221,7 @@ class Settings(BaseSettings):
             "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
             "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
             "Location": "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-            "Document": "https://foundry.ai.mil/NIEM/v5.2/DocumentType",
+            "Document": "http://www.ontologyrepository.com/CommonCoreOntologies/InformationContentEntity",
             "Date": "https://foundry.ai.mil/NIEM/v5.2/DateType",
             "Entity": "http://purl.obolibrary.org/obo/BFO_0000001",
         },
