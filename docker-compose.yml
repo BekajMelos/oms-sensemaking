@@ -55,9 +55,9 @@ services:
     volumes:
       - postgis:/var/lib/postgresql/data
       - ./etc/pki:/opt/common/pki:ro
-      - ./docker/postgis/initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
       - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
+      - ./docker/postgis/initdb.d/40_init.sql:/docker-entrypoint-initdb.d/40_init.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
