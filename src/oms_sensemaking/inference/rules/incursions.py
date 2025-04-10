@@ -222,7 +222,7 @@ class Incursion(BaseRule):
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
-            state="UNKNOWN",
+            state=SETTINGS.incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
             startTime=observation.startTime,

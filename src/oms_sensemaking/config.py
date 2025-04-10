@@ -151,7 +151,7 @@ class Settings(BaseSettings):
     # General IRIs
     url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
     identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
-    text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
+    text_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/nonspecificObject", description="Text IRI")
 
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
@@ -161,6 +161,7 @@ class Settings(BaseSettings):
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
+    incursion_activity_state: str = Field("UNKNOWN", description="String Incursion Activity State")
     incursion_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
     )
@@ -230,7 +231,7 @@ class Settings(BaseSettings):
 
     # NLP Relationship IRIs
     nlp_relationship_iris: dict = Field({
-            "Work_For": "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
+            "Work_For": "https://foundry.ai.mil/ontology/4901-001/operationallyControlledBy",
             "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",
             "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
             "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
@@ -276,7 +277,7 @@ class Settings(BaseSettings):
                                    description="OMSB Loiter Event Node IRI")
     loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Loiter Event Node to Track Relationship IRI")
-    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
                                                  description="OMSB Loiter Event Node Geo Attribute IRI")
 
     # Cotravel Settings
@@ -297,7 +298,7 @@ class Settings(BaseSettings):
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
                                                  description="OMSB Cotravel Event Node Geo Attribute IRI")
     cotravel_track_to_event_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")
