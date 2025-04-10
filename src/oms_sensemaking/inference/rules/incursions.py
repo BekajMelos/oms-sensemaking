@@ -2,7 +2,6 @@
 from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import (
     ActivityQuery,
-    ActivityState,
     AttributeQuery,
     AttributesAttributesData,
     AttributeType,
@@ -223,7 +222,7 @@ class Incursion(BaseRule):
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
-            state=ActivityState.UNKNOWN,
+            state=SETTINGS.incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
             startTime=observation.startTime,

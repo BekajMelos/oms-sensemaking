@@ -28,7 +28,7 @@
         # OMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=Grimlock-INC-14
+        OMSB_VERSION=Grimlock-INC-17
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 

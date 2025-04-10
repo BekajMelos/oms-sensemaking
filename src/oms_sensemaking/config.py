@@ -149,9 +149,11 @@ class Settings(BaseSettings):
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
 
     # General IRIs
-    url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
-    identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
-    text_iri: str = Field("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object", description="Text IRI")
+    url_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/InformationSource", description="URL IRI")
+    # ^Place holder IRI
+    identifier_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasObjectID", description="Identifier IRI")
+    # ^Place holder IRI
+    text_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/nonspecificObject", description="Text IRI")
 
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
@@ -161,6 +163,7 @@ class Settings(BaseSettings):
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
+    incursion_activity_state: str = Field("UNKNOWN", description="String Incursion Activity State")
     incursion_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
     )
@@ -174,7 +177,7 @@ class Settings(BaseSettings):
         "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_add_has_name_attribute_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Name", description="IRI for Name attributes"
+        "https://foundry.ai.mil/ontology/4901-001/hasCommonName", description="IRI for Name attributes"
     )
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
@@ -220,7 +223,7 @@ class Settings(BaseSettings):
             "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
             "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
             "Location": "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-            "Document": "https://foundry.ai.mil/NIEM/v5.2/DocumentType",
+            "Document": "http://www.ontologyrepository.com/CommonCoreOntologies/InformationContentEntity",
             "Date": "https://foundry.ai.mil/NIEM/v5.2/DateType",
             "Entity": "http://purl.obolibrary.org/obo/BFO_0000001",
         },
@@ -230,17 +233,17 @@ class Settings(BaseSettings):
 
     # NLP Relationship IRIs
     nlp_relationship_iris: dict = Field({
-            "Work_For": "https://foundry.ai.mil/MIDB/V3.3/is_commanded_or_controlled_organizationally_by",
+            "Work_For": "https://foundry.ai.mil/ontology/4901-001/operationallyControlledBy",
             "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",
             "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
             "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
             "Document_Contains_Entity": "http://www.ontologyrepository.com/CommonCoreOntologies/describes",
-            "Relates_To": "https://foundry.ai.mil/MIDB/V3.3/relates_to",
+            "Relates_To": "http://www.ontologyrepository.com/CommonCoreOntologies/is_about", # Placeholder IRI
         },
         description="Dictionary of NLP Relationship IRIs"
         )
-    nlp_default_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
-                                              description="Default NLP Relationship IRI")
+    nlp_default_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
+                                              description="Default NLP Relationship IRI") # Placeholder IRI
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
@@ -263,7 +266,7 @@ class Settings(BaseSettings):
     geohash_high: int = Field(7, description="High geohash")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
     operated_by_iri: str = Field(
-        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/operatedBy", description="IRI for Operated By"
+        "https://foundry.ai.mil/ontology/4901-001/operatedBy", description="IRI for Operated By"
     )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
@@ -276,7 +279,7 @@ class Settings(BaseSettings):
                                    description="OMSB Loiter Event Node IRI")
     loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Loiter Event Node to Track Relationship IRI")
-    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
                                                  description="OMSB Loiter Event Node Geo Attribute IRI")
 
     # Cotravel Settings
@@ -297,7 +300,7 @@ class Settings(BaseSettings):
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/Location",
+    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
                                                  description="OMSB Cotravel Event Node Geo Attribute IRI")
     cotravel_track_to_event_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")
@@ -343,8 +346,9 @@ class Settings(BaseSettings):
                                            description="Tag for OMSB objects from the resolution sensemaker")
     resolution_relationship_name: str = Field("Same As",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+    resolution_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
                                            description="Relationship IRI for resolution sensemaker suggestions")
+    # Placeholder IRI
     duplicate_object_iris_file_path: str = Field(
         "./data/duplicate_object_iris.json", description="Path to file containing duplicate object iris dictionary"
     )
@@ -353,7 +357,7 @@ class Settings(BaseSettings):
 
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-14", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-17", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cert_path: str = Field(
