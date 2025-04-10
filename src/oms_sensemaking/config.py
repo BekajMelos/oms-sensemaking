@@ -149,8 +149,10 @@ class Settings(BaseSettings):
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
 
     # General IRIs
-    url_iri: str = Field("https://foundry.ai.mil/MIDB_GST/v1/Web_Site_URL", description="URL IRI")
-    identifier_iri: str = Field("https://foundry.ai.mil/INDOPACOM/v5/ID_Number", description="Identifier IRI")
+    url_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/InformationSource", description="URL IRI")
+    # ^Place holder IRI
+    identifier_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasObjectID", description="Identifier IRI")
+    # ^Place holder IRI
     text_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/nonspecificObject", description="Text IRI")
 
     # Inference Settings
@@ -236,12 +238,12 @@ class Settings(BaseSettings):
             "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
             "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
             "Document_Contains_Entity": "http://www.ontologyrepository.com/CommonCoreOntologies/describes",
-            "Relates_To": "https://foundry.ai.mil/MIDB/V3.3/relates_to",
+            "Relates_To": "http://www.ontologyrepository.com/CommonCoreOntologies/is_about", # Placeholder IRI
         },
         description="Dictionary of NLP Relationship IRIs"
         )
-    nlp_default_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
-                                              description="Default NLP Relationship IRI")
+    nlp_default_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
+                                              description="Default NLP Relationship IRI") # Placeholder IRI
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
@@ -344,8 +346,9 @@ class Settings(BaseSettings):
                                            description="Tag for OMSB objects from the resolution sensemaker")
     resolution_relationship_name: str = Field("Same As",
                                            description="Relationship IRI for resolution sensemaker suggestions")
-    resolution_relationship_iri: str = Field("https://foundry.ai.mil/MIDB/V3.3/relates_to",
+    resolution_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
                                            description="Relationship IRI for resolution sensemaker suggestions")
+    # Placeholder IRI
     duplicate_object_iris_file_path: str = Field(
         "./data/duplicate_object_iris.json", description="Path to file containing duplicate object iris dictionary"
     )
