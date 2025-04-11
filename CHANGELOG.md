@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Updated Cotravel Sensemaker to catch potential duplicate nodes for NSO Resolution
 - Added omsb-init container to docker compose
+- Duplicate object checks in the Resolution sensemaker are now configurable
 - Added CA Cert argument to AAC Client
 
 ### Changed
