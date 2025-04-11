@@ -62,7 +62,10 @@ list-versions: ## Display the tagged versions
 up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
 	docker compose --profile local up -d ${DOCKER_FLAGS}
 
-down: ## Stop oms-sensemaking docker environment
+stop: ## Stop oms-sensemaking docker environment
+	docker compose --profile dev --profile local stop
+
+down: ## Stop oms-sensemaking docker environment and remove containers
 	docker compose --profile dev --profile local down
 
 shell: ## Open a shell inside the oms_sensemaking container
