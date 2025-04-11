@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added omsb-init container to docker compose
+- Added CA Cert argument to AAC Client
 
 ### Changed
 - Docker tag version number has missing `v`
