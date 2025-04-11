@@ -12,7 +12,13 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class AacClient:
     """AAC Client for communicating with the AAC Service"""
 
-    def __init__(self, cert_path: Optional[str], key_path: Optional[str], ca_cert_path: Optional[str]) -> None:
+    def __init__(
+        self,
+        cert_path: Optional[str],
+        key_path: Optional[str],
+        ca_cert_path: Optional[str],
+        verification_mode: Optional[str | bool],
+    ) -> None:
         """
         Construct the client for communicating to an AAC Service v2.x
 
@@ -29,7 +35,10 @@ class AacClient:
         :param ca_cert_path: Optional path to a CA's .pem file
         """
 
+        if ca_cert_path is None or ca_cert_path == "":
+            LOGGER.debug("AAC Client CA_CERT_PATH not detected")
         self._ctx = ssl.create_default_context(cafile=ca_cert_path)
+
         if cert_path and key_path:
             LOGGER.debug("AAC Client cert_path and key_path detected")
             self._ctx.load_cert_chain(f"{cert_path}", f"{key_path}")
@@ -39,7 +48,9 @@ class AacClient:
         else:
             LOGGER.debug("AAC Client certs not detected")
 
-        self.client = httpx.Client(verify=self._ctx)
+        verify = self._get_ssl_verify(verification_mode)
+
+        self.client = httpx.Client(verify=verify)
 
     def __del__(self):
         """
@@ -53,3 +64,16 @@ class AacClient:
 
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
         return response.json()["RollupACM"]
+
+    def _get_ssl_verify(self, verification_mode: str | bool | None):
+        msg = "AAC Client verification mode:"
+
+        if verification_mode == "SSL_Context":
+            LOGGER.debug(f"{msg} SSL Context")
+            return self._ctx
+        elif verification_mode or verification_mode is None:
+            LOGGER.debug(f"{msg} True")
+            return True
+        else:
+            LOGGER.debug(f"{msg} False")
+            return False

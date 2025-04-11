@@ -59,7 +59,7 @@ def get_db_session() -> Iterator[Session]:
         db.close()
 
 
-aac_client = AacClient(SETTINGS.cert_path, SETTINGS.key_path, SETTINGS.cacert_path)
+aac_client = AacClient(SETTINGS.cert_path, SETTINGS.key_path, SETTINGS.cacert_path, SETTINGS.aac_verification_mode)
 oms_client = OmsCrudTool()
 oms_crud_tool = OmsCrudTool()
 

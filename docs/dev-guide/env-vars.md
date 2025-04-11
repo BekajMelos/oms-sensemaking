@@ -65,6 +65,14 @@
 | `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
 | `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
 
+#### AAC Settings
+| Variable Name            | Example                                            | Description               | Docker Compose |
+|:-------------------------|:---------------------------------------------------|:--------------------------|:--------------:|
+| `CERT_PATH`              | `./pki/test10.pem`                                 | Path to User PEM          | No             |
+| `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
+| `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `AAC_VERIFICATION_MODE`  | `SSL_CONTEXT`, `True`, `False`                     | Verify CA bundle of AAC   | No             |
+
 ##### Sensemaker Settings
 
 | Variable Name                                       | Example                                                                                           | Description                                                    | Docker Compose |
