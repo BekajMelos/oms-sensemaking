@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added omsb-init container to docker compose
+- Common sense filtering by node IRI.
 
 ### Changed
 - Docker tag version number has missing `v`
@@ -27,7 +28,6 @@ from Grimlock 17 (IRIs, ActivityState, altered object labels)
 > *Galadriel-INC-2*
 
 ### Added
-- Common sense filtering by node IRI.
 - Mil Symbol now updates the node's symbolIdCode with the 2525-C SDIC
 - Mil Symbol enrichment can now look at controlling parent node's affiliation
 
