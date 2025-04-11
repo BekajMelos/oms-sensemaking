@@ -307,8 +307,13 @@ class Settings(BaseSettings):
         2700, description="Maximum between Objects in a Track for a Lag/Lead Event"
     )
 
-    cotravel_event_name: str = Field("CotravelEvent", description="Name prefix for OMSB Cotravel Event Nodes")
-    lag_lead_event_name: str = Field("LagLeadEvent", description="Name prefix for OMSB LagLead Event Nodes")
+    potential_duplicate_relationship_name: str = Field("Potential Duplicate",
+                                                       description="Name for OMSB Potential Duplicate")
+    max_potential_duplicate_time_diff_seconds: int = Field(
+        30,
+        description="Max amount of time between colocated points to qualify a potential duplicate")
+    cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
+    lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
     cotravel_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
