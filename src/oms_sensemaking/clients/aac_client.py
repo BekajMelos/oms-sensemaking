@@ -39,9 +39,17 @@ class AacClient:
         else:
             LOGGER.debug("AAC Client certs not detected")
 
+        self.client = httpx.Client(verify=self._ctx)
+
+    def __del__(self):
+        """
+        Deconstruct the client communicating with an AAC Service v2.x
+        """
+        self.client.close()
+
     def get_acm_rollup(self, acms: List[dict]) -> dict:
         """Use AAC to rollup a list of ACMs"""
         LOGGER.debug("Getting ACM Rollup")
-        client = httpx.Client(verify=self._ctx)
-        response = client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
+
+        response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
         return response.json()["RollupACM"]
