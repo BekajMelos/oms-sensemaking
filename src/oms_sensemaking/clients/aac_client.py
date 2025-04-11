@@ -33,6 +33,8 @@ class AacClient:
         :param key_path: For two-way ssl, the path to the .key file
 
         :param ca_cert_path: Optional path to a CA's .pem file
+
+        :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
 
         if ca_cert_path is None or ca_cert_path == "":
