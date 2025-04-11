@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+## [0.3.1] - 2025-04-011
+
+### Added
 - Updated Cotravel Sensemaker to catch potential duplicate nodes for NSO Resolution
 - Added omsb-init container to docker compose
 - Duplicate object checks in the Resolution sensemaker are now configurable
@@ -49,7 +55,8 @@ from Grimlock 17 (IRIs, ActivityState, altered object labels)
 
 
 
-[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.3.0...main
+[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.3.1...main
+[0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.1
 [0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.0
 [0.2.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.2.0
 [0.1.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.1.0

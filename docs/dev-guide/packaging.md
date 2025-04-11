@@ -87,7 +87,6 @@ To cut new release:
 
         git checkout main
         git tag -a -m 'Release 1.2.3 (Galadriel-INC-1)' v1.2.3
-        git push
         git push origin tag v1.2.3
 
 2. (optional) Create build artifacts
@@ -145,7 +144,7 @@ To cut new release:
 6. (optional) Check Artifactory and Sonarqube
     - Check Artifactory for the image
     - Check Sonarqube for the scans to have run on the images
-      
+
 
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
 [Development Environment]: dev.md
