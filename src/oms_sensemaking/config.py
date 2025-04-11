@@ -382,12 +382,12 @@ class Settings(BaseSettings):
         None,
         description="Optional password to a pkcs12 cert",
         examples=[None, "p@55w0rd"])
-    aac_verification_mode: str | bool | None = Field(
+    aac_verification_mode: bool = Field(
         True,
         description="""Optional param for verifying ssl connections to the AAC Service
-        Either `True` (default CA bundle), `"SSL_Context"` which will use an SSL Context created with a
-        CA bundle found at CACERT_PATH, or `False` (which will disable verification)""",
-        examples=["SSL_Context", True, False]
+        `True` will use the Default CA Bundle or an SSL Context if a CA_CERT_PATH is given
+        `False` will disable verification""",
+        examples=[True, False]
     )
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])

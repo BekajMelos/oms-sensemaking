@@ -17,7 +17,7 @@ class AacClient:
         cert_path: Optional[str],
         key_path: Optional[str],
         ca_cert_path: Optional[str],
-        verification_mode: Optional[str | bool],
+        verification_mode: Optional[bool],
     ) -> None:
         """
         Construct the client for communicating to an AAC Service v2.x
@@ -48,7 +48,12 @@ class AacClient:
         else:
             LOGGER.debug("AAC Client certs not detected")
 
-        verify = self._get_ssl_verify(verification_mode)
+        if verification_mode:
+            LOGGER.debug("AAC Client verification enabled")
+            verify = self._ctx
+        else:
+            LOGGER.debug("AAC Client verification disabled")
+            verify = False
 
         self.client = httpx.Client(verify=verify)
 
@@ -64,16 +69,3 @@ class AacClient:
 
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
         return response.json()["RollupACM"]
-
-    def _get_ssl_verify(self, verification_mode: str | bool | None):
-        msg = "AAC Client verification mode:"
-
-        if verification_mode == "SSL_Context":
-            LOGGER.debug(f"{msg} SSL Context")
-            return self._ctx
-        elif verification_mode or verification_mode is None:
-            LOGGER.debug(f"{msg} True")
-            return True
-        else:
-            LOGGER.debug(f"{msg} False")
-            return False
