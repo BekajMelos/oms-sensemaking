@@ -65,7 +65,12 @@ class OmsCrudTool:
 
     def __init__(self) -> None:
         self.oms_client: Client = get_generated_graphql_client(
-            url=SETTINGS.omsb_url, user_dn=SETTINGS.user_dn, cert_path=SETTINGS.cert_path, key_path=SETTINGS.key_path
+            url=SETTINGS.omsb_url,
+            user_dn=SETTINGS.user_dn,
+            cert_path=SETTINGS.cert_path,
+            key_path=SETTINGS.key_path,
+            pkcs12_path=SETTINGS.pkcs12_path,
+            pkcs12_password=SETTINGS.pkcs12_password,
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
@@ -260,20 +265,15 @@ class OmsCrudTool:
         :param iris: List of IRIs to get values for on the node
         :return: List of matching Attribute objects
         """
-        query: AttributeQuery = AttributeQuery(
-            attributeIris=iris,
-            nodeIds=[node_id]
-        )
+        query: AttributeQuery = AttributeQuery(attributeIris=iris, nodeIds=[node_id])
         attributes_response = self.get_attributes(query)
         if attributes_response and attributes_response.data:
             return attributes_response.data
         return []
 
     def rehydrate_oms_obj(
-            self,
-            object_id: UUID,
-            object_type: ObjectType
-        ) -> Union[ActivityActivity, AttributeAttribute, ObservationObservation, NodeNode]:
+        self, object_id: UUID, object_type: ObjectType
+    ) -> Union[ActivityActivity, AttributeAttribute, ObservationObservation, NodeNode]:
         """Get full OMS Object from id
 
         :param object_id: Id of OMS object to retrieve

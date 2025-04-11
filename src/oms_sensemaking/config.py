@@ -360,16 +360,28 @@ class Settings(BaseSettings):
     omsb_version: str = Field("Grimlock-INC-17", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
-    cert_path: str = Field(
+    cacert_path: str | None = Field(
+        None,
+        description="Optional path to a CA cert",
+        examples=[None, "/opt/common/pki/cacert.pem"])
+    cert_path: str | None = Field(
         "/opt/common/pki/server.public",
         description="Path to service user cert",
-        examples=["/opt/common/pki/sensemaking.pem"]
+        examples=[None, "/opt/common/pki/sensemaking.pem"]
     )
-    key_path: str = Field(
+    key_path: str | None = Field(
         "/opt/common/pki/server.private",
         description="Path to service user key",
-        examples=["/opt/common/pki/sensemaking.key"]
+        examples=[None, "/opt/common/pki/sensemaking.key"]
     )
+    pkcs12_path: str | None = Field(
+        None,
+        description="Optional path to a pkcs12 cert",
+        examples=[None, "/opt/common/pki/my_cert.pfx", "/opt/common/pki/my_cert.p12"])
+    pkcs12_password: str | None = Field(
+        None,
+        description="Optional password to a pkcs12 cert",
+        examples=[None, "p@55w0rd"])
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
     @field_validator("db_uri", mode="before")

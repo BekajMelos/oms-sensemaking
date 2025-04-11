@@ -12,7 +12,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class AacClient:
     """AAC Client for communicating with the AAC Service"""
 
-    def __init__(self, cert_path: Optional[str], key_path: Optional[str]) -> None:
+    def __init__(self, cert_path: Optional[str], key_path: Optional[str], ca_cert_path: Optional[str]) -> None:
         """
         Construct the client for communicating to an AAC Service v2.x
 
@@ -25,9 +25,11 @@ class AacClient:
         :param cert_path: For two-way ssl, the path to the .pem or .crt file
 
         :param key_path: For two-way ssl, the path to the .key file
+
+        :param ca_cert_path: Optional path to a CA's .pem file
         """
 
-        self._ctx = ssl.create_default_context()
+        self._ctx = ssl.create_default_context(cafile=ca_cert_path)
         if cert_path and key_path:
             LOGGER.debug("AAC Client cert_path and key_path detected")
             self._ctx.load_cert_chain(f"{cert_path}", f"{key_path}")

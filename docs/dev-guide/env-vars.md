@@ -61,6 +61,7 @@
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
+| `CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 
 ##### Sensemaker Settings
 
@@ -110,5 +111,5 @@
 | `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`     | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger`              | Mil Symbol SQS Queue URL                                       | Yes            |
 | `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS`             | `'["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]'`                                            | List of Affiliation IRIs to enrich from                        | No             |
-| `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             | 
+| `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
 | `MIL_SYMBOL_SETTINGS__RULES_FILE_PATH`              | `./data/mil_symbol_rules.json`                                                                    | Path to the Mil Symbol Rules config file                       | No             |
