@@ -1,6 +1,6 @@
 import logging
 import ssl
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import httpx
 
@@ -48,12 +48,12 @@ class AacClient:
         else:
             LOGGER.debug("AAC Client certs not detected")
 
+        verify: Union[bool, ssl.SSLContext] = False
         if verification_mode:
             LOGGER.debug("AAC Client verification enabled")
             verify = self._ctx
         else:
             LOGGER.debug("AAC Client verification disabled")
-            verify = False
 
         self.client = httpx.Client(verify=verify)
 
