@@ -1,5 +1,4 @@
 
-from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import (
     ActivityQuery,
     AttributeQuery,
@@ -11,7 +10,6 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeNode,
     NodesNodesData,
     ObservationObservation,
-    ObservationQuery,
     StringQuery,
     TimeQuery,
     UpdateActivityInput,
@@ -25,60 +23,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-
-
-class IncursionObservation:
-    def __init__(self, obs: ObservationObservation):
-        self._obs = obs
-
-        self.start_time = isoparse(obs.startTime)
-        self.end_time = isoparse(obs.endTime)
-
-
-class IncursionTimeframe:
-    def __init__(self, attr: AttributesAttributesData):
-        self.start_time = isoparse(attr.valueStart)
-        self.end_time = isoparse(attr.valueEnd)
-
-    def does_observation_overlap(self, obs: IncursionObservation) -> bool:
-        return obs.end_time >= self.start_time and self.end_time >= obs.start_time
-
-    def update_incursion_times_with_observation(self, obs: IncursionObservation):
-        self.start_time = min(obs.start_time, self.start_time)
-        self.end_time = max(obs.end_time, self.end_time)
-
-    def object_observed_between_incursion_and_observation_times(
-        self,
-        incurring_object: NodesNodesData,
-        observation: ObservationObservation,
-    ) -> bool:
-        """
-        Check to see if incurring_object stayed in the relevant area of interest in the time separating the existing
-        incursion and observation, which indicates whether or not that the observation is part of the
-        existing incursion. Returns boolean indicating if the observation is part of the incursion and the
-        updated incursion time
-        """
-
-        observation_start_time = isoparse(observation.startTime)
-
-        if observation_start_time < self.start_time:
-            # Check for observations between current observation end time and attribute start time
-            observation_query = ObservationQuery(
-                nodeId=[incurring_object.id],
-                startTime=TimeQuery(gt=observation.endTime),
-                endTime=TimeQuery(lt=self.start_time.isoformat()),
-            )
-        else:
-            # Check for observations between attribute end time and current observation start time
-            observation_query = ObservationQuery(
-                nodeId=[incurring_object.id],
-                startTime=TimeQuery(gt=self.end_time.isoformat()),
-                endTime=TimeQuery(lt=observation.startTime),
-            )
-        observation_response = oms_client.get_observations(observation_query)
-        part_of_existing_incursion = bool(not observation_response.data)
-
-        return part_of_existing_incursion
+from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
 
 
 class Incursion(BaseRule):
@@ -94,6 +39,8 @@ class Incursion(BaseRule):
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
+
+        :param rule_context: Rule context object containing the observation to evaluate
         """
         if rule_context.observation:
             obs = rule_context.observation
@@ -125,7 +72,7 @@ class Incursion(BaseRule):
         if geo_of_interest:
             # Check for existing incursions in the relevant geo of interest
             attribute_query = AttributeQuery(
-                attributeIri=SETTINGS.inference_incursion_attribute_iri,
+                attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
                 geometry=GeoQuery(queryGeoJson=geo_of_interest),
@@ -137,16 +84,17 @@ class Incursion(BaseRule):
 
             matching_incursion_attribute_found = False
 
-            incursion_obs = IncursionObservation(obs)
+            incursion_obs = TimeParsedObservation(obs)
             for existing_incursion_attribute in existing_incursion_attributes:
-                inc_attr = IncursionTimeframe(existing_incursion_attribute)
+                inc_attr = GenericNodeTimeframe(existing_incursion_attribute.valueStart,
+                                                existing_incursion_attribute.valueEnd)
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
-                if time_overlap or inc_attr.object_observed_between_incursion_and_observation_times(incurring_object,
+                if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(incurring_object,
                                                                                                     obs):
                     # Update existing incursion with union of observation and incursion time intervals
-                    inc_attr.update_incursion_times_with_observation(incursion_obs)
+                    inc_attr.update_generic_node_times_with_observation(incursion_obs)
                     self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
                     matching_incursion_attribute_found = True
                     break
@@ -160,7 +108,7 @@ class Incursion(BaseRule):
         observation: ObservationObservation,
         incurring_object: NodesNodesData,
         existing_incursion_attribute: AttributesAttributesData,
-        inc_attr: IncursionTimeframe,
+        inc_attr: GenericNodeTimeframe,
     ):
         """
         Update an existing incursion attribute and corresponding activity
@@ -222,7 +170,7 @@ class Incursion(BaseRule):
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
-            state=SETTINGS.incursion_activity_state,
+            state=SETTINGS.inference_incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
             startTime=observation.startTime,

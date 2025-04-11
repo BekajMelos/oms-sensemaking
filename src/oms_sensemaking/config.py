@@ -157,15 +157,17 @@ class Settings(BaseSettings):
 
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
-    toggle_add_garrison_rule: bool = Field(False, description="Toggle on/off Add Garrison Attr. Rule")
+    toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
     toggle_add_has_name_rule: bool = Field(True, description="Toggle on/off Add Has Name Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
     )
-    incursion_activity_state: str = Field("UNKNOWN", description="String Incursion Activity State")
     incursion_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
+    )
+    inference_incursion_activity_state: str = Field(
+        "UNKNOWN", description="String Incursion Activity State"
     )
     inference_incursion_areas_of_interest_path: str = Field(
         "./data/areas_of_interest.json", description="Path to areas of interest file"
@@ -182,17 +184,28 @@ class Settings(BaseSettings):
     inference_add_has_name_attribute_meta_data_iri: str = Field(
         "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
-    inference_add_garrison_attribute_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/inGarrison", description="IRI for geo attribute (placeholder)"
+    inference_geo_attribute_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation", description="IRI for geo attribute"
     )
-    inference_participated_in_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/participatedIn", description="IRI for participated in (Observational)"
+    inference_garrisoned_in_iri: str = Field(
+        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn",
+        description="IRI for relationship between an object and its garrison"
     )
-    inference_garrison_location_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/garrisonedLocation", description="IRI for garrisoned at (Primary/Derivative)"
+    inference_garrison_class_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+        description="IRI for garrison activity class"
     )
-    inference_add_in_garrison_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/isgarrisonedAt", description="IRI for adding a is garrisoned at"
+    inference_in_garrison_activity_name: str = Field(
+        "In Garrison", description="Name for In Garrison activities"
+    )
+    inference_out_of_garrison_activity_name: str = Field(
+        "Out of Garrison", description="Name for Out of Garrison activities"
+    )
+    inference_in_garrison_activity_state: str = Field(
+        "IN GARRISON", description="String In Garrison Activity State"
+    )
+    inference_out_of_garrison_activity_state: str = Field(
+        "OUT OF GARRISON", description="String Out of Garrison Activity State"
     )
     garrison_distance_kilometers: int = 2000
 
