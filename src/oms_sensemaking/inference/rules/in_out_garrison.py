@@ -3,8 +3,6 @@ from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    ActivityState,
-    ActivityStateQuery,
     AttributeQuery,
     CreateActivityInput,
     NodeNode,
@@ -90,14 +88,14 @@ class InOrOutOfGarrison(BaseRule):
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
-            activity_state = ActivityState.IN_GARRISON
+            activity_state = SETTINGS.inference_in_garrison_activity_state
         else:
             activity_name = SETTINGS.inference_out_of_garrison_activity_name
-            activity_state = ActivityState.OUT_OF_GARRISON
+            activity_state = SETTINGS.inference_out_of_garrison_activity_state
 
         activity_query = ActivityQuery(
             name=StringQuery(equals=activity_name),
-            state=ActivityStateQuery(is_=activity_state),
+            state=StringQuery(equals=activity_state),
             nodeIds=[obs.nodeId]
         )
         activity_response = oms_client.get_activities(activity_query)
@@ -147,7 +145,7 @@ class InOrOutOfGarrison(BaseRule):
         self,
         observation: ObservationObservation,
         activity_name: str,
-        activity_state: ActivityState):
+        activity_state: str):
         """
         Create new activity pointing to observation
         """

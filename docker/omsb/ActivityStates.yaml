@@ -1,0 +1,21 @@
+# A configuration file to define the available activity states
+states:
+  - UNKNOWN
+  - ACTIVE
+  - AT_AIRFIELD
+  - DECOMMISSIONED
+  - DEPLOYED
+  - FITTING_OUT
+  - HEIGHTENED_ACTIVITY
+  - INACTIVE
+  - MOVING
+  - IN_FLIGHT
+  - STATIONARY
+  - IN_GARRISON
+  - IN_PORT
+  - UNDERWAY
+  - IN_MAINTENANCE
+  - IN_PRODUCTION
+  - OUT_OF_GARRISON
+  - OUT_OF_PORT
+  - STAGING

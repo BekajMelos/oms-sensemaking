@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- None
+- Added omsb-init container to docker compose
 
 ### Changed
-- None
-
+- Docker tag version number has missing `v`
+- Changed Grimlock version from 14 to 17
+- Updated Sensemaking smoke tests
+- Updated Sensemaking to be compatibale with breaking changes
+from Grimlock 17 (IRIs, ActivityState, altered object labels)
 
 ## [0.3.0] - 2025-04-03
 

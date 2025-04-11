@@ -122,5 +122,30 @@ To cut new release:
     - (optional) If you created build artifacts, upload them and optionally
       reference them in the release notes.
 
+## Releasing a new Version
+1. Update the changelog
+    - User facing updates only and remember to update links at the bottom
+2. Create a git tag
+    - Follow [Versioning Instructions](#versioning-oms-sensemaking) to create tag
+3. Run the sync job locally
+    - Clone https://tex.gerbil-cloud.ts.net:3000/DevOps/sync-artifacts
+    - Install the `aws` cli https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+    - (optional) Update `respositories.csv` to just include the repos you care about
+    - Ask teammate for `~/.aws/credentials` file
+    - Run `make clean bundle upload`
+4. Run the sync job in AIDE Jenkins
+    - Navigate to AIO4/Apps/oms/sync-all-repos
+    - Build with parameters
+    - You can double check in gitlab that the latest commits and tags are created
+5. Build the sensemaking docker image in AIDE Jenkins
+    - Navigate to AIO4/Apps/oms/oms-sensemaking-docker
+    - Switch to the tags instead of the branches, then do a “Scan Multi Branch Pipeline” to pick up the new tag
+    - Refresh and go into the Tag and build with default params
+    - Wait for successful build
+6. (optional) Check Artifactory and Sonarqube
+    - Check Artifactory for the image
+    - Check Sonarqube for the scans to have run on the images
+      
+
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
 [Development Environment]: dev.md

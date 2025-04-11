@@ -5,7 +5,6 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
-    ActivityState,
     AttributeAttribute,
     AttributeQuery,
     AttributeType,
@@ -176,7 +175,7 @@ def in_garrison_activity1(mocker: MockerFixture):
     activity.classIri = SETTINGS.inference_garrison_class_iri
     activity.name = SETTINGS.inference_in_garrison_activity_name
     activity.className = "class name"
-    activity.state = ActivityState.IN_GARRISON
+    activity.state = SETTINGS.inference_in_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2022-01-01T00:00:00+00:00"
@@ -196,7 +195,7 @@ def in_garrison_activity2(mocker: MockerFixture):
     activity.classIri = SETTINGS.inference_garrison_class_iri
     activity.name = SETTINGS.inference_in_garrison_activity_name
     activity.className = "class name"
-    activity.state = ActivityState.IN_GARRISON
+    activity.state = SETTINGS.inference_in_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -216,7 +215,7 @@ def out_garrison_activity1(mocker: MockerFixture):
     activity.classIri = SETTINGS.inference_garrison_class_iri
     activity.name = SETTINGS.inference_out_of_garrison_activity_name
     activity.className = "class name"
-    activity.state = ActivityState.OUT_OF_GARRISON
+    activity.state = SETTINGS.inference_out_of_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -236,7 +235,7 @@ def out_garrison_activity2(mocker: MockerFixture):
     activity.classIri = SETTINGS.inference_garrison_class_iri
     activity.name = SETTINGS.inference_out_of_garrison_activity_name
     activity.className = "class name"
-    activity.state = ActivityState.OUT_OF_GARRISON
+    activity.state = SETTINGS.inference_out_of_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -343,7 +342,7 @@ def test_new_in_garrison(
             acm=observational_node.acm,
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_in_garrison_activity_name,
-            state=ActivityState.IN_GARRISON,
+            state=SETTINGS.inference_in_garrison_activity_state,
             nodeId=observational_node.nodeId,
             observationIds=[observational_node.id],
             startTime=observational_node.startTime,
@@ -381,7 +380,7 @@ def test_new_out_garrison(
             acm=observational_node2.acm,
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_out_of_garrison_activity_name,
-            state=ActivityState.OUT_OF_GARRISON,
+            state=SETTINGS.inference_out_of_garrison_activity_state,
             nodeId=observational_node2.nodeId,
             observationIds=["obs2_id"],
             startTime=observational_node2.startTime,
