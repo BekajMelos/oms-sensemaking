@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
-from oms_sensemaking.geospatial.sensemakers.cotravel import Cotravel
+from oms_sensemaking.geospatial.sensemakers.cotravel import Cotravel, CotravelType
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
@@ -248,6 +248,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 acm=DEFAULT_ACM,
                 source_id=SOURCE_ID,
                 observation_confidence=row[7],
+                # geohash=geohash.encode(lat=row[1], lon=row[0], precision=10)
             )
             points.append(point)
         Track.get_or_create(
@@ -327,7 +328,7 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
-    assert cotravel.true_cotravel
+    assert cotravel.cotravel_type == CotravelType.cotravel
     assert cotravel.track1.node_id == track.node_id
     assert cotravel.start_time == datetime.fromisoformat("2024-03-20T12:00:00-04:00")
     assert cotravel.last_time == p3.detection_time
@@ -401,6 +402,167 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
     assert findings[0].algorithm_configuration
 
 
+def test_potential_duplicate_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+    node_id = uuid4()
+    track_id = uuid4()
+
+    # <30 seconds behind fixture track
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.148931 51.484423)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.186849 51.465229)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:10:28-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.225258 51.476589)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id)
+
+    # Set up mocks
+    cotravel_node_id = uuid4()
+    mock_oms_client.create_node = MagicMock(
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    )
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
+
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+
+    assert len(cotravels) == 1
+    cotravel = cotravels[0]
+    assert cotravel.cotravel_type == CotravelType.potential_duplicate
+    assert cotravel.track1.node_id == track.node_id
+    assert cotravel.start_time == datetime.fromisoformat("2024-03-20T12:00:00-04:00")
+    assert cotravel.last_time == p3.detection_time
+
+    mock_oms_client.create_relationship.assert_called_with(
+        CreateRelationshipInput(
+            tags=[SETTINGS.geo_sensemaker_event_tag],
+            name=SETTINGS.resolution_relationship_name,
+            startNodeId=node_id,
+            endNodeId=NODE_UUID1,
+            confidence=Confidence.HIGH,
+            acm=ROLLUP_DEFAULT_ACM,
+            objectPropertyIri=SETTINGS.resolution_relationship_iri,
+            sourceId=p1.source_id,
+        )
+    )
+
+    # check that cotravels exist in Findings table
+    findings = (
+        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+    )
+
+    assert len(findings) == 1
+    assert findings[0].finding_data["track1"]["points"][0]["location"] == to_shape(p1.location).wkt
+    assert findings[0].algorithm_configuration
+
+
+def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+    node_id = uuid4()
+    track_id = uuid4()
+
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.148931 51.484423)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # p2 is too far behind. > 30s after
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.186849 51.465229)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:10:31-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.225258 51.476589)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3],
+        node_id=node_id,
+        algorithm="test_algorithm",
+        track_uuid=track_id,
+    )
+
+    # Set up mocks
+    cotravel_node_id = uuid4()
+    mock_oms_client.create_node = MagicMock(
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    )
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
+
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+
+    assert len(cotravels) == 1
+    cotravel = cotravels[0]
+    assert cotravel.cotravel_type == CotravelType.cotravel
+
+    # check that cotravels exist in Findings table
+    findings = (
+        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+    )
+
+    assert len(findings) == 1
+
+
 def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
     node_id = uuid4()
     track_uuid = uuid4()
@@ -465,18 +627,19 @@ def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Sessio
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
 
     assert len(cotravels) == 2
-    cotravels = sorted(cotravels, key=lambda cotravel: cotravel.true_cotravel)  # check lag_lead first
-    lag_lead: Cotravel = cotravels[0]
+    cotravels = sorted(cotravels, key=lambda cotravel: cotravel.cotravel_type.value)  # check lag_lead first
 
-    assert not lag_lead.true_cotravel
-    assert lag_lead.track1.node_id == track.node_id
-    assert lag_lead.start_time == datetime.fromisoformat("2024-08-20T16:00:00-04:00")
-    assert lag_lead.last_time == p3.detection_time
-    cotravel: Cotravel = cotravels[1]
-    assert cotravel.true_cotravel
+    cotravel: Cotravel = cotravels[0]
+    assert cotravel.cotravel_type == CotravelType.cotravel
     assert cotravel.track1.node_id == track.node_id
     assert cotravel.start_time == datetime.fromisoformat("2024-08-20T16:19:00-04:00")
     assert cotravel.last_time == p3.detection_time
+
+    lag_lead: Cotravel = cotravels[1]
+    assert lag_lead.cotravel_type == CotravelType.lag_lead
+    assert lag_lead.track1.node_id == track.node_id
+    assert lag_lead.start_time == datetime.fromisoformat("2024-08-20T16:00:00-04:00")
+    assert lag_lead.last_time == p3.detection_time
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
 
@@ -664,7 +827,7 @@ def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
-    assert not cotravel.true_cotravel
+    assert cotravel.cotravel_type == CotravelType.lag_lead
     assert cotravel.track1.node_id == track.node_id
     assert cotravel.start_time == datetime.fromisoformat("2024-03-20T12:00:00-04:00")
     assert cotravel.last_time == p3.detection_time
@@ -873,7 +1036,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
-    assert cotravel.true_cotravel
+    assert cotravel.cotravel_type == CotravelType.cotravel
     assert cotravel.track1.node_id == track.node_id
     assert cotravel.start_time == datetime.fromisoformat("2024-09-10T05:00:00-04:00")
     assert cotravel.last_time == p3.detection_time
