@@ -189,7 +189,7 @@ class Settings(BaseSettings):
         "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation", description="IRI for geo attribute"
     )
     inference_garrisoned_in_iri: str = Field(
-        "http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn",
+        "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
         description="IRI for relationship between an object and its garrison"
     )
     inference_garrison_class_iri: str = Field(
@@ -203,10 +203,10 @@ class Settings(BaseSettings):
         "Out of Garrison", description="Name for Out of Garrison activities"
     )
     inference_in_garrison_activity_state: str = Field(
-        "IN GARRISON", description="String In Garrison Activity State"
+        "IN_GARRISON", description="String In Garrison Activity State"
     )
     inference_out_of_garrison_activity_state: str = Field(
-        "OUT OF GARRISON", description="String Out of Garrison Activity State"
+        "OUT_OF_GARRISON", description="String Out of Garrison Activity State"
     )
     garrison_distance_kilometers: int = 2000
 
