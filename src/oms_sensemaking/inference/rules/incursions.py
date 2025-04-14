@@ -90,7 +90,7 @@ class Incursion(BaseRule):
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
-                if time_overlap or inc_attr.object_observed_between_incursion_and_observation_times(
+                if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
                     incurring_object, obs
                 ):
                     # Update existing incursion with union of observation and incursion time intervals
