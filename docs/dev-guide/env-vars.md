@@ -56,11 +56,22 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-14`                                  | The version of oms-bridge | Yes            |
+| `OMSB_VERSION` | `Grimlock-INC-17`                                  | The version of oms-bridge | Yes            |
 | `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
+| `CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
+| `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
+
+#### AAC Settings
+| Variable Name            | Example                                            | Description               | Docker Compose |
+|:-------------------------|:---------------------------------------------------|:--------------------------|:--------------:|
+| `CERT_PATH`              | `./pki/test10.pem`                                 | Path to User PEM          | No             |
+| `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
+| `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `AAC_VERIFICATION_MODE`  | `True`                                             | Verify CA bundle of AAC   | No             |
 
 ##### Sensemaker Settings
 
@@ -90,28 +101,35 @@
 | `WITHIN_METERS`                                     | `3000.0`                                                                                          | Used to define the search space for potential similar tracks   | No             |
 | `SQS_GEO_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger`          | Geospatial SQS Queue URL                                       | Yes            |
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
+| `TOGGLE_ADD_GARRISON_RULE`                          | `True`                                                                                            | Turn the Garrison Rule On/Off                                  | Yes            |
+| `TOGGLE_ADD_HAS_NAME_RULE`                          | `True`                                                                                            | Turn the Has Name Rule On/Off                                  | Yes            |
+| `TOGGLE_INCURSION_RULE`                             | `True`                                                                                            | Turn the Incursion Rule On/Off                                 | Yes            |
 | `CORENLP_EXPOSE_PORT`                               | `9000`                                                                                            | Port to use for the core-nlp service. When set, this will expose the port to the host                           | Yes            |
-| `CORENLP_HOST`                               | `localhost:9000`                                                                                            | Host and port to connect to Core NLP                           | Yes            |
+| `CORENLP_HOST`                                      | `localhost:9000`                                                                                  | Host and port to connect to Core NLP                           | Yes            |
 | `INFERENCE_TAGS`                                    | `'["Oms Sensemaking", "Inferred Data"]'`                                                          | Tags Inference Sensemaker adds to data                         | No             |
 | `INFERENCE_INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
 | `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_IRI`              | `https://foundry.ai.mil/INDOPACOM/v5/Name`                                                        | Iri to find for the HasNameAttribute rule                      | No             |
 | `INFERENCE_ADD_HAS_NAME_ATTRIBUTE_META_DATA_IRI`    | `https://foundry.ai.mil/MIDB_GST/v1/MDN`                                                          | Iri to apply for the HasNameAttribute rule                     | No             |
-| `INFERENCE_ADD_GARRISON_ATTRIBUTE_IRI`              | `https://blackcape.io/PLACEHOLDER/inGarrison`                                                     | Iri to apply to objects that are in their garrison             | No             |
 | `INFERENCE_INCURSION_ATTRIBUTE_IRI`                 | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion Attribute                       | No             |
 | `INFERENCE_INCURSION_CLASS_IRI`                     | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri to apply for the Incursion Activity class                  | No             |
+| `INFERENCE_INCURSION_ACTIVITY_STATE`                | `UNKNOWN`                                                                                         | Incursion Activity State                                       | No             |
 | `INFERENCE_INCURSION_AREAS_OF_INTEREST_PATH`        | `./data/areas_of_interest.json`                                                                   | Path to areas_of_interest.json file in oms-sensemaking         | No             |
-| `INFERENCE_PARTICIPATED_IN_IRI`                     | `https://blackcape.io/PLACEHOLDER/participatedIn`                                                 | Iri to determine if an object participated in an observation   | No             |
-| `INFERENCE_GARRISON_LOCATION_IRI`                   | `https://blackcape.io/PLACEHOLDER/garrisonedLocation`                                             | Iri for relationship between an object and its garrison        | No             |
-| `INFERENCE_ADD_IN_GARRISON_IRI`                     | `https://blackcape.io/PLACEHOLDER/isgarrisonedAt`                                                 | Iri for attribute showing that an object is out of garrison    | No             |
+| `INFERENCE_GEO_ATTRIBUTE_IRI`                       | `http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation`                       | Iri for geo attribute                                          | No             |
+| `INFERENCE_GARRISONED_IN_IRI`                       | `http://schema.dia.mil/DefenseIntelligenceCoreOntology/garrisonedIn`                              | Iri for relationship between an object and its garrison        | No             |
+| `INFERENCE_GARRISON_CLASS_IRI`                      | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri for garrison activity class                                | No             |
+| `INFERENCE_IN_GARRISON_ACTIVITY_NAME`               | `In Garrison`                                                                                     | Name for In Garrison activities                                | No             |
+| `INFERENCE_OUT_OF_GARRISON_ACTIVITY_NAME`           | `Out of Garrison`                                                                                 | Name for Out of Garrison activities                            | No             |
+| `INFERENCE_IN_GARRISON_ACTIVITY_STATE`              | `IN GARRISON`                                                                                     | In Garrison Activity State                                     | No             |
+| `INFERENCE_OUT_OF_GARRISON_ACTIVITY_STATE`          | `OUT OF GARRISON`                                                                                 | Out of Garrison Activity State                                 | No             |
 | `GARRISON_DISTANCE_KILOMETERS`                      | `2000`                                                                                            | Distance to use for the Out of Garrison Rule                   | No             |
 | `SQS_RES_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger`             | Resolution SQS Queue URL                                       | Yes            |
 | `ENABLE_RESOLUTION_SENSEMAKER`                      | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `RESOLUTION_SENSEMAKER_TAG`                         | `resolution_tag`                                                                                  | Tag for OMSB objects from the resolution sensemaker            | No             |
-| `RESOLUTION_RELATIONSHIP_NAME`                      | `Same As`                                                                                         | Relationship IRI for resolution sensemaker suggestions         | No             |
+| `RESOLUTION_RELATIONSHIP_NAME`                      | `Same As`                                                                                         | Relationship name for resolution sensemaker suggestions        | No             |
 | `RESOLUTION_RELATIONSHIP_IRI`                       | `https://foundry.ai.mil/MIDB/V3.3/relates_to`                                                     | Iri to set for the Resolution Finding URL                      | No             |
 | `DUPLICATE_OBJECT_IRIS_FILE_PATH`                   | `./data/duplicate_object_iris.json`                                                               | Path to file containing duplicate object iris dictionary       | No             |
 | `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`     | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger`              | Mil Symbol SQS Queue URL                                       | Yes            |
 | `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS`             | `'["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]'`                                            | List of Affiliation IRIs to enrich from                        | No             |
-| `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             | 
+| `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
 | `MIL_SYMBOL_SETTINGS__RULES_FILE_PATH`              | `./data/mil_symbol_rules.json`                                                                    | Path to the Mil Symbol Rules config file                       | No             |

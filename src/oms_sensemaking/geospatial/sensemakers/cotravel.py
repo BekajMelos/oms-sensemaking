@@ -1,5 +1,6 @@
 """Cotravel Sensemakers."""
 
+import enum
 import logging
 import uuid
 from collections import defaultdict
@@ -7,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
+from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeInput,
@@ -19,7 +21,7 @@ from sqlalchemy import func, join, select
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
+from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
 from oms_sensemaking.models.sensemaking import FindingType
 
@@ -33,38 +35,58 @@ MIN_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.min_lag_lead_duration
 
 MAX_LAG_LEAD_DURATION_SECONDS = timedelta(seconds=SETTINGS.max_lag_lead_duration_seconds)
 
+MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS = timedelta(seconds=SETTINGS.max_potential_duplicate_time_diff_seconds)
 
+
+class CotravelType(enum.Enum):
+    potential_duplicate: str = "potential_duplicate"
+    cotravel: str = "cotravel"
+    lag_lead: str = "lag_lead"
+
+    @classmethod
+    def get_name(cls, cotravel_type: "CotravelType") -> str:
+        if cotravel_type == cls.potential_duplicate:
+            return SETTINGS.potential_duplicate_relationship_name
+        if cotravel_type == cls.cotravel:
+            return SETTINGS.cotravel_event_name
+        if cotravel_type == cls.lag_lead:
+            return SETTINGS.lag_lead_event_name
+
+        raise ValueError("Invalid CotravelType")
+
+
+@dataclass
 class PotentialMatch:
     """Represents a potential co-travel match."""
 
-    def __init__(
-        self,
-        vehicle_id1: UUID,
-        vehicle_id2: UUID,
-        start_time1: datetime,
-        start_time2: datetime,
-        last_time1: datetime,
-        last_time2: datetime,
-        track_id1: UUID,
-        track_id2: UUID,
-        true_cotravel: bool,
-    ):
-        """Create a new instance of PotentialMatch."""
-        self.vehicle_id1 = vehicle_id1
-        self.vehicle_id2 = vehicle_id2
-        self.start_time1 = start_time1
-        self.start_time2 = start_time2
-        self.last_time1 = last_time1
-        self.last_time2 = last_time2
-        self.track_id1 = track_id1
-        self.track_id2 = track_id2
-        self.true_cotravel = true_cotravel
+    vehicle_id1: UUID
+    vehicle_id2: UUID
+    start_time1: datetime
+    start_time2: datetime
+    last_time1: datetime
+    last_time2: datetime
+    track_id1: UUID
+    track_id2: UUID
+    is_true_cotravel: bool = field(init=False)
+    is_potential_duplicate: bool = field(init=False)
+    cotravel_type: CotravelType = field(init=False)
 
-    def __str__(self):
-        return str(self.__dict__)
+    def __post_init__(self) -> None:
+        """Post init for Colocation"""
 
-    def __repr__(self):
-        return self.__str__()
+        diff = abs(self.start_time1 - self.start_time2)
+        self.is_true_cotravel = False
+        self.is_potential_duplicate = False
+
+        if diff <= MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS:
+            self.cotravel_type = CotravelType.potential_duplicate
+            self.is_true_cotravel = True
+            self.is_potential_duplicate = True
+        elif diff <= MIN_LAG_LEAD_DURATION_SECONDS:
+            self.cotravel_type = CotravelType.cotravel
+            self.is_true_cotravel = True
+        else:
+            self.cotravel_type = CotravelType.lag_lead
 
     def tentative_add(self, time1: datetime, time2: datetime) -> bool:
         """
@@ -80,11 +102,23 @@ class PotentialMatch:
         ):
             self.last_time1 = time1
             self.last_time2 = time2
-            self.true_cotravel = self.true_cotravel and (abs(time1 - time2) <= MIN_LAG_LEAD_DURATION_SECONDS)
+            self.is_true_cotravel = self.is_true_cotravel and (abs(time1 - time2) <= MIN_LAG_LEAD_DURATION_SECONDS)
+
+            is_current_within_duplicate_threshold = abs(time1 - time2) <= MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS
+            self.is_potential_duplicate = self.is_potential_duplicate and is_current_within_duplicate_threshold
+
+            if self.is_potential_duplicate:
+                self.cotravel_type = CotravelType.potential_duplicate
+            elif self.is_true_cotravel:
+                self.cotravel_type = CotravelType.cotravel
+            else:
+                self.cotravel_type = CotravelType.lag_lead
+
             return True
+
         return False
 
-    def check_valid(self) -> bool:
+    def check_valid_cotravel_duration(self) -> bool:
         """Check whether a PotentialMatch has met the duration requirements."""
         return (
             self.last_time1 - self.start_time1 >= MIN_COTRAVEL_DURATION_SECONDS
@@ -102,7 +136,7 @@ class Cotravel(FindingBase):
     track2: Track
     start_time: datetime
     last_time: datetime
-    true_cotravel: bool
+    cotravel_type: CotravelType
     geometry: MultiLineString = field(init=False)
 
     def __post_init__(self) -> None:
@@ -132,134 +166,21 @@ class Cotravel(FindingBase):
         }
 
 
+@dataclass
 class Colocation:
     """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
 
-    def __init__(
-        self,
-        track1_node_id: UUID,
-        track2_node_id: UUID,
-        track1_id: UUID,
-        track2_id: UUID,
-        point: Point,
-        db_point: Point,
-    ):
-        """Create a new instance of Colocation."""
-        self.track1_node_id = track1_node_id
-        self.track2_node_id = track2_node_id
-        self.track1_id = track1_id
-        self.track2_id = track2_id
-        self.point = point
-        self.db_point = db_point
+    track1_node_id: UUID
+    track2_node_id: UUID
+    track1_id: UUID
+    track2_id: UUID
+    point: Point
+    db_point: Point
 
     def __str__(self):
-        return str(self.__dict__)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class CotravelOmsPublisher(OmsPublisher):
-    def format_nodes(self, track: Track, cotravels: list[Cotravel]) -> list[CreateNodeInput]:
-        """
-        Format Node Objects to publish to OMS
-
-        :param track: Track in which the cotravel was found
-        :param cotravels: List of Cotravel events
-        :return: None
-        """
-
-        formatted_nodes = []
-        for cotravel in cotravels:
-            name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
-
-            create_node_input = CreateNodeInput(
-                acm=cotravel.get_acm(),
-                name=name,
-                tier=ObjectTier.DERIVATIVE,
-                tags=[SETTINGS.geo_sensemaker_event_tag],
-                classIri=SETTINGS.cotravel_event_node_iri,
-                ifcCodes=set(),
-                isNso=True,
-            )
-            self.node_uuid_list.append(str(cotravel.cotravel_id))
-            formatted_nodes.append(create_node_input)
-
-        return formatted_nodes
-
-    def format_relationships(self, track: Track, cotravels: list[Cotravel]) -> list[CreateRelationshipInput]:
-        """
-        Format Relationships Objects to publish to OMS
-
-        :param track: Track in which the cotravel was found
-        :param cotravels: List of Cotravel events
-        :return: None
-        """
-
-        formatted_relationships = []
-        for cotravel in cotravels:
-            name = SETTINGS.cotravel_event_name if cotravel.true_cotravel else SETTINGS.lag_lead_event_name
-            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-            tags = [SETTINGS.geo_sensemaker_event_tag]
-
-            # track 1 relationship
-            create_relationship_input1 = CreateRelationshipInput(
-                tags=tags,
-                name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-                startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
-                endNodeId=cotravel.track1.node_id,
-                confidence=Confidence.HIGH,
-                acm=cotravel.get_acm(),
-                objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                sourceId=source_id,
-            )
-            formatted_relationships.append(create_relationship_input1)
-
-            # track 2 relationship
-            create_relationship_input2 = CreateRelationshipInput(
-                tags=tags,
-                name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-                startNodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
-                endNodeId=cotravel.track2.node_id,
-                confidence=Confidence.HIGH,
-                acm=cotravel.get_acm(),
-                objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-                sourceId=source_id,
-            )
-            formatted_relationships.append(create_relationship_input2)
-
-        return formatted_relationships
-
-    def format_attributes(self, track: Track, cotravels: list[Cotravel]) -> list[CreateAttributeInput]:
-        """
-        Format Attribute Objects to publish to OMS
-
-        :param track: Track in which the cotravel was found
-        :param cotravels: List of Cotravel events
-        :return: None
-        """
-
-        formatted_attributes = []
-        for cotravel in cotravels:
-            source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-
-            created_attribute_input = CreateAttributeInput(
-                attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-                attributeValue="geo",
-                attributeDisplayValue="",
-                attributeType=AttributeType.GEOSPATIAL,
-                confidence=Confidence.HIGH,
-                tags=[SETTINGS.geo_sensemaker_event_tag],
-                sourceId=source_id,
-                geometry=cotravel.to_geojson(),
-                nodeId=self.node_id_mapping[str(cotravel.cotravel_id)],
-                acm=cotravel.get_acm(),
-                valueStart=cotravel.start_time,
-                valueEnd=cotravel.last_time,
-            )
-            formatted_attributes.append(created_attribute_input)
-
-        return formatted_attributes
+        loc1 = to_shape(self.point.location)
+        loc2 = to_shape(self.db_point.location)
+        return f"Colocation: {loc1} at {self.point.detection_time} and {loc2} at {self.db_point.detection_time}"
 
 
 class CotravelSensemaker(Sensemaker):
@@ -271,6 +192,7 @@ class CotravelSensemaker(Sensemaker):
 
     [1.0.0]
 
+    - Added potential duplicate cotravel type to indicate the matched objects might be the same object
     - Initial "co-travel" algorithm implementation.
 
     """
@@ -292,8 +214,9 @@ class CotravelSensemaker(Sensemaker):
             "cotravel_event_name": SETTINGS.cotravel_event_name,
             "lag_lead_event_name": SETTINGS.lag_lead_event_name,
             "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
+            "max_potential_duplicate_time_diff_seconds": SETTINGS.max_potential_duplicate_time_diff_seconds,
         }
-        self.publisher = CotravelOmsPublisher(oms_crud_tool)
+        self.oms_crud_tool = oms_crud_tool
 
     def process_data(self, data: Track) -> list[Cotravel]:
         """Run the *cotravel* algorithm on the given track."""
@@ -352,7 +275,8 @@ class CotravelSensemaker(Sensemaker):
             LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_uuid}")
 
         for cotravel in cotravels:
-            LOGGER.debug("Cotravel geometry: " + cotravel.geometry.wkt)
+            LOGGER.debug(f"Cotravel ({cotravel.cotravel_type}) geometry: {cotravel.geometry.wkt}")
+            self.publish(data, cotravel)
 
         return cotravels
 
@@ -439,7 +363,7 @@ class CotravelSensemaker(Sensemaker):
                 ),
                 start_time=start_time,
                 last_time=last_time,
-                true_cotravel=to_add_to.true_cotravel,
+                cotravel_type=to_add_to.cotravel_type,
             )
 
         completed: list[Cotravel] = []
@@ -450,17 +374,14 @@ class CotravelSensemaker(Sensemaker):
                 # if we have a potential match already, keep checking
                 if (
                     not to_add_to.tentative_add(colocation.point.detection_time, colocation.db_point.detection_time)
-                    and to_add_to.check_valid()
+                    and to_add_to.check_valid_cotravel_duration()
                 ):
                     # the next colocation point doesn't meet the observation threshold but we still
                     # have a valid cotravel. Add the cotravel to the list and start over with a new
                     # potential match
                     cotravel = create_cotravel_from_match(to_add_to)
                     completed.append(cotravel)
-                    true_cotravel = (
-                        abs(colocation.point.detection_time - colocation.db_point.detection_time)
-                        <= MIN_LAG_LEAD_DURATION_SECONDS
-                    )
+
                     to_add_to = PotentialMatch(
                         colocation.track1_node_id,
                         colocation.track2_node_id,
@@ -470,14 +391,9 @@ class CotravelSensemaker(Sensemaker):
                         colocation.db_point.detection_time,
                         colocation.track1_id,
                         colocation.track2_id,
-                        true_cotravel,
                     )
             else:
                 # if no potential match already exists, create and start checking
-                true_cotravel = (
-                    abs(colocation.point.detection_time - colocation.db_point.detection_time)
-                    <= MIN_LAG_LEAD_DURATION_SECONDS
-                )
 
                 to_add_to = PotentialMatch(
                     colocation.track1_node_id,
@@ -488,11 +404,10 @@ class CotravelSensemaker(Sensemaker):
                     colocation.db_point.detection_time,
                     colocation.track1_id,
                     colocation.track2_id,
-                    true_cotravel,
                 )
 
         # check the last point for a valid cotravel
-        if to_add_to and to_add_to.check_valid():
+        if to_add_to and to_add_to.check_valid_cotravel_duration():
             cotravel = create_cotravel_from_match(to_add_to)
             completed.append(cotravel)
 
@@ -514,3 +429,100 @@ class CotravelSensemaker(Sensemaker):
             if point.detection_time >= start_time and point.detection_time <= end_time:
                 points.append(point)
         return points
+
+    def publish(self, track: Track, cotravel: Cotravel) -> None:
+        """Publish Potential Duplicate to OMS
+
+        :param track: Original Track
+        :param cotravel: Cotravel to publish
+        :return: None
+        """
+        if cotravel.cotravel_type == CotravelType.potential_duplicate:
+            self.publish_potential_duplicate(track, cotravel)
+        else:
+            self.publish_cotravel(track, cotravel)
+
+    def publish_potential_duplicate(self, track: Track, cotravel: Cotravel) -> None:
+        """Publish Potential Duplicate to OMS
+
+        :param track: Original Track
+        :param cotravel: Cotravel to publish
+        :return: None
+        """
+        source_id = track.points[0].source_id
+
+        # Resolution Relationship
+        create_relationship_input = CreateRelationshipInput(
+            tags=[SETTINGS.geo_sensemaker_event_tag],
+            name=SETTINGS.resolution_relationship_name,
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
+            confidence=Confidence.HIGH,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.resolution_relationship_iri,
+            sourceId=source_id,
+        )
+        self.oms_crud_tool.publish_relationships([create_relationship_input])
+
+    def publish_cotravel(self, track: Track, cotravel: Cotravel) -> None:
+        """Publish Cotravel Events to OMS
+
+        :param track: Original Track
+        :param cotravel: Cotravel to publish
+        :return: None
+        """
+        name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
+        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+        tags = [SETTINGS.geo_sensemaker_event_tag]
+
+        create_node_input = CreateNodeInput(
+            acm=cotravel.get_acm(),
+            name=name,
+            tier=ObjectTier.DERIVATIVE,
+            tags=[SETTINGS.geo_sensemaker_event_tag],
+            classIri=SETTINGS.cotravel_event_node_iri,
+            ifcCodes=set(),
+            isNso=True,
+        )
+        published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
+
+        # vehicle 1 relationship
+        create_relationship_input1 = CreateRelationshipInput(
+            tags=tags,
+            name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+            startNodeId=published_node.id,
+            endNodeId=cotravel.track1.node_id,
+            confidence=Confidence.HIGH,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            sourceId=source_id,
+        )
+        # vehicle 2 relationship
+        create_relationship_input2 = CreateRelationshipInput(
+            tags=tags,
+            name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
+            startNodeId=published_node.id,
+            endNodeId=cotravel.track2.node_id,
+            confidence=Confidence.HIGH,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            sourceId=source_id,
+        )
+        self.oms_crud_tool.publish_relationships([create_relationship_input1, create_relationship_input2])
+
+        # attribute for geometry
+        created_attribute_input = CreateAttributeInput(
+            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
+            attributeValue="geo",
+            attributeDisplayValue="",
+            attributeType=AttributeType.GEOSPATIAL,
+            confidence=Confidence.HIGH,
+            tags=[SETTINGS.geo_sensemaker_event_tag],
+            sourceId=source_id,
+            geometry=cotravel.to_geojson(),
+            nodeId=published_node.id,
+            acm=cotravel.get_acm(),
+            valueStart=cotravel.start_time,
+            valueEnd=cotravel.last_time,
+        )
+        self.oms_crud_tool.publish_attributes([created_attribute_input])

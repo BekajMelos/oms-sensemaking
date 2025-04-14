@@ -22,5 +22,6 @@ Mention if there are new dependencies or resources needed to verify this branch.
 ## Checklist before requesting a review
 - [ ] I have performed a self-review of my code
 - [ ] If it is a core feature, I have added thorough tests.
+- [ ] I have opened or added changes to an MR for Sensemaking in the omsb-helm-charts repo
 - [ ] I have updated environment variables in the docs
 - [ ] I've updated the changelog

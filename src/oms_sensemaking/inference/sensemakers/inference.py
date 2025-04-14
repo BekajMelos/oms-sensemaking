@@ -1,9 +1,11 @@
 import logging
 from collections.abc import Iterable
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.inference.engine.engine import Engine
 from oms_sensemaking.inference.rules.add_has_name_attribute import AddHasNameAttribute
+from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
@@ -15,11 +17,17 @@ class InferenceSensemaker(Sensemaker):
         """Create a new instance of InferenceSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.config = {"rules": [AddHasNameAttribute("AddHasNameAttribute"), Incursion("Incursion")]}
+        self.config = {"rules": []}
         self.engine = Engine()
-
-        for rule in self.config.get("rules", []):
-            self.engine.add_rule(rule)
+        rule_mappings = {
+            "toggle_add_garrison_rule": InOrOutOfGarrison("InOrOutOfGarrison"),
+            "toggle_add_has_name_rule": AddHasNameAttribute("AddHasNameAttribute"),
+            "toggle_incursion_rule": Incursion("Incursion"),
+        }
+        for setting_name, rule in rule_mappings.items():
+            if getattr(SETTINGS, setting_name, False):  # Check if toggle is True
+                self.config["rules"].append(rule)
+                self.engine.add_rule(rule)
 
     def process_data(self, data: RuleContext) -> Iterable[FindingBase]:
         """

@@ -231,7 +231,7 @@ class GeospatialSensemakerController(SensemakerController):
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
                             self.log_track_comparison(points=points, track=track)
-                        except ValueError as e:
+                        except (ValueError, IndexError) as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
                             self.track_times[track_uuid] = None
