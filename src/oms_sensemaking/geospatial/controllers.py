@@ -20,6 +20,7 @@ from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
+from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import CommonSenseFilter, Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
@@ -111,6 +112,11 @@ class GeospatialSensemakerController(SensemakerController):
         # we need to create a track_id for it so we can add future points for that vehicle/track
         if oms_obs.nodeId not in self.node_track_mapping:
             self.node_track_mapping[oms_obs.nodeId] = uuid4()
+
+        # we should not process/split generated tracks into more tracks
+        if self.is_generated_track(oms_obs):
+            return True
+
         # set the current track_id to the track linked to the node (vehicle) in question
         track_uuid = self.node_track_mapping[oms_obs.nodeId]
 
@@ -215,6 +221,8 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
+                            oms_track = APITrack(track.node_id, track.points).save()
+                            LOGGER.info(f"OMS Track published: {oms_track.id}")
                             self.log_track_comparison(points=points, track=track)
                         except (ValueError, IndexError) as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
@@ -330,6 +338,9 @@ class GeospatialSensemakerController(SensemakerController):
                 }
             )
         )
+
+    def is_generated_track(self, obs: ObservationObservation):
+        return obs.labels is not None and "SM_GENERATED_TRACK" in obs.labels
 
 
 class GeoQueueFilter(EventFilter):
