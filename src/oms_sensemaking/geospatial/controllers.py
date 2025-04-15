@@ -21,6 +21,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.dao.track import APITrack
+from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
 from oms_sensemaking.models.geo import CommonSenseFilter, Point, TimeBinTrackWeaver, Track, TrackWeaverBase
 
@@ -58,8 +59,14 @@ class GeospatialSensemakerController(SensemakerController):
             [csf.name for csf in self.common_sense_filters],
         )
 
+        self.config: dict = {}
+
     def start(self) -> None:
         """Start the controller."""
+
+        with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
+            self.config = json.load(fd)
+
         if SETTINGS.detect_cotravels:
             self.register("cotravel", CotravelSensemaker(self.oms_crud_tool))
 
@@ -230,11 +237,15 @@ class GeospatialSensemakerController(SensemakerController):
                             LOGGER.warning(e)
                             self.track_times[track_uuid] = None
                             continue
+
+                    node = self.oms_crud_tool.get_node(track.node_id)
+                    geo_config = GeospatialSensemakerConfig(**self.config.get(node.classIri, {}))
+
                     try:
                         with ThreadPoolExecutor() as executor:
                             futures = []
                             for sensemaker in self._registry.values():
-                                future = executor.submit(sensemaker.execute, track)
+                                future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
                                 futures.append(future)
 
                             # make sure errors are caught

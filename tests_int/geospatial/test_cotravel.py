@@ -260,7 +260,11 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
     yield db
 
 
-def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_cotravel_success(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
@@ -317,7 +321,7 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -395,7 +399,12 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
     assert findings[0].algorithm_configuration
 
 
-def test_potential_duplicate_success(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_potential_duplicate_success(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_id = uuid4()
 
@@ -452,7 +461,7 @@ def test_potential_duplicate_success(mock_oms_client, tester_db, db, mock_oms_cr
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -484,7 +493,12 @@ def test_potential_duplicate_success(mock_oms_client, tester_db, db, mock_oms_cr
     assert findings[0].algorithm_configuration
 
 
-def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_potential_duplicate_failure(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_id = uuid4()
 
@@ -541,7 +555,7 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -555,7 +569,11 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
     assert len(findings) == 1
 
 
-def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_multiple_cotravel_success(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
@@ -613,7 +631,7 @@ def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Sessio
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 2
     cotravels = sorted(cotravels, key=lambda cotravel: cotravel.cotravel_type.value)  # check lag_lead first
@@ -752,7 +770,11 @@ def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Sessio
     assert findings[0].algorithm_configuration
 
 
-def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_lag_lead_success(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
@@ -809,7 +831,7 @@ def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
@@ -887,7 +909,11 @@ def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
     assert findings[0].algorithm_configuration
 
 
-def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_cotravel_too_far_behind(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
@@ -936,12 +962,17 @@ def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrud
         points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_uuid, acm=ROLLUP_DEFAULT_ACM
     )
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 0
 
 
-def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, tester_db, db, mock_oms_crud_tool):
+def test_cotravel_valid_before_observation_threshold_exceeded(
+        mock_oms_client: MagicMock,
+        tester_db: Session,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
@@ -1016,7 +1047,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]

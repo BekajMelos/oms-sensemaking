@@ -1,0 +1,24 @@
+{
+  "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft": {
+    "valid_observed_threshold_seconds": 900,
+    "geohash_low": 5,
+    "geohash_high": 7,
+    "loiter_min_time": 900,
+    "min_cotravel_duration_seconds": 1200,
+    "min_lag_lead_duration_seconds": 1200,
+    "max_lag_lead_duration_seconds": 2700,
+    "max_potential_duplicate_time_diff_seconds": 30,
+    "within_meters": 3000.0
+  },
+  "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft": {
+    "valid_observed_threshold_seconds": 900,
+    "geohash_low": 6,
+    "geohash_high": 8,
+    "loiter_min_time": 1200,
+    "min_cotravel_duration_seconds": 3600,
+    "min_lag_lead_duration_seconds": 3600,
+    "max_lag_lead_duration_seconds": 4000,
+    "max_potential_duplicate_time_diff_seconds": 60,
+    "within_meters": 3000.0
+  }
+}

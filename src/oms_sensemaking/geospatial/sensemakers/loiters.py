@@ -16,15 +16,11 @@ from shapely import LineString
 from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.sensemakers import FindingBase, OmsPublisher, Sensemaker
+from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
-
-VALID_OBSERVED_THRESHOLD_SECONDS = timedelta(seconds=SETTINGS.valid_observed_threshold_seconds)
-
-LOITER_MIN_TIME = timedelta(seconds=SETTINGS.loiter_min_time)
 
 
 class PotentialLoiter:
@@ -76,89 +72,6 @@ class Loiter(FindingBase):
         return {"type": "LineString", "coordinates": [point.coordinates for point in self.processed_points]}
 
 
-class LoiterOmsPublisher(OmsPublisher):
-    def format_nodes(self, track: Track, loiters: list[Loiter]) -> list[CreateNodeInput]:
-        """
-        Format Node Objects to publish to OMS
-
-        :param track: Track in which the loiter was found
-        :param loiters: list of Loiter events
-        :return: CreateNodeInput objects
-        """
-        formatted_nodes = []
-        for loiter in loiters:
-            create_event_node = CreateNodeInput(
-                acm=loiter.get_acm(),
-                name=SETTINGS.loiter_event_name,
-                tier=ObjectTier.DERIVATIVE,
-                tags=[SETTINGS.geo_sensemaker_event_tag],
-                classIri=SETTINGS.loiter_event_node_iri,
-                ifcCodes=set(),
-                isNso=True,
-            )
-
-            self.node_uuid_list.append(str(loiter.loiter_id))
-            formatted_nodes.append(create_event_node)
-
-        return formatted_nodes
-
-    def format_relationships(self, track: Track, loiters: list[Loiter]) -> list[CreateRelationshipInput]:
-        """
-        Format Relationship Objects to publish to OMS
-
-        :param track: Track in which the loiter was found
-        :param loiters: list of Loiter events
-        :return: CreateRelationshipInput objects
-        """
-
-        formatted_relationships = []
-        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-
-        for loiter in loiters:
-            create_relationship_input = CreateRelationshipInput(
-                tags=[SETTINGS.geo_sensemaker_event_tag],
-                name=SETTINGS.loiter_event_name,
-                startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                endNodeId=loiter.vehicle_id,
-                confidence=Confidence.HIGH,
-                acm=loiter.get_acm(),
-                objectPropertyIri=SETTINGS.loiter_relationship_iri,
-                sourceId=source_id,
-            )
-            formatted_relationships.append(create_relationship_input)
-
-        return formatted_relationships
-
-    def format_attributes(self, track: Track, loiters: list[Loiter]) -> list[CreateAttributeInput]:
-        """
-        Format Attribute Objects to publish to OMS
-
-        :param track: Track in which the loiter was found
-        :param loiters: list of Loiter events
-        :return: CreateAttributeInput objects
-        """
-        formatted_attributes = []
-        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
-
-        for loiter in loiters:
-            create_attribute_input = CreateAttributeInput(
-                attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-                attributeValue="geo",
-                attributeDisplayValue="",
-                attributeType=AttributeType.GEOSPATIAL.value,
-                confidence=Confidence.HIGH.value,
-                tags=[SETTINGS.geo_sensemaker_event_tag],
-                sourceId=source_id,
-                geometry=loiter.to_geojson(),
-                nodeId=self.node_id_mapping[str(loiter.loiter_id)],
-                acm=loiter.get_acm(),
-                valueStart=loiter.start_time,
-                valueEnd=loiter.end_time,
-            )
-            formatted_attributes.append(create_attribute_input)
-        return formatted_attributes
-
-
 class LoiterSensemaker(Sensemaker):
     """
     A sensemaker for analyzing tracks for loiters.
@@ -178,16 +91,16 @@ class LoiterSensemaker(Sensemaker):
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {
-            "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
-            "loiter_min_time": SETTINGS.loiter_min_time,
+            # "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
+            # "loiter_min_time": SETTINGS.loiter_min_time,
             "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
             "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
-            "geohash_low": SETTINGS.geohash_low,
+            # "geohash_low": SETTINGS.geohash_low,
         }
-        self.publisher = LoiterOmsPublisher(oms_crud_tool)
+        self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, data: Track) -> list[Loiter]:
+    def process_data(self, data: Track, config: dict) -> list[Loiter]:
         """
         Check for Loiter Events.
 
@@ -200,6 +113,11 @@ class LoiterSensemaker(Sensemaker):
         :return: list[Loiter] list of loiter events found
         """
         LOGGER.debug(f"Detecting Loiters in {data.node_id}")
+
+        # Update the config with specific geo settings
+        # TODO configs will have some extra settings from other geo sensemakers. That okay?
+        self.config.update(config)
+
         confirmed_loiters: list[Loiter] = []
         prospective_loiters: dict[str, list[PotentialLoiter]] = self.find_prospective_loiters(data.points)
 
@@ -237,11 +155,11 @@ class LoiterSensemaker(Sensemaker):
 
         for loiter in confirmed_loiters:
             LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)
+            self.publish_loiter(data, loiter)
 
         return confirmed_loiters
 
-    @staticmethod
-    def find_prospective_loiters(points: list[Point]) -> dict[str, list[PotentialLoiter]]:
+    def find_prospective_loiters(self, points: list[Point]) -> dict[str, list[PotentialLoiter]]:
         """
         Find Prospective Loiters.
 
@@ -256,21 +174,21 @@ class LoiterSensemaker(Sensemaker):
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-            point_geohash_low = point.geohash[: SETTINGS.geohash_low]
+            point_geohash_low = point.geohash[: self.config["geohash_low"]]
 
             if point_geohash_low in prospective_loiters:
                 # existing geohash
                 last_loiters: list[PotentialLoiter] = prospective_loiters[point_geohash_low]
                 last_loiter = last_loiters[-1]
                 time_diff = abs((last_loiter.latest_time - point.detection_time))
-                if time_diff <= VALID_OBSERVED_THRESHOLD_SECONDS:
+                if time_diff <= timedelta(seconds=self.config["valid_observed_threshold_seconds"]):
                     # valid point, update the latest time for the last loiter for that geohash
                     last_loiter.latest_time = point.detection_time
                 else:
                     # Points are too far apart - they've been unobserved for too long.
                     # Expire if it's not already a valid loiter
                     validity_time_diff = abs(last_loiter.latest_time - last_loiter.start_time)
-                    if validity_time_diff < LOITER_MIN_TIME:
+                    if validity_time_diff < timedelta(seconds=self.config["loiter_min_time"]):
                         prospective_loiters.pop(point_geohash_low)
                     else:
                         # it must be a new loiter at the same location
@@ -282,3 +200,52 @@ class LoiterSensemaker(Sensemaker):
                 prospective_loiters[point_geohash_low] = [potential_loiter]
 
         return prospective_loiters
+
+    def publish_loiter(self, track: Track, loiter: Loiter) -> None:
+        """
+        Publish Loiter to OMS
+
+        :param loiter: Loiter Event to publish
+        :return: None
+        """
+        source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
+        tags = [SETTINGS.geo_sensemaker_event_tag]
+
+        create_node_input = CreateNodeInput(
+            acm=loiter.get_acm(),
+            name=SETTINGS.loiter_event_name,
+            tier=ObjectTier.DERIVATIVE,
+            tags=tags,
+            classIri=SETTINGS.loiter_event_node_iri,
+            ifcCodes=set(),
+            isNso=True,
+        )
+        published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
+
+        create_relationship_input = CreateRelationshipInput(
+            tags=tags,
+            name=SETTINGS.loiter_event_name,
+            startNodeId=published_node.id,
+            endNodeId=loiter.vehicle_id,
+            confidence=Confidence.HIGH,
+            acm=loiter.get_acm(),
+            objectPropertyIri=SETTINGS.loiter_relationship_iri,
+            sourceId=source_id,
+        )
+        self.oms_crud_tool.publish_relationships([create_relationship_input])
+
+        create_attribute_input = CreateAttributeInput(
+            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
+            attributeValue="geo",
+            attributeDisplayValue="",
+            attributeType=AttributeType.GEOSPATIAL.value,
+            confidence=Confidence.HIGH.value,
+            tags=tags,
+            sourceId=source_id,
+            geometry=loiter.to_geojson(),
+            nodeId=published_node.id,
+            acm=loiter.get_acm(),
+            valueStart=loiter.start_time,
+            valueEnd=loiter.end_time,
+        )
+        self.oms_crud_tool.publish_attributes([create_attribute_input])
