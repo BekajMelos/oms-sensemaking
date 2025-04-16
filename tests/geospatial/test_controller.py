@@ -25,6 +25,7 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
     # This is what we want returned from get_oms_observation. We only need the nodeId
     mock_observation = mock.Mock()
     mock_observation.nodeId = uuid4()
+    mock_observation.labels = []
 
     # We will pass this into the handle_event function. We only care about objectId
     mock_audit_log_event = mock.Mock()

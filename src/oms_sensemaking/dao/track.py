@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 import shapely
@@ -43,11 +44,11 @@ class APITrack:
             confidence=Confidence.UNKNOWN,
             sourceId=self.source_id,
             nodeId=self.node_id,
-            geometry=self._create_geometry(),
+            geometry=json.loads(self._create_geometry()),
             startTime=f"{self.start_time.isoformat().replace('+00:00', 'Z')}",
             # endTime=self.end_time
         )
 
-    def _create_geometry(self) -> shapely.LineString:
+    def _create_geometry(self) -> str:
         points = [p.coordinates for p in self.points]
         return shapely.to_geojson(shapely.LineString(points))
