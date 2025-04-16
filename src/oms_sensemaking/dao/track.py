@@ -28,7 +28,7 @@ class APITrack:
         return CreateObservationInput(
             acm=self.acm,
             tags=[],
-            labels=[SETTINGS.sm_generated_track],
+            labels=[SETTINGS.sm_connected_track],
             classIri=SETTINGS.track_iri,
             confidence=Confidence.UNKNOWN,
             sourceId=self.track.points[0].source_id,
