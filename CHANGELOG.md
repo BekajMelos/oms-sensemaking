@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Common sense filtering by node IRI.
+- Common sense filtering by node IRI
+- Push Track Observations to the OMS API
 
 ### Changed
 
-## [0.3.1] - 2025-04-011
+## [0.3.1] - 2025-04-11
 
 ### Added
 - Updated Cotravel Sensemaker to catch potential duplicate nodes for NSO Resolution
