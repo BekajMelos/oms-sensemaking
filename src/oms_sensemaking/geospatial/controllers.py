@@ -221,7 +221,7 @@ class GeospatialSensemakerController(SensemakerController):
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
-                            oms_track = APITrack(track.node_id, track.points).save()
+                            oms_track = APITrack(track).create_oms_track()
                             LOGGER.info(f"OMS Track published: {oms_track.id}")
                             self.log_track_comparison(points=points, track=track)
                         except (ValueError, IndexError) as e:

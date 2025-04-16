@@ -1,6 +1,7 @@
 """Geospatial Sensemaker models."""
 
 import itertools
+import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
@@ -15,7 +16,7 @@ from geoalchemy2.shape import to_shape
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from pydantic import BaseModel
-from shapely import LineString
+from shapely import LineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -227,6 +228,10 @@ class Track(BaseORM):
     def to_linestring(self) -> LineString:
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
+
+    def to_geometry(self) -> dict:
+        """Return a linestring dict representation of the track."""
+        return json.loads(to_geojson(self.to_linestring()))
 
 
 class TrackWeaverBase(ABC):
