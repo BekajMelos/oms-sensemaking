@@ -253,11 +253,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
             points.append(point)
         Track.get_or_create(
             session=db,
-            defaults=dict(
-                points=points,
-                node_id=points[0].node_id,
-                algorithm="cotravel_test_track",
-            ),
+            defaults=dict(points=points, node_id=points[0].node_id, algorithm="cotravel_test_track", acm=DEFAULT_ACM),
             track_uuid=track_uuid,
         )
 
@@ -310,10 +306,7 @@ def test_cotravel_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        algorithm="test_algorithm",
-        track_uuid=track_uuid,
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_uuid, acm=ROLLUP_DEFAULT_ACM
     )
 
     # Set up mocks
@@ -447,7 +440,9 @@ def test_potential_duplicate_success(mock_oms_client, tester_db, db, mock_oms_cr
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id)
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id, acm=ROLLUP_DEFAULT_ACM
+    )
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -535,10 +530,7 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        algorithm="test_algorithm",
-        track_uuid=track_id,
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id, acm=ROLLUP_DEFAULT_ACM
     )
 
     # Set up mocks
@@ -609,10 +601,7 @@ def test_multiple_cotravel_success(mock_oms_client: MagicMock, tester_db: Sessio
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        algorithm="test_algorithm",
-        track_uuid=track_uuid,
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_uuid, acm=ROLLUP_DEFAULT_ACM
     )
 
     # Set up mocks
@@ -809,10 +798,7 @@ def test_lag_lead_success(mock_oms_client: MagicMock, tester_db: Session, mock_o
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        algorithm="test_algorithm",
-        track_uuid=track_uuid,
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_uuid, acm=ROLLUP_DEFAULT_ACM
     )
 
     # Set up mocks
@@ -947,10 +933,7 @@ def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrud
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        algorithm="test_algorithm",
-        track_uuid=track_uuid,
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_uuid, acm=ROLLUP_DEFAULT_ACM
     )
 
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track)
@@ -1022,6 +1005,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(mock_oms_client, t
         node_id=node_id,
         algorithm="test_algorithm",
         track_uuid=track_uuid,
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     # Set up mocks

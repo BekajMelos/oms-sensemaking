@@ -65,11 +65,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
             points.append(point)
         Track.get_or_create(
             session=db,
-            defaults=dict(
-                points=points,
-                node_id=points[0].node_id,
-                algorithm="geo_test_track",
-            ),
+            defaults=dict(points=points, node_id=points[0].node_id, algorithm="geo_test_track", acm=DEFAULT_ACM),
             track_uuid=track_uuid,
         )
 
