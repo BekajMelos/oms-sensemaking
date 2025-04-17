@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+### Fixed
+
 ## [0.4.0] - 2025-04-17
 
 ### Added
@@ -16,6 +18,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated OMS dependency to Grimlock-INC-18
+
+### Fixed
+- AAC Client requests failing for Geospatial Sensemakers
 
 ## [0.3.1] - 2025-04-11
 
