@@ -1,9 +1,10 @@
 """Application configuration."""
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from dotenv import load_dotenv
+from oms_sdk.generated.generated_graphql_client import Confidence
 from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -93,7 +94,7 @@ class LogConfig(BaseSettings):
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
         "https://foundry.ai.mil/INDOPACOM/v5/Icon", description="Military Symbol Sensemaker tags")
-    mil_symbol_sensemaker_tags: List[str] = Field(
+    mil_symbol_sensemaker_tags: list[str] = Field(
         ["Oms Sensemaking", "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
@@ -103,13 +104,13 @@ class MilSymbolSettings(BaseModel):
         examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger"]
     )
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
-    affiliation_iris: List[str] = Field(
+    affiliation_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"], description="Affiliation IRI")
-    status_iris: List[str] = Field(["https://foundry.ai.mil/DICO/v3.1.0/Condition"], description="Status IRI")
-    affiliation_controlled_by_iris: List[str] = Field(
+    status_iris: list[str] = Field(["https://foundry.ai.mil/DICO/v3.1.0/Condition"], description="Status IRI")
+    affiliation_controlled_by_iris: list[str] = Field(
         ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy"],
         description="Relationship IRIs used to search for controlling/commanding nodes")
-    affiliation_controls_iris: List[str] = Field(
+    affiliation_controls_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"],
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
@@ -122,17 +123,17 @@ class MilSymbolSettings(BaseModel):
        "10-0-0-00-0-0-00-000000-00-00", description="Default 2525C code")
 
     # TODO should we skip a default since these are random
-    is_reality_context_iris: List[str] = Field(
+    is_reality_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted"],
         description="Attribute Iri to look for 'is reality' context")
-    is_exercise_context_iris: List[str] = Field(
+    is_exercise_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Validated"],
         description="Attribute Iri to look for 'is exercise' context")
-    is_simulation_context_iris: List[str] = Field(
+    is_simulation_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
         description="Attribute Iri to look for 'is simulation' context")
 
-    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path the the rules config file")
+    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
 
 class Settings(BaseSettings):
@@ -264,7 +265,7 @@ class Settings(BaseSettings):
     db_user: str = Field("appuser", description="Database user.")
     db_password: str = Field("password", description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
-    db_uri: Optional[str] = Field(
+    db_uri: str | None = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
     )
     db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
@@ -283,6 +284,22 @@ class Settings(BaseSettings):
     )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
+    # Common Sense Filtering Settings
+    apply_common_sense_filters: bool = Field(True, description="Toggle on/off Common Sense Filters")
+    common_sense_filter_rules_file_path: str = Field(
+        "./data/common_sense_filter_rules.json",
+        description="Path to the rules config file",
+    )
+
+    # Track Weaver Settings
+    time_bin_size_seconds: int = Field(
+        60,
+        description="Length of time bins in seconds for grouping Points in track weaver."
+    )
+    confidence_weight_unknown: float = Field(0.5, description="Weight assigned to UNKNOWN confidence.")
+    confidence_weight_high: float = Field(1.0, description="Weight assigned to HIGH confidence.")
+    confidence_weight_moderate: float = Field(0.5, description="Weight assigned to MODERATE confidence.")
+    confidence_weight_low: float = Field(0.25, description="Weight assigned to LOW confidence.")
 
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
@@ -410,15 +427,25 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
+    @computed_field  # type: ignore
+    @property
+    def confidence_weight_map(self) -> dict[Confidence, float]:
+        return {
+            Confidence.UNKNOWN: self.confidence_weight_unknown,
+            Confidence.HIGH: self.confidence_weight_high,
+            Confidence.MODERATE: self.confidence_weight_moderate,
+            Confidence.LOW: self.confidence_weight_low,
+        }
+
     @field_validator("db_uri", mode="before")
     @classmethod
-    def db_connection(cls, field_value: Optional[str], info: ValidationInfo) -> str:
+    def db_connection(cls, field_value: str | None, info: ValidationInfo) -> str:
         """Validate database connection."""  # pylint: disable=too-many-function-args, no-self-argument
         return cls.assemble_db_connection(field_value, info.data, "db_")
 
     @classmethod
     def assemble_db_connection(
-        cls, field_value: Optional[str], values: Dict[str, Any], settings_prefix: str = ""
+        cls, field_value: str | None, values: dict[str, Any], settings_prefix: str = ""
     ) -> str:
         """
         Validate db connection.

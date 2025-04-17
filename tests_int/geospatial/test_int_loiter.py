@@ -16,8 +16,10 @@ from oms_sdk.generated.generated_graphql_client.client import (
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers.loiters import Loiter, LoiterSensemaker
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import Finding, FindingType
@@ -73,10 +75,10 @@ def get_random_emirates_stadium_point() -> str:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
 
-def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool):
     """Simple success track."""
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -88,7 +90,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -102,7 +104,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -115,7 +117,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -128,7 +130,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -141,7 +143,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -154,7 +156,7 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # West London way later
     p7 = Point(
@@ -167,11 +169,16 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=node_id)
+    track = Track(
+        points=[p1, p2, p3, p4, p5, p6, p7],
+        node_id=node_id,
+        algorithm="test_track",
+        track_uuid=track_uuid,
+    )
 
     # Set up mocks
     loiter_node_id = uuid4()
@@ -248,10 +255,10 @@ def test_loiter_success(mock_oms_client, db, mock_oms_crud_tool):
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_invalid_not_long_enough(mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -263,7 +270,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -277,7 +284,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -290,7 +297,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -303,7 +310,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Still within stamford bridge but past the observation time
     p5_point = get_random_stamford_bridge_point()
@@ -317,20 +324,25 @@ def test_loiter_invalid_not_long_enough(mock_oms_client, db, mock_oms_crud_tool)
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5], node_id=uuid4())
+    track = Track(
+        points=[p1, p2, p3, p4, p5],
+        node_id=uuid4(),
+        track_uuid=track_uuid,
+        algorithm="test_loiter",
+    )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
-def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
+def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool: OmsCrudTool):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -342,7 +354,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -356,7 +368,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -369,7 +381,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -382,7 +394,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -395,7 +407,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -408,7 +420,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # West London
     p7 = Point(
@@ -421,22 +433,29 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool):
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
+    track = Track(
+        points=[p1, p2, p3, p4, p5, p6, p7],
+        node_id=uuid4(),
+        track_uuid=track_uuid,
+        algorithm="test_loiter",
+    )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
     assert len(loiters) == 0
 
 
-def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_fails_valid_observed_threshold_within_geohash(
+    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
+):
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
 
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -448,7 +467,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter Points
     p2_point = get_random_stamford_bridge_point()
@@ -462,7 +481,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -475,7 +494,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -488,7 +507,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -501,7 +520,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -514,7 +533,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Still within stamford bridge but past the observation time
     p7_point = get_random_stamford_bridge_point()
@@ -528,11 +547,16 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5, p6, p7], node_id=uuid4())
+    track = Track(
+        points=[p1, p2, p3, p4, p5, p6, p7],
+        node_id=uuid4(),
+        track_uuid=track_uuid,
+        algorithm="test_loiter",
+    )
 
     # Set up mocks
     loiter_node_id = uuid4()
@@ -607,10 +631,12 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(mock_oms_client, d
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_success_multiple_in_same_geohash(
+    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
+):
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -622,7 +648,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
@@ -636,7 +662,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -649,7 +675,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -662,7 +688,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -675,7 +701,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -688,7 +714,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # West London way later
     p7 = Point(
@@ -701,7 +727,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter 2 Points
     p8_point = get_random_stamford_bridge_point()
@@ -715,7 +741,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p9_point = get_random_stamford_bridge_point()
     p9 = Point(
@@ -728,7 +754,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p10_point = get_random_stamford_bridge_point()
     p10 = Point(
@@ -741,7 +767,7 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p11_point = get_random_stamford_bridge_point()
     p11 = Point(
@@ -754,11 +780,16 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid4())
+    track = Track(
+        points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11],
+        node_id=uuid4(),
+        track_uuid=track_uuid,
+        algorithm="test_loiter",
+    )
 
     # Set up mocks
     loiter_node_id1 = uuid4()
@@ -880,10 +911,12 @@ def test_loiter_success_multiple_in_same_geohash(mock_oms_client, db, mock_oms_c
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_oms_crud_tool):
+def test_loiter_success_multiple_in_different_geohash(
+    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
+):
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
-    track_id = uuid4()
+    track_uuid = uuid4()
     # East London
     p1 = Point(
         acm=DEFAULT_ACM,
@@ -895,7 +928,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter 1 Points
     p2_point = get_random_stamford_bridge_point()
@@ -909,7 +942,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p3_point = get_random_stamford_bridge_point()
     p3 = Point(
@@ -922,7 +955,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p4_point = get_random_stamford_bridge_point()
     p4 = Point(
@@ -935,7 +968,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p5_point = get_random_stamford_bridge_point()
     p5 = Point(
@@ -948,7 +981,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p6_point = get_random_stamford_bridge_point()
     p6 = Point(
@@ -961,7 +994,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # West London way later
     p7 = Point(
@@ -974,7 +1007,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     # Loiter 2 Points
     p8_point = get_random_emirates_stadium_point()
@@ -988,7 +1021,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p9_point = get_random_emirates_stadium_point()
     p9 = Point(
@@ -1001,7 +1034,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p10_point = get_random_emirates_stadium_point()
     p10 = Point(
@@ -1014,7 +1047,7 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
     p11_point = get_random_emirates_stadium_point()
     p11 = Point(
@@ -1027,11 +1060,16 @@ def test_loiter_success_multiple_in_different_geohash(mock_oms_client, db, mock_
         observation_id=uuid4(),
         observation_version=1,
         source_id=uuid4(),
-        track_id=track_id
+        observation_confidence=Confidence.HIGH,
     )
 
     # Create Track Object
-    track = Track(points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11], node_id=uuid4())
+    track = Track(
+        points=[p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11],
+        node_id=uuid4(),
+        track_uuid=track_uuid,
+        algorithm="test_loiter",
+    )
 
     # Set up mocks
     loiter_node_id1 = uuid4()

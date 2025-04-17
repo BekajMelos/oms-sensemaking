@@ -72,9 +72,10 @@ import logging
 import os
 import time
 from argparse import Action, ArgumentParser, Namespace
+from collections.abc import Sequence
 from getpass import getpass
 from logging.config import dictConfig
-from typing import Any, Optional, Sequence, Union
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -99,8 +100,8 @@ class PasswordAction(Action):
         self,
         parser: ArgumentParser,
         namespace: Namespace,
-        values: Union[str, Sequence[Any], None],
-        option_string: Optional[str] = None,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
     ) -> None:
         """Use getpass to for safe (i.e. note echoed to console) password retrieval."""
         setattr(namespace, self.dest, getpass())

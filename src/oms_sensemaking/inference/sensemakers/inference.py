@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker

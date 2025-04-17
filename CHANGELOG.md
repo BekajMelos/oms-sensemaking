@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Common sense filtering by node IRI.
 
 ### Changed
 

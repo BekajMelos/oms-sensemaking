@@ -2,10 +2,11 @@
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from threading import Lock
-from typing import Any, Iterable, List, Protocol, Tuple
+from typing import Any, Protocol
 
 import httpx
 from geoalchemy2 import WKBElement
@@ -66,7 +67,7 @@ class OmsPublisher(SensemakerPublisher):
         """Create a new instance of the Publisher."""
         super().__init__()
         self.oms_crud_tool = oms_crud_tool
-        self.node_uuid_list: List[str] = []  # in-order list of unpublished node IDs
+        self.node_uuid_list: list[str] = []  # in-order list of unpublished node IDs
         self.node_id_mapping: dict[str, str] = {}  # map unpublished node IDs to published node IDs
 
     def publish(self, data: Any, results: Any) -> None:
@@ -120,7 +121,7 @@ class FindingBase(ABC):
 class SensemakerMetaData(Protocol):
     name: str
     config: dict
-    version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
+    version: tuple[int | str, int | str, int | str] = (0, 0, 0)
     executed_at: datetime
 
     @property
@@ -139,7 +140,7 @@ class Sensemaker(ABC, SensemakerMetaData):
         self.publisher: SensemakerPublisher = NoOpPublisher()
 
         #: The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
-        self.version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
+        self.version: tuple[int | str, int | str, int | str] = (0, 0, 0)
         self.executed_at: datetime
         self._finding_writer = FindingWriter()
 
@@ -223,7 +224,7 @@ class FindingWriter:
         if finding_objects:
             LOGGER.info(f"Saving findings from {alg_meta_data.name} {alg_meta_data.version_string} to DB")
 
-        findings: List = []
+        findings: list = []
         for finding_object in finding_objects:
             finding = Finding(
                 acm=finding_object.get_acm(),

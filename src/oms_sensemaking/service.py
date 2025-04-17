@@ -4,7 +4,6 @@ import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
 from threading import Thread
-from typing import Tuple
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
@@ -63,7 +62,7 @@ async def lifespan(application: FastAPI):
     """
     # startup
     LOGGER.info("Initializing sensemaker controllers")
-    controllers: list[Tuple[SensemakerController, Thread]] = []
+    controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
@@ -104,7 +103,7 @@ def create_app(config: Settings) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
         root_path=config.root_path,
-        docs_url="/"
+        docs_url="/",
     )
 
     # initialize gzip middleware

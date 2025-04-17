@@ -1,7 +1,7 @@
 """Tests for geo ORM models."""
 
+from collections.abc import Iterator
 from datetime import datetime, timezone
-from typing import Iterator
 from uuid import UUID, uuid4
 
 import pytest

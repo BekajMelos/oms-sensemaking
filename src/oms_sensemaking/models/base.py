@@ -15,13 +15,15 @@ To generate a migration for a new model or other ORM updates:
 
     alembic revision --autogenerate --rev-id $(date +%Y%m%d%H%M) -m "short description of the change."
 """
+
 import json
 import uuid
 from dataclasses import asdict
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import DateTime, Dialect, Integer, MetaData, TypeDecorator, select
+from oms_sdk.generated.generated_graphql_client import Confidence
+from sqlalchemy import DateTime, Dialect, Integer, MetaData, String, TypeDecorator, select
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, Session, mapped_column
 from sqlalchemy.sql.expression import ClauseElement
@@ -33,16 +35,16 @@ class BaseORM(MappedAsDataclass, DeclarativeBase):
     metadata = MetaData(
         # handle index naming conventions
         naming_convention={
-            'ix': 'ix_%(column_0_label)s',
-            'uq': 'uq_%(table_name)s_%(column_0_name)s',
-            'ck': 'ck_%(table_name)s_%(constraint_name)s',
-            'fk': 'fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s',
-            'pk': 'pk_%(table_name)s'
+            "ix": "ix_%(column_0_label)s",
+            "uq": "uq_%(table_name)s_%(column_0_name)s",
+            "ck": "ck_%(table_name)s_%(constraint_name)s",
+            "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+            "pk": "pk_%(table_name)s",
         }
     )
 
     @classmethod
-    def get_or_create(cls, session: Session, defaults: Optional[dict] = None, **kwargs):
+    def get_or_create(cls, session: Session, defaults: dict | None = None, **kwargs):
         """
         Get an instance of the class or create a new one using the provided arguments.
 
@@ -54,7 +56,7 @@ class BaseORM(MappedAsDataclass, DeclarativeBase):
                  instance was created as part of the call to this function.
         """
         # 1. find the model, if it exists
-        instance = session.execute(select(cls).filter_by(**kwargs)).scalars().one_or_none()
+        instance = session.execute(select(cls).filter_by(**kwargs)).unique().scalars().one_or_none()
 
         if instance:
             return instance, False
@@ -101,7 +103,7 @@ class UtcDateTime(TypeDecorator):
         """Returns the Python type."""
         return datetime
 
-    def process_bind_param(self, value: Optional[Any], dialect: Dialect) -> datetime:
+    def process_bind_param(self, value: Any | None, dialect: Dialect) -> datetime:
         """
         Convert the value to UTC and strip the timezone information.
 
@@ -113,13 +115,13 @@ class UtcDateTime(TypeDecorator):
         """
         if value is not None:
             if not value.tzinfo or value.tzinfo.utcoffset(value) is None:
-                raise TypeError('tzinfo is required')
+                raise TypeError("tzinfo is required")
 
             value = value.astimezone(timezone.utc).replace(tzinfo=None)
 
         return value
 
-    def process_result_value(self, value: Optional[Any], dialect: Dialect) -> datetime:
+    def process_result_value(self, value: Any | None, dialect: Dialect) -> datetime:
         """
         Ensure the return value is timezone aware.
 
@@ -133,7 +135,7 @@ class UtcDateTime(TypeDecorator):
 
         return value
 
-    def process_literal_param(self, value, dialect) -> Optional[str]:  # type: ignore
+    def process_literal_param(self, value, dialect) -> str | None:  # type: ignore
         """
         Return the literal datetime value formatted as ISO 8601 timestamp.
 
@@ -160,7 +162,7 @@ class AuditMixin(MappedAsDataclass):
         nullable=False,
         insert_default=utcnow_with_timezone,
         comment="The time the record was created in the database.",
-        init=False
+        init=False,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
@@ -170,7 +172,7 @@ class AuditMixin(MappedAsDataclass):
         insert_default=utcnow_with_timezone,
         onupdate=utcnow_with_timezone,
         comment="The time the record was last updated.",
-        init=False
+        init=False,
     )
 
 
@@ -178,33 +180,29 @@ class SecurityMarkingMixin(MappedAsDataclass):
     """Declare security marking attributes."""
 
     acm: Mapped[dict] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment='The ACM representing the classification of the data.'
+        JSONB, nullable=False, comment="The ACM representing the classification of the data."
     )
+
 
 class RelatedNodeMixin(MappedAsDataclass):
     """Declare OMS Node Metadata."""
+
     node_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        nullable=False,
-        comment='The ID of the node associated with the object.'
+        UUID(as_uuid=True), primary_key=True, nullable=False, comment="The ID of the node associated with the object."
     )
 
     node_version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='The version of the node associated with this object.'
+        Integer, nullable=False, comment="The version of the node associated with this object."
     )
+
 
 class SourceMixin(MappedAsDataclass):
     """Declare OMS Source Metadata."""
+
     source_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        nullable=False,
-        comment='The ID of the source associated with the object.'
+        UUID(as_uuid=True), nullable=False, comment="The ID of the source associated with the object."
     )
+
 
 class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
     """Declare OMS Attribute Metdata."""
@@ -213,14 +211,13 @@ class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
         UUID(as_uuid=True),
         primary_key=True,
         nullable=False,
-        comment='The ID of the attribute associated with the object.'
+        comment="The ID of the attribute associated with the object.",
     )
 
     attribute_version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='The version of the attribute associated with the object.'
+        Integer, nullable=False, comment="The version of the attribute associated with the object."
     )
+
 
 class OmsObservationMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
     """Declare OMS Observation Metadata."""
@@ -229,17 +226,19 @@ class OmsObservationMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
         UUID(as_uuid=True),
         primary_key=True,
         nullable=False,
-        comment='The ID of the observation associated with the object.'
+        comment="The ID of the observation associated with the object.",
     )
 
     observation_version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='The version of the observation associated with the object.'
+        Integer, nullable=False, comment="The version of the observation associated with the object."
     )
+
+    observation_confidence: Mapped[Confidence] = mapped_column(
+        String, nullable=True, comment="The confidence level of the observation associated with the object."
+    )
+
 
 class TrackMixin(MappedAsDataclass):
     track_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        comment="The ID of the track associated with the object."
+        UUID(as_uuid=True), comment="The ID of the track associated with the object."
     )

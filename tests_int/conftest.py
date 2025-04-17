@@ -1,8 +1,10 @@
 """PyTest Configuration."""
+
 import json
+from collections.abc import Generator
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Dict, Iterator
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -52,8 +54,8 @@ if not SETTINGS.create_provider_if_none:
 SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 
-@pytest.fixture
-def db() -> Iterator[Session]:
+@pytest.fixture(scope="function")
+def db() -> Generator[Session, Any, None]:
     """
     Get a database session generator.
 
@@ -84,7 +86,7 @@ def mock_oms_client():
 
 
 @pytest.fixture(scope="session")
-def mock_source() -> CreateSourceCreateSource:
+def mock_source() -> Generator[CreateSourceCreateSource, Any, None]:
     oms_crud_tool = OmsCrudTool()
     source = oms_crud_tool.create_test_source()
     yield source
@@ -103,8 +105,9 @@ def mock_oms_crud_tool(mock_oms_client, mock_source):
 
     return oms_crud_tool
 
+
 @pytest.fixture
-def mil_symbol_rules() -> Dict:
+def mil_symbol_rules() -> dict:
     with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
         rules = json.load(fd)
     return rules
