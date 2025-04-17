@@ -43,7 +43,7 @@ class HealthChecker:
     def get_aac_health(self, aac_service: AacClient):
         LOGGER.debug("Checking AAC Service health")
         try:
-            aac_service.get_acm_rollup([DEFAULT_ACM])
+            aac_service.get_acm_rollup([{"ACM": DEFAULT_ACM}])
             return self._healthy
         except Exception as e:
             LOGGER.error(repr(e))

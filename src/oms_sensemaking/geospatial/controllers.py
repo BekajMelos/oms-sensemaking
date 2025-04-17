@@ -218,7 +218,7 @@ class GeospatialSensemakerController(SensemakerController):
                                 "node_id": weaved_track.node_id,
                                 "algorithm": weaved_track.algorithm,
                                 "observation_ids": weaved_track.observation_ids,
-                                "acm": aac_client.get_acm_rollup([point.acm for point in weaved_track.points]),
+                                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")
