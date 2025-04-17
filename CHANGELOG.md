@@ -5,10 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+## [0.4.0] - 2025-04-17
+
+### Added
 - Common sense filtering by node IRI
 - Push Track Observations to the OMS API
 
 ### Changed
+- Updated OMS dependency to Grimlock-INC-18
 
 ## [0.3.1] - 2025-04-11
 
@@ -57,8 +64,9 @@ from Grimlock 17 (IRIs, ActivityState, altered object labels)
 
 
 
-[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.3.1...main
-[0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.1
+[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.4.0...main
+[0.4.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.4.0
+[0.3.1]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.1
 [0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.0
 [0.2.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.2.0
 [0.1.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.1.0
