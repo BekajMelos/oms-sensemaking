@@ -161,7 +161,7 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         return self.detection_time < other.detection_time
 
 
-class Track(BaseORM):
+class Track(BaseORM, SecurityMarkingMixin):
     """Represents a track.
 
     This model is also a dataclass. The order of the positional parameters in
@@ -282,6 +282,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
             node_id=points[0].node_id,
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
+            acm=aac_client.get_acm_rollup([point.acm for point in points]),
         )
 
 
@@ -370,6 +371,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             node_id=weighted_points[0].node_id,
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
+            acm=aac_client.get_acm_rollup([point.acm for point in weighted_points]),
         )
 
 

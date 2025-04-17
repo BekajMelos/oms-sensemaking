@@ -16,7 +16,7 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from shapely import LineString
 
-from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
@@ -218,6 +218,7 @@ class GeospatialSensemakerController(SensemakerController):
                                 "node_id": weaved_track.node_id,
                                 "algorithm": weaved_track.algorithm,
                                 "observation_ids": weaved_track.observation_ids,
+                                "acm": aac_client.get_acm_rollup([point.acm for point in weaved_track.points]),
                             }
                             track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
                             LOGGER.info(f"Track completed: {track_uuid}")

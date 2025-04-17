@@ -178,6 +178,7 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
         node_id=node_id,
         algorithm="test_track",
         track_uuid=track_uuid,
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     # Set up mocks
@@ -333,6 +334,7 @@ def test_loiter_invalid_not_long_enough(mock_oms_client: MagicMock, db: Session,
         node_id=uuid4(),
         track_uuid=track_uuid,
         algorithm="test_loiter",
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
@@ -442,6 +444,7 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool: OmsCrudTool):
         node_id=uuid4(),
         track_uuid=track_uuid,
         algorithm="test_loiter",
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
@@ -556,6 +559,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
         node_id=uuid4(),
         track_uuid=track_uuid,
         algorithm="test_loiter",
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     # Set up mocks
@@ -789,6 +793,7 @@ def test_loiter_success_multiple_in_same_geohash(
         node_id=uuid4(),
         track_uuid=track_uuid,
         algorithm="test_loiter",
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     # Set up mocks
@@ -1069,6 +1074,7 @@ def test_loiter_success_multiple_in_different_geohash(
         node_id=uuid4(),
         track_uuid=track_uuid,
         algorithm="test_loiter",
+        acm=ROLLUP_DEFAULT_ACM,
     )
 
     # Set up mocks

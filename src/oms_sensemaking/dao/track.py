@@ -1,6 +1,3 @@
-from typing import Any
-
-from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     Confidence,
     CreateObservationCreateObservation,
@@ -13,11 +10,9 @@ from oms_sensemaking.models.geo import Track
 
 
 class APITrack:
-    acm: Any
     track: Track
 
     def __init__(self, track: Track) -> None:
-        self.acm = DEFAULT_ACM  # TODO add acm to the DB Tracks populated by their point rollup
         self.track = track
 
     def create_oms_track(self) -> CreateObservationCreateObservation:
@@ -26,8 +21,8 @@ class APITrack:
 
     def _create_observation_input(self) -> CreateObservationInput:
         return CreateObservationInput(
-            acm=self.acm,
-            tags=[],
+            acm=self.track.acm,
+            tags=[SETTINGS.geo_sensemaker_event_tag],
             labels=[SETTINGS.sm_connected_track],
             classIri=SETTINGS.track_iri,
             confidence=Confidence.UNKNOWN,
