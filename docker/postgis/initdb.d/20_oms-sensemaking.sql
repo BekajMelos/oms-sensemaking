@@ -1,5 +1,5 @@
 -- 20_db-user.sql --- Create databases and database user for OMS Sensemaking.
-CREATE USER appuser WITH ENCRYPTED PASSWORD 'password';
+CREATE USER appuser WITH ENCRYPTED PASSWORD 'pas:swo@rd#';
 
 --------------------
 -- App Database
