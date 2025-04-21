@@ -16,6 +16,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     CreateNodeInput,
+    CreateObservationCreateObservation,
+    CreateObservationInput,
     CreateOriginatorCreateOriginator,
     CreateOriginatorInput,
     CreateProviderCreateProvider,
@@ -106,6 +108,12 @@ class OmsCrudTool:
         """
         # 1. for each node, publish it to OMS
         return self.oms_client.create_node(node_input)
+
+    def create_observation(self, observation_input: CreateObservationInput) -> CreateObservationCreateObservation:
+        """
+        Publish the Observations to OMS
+        """
+        return self.oms_client.create_observation(observation_input)
 
     def create_relationship(self, relationship_input: CreateRelationshipInput) -> CreateRelationshipCreateRelationship:
         """

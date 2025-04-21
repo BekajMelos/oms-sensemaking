@@ -14,6 +14,36 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.geospatial.sensemakers import SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track
 
+ROLLUP_DEFAULT_ACM = {
+    "version": "3.0",
+    "classif_type": "US",
+    "classif": "U",
+    "owner_prod": ["USA"],
+    "non_us_ctrls": [],
+    "sci_ctrls": [],
+    "disponly_to": [""],
+    "dissem_ctrls": [],
+    "non_ic": [],
+    "rel_to": [],
+    "fgi_open": [],
+    "fgi_protect": [],
+    "portion": "U//DISPLAY ONLY",
+    "banner": "UNCLASSIFIED//DISPLAY ONLY",
+    "dissem_countries": [],
+    "accms": [],
+    "macs": [],
+    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
+    "share": {"users": [], "projects": {}},
+    "f_clearance": ["u"],
+    "f_sci_ctrls": [],
+    "f_accms": [],
+    "f_oc_org": [],
+    "f_regions": [],
+    "f_missions": [],
+    "f_share": [],
+    "f_macs": [],
+}
+
 NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
@@ -157,9 +187,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
         Track.get_or_create(
             session=db,
             defaults=dict(
-                points=points,
-                node_id=points[0].node_id,
-                algorithm="similar_tracks_test_track",
+                points=points, node_id=points[0].node_id, algorithm="similar_tracks_test_track", acm=DEFAULT_ACM
             ),
             track_uuid=track_uuid,
         )
@@ -213,10 +241,7 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=node_id,
-        track_uuid=track_uuid,
-        algorithm="test_track",
+        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track)
@@ -275,10 +300,7 @@ def test_most_similar_tracks_success_start(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=uuid4(),
-        track_uuid=track_uuid,
-        algorithm="test_track",
+        points=[p1, p2, p3], node_id=uuid4(), track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track)
@@ -333,10 +355,7 @@ def test_most_similar_tracks_success_end(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3],
-        node_id=uuid4(),
-        track_uuid=track_uuid,
-        algorithm="test_track",
+        points=[p1, p2, p3], node_id=uuid4(), track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track)

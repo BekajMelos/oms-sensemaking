@@ -1,6 +1,7 @@
 """Geospatial Sensemaker models."""
 
 import itertools
+import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
@@ -18,7 +19,7 @@ from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from pydantic import BaseModel
-from shapely import LineString
+from shapely import LineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -168,7 +169,7 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         return self.detection_time < other.detection_time
 
 
-class Track(BaseORM):
+class Track(BaseORM, SecurityMarkingMixin):
     """Represents a track.
 
     This model is also a dataclass. The order of the positional parameters in
@@ -236,6 +237,10 @@ class Track(BaseORM):
         """Return a linestring representation of the track."""
         return LineString([point.coordinates for point in self.points])
 
+    def to_geometry(self) -> dict:
+        """Return a linestring dict representation of the track."""
+        return json.loads(to_geojson(self.to_linestring()))
+
 
 class TrackWeaverBase(ABC):
     """Abstract TrackWeaver base class."""
@@ -285,6 +290,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
             node_id=points[0].node_id,
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
+            acm=aac_client.get_acm_rollup([point.acm for point in points]),
         )
 
 
@@ -373,6 +379,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             node_id=weighted_points[0].node_id,
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
+            acm=aac_client.get_acm_rollup([point.acm for point in weighted_points]),
         )
 
 
