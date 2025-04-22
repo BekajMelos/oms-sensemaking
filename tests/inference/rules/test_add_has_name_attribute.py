@@ -24,6 +24,7 @@ def name_attr(mocker: MockerFixture):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "junk won't match"
     attr.acm = DEFAULT_ACM
+    attr.labels = [SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.add_has_name_sm_label, "v1.0.0"]
     attr.attributeIri = SETTINGS.inference_add_has_name_attribute_iri
     attr.attributeName = SETTINGS.inference_add_has_name_attribute_iri.split("/")[-1]
     attr.attributeValue = "some attr name"
@@ -72,6 +73,7 @@ def test_has_action_already_ran(mocker: MockerFixture, name_attr):
             sourceId=name_attr.sourceId,
             nodeIds=[name_attr.nodeId],
             tags=SETTINGS.inference_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.add_has_name_sm_label, "v1.0.0"],
         )
     )
 
@@ -98,6 +100,7 @@ def test_action_creates_attribute(mocker: MockerFixture, name_attr):
             nodeId=name_attr.nodeId,
             acm=name_attr.acm,
             tags=SETTINGS.inference_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.add_has_name_sm_label, "v1.0.0"]
         )
     )
     expected_findings = [AddHasNameFinding(name_attr.acm, create_attr_response.id)]

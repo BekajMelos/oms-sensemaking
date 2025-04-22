@@ -278,6 +278,7 @@ def test_new_incursion_region1(
             nodeId=incurring_object.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             geometry=areas_of_interest[0],
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
@@ -287,6 +288,7 @@ def test_new_incursion_region1(
         CreateActivityInput(
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[0]}",
@@ -332,6 +334,7 @@ def test_new_incursion_region2(
             nodeId=incurring_object.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             geometry=areas_of_interest[1],
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
@@ -341,6 +344,7 @@ def test_new_incursion_region2(
         CreateActivityInput(
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[1]}",
