@@ -153,6 +153,7 @@ class InOrOutOfGarrison(BaseRule):
         # Create in/out of garrison activity pointing to observation
         garrison_activity = CreateActivityInput(
             acm=observation.acm,
+            labels=[SETTINGS.sm_inferenced],
             classIri=SETTINGS.inference_garrison_class_iri,
             name=activity_name,
             state=activity_state,

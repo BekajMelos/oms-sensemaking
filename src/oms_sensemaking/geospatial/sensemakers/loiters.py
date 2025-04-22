@@ -92,6 +92,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 name=SETTINGS.loiter_event_name,
                 tier=ObjectTier.DERIVATIVE,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
+                labels=[SETTINGS.sm_enriched],
                 classIri=SETTINGS.loiter_event_node_iri,
                 ifcCodes=set(),
                 isNso=True,
@@ -117,6 +118,7 @@ class LoiterOmsPublisher(OmsPublisher):
         for loiter in loiters:
             create_relationship_input = CreateRelationshipInput(
                 tags=[SETTINGS.geo_sensemaker_event_tag],
+                labels=[SETTINGS.sm_enriched],
                 name=SETTINGS.loiter_event_name,
                 startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
                 endNodeId=loiter.vehicle_id,
@@ -148,6 +150,7 @@ class LoiterOmsPublisher(OmsPublisher):
                 attributeType=AttributeType.GEOSPATIAL.value,
                 confidence=Confidence.HIGH.value,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
+                labels=[SETTINGS.sm_enriched],
                 sourceId=source_id,
                 geometry=loiter.to_geojson(),
                 nodeId=self.node_id_mapping[str(loiter.loiter_id)],

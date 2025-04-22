@@ -157,6 +157,7 @@ class Incursion(BaseRule):
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced],
             geometry=geo_of_interest,
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
@@ -167,6 +168,7 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format

@@ -456,6 +456,7 @@ class CotravelSensemaker(Sensemaker):
         # Resolution Relationship
         create_relationship_input = CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
+            labels=[SETTINGS.sm_enriched],
             name=SETTINGS.resolution_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
@@ -476,12 +477,14 @@ class CotravelSensemaker(Sensemaker):
         name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
         tags = [SETTINGS.geo_sensemaker_event_tag]
+        labels = [SETTINGS.sm_enriched]
 
         create_node_input = CreateNodeInput(
             acm=cotravel.get_acm(),
             name=name,
             tier=ObjectTier.DERIVATIVE,
             tags=[SETTINGS.geo_sensemaker_event_tag],
+            labels=[SETTINGS.sm_enriched],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -491,6 +494,7 @@ class CotravelSensemaker(Sensemaker):
         # vehicle 1 relationship
         create_relationship_input1 = CreateRelationshipInput(
             tags=tags,
+            labels=labels,
             name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=published_node.id,
             endNodeId=cotravel.track1.node_id,
@@ -502,6 +506,7 @@ class CotravelSensemaker(Sensemaker):
         # vehicle 2 relationship
         create_relationship_input2 = CreateRelationshipInput(
             tags=tags,
+            labels=labels,
             name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=published_node.id,
             endNodeId=cotravel.track2.node_id,
@@ -520,6 +525,7 @@ class CotravelSensemaker(Sensemaker):
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=[SETTINGS.geo_sensemaker_event_tag],
+            labels=[SETTINGS.sm_enriched],
             sourceId=source_id,
             geometry=cotravel.to_geojson(),
             nodeId=published_node.id,
