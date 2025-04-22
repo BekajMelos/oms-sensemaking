@@ -70,7 +70,7 @@ class AddHasNameAttribute(BaseRule):
             nodeId=attr.nodeId,
             acm=attr.acm,
             tags=SETTINGS.inference_tags,
-            labels=[SETTINGS.sm_inferenced],
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.add_has_name_sm_label, "v1.0.0"],
         )
 
         response = oms_client.create_attribute(attribute)
@@ -97,7 +97,7 @@ class AddHasNameAttribute(BaseRule):
             sourceId=attr.sourceId,
             nodeIds=[attr.nodeId],
             tags=SETTINGS.inference_tags,
-            labels=[SETTINGS.sm_inferenced]
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.add_has_name_sm_label, "v1.0.0"],
         )
 
         res = oms_client.get_attributes(attribute_query)

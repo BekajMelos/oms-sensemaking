@@ -456,7 +456,7 @@ class CotravelSensemaker(Sensemaker):
         # Resolution Relationship
         create_relationship_input = CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[SETTINGS.sm_enriched],
+            labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.cotravel_sm_label, "v1.0.0"],
             name=SETTINGS.resolution_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
@@ -477,14 +477,14 @@ class CotravelSensemaker(Sensemaker):
         name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
         tags = [SETTINGS.geo_sensemaker_event_tag]
-        labels = [SETTINGS.sm_enriched]
+        labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.cotravel_sm_label, "v1.0.0"]
 
         create_node_input = CreateNodeInput(
             acm=cotravel.get_acm(),
             name=name,
             tier=ObjectTier.DERIVATIVE,
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[SETTINGS.sm_enriched],
+            labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.cotravel_sm_label, "v1.0.0"],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -525,7 +525,7 @@ class CotravelSensemaker(Sensemaker):
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[SETTINGS.sm_enriched],
+            labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.cotravel_sm_label, "v1.0.0"],
             sourceId=source_id,
             geometry=cotravel.to_geojson(),
             nodeId=published_node.id,

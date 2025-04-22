@@ -147,7 +147,7 @@ class ResolutionSensemaker(Sensemaker):
             rel: CreateRelationshipInput = CreateRelationshipInput(
                 name=SETTINGS.resolution_relationship_name,
                 tags=[SETTINGS.resolution_sensemaker_tag],
-                labels=[SETTINGS.sm_enriched],
+                labels=[SETTINGS.sm_label, SETTINGS.res_sm_label, "v1.0.0"],
                 startNodeId=current_node_id,
                 endNodeId=node.id,
                 confidence=Confidence.HIGH.value,

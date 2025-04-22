@@ -34,6 +34,7 @@ class Incursion(BaseRule):
 
     def __init__(self, name: str):
         self.name = name
+        self.version = (1, 0, 0)
         self.features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
@@ -157,7 +158,7 @@ class Incursion(BaseRule):
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
-            labels=[SETTINGS.sm_inferenced],
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             geometry=geo_of_interest,
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
@@ -168,7 +169,7 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
-            labels=[SETTINGS.sm_inferenced],
+            labels=[SETTINGS.sm_label, SETTINGS.inference_sm_label, SETTINGS.incursion_sm_label, "v1.0.0"],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
