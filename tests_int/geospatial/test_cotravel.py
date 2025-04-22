@@ -488,11 +488,12 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
     node_id = uuid4()
     track_id = uuid4()
 
+    # average time behind is >30s
     p1 = Point(
         acm=DEFAULT_ACM,
         location="POINT (-0.148931 51.484423)",
         altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:30-04:00"),
         node_id=node_id,
         node_version=1,
         observation_id=uuid4(),
@@ -501,12 +502,11 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
         observation_confidence=Confidence.HIGH,
     )
 
-    # p2 is too far behind. > 30s after
     p2 = Point(
         acm=DEFAULT_ACM,
         location="POINT (-0.186849 51.465229)",
         altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:10:31-04:00"),
+        detection_time=datetime.fromisoformat("2024-03-20T12:10:30-04:00"),
         node_id=node_id,
         node_version=1,
         observation_id=uuid4(),
@@ -519,7 +519,7 @@ def test_potential_duplicate_failure(mock_oms_client, tester_db, db, mock_oms_cr
         acm=DEFAULT_ACM,
         location="POINT (-0.225258 51.476589)",
         altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:31-04:00"),
         node_id=node_id,
         node_version=1,
         observation_id=uuid4(),
