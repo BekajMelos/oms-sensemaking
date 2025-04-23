@@ -93,7 +93,7 @@ static site will be located in the `site` directory).
 
 ```shell
 # create the "latest" docker image
-make docker-build
+make build-docker
 
 # find the new docker image (it has the newest timestamp),
 docker image ls | grep sense
