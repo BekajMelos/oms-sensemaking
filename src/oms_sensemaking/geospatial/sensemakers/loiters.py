@@ -85,6 +85,8 @@ class LoiterOmsPublisher(OmsPublisher):
         :param loiters: list of Loiter events
         :return: CreateNodeInput objects
         """
+        loiter_sm = LoiterSensemaker(OmsCrudTool())
+        v_string = "v" + ".".join(map(str,loiter_sm.version))
         formatted_nodes = []
         for loiter in loiters:
             create_event_node = CreateNodeInput(
@@ -92,7 +94,8 @@ class LoiterOmsPublisher(OmsPublisher):
                 name=SETTINGS.loiter_event_name,
                 tier=ObjectTier.DERIVATIVE,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
-                labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.loiter_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, v_string],
                 classIri=SETTINGS.loiter_event_node_iri,
                 ifcCodes=set(),
                 isNso=True,
@@ -111,14 +114,16 @@ class LoiterOmsPublisher(OmsPublisher):
         :param loiters: list of Loiter events
         :return: CreateRelationshipInput objects
         """
-
+        loiter_sm = LoiterSensemaker(OmsCrudTool())
+        v_string = "v" + ".".join(map(str,loiter_sm.version))
         formatted_relationships = []
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
         for loiter in loiters:
             create_relationship_input = CreateRelationshipInput(
                 tags=[SETTINGS.geo_sensemaker_event_tag],
-                labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.loiter_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, v_string],
                 name=SETTINGS.loiter_event_name,
                 startNodeId=self.node_id_mapping[str(loiter.loiter_id)],
                 endNodeId=loiter.vehicle_id,
@@ -139,6 +144,8 @@ class LoiterOmsPublisher(OmsPublisher):
         :param loiters: list of Loiter events
         :return: CreateAttributeInput objects
         """
+        loiter_sm = LoiterSensemaker(OmsCrudTool())
+        v_string = "v" + ".".join(map(str,loiter_sm.version))
         formatted_attributes = []
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
 
@@ -150,7 +157,8 @@ class LoiterOmsPublisher(OmsPublisher):
                 attributeType=AttributeType.GEOSPATIAL.value,
                 confidence=Confidence.HIGH.value,
                 tags=[SETTINGS.geo_sensemaker_event_tag],
-                labels=[SETTINGS.sm_label, SETTINGS.geospatial_sm_label, SETTINGS.loiter_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, v_string],
                 sourceId=source_id,
                 geometry=loiter.to_geojson(),
                 nodeId=self.node_id_mapping[str(loiter.loiter_id)],

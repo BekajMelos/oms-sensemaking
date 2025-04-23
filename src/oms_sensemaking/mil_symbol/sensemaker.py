@@ -354,7 +354,7 @@ class MilSymbolSensemaker(Sensemaker):
 
                 attribute: CreateAttributeInput = CreateAttributeInput(
                     tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                    labels=[SETTINGS.sm_label, SETTINGS.mil_sym_sm_label, "v1.0.0"],
+                    labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, self.version_string],
                     attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                     attributeType=AttributeType.STRING,
                     attributeValue=symbol_code_update.new_symbol_id_code,

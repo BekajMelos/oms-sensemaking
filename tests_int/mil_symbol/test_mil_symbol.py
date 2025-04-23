@@ -1,4 +1,5 @@
 """MilSymbol Sensemaker Integration Tests"""
+import json
 from typing import List, Optional
 from unittest import mock
 from uuid import uuid4
@@ -23,6 +24,10 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
+if SETTINGS.mil_symbol_settings.enable_mil_symbol_sensemaker:
+            with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
+                mil_symbol_rules = json.load(fd)
+MilSymbolSM = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool=OmsCrudTool)
 
 def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str) -> NodeNode:
     create_node_input = CreateNodeInput(
@@ -104,7 +109,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_label, SETTINGS.mil_sym_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, MilSymbolSM.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -159,7 +164,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_label, SETTINGS.mil_sym_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, MilSymbolSM.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -211,7 +216,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_label, SETTINGS.mil_sym_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, MilSymbolSM.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -267,7 +272,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_label, SETTINGS.mil_sym_sm_label, "v1.0.0"],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, MilSymbolSM.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
