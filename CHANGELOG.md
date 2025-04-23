@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated Geosensemakers to use settings based on IRI from config
 
 ### Fixed
 

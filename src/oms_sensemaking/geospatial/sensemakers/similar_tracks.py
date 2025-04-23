@@ -98,7 +98,6 @@ class SimilarTracksSensemaker(Sensemaker):
         """
         LOGGER.debug(f"Looking for similar tracks to {data.node_id}")
         # Update the config with specific geo settings
-        # TODO configs will have some extra settings from other geo sensemakers. That okay?
         self.config.update(config)
 
         similar_results: TopSimilar = TopSimilar()
@@ -188,8 +187,8 @@ class SimilarTracksSensemaker(Sensemaker):
 
         for point in points:
             # reduce precision of the geohash by one to generate set for comparison to expand range for 'similar' tracks
-            point_geohash_low = point.geohash[: self.config["geohash_low"]]
-            base_geohash = point_geohash_low[0:-1]
+            point_geohash = point.geohash[: self.config["similar_tracks_geohash"]]
+            base_geohash = point_geohash[0:-1]
             buffered_geohash_set.add(base_geohash)
 
             neighbors = geohash.neighbours(base_geohash)

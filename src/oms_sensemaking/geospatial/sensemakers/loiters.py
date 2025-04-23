@@ -50,7 +50,7 @@ class Loiter(FindingBase):
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_LOITER)
     loiter_id: UUID = field(init=False, default_factory=uuid4)
     vehicle_id: UUID
-    geohash_low: str
+    geohash: str
     start_time: datetime
     end_time: datetime
     processed_points: list[Point]
@@ -91,12 +91,9 @@ class LoiterSensemaker(Sensemaker):
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {
-            # "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
-            # "loiter_min_time": SETTINGS.loiter_min_time,
             "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
             "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
             "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
-            # "geohash_low": SETTINGS.geohash_low,
         }
         self.oms_crud_tool = oms_crud_tool
 
@@ -115,7 +112,6 @@ class LoiterSensemaker(Sensemaker):
         LOGGER.debug(f"Detecting Loiters in {data.node_id}")
 
         # Update the config with specific geo settings
-        # TODO configs will have some extra settings from other geo sensemakers. That okay?
         self.config.update(config)
 
         confirmed_loiters: list[Loiter] = []
@@ -174,11 +170,11 @@ class LoiterSensemaker(Sensemaker):
         prospective_loiters: dict[str, list[PotentialLoiter]] = {}
         # Find potential loiters - consecutive points within a geohash within a time threshold
         for point in points:
-            point_geohash_low = point.geohash[: self.config["geohash_low"]]
+            point_geohash = point.geohash[: self.config["loiter_geohash"]]
 
-            if point_geohash_low in prospective_loiters:
+            if point_geohash in prospective_loiters:
                 # existing geohash
-                last_loiters: list[PotentialLoiter] = prospective_loiters[point_geohash_low]
+                last_loiters: list[PotentialLoiter] = prospective_loiters[point_geohash]
                 last_loiter = last_loiters[-1]
                 time_diff = abs((last_loiter.latest_time - point.detection_time))
                 if time_diff <= timedelta(seconds=self.config["valid_observed_threshold_seconds"]):
@@ -189,7 +185,7 @@ class LoiterSensemaker(Sensemaker):
                     # Expire if it's not already a valid loiter
                     validity_time_diff = abs(last_loiter.latest_time - last_loiter.start_time)
                     if validity_time_diff < timedelta(seconds=self.config["loiter_min_time"]):
-                        prospective_loiters.pop(point_geohash_low)
+                        prospective_loiters.pop(point_geohash)
                     else:
                         # it must be a new loiter at the same location
                         potential_loiter = PotentialLoiter(point.detection_time, point.detection_time)
@@ -197,7 +193,7 @@ class LoiterSensemaker(Sensemaker):
             else:
                 # new geohash
                 potential_loiter = PotentialLoiter(point.detection_time, point.detection_time)
-                prospective_loiters[point_geohash_low] = [potential_loiter]
+                prospective_loiters[point_geohash] = [potential_loiter]
 
         return prospective_loiters
 

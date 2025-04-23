@@ -201,11 +201,6 @@ class CotravelSensemaker(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.config = {
-            # "valid_observed_threshold_seconds": SETTINGS.valid_observed_threshold_seconds,
-            # "min_cotravel_duration_seconds": SETTINGS.min_cotravel_duration_seconds,
-            # "min_lag_lead_duration_seconds": SETTINGS.min_lag_lead_duration_seconds,
-            # "max_lag_lead_duration_seconds": SETTINGS.max_lag_lead_duration_seconds,
-            # "geohash_low": SETTINGS.geohash_low,
             "cotravel_event_node_attribute_iri": SETTINGS.cotravel_event_node_attribute_iri,
             "cotravel_relationship_iri": SETTINGS.cotravel_relationship_iri,
             "cotravel_track_to_event_relation_name": SETTINGS.cotravel_track_to_event_relation_name,
@@ -213,7 +208,6 @@ class CotravelSensemaker(Sensemaker):
             "cotravel_event_name": SETTINGS.cotravel_event_name,
             "lag_lead_event_name": SETTINGS.lag_lead_event_name,
             "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
-            # "max_potential_duplicate_time_diff_seconds": SETTINGS.max_potential_duplicate_time_diff_seconds
         }
         self.oms_crud_tool = oms_crud_tool
 
@@ -227,7 +221,6 @@ class CotravelSensemaker(Sensemaker):
         LOGGER.debug(f"Detecting Cotravels for {data.node_id}")
 
         # Update the config with specific geo settings
-        # TODO configs will have some extra settings from other geo sensemakers. That okay?
         self.config.update(config)
 
         cotravels: list[Cotravel] = []
@@ -237,10 +230,10 @@ class CotravelSensemaker(Sensemaker):
         for point in data.points:
             time = point.detection_time
 
-            point_geohash_low = point.geohash[: self.config["geohash_low"]]
+            point_geohash = point.geohash[: self.config["cotravel_geohash"]]
 
             db_points: list[tuple[UUID, Point]] = self.get_points(
-                point_geohash_low,
+                point_geohash,
                 data.node_id,
                 (time - timedelta(seconds=self.config["max_lag_lead_duration_seconds"])),
                 (time + timedelta(seconds=self.config["max_lag_lead_duration_seconds"])),
@@ -290,7 +283,7 @@ class CotravelSensemaker(Sensemaker):
 
     @classmethod
     def get_points(
-        cls, geohash_low: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
+        cls, geohash: str, vehicle_id: uuid.UUID, min_time: datetime, max_time: datetime, target_time: datetime
     ) -> list[tuple[UUID, Point]]:
         """
         Find points in other tracks that match the geohash of the given point within the time intervals.
@@ -308,7 +301,7 @@ class CotravelSensemaker(Sensemaker):
             AND points.detection_time < $4::TIMESTAMP WITHOUT TIME ZONE
         ORDER BY points.node_id, abs(EXTRACT(epoch FROM points.detection_time - $5::TIMESTAMP WITHOUT TIME ZONE))
 
-        :param geohash_low: Geohash to match in the DB
+        :param geohash: Geohash to match in the DB
         :param vehicle_id: Track node to ignore
         :param min_time: Min allowed time to lag by
         :param max_time: Max allowed time to lag by
@@ -326,7 +319,7 @@ class CotravelSensemaker(Sensemaker):
                         track_points_table.c.point_id == Point.point_id,
                     ).join(Track, track_points_table.c.track_id == Track.track_id)
                 )
-                .filter(Point.geohash.like(f"{geohash_low}%"))  # type: ignore [attr-defined]
+                .filter(Point.geohash.like(f"{geohash}%"))  # type: ignore [attr-defined]
                 .where(Point.node_id != vehicle_id, Point.detection_time > min_time, Point.detection_time < max_time)
                 .order_by(Point.node_id, func.abs(func.extract("epoch", Point.detection_time - target_time)))
                 .distinct(Point.node_id)

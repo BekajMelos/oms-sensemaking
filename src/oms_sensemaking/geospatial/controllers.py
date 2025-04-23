@@ -59,13 +59,12 @@ class GeospatialSensemakerController(SensemakerController):
             [csf.name for csf in self.common_sense_filters],
         )
 
-        self.config: dict = {}
+        with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
+            geo_config = json.load(fd)
+        self.config: dict = geo_config
 
     def start(self) -> None:
         """Start the controller."""
-
-        with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
-            self.config = json.load(fd)
 
         if SETTINGS.detect_cotravels:
             self.register("cotravel", CotravelSensemaker(self.oms_crud_tool))

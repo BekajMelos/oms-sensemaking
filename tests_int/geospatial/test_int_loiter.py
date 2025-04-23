@@ -197,7 +197,7 @@ def test_loiter_success(
     assert len(loiters) == 1
     loiter: Loiter = loiters[0]
 
-    assert loiter.geohash_low == "gcpug"
+    assert loiter.geohash == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
     assert all(
@@ -584,7 +584,7 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
     assert len(loiters) == 1
     loiter = loiters[0]
 
-    assert loiter.geohash_low == "gcpug"
+    assert loiter.geohash == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
     assert all(
@@ -822,7 +822,7 @@ def test_loiter_success_multiple_in_same_geohash(
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
-    assert loiter1.geohash_low == "gcpug"
+    assert loiter1.geohash == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
     assert all(
@@ -835,7 +835,7 @@ def test_loiter_success_multiple_in_same_geohash(
     assert loiter1.end_time == p6.detection_time
 
     loiter2 = loiters[1]
-    assert loiter2.geohash_low == "gcpug"
+    assert loiter2.geohash == "gcpug"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
     assert all(
@@ -1105,7 +1105,7 @@ def test_loiter_success_multiple_in_different_geohash(
     assert len(loiters) == 2
 
     loiter1: Loiter = loiters[0]
-    assert loiter1.geohash_low == "gcpug"
+    assert loiter1.geohash == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
     assert all(
@@ -1118,7 +1118,7 @@ def test_loiter_success_multiple_in_different_geohash(
     assert loiter1.end_time == p6.detection_time
 
     loiter2: Loiter = loiters[1]
-    assert loiter2.geohash_low == "gcpvm"
+    assert loiter2.geohash == "gcpvm"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
     assert all(
