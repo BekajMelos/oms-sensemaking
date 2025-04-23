@@ -179,7 +179,7 @@ class SQSListener(BaseSQSListener):
             raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
 
         while not self.stopped.is_set():
-            LOGGER.info("Waiting for events in SQS")
+            LOGGER.info(f"{self._name} Waiting for events in SQS")
 
             for _ in range(0, SETTINGS.sqs_read_loops):
                 if self.stopped.is_set():
@@ -198,7 +198,7 @@ class SQSListener(BaseSQSListener):
                         WaitTimeSeconds=0,
                     )
                 except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
-                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
+                    LOGGER.error(f"{self._name} Unable to connect to SQS {self._queue_url}: {ex}. Trying again...")
                     sleep(SETTINGS.sqs_read_wait_seconds)
                     break
 
