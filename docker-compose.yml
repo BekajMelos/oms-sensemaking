@@ -9,8 +9,6 @@ services:
     environment:
       # AWS
       AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-http://localstack:4566}
-      #SQS_GEO_QUEUE_URL: ${SQS_GEO_QUEUE_URL}
-
       # database config
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
