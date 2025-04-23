@@ -68,20 +68,19 @@ class PotentialMatch:
     track_id1: UUID
     track_id2: UUID
     is_true_cotravel: bool = field(init=False)
-    is_potential_duplicate: bool = field(init=False)
     cotravel_type: CotravelType = field(init=False)
+    total_time_diff: timedelta = field(default=timedelta(seconds=0), init=False)
+    num_points: int = field(default=0, init=False)
 
     def __post_init__(self) -> None:
         """Post init for Colocation"""
 
         diff = abs(self.start_time1 - self.start_time2)
         self.is_true_cotravel = False
-        self.is_potential_duplicate = False
 
         if diff <= MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS:
             self.cotravel_type = CotravelType.potential_duplicate
             self.is_true_cotravel = True
-            self.is_potential_duplicate = True
         elif diff <= MIN_LAG_LEAD_DURATION_SECONDS:
             self.cotravel_type = CotravelType.cotravel
             self.is_true_cotravel = True
@@ -102,12 +101,16 @@ class PotentialMatch:
         ):
             self.last_time1 = time1
             self.last_time2 = time2
-            self.is_true_cotravel = self.is_true_cotravel and (abs(time1 - time2) <= MIN_LAG_LEAD_DURATION_SECONDS)
+            current_time_diff = abs(time1 - time2)
 
-            is_current_within_duplicate_threshold = abs(time1 - time2) <= MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS
-            self.is_potential_duplicate = self.is_potential_duplicate and is_current_within_duplicate_threshold
+            self.num_points = self.num_points + 1
+            self.total_time_diff = self.total_time_diff + current_time_diff
+            avg_time_diff = self.total_time_diff.total_seconds() / self.num_points
+            is_potential_duplicate = timedelta(seconds=avg_time_diff) <= MAX_POTENTIAL_DUPLICATE_TIME_DIFF_SECONDS
 
-            if self.is_potential_duplicate:
+            self.is_true_cotravel = self.is_true_cotravel and (current_time_diff <= MIN_LAG_LEAD_DURATION_SECONDS)
+
+            if is_potential_duplicate:
                 self.cotravel_type = CotravelType.potential_duplicate
             elif self.is_true_cotravel:
                 self.cotravel_type = CotravelType.cotravel

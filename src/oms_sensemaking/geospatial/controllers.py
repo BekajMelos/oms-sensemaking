@@ -356,7 +356,7 @@ class GeospatialSensemakerController(SensemakerController):
         )
 
     def is_generated_track(self, obs: ObservationObservation):
-        return obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
+        return hasattr(obs, "labels") and obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
 
 
 class GeoQueueFilter(EventFilter):
