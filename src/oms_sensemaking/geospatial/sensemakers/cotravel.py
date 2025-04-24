@@ -442,8 +442,22 @@ class CotravelSensemaker(Sensemaker):
         :param cotravel: Cotravel to publish
         :return: None
         """
-        if cotravel.cotravel_type == CotravelType.potential_duplicate:
+
+        node = self.oms_crud_tool.get_node(id=track.node_id)
+        print('publish')
+        print(self.oms_crud_tool)
+        print(node)
+
+        print(cotravel.cotravel_type == CotravelType.potential_duplicate)
+        print(node.isNso)
+        print('\n\n\n')
+
+        if cotravel.cotravel_type == CotravelType.potential_duplicate and node.isNso:
+            # Potential Duplicate only valid on NSO nodes
             self.publish_potential_duplicate(track, cotravel)
+        elif cotravel.cotravel_type == CotravelType.potential_duplicate:
+            cotravel.cotravel_type = CotravelType.cotravel
+            self.publish_cotravel(track, cotravel)
         else:
             self.publish_cotravel(track, cotravel)
 
@@ -487,7 +501,7 @@ class CotravelSensemaker(Sensemaker):
             tags=[SETTINGS.geo_sensemaker_event_tag],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
         published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
 

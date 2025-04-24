@@ -14,6 +14,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateNodeCreateNode,
     CreateNodeInput,
     CreateRelationshipInput,
+    NodeNode,
 )
 from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
 from sqlalchemy import select
@@ -316,7 +317,7 @@ def test_cotravel_success(
     # Set up mocks
     cotravel_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False)
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -340,7 +341,7 @@ def test_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
     )
 
@@ -456,7 +457,7 @@ def test_potential_duplicate_success(
     # Set up mocks
     cotravel_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True)
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -493,12 +494,104 @@ def test_potential_duplicate_success(
     assert findings[0].algorithm_configuration
 
 
-def test_potential_duplicate_failure(
+def test_potential_duplicate_nso(
         mock_oms_client: MagicMock,
         tester_db: Session,
         db: Session,
         mock_oms_crud_tool: OmsCrudTool,
         aircraft_geo_config: dict):
+
+    node_id = uuid4()
+    track_id = uuid4()
+
+    # <30 seconds behind fixture track
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.148931 51.484423)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.186849 51.465229)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:10:28-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location="POINT (-0.225258 51.476589)",
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id, acm=ROLLUP_DEFAULT_ACM
+    )
+
+    # Test isNSO False should return cotravel
+    # Set up mocks
+    cotravel_node_id = uuid4()
+    mock_oms_client.create_node = MagicMock(
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    )
+    mock_oms_client.node.return_value=NodeNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False)
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
+
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+
+    assert len(cotravels) == 1
+    cotravel = cotravels[0]
+    print('mock: ', mock_oms_client)
+    assert cotravel.cotravel_type == CotravelType.cotravel
+
+    # Test isNSO True should return duplicate
+    # Set up mocks
+    cotravel_node_id = uuid4()
+    mock_oms_client.create_node = MagicMock(
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    )
+
+    mock_oms_client.node.return_value=NodeNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True)
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
+
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+
+    assert len(cotravels) == 1
+    cotravel = cotravels[0]
+    assert cotravel.cotravel_type == CotravelType.potential_duplicate
+
+
+def test_potential_duplicate_failure(
+    mock_oms_client: MagicMock,
+    tester_db: Session,
+    db: Session,
+    mock_oms_crud_tool: OmsCrudTool,
+    aircraft_geo_config: dict
+):
+
     node_id = uuid4()
     track_id = uuid4()
 
@@ -550,7 +643,7 @@ def test_potential_duplicate_failure(
     # Set up mocks
     cotravel_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True)
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -659,7 +752,7 @@ def test_multiple_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
     )
     mock_oms_client.create_node.assert_any_call(
@@ -670,7 +763,7 @@ def test_multiple_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
     )
 
@@ -850,7 +943,7 @@ def test_lag_lead_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
     )
 
@@ -1042,7 +1135,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     # Set up mocks
     cotravel_node_id = uuid4()
     mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False)
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
@@ -1066,7 +1159,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=True,
+            isNso=False,
         )
     )
 
