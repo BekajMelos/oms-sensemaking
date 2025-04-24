@@ -142,6 +142,7 @@ class GeospatialSensemakerController(SensemakerController):
                 db.expire_on_commit = False
                 # create a point in the oms_sensemaking db, including the vehicle node_id
                 point = is_new = None
+                LOGGER.info(f' coordinates: Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})')
                 try:
                     point, is_new = Point.get_or_create(
                         db,
