@@ -444,13 +444,6 @@ class CotravelSensemaker(Sensemaker):
         """
 
         node = self.oms_crud_tool.get_node(id=track.node_id)
-        print('publish')
-        print(self.oms_crud_tool)
-        print(node)
-
-        print(cotravel.cotravel_type == CotravelType.potential_duplicate)
-        print(node.isNso)
-        print('\n\n\n')
 
         if cotravel.cotravel_type == CotravelType.potential_duplicate and node.isNso:
             # Potential Duplicate only valid on NSO nodes
