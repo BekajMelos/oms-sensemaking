@@ -689,7 +689,7 @@
 											"    if (retryCount >= 3) {",
 											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
 											"        pm.environment.unset(\"retryCount\");",
-											"        postman.setNextRequest(null); // Stop execution",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
 											"    } else {",
 											"        pm.environment.set(\"retryCount\", retryCount);",
 											"",
@@ -2121,7 +2121,7 @@
 											"    if (retryCount >= 4) {",
 											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
 											"        pm.environment.unset(\"retryCount\");",
-											"        postman.setNextRequest(null); // Stop execution",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
 											"    } else {",
 											"        pm.environment.set(\"retryCount\", retryCount);",
 											"",
@@ -3418,7 +3418,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -3840,13 +3840,11 @@
 											"    pm.environment.unset(\"retryCount\"); // Reset on success",
 											"",
 											"    pm.test(\"Correct Relationship Name\", function () {",
-											"        pm.expect(response.data.relationships.data[0].name).to.equal(\"Same As\");",
-											"        pm.expect(response.data.relationships.data[1].name).to.equal(\"Same As\");",
+											"        pm.expect(response.data.relationships.data[0].name).to.equal(\"Potential Duplicate\");",
 											"    });",
 											"",
 											"    // Set the attribute ID",
 											"    pm.collectionVariables.set(\"cotravelrelId1\", response.data.relationships.data[0].id);",
-											"    pm.collectionVariables.set(\"cotravelrelId2\", response.data.relationships.data[1].id);",
 											"",
 											"} else {",
 											"    console.warn(\"Invalid response received. Retrying...\");",
@@ -3858,7 +3856,9 @@
 											"    if (retryCount >= 4) {",
 											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
 											"        pm.environment.unset(\"retryCount\");",
-											"        postman.setNextRequest(null); // Stop execution",
+											"        pm.test(\"Getting Potential Duplicate Relationship\", function() {",
+											"            pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"        });",
 											"    } else {",
 											"        pm.environment.set(\"retryCount\", retryCount);",
 											"",
@@ -3926,6 +3926,128 @@
 							"response": []
 						},
 						{
+							"name": "Get Track Observation Id1",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.observations && ",
+											"                      response.data.observations.data && ",
+											"                      response.data.observations.data.length > 0 && ",
+											"                      response.data.observations.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"cotraveltrackobsId1\", response.data.observations.data[0].id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Track Observation Id2",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.observations && ",
+											"                      response.data.observations.data && ",
+											"                      response.data.observations.data.length > 0 && ",
+											"                      response.data.observations.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"cotraveltrackobsId2\", response.data.observations.data[0].id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Update NSO Res Rel Tag 1",
 							"event": [
 								{
@@ -3968,15 +4090,15 @@
 							"response": []
 						},
 						{
-							"name": "Update NSO Res Rel Tag 2",
+							"name": "Update Track Observation Tag 1",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Cotravel Rel Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelrelId2\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelrelId2\")).to.not.be.null;",
+											"pm.test(\"Loiter Track Obs Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"cotraveltrackobsId1\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"cotraveltrackobsId1\")).to.not.be.null;",
 											"});"
 										],
 										"type": "text/javascript",
@@ -3989,14 +4111,58 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{cotravelrelId2}}\"\n}"
+										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId1}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Track Observation Tag 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Loiter Track Obs Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"cotraveltrackobsId1\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"cotraveltrackobsId1\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4678,6 +4844,14 @@
 		},
 		{
 			"key": "cotravelattrId2",
+			"value": ""
+		},
+		{
+			"key": "cotraveltrackobsId1",
+			"value": ""
+		},
+		{
+			"key": "cotraveltrackobsId2",
 			"value": ""
 		}
 	]

@@ -275,7 +275,15 @@ class CotravelSensemaker(Sensemaker):
             track_uuid = data.track_uuid
             LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_uuid}")
 
+        node = self.oms_crud_tool.get_node(id=data.node_id)
+
         for cotravel in cotravels:
+
+            # Coerce potential duplicate into cotravel if it's not an NSO Node
+            if cotravel.cotravel_type == CotravelType.potential_duplicate and not node.isNso:
+                # Potential Duplicate only valid on NSO nodes
+                cotravel.cotravel_type = CotravelType.cotravel
+
             LOGGER.debug(f"Cotravel ({cotravel.cotravel_type}) geometry: {cotravel.geometry.wkt}")
             self.publish(data, cotravel)
 
@@ -443,14 +451,8 @@ class CotravelSensemaker(Sensemaker):
         :return: None
         """
 
-        node = self.oms_crud_tool.get_node(id=track.node_id)
-
-        if cotravel.cotravel_type == CotravelType.potential_duplicate and node.isNso:
-            # Potential Duplicate only valid on NSO nodes
+        if cotravel.cotravel_type == CotravelType.potential_duplicate:
             self.publish_potential_duplicate(track, cotravel)
-        elif cotravel.cotravel_type == CotravelType.potential_duplicate:
-            cotravel.cotravel_type = CotravelType.cotravel
-            self.publish_cotravel(track, cotravel)
         else:
             self.publish_cotravel(track, cotravel)
 
@@ -466,7 +468,7 @@ class CotravelSensemaker(Sensemaker):
         # Resolution Relationship
         create_relationship_input = CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            name=SETTINGS.resolution_relationship_name, # TODO deconflict with potential_duplicate_relationship_name
+            name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
             confidence=Confidence.HIGH,
@@ -494,7 +496,7 @@ class CotravelSensemaker(Sensemaker):
             tags=[SETTINGS.geo_sensemaker_event_tag],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
         published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
 

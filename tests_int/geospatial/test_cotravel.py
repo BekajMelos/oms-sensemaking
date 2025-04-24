@@ -341,7 +341,7 @@ def test_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
     )
 
@@ -474,7 +474,7 @@ def test_potential_duplicate_success(
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            name=SETTINGS.resolution_relationship_name,
+            name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=node_id,
             endNodeId=NODE_UUID1,
             confidence=Confidence.HIGH,
@@ -752,7 +752,7 @@ def test_multiple_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
     )
     mock_oms_client.create_node.assert_any_call(
@@ -763,7 +763,7 @@ def test_multiple_cotravel_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
     )
 
@@ -943,7 +943,7 @@ def test_lag_lead_success(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
     )
 
@@ -1159,7 +1159,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             tags=tags,
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
-            isNso=False,
+            isNso=True,
         )
     )
 
