@@ -203,9 +203,11 @@ class SQSListener(BaseSQSListener):
                     break
 
                 if "Messages" not in response:
-                    LOGGER.debug("No Messages in response.")
+                    LOGGER.debug(f"{self._name} No Messages in response.")
                     sleep(SETTINGS.sqs_read_wait_seconds)
                     continue
+                else:
+                    LOGGER.debug(f"{self._name} Retrieved {len(response["Messages"])} items from queue")
 
                 for message in response["Messages"]:
                     audit_log: AuditLogEvent = AuditLogEvent.from_json((message["Body"]))
