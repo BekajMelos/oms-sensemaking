@@ -13,7 +13,8 @@ rdf_client = RDFClient()
 
 @router.get('/resolver/{obj_id}')
 def rdf_resolver(obj_id: UUID4):
-    node = rdf_client.get_rdf_from_id(obj_id, oms_crud_tool)
-    if not node:
+    rdfs = rdf_client.get_rdf_from_id(obj_id, oms_crud_tool)
+    if not rdfs:
+        LOGGER.error("Invalid Object. Ensure the Id is correct")
         raise HTTPException(status_code=404, detail="Object not found")
-    return node
+    return rdfs

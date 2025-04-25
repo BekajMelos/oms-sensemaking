@@ -114,7 +114,7 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(semantic.router, prefix="/semantic", tags=["semantic"])
     application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
-    application.include_router(rdf.router)
+    application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
