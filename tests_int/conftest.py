@@ -33,7 +33,8 @@ from oms_sensemaking.clients.instances import SessionLocal
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
 alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "migrations")))
-alembic_cfg.set_main_option("sqlalchemy.url", SETTINGS.db_uri)
+escaped_uri = SETTINGS.db_uri.replace('%','%%')
+alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 
 # NLP Configuration
 if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
