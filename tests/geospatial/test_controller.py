@@ -66,12 +66,14 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
 @mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
 @mock.patch("oms_sensemaking.geospatial.controllers.APITrack")
 @mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
+@mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_config(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
-    mock_aac_client: AacClient,
+    mock_aac_client1: AacClient,
+    mock_aac_client2: AacClient,
     mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
