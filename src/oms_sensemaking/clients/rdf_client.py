@@ -22,10 +22,6 @@ class RDFClient:
             LOGGER.error(f"TypeError: Incorrect type in the object JSON - {str(e)}")
         except ValueError as e:
             LOGGER.error(f"ValueError: Invalid data for object ID {obj_id} - {str(e)}")
-        except AttributeError as e:
-            LOGGER.error(f"AttributeError: Missing or incorrect attribute in node - {str(e)}")
-        except ConnectionError as e:
-            LOGGER.error(f"ConnectionError: Issue with connection to the service - {str(e)}")
         except TimeoutError as e:
             LOGGER.error(f"TimeoutError: Timeout occurred while fetching the node - {str(e)}")
         except Exception as e:
