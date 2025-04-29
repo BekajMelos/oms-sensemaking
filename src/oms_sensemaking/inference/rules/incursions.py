@@ -1,4 +1,3 @@
-
 from oms_sdk.generated.generated_graphql_client import (
     ActivityQuery,
     AttributeQuery,
@@ -15,8 +14,8 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateActivityInput,
     UpdateAttributeInput,
 )
-from shapely import Point
 from shapely.geometry import shape
+from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
@@ -57,15 +56,14 @@ class Incursion(BaseRule):
         obs = rule_context.observation
         # Fetch node that observation points to
         incurring_object = oms_client.get_node(obs.nodeId)
-        geo = obs.geometry
+        obs_geo: BaseGeometry = shape(obs.geometry)
 
         # Check if observation occurred in an area of interest
         geo_of_interest = None
         for feature in self.features:
-            point_coordinates = geo["coordinates"]
-            shapely_region = shape(feature["geometry"])
-            shapely_point = Point(point_coordinates)
-            if shapely_region.contains(shapely_point):
+            feature_region = shape(feature["geometry"])
+            overlap = feature_region.intersection(obs_geo)
+            if not overlap.is_empty:
                 geo_of_interest = feature["geometry"]
                 break
 
@@ -86,13 +84,15 @@ class Incursion(BaseRule):
 
             incursion_obs = TimeParsedObservation(obs)
             for existing_incursion_attribute in existing_incursion_attributes:
-                inc_attr = GenericNodeTimeframe(existing_incursion_attribute.valueStart,
-                                                existing_incursion_attribute.valueEnd)
+                inc_attr = GenericNodeTimeframe(
+                    existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
+                )
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
-                if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(incurring_object,
-                                                                                                    obs):
+                if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
+                    incurring_object, obs
+                ):
                     # Update existing incursion with union of observation and incursion time intervals
                     inc_attr.update_generic_node_times_with_observation(incursion_obs)
                     self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
@@ -138,7 +138,7 @@ class Incursion(BaseRule):
         updated_attribute_input = UpdateAttributeInput(
             id=existing_incursion_attribute.id,
             valueStart=inc_attr.start_time.isoformat(),
-            valueEnd=inc_attr.end_time.isoformat()
+            valueEnd=inc_attr.end_time.isoformat(),
         )
         oms_client.update_attribute(updated_attribute_input)
 

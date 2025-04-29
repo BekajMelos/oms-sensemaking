@@ -2,6 +2,7 @@
 
 import json
 import logging
+import traceback
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -10,7 +11,6 @@ from queue import SimpleQueue
 from threading import Event, Timer
 from uuid import UUID, uuid4
 
-from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
@@ -22,7 +22,14 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
-from oms_sensemaking.models.geo import CommonSenseFilter, Point, TimeBinTrackWeaver, Track, TrackWeaverBase
+from oms_sensemaking.models.geo import (
+    CommonSenseFilter,
+    Point,
+    TimeBinTrackWeaver,
+    Track,
+    TrackWeaverBase,
+    decompose_observation_geometry,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -97,7 +104,6 @@ class GeospatialSensemakerController(SensemakerController):
         :return: True if the audit log event was successfully processed, False otherwise.
         """
         now: datetime = datetime.now(tz=timezone.utc)
-        point: Point | None = None
 
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
@@ -127,45 +133,55 @@ class GeospatialSensemakerController(SensemakerController):
             LOGGER.warning("No node found. Unable to process observation.")
             return False
 
-        with db_session() as db:
-            # we're still using the point object for detections, so don't expire it
-            db.expire_on_commit = False
-            # create a point in the oms_sensemaking db, including the vehicle node_id
-            point, is_new = Point.get_or_create(
-                db,
-                defaults=dict(
-                    acm=oms_obs.acm,
-                    location=(f'Point({oms_obs.geometry["coordinates"][0]} ' f'{oms_obs.geometry["coordinates"][1]})'),
-                    altitude=None,
-                    # The below line can cause Shapely methods to fail if only some points have a Z coordinate.
-                    #   Mismatched coordinate array lengths (2 vs 3) will break the LineString and MultiLineString
-                    #   methods used by sensemakers to output results. This must be dealt with before we can handle
-                    #   unreliable altitudes in OMS observations.
-                    # altitude=oms_obs.geometry["coordinates"][2] if oms_obs.geometry["coordinates"][2:] else None,
-                    detection_time=isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
-                    node_version=int(node_version),
-                    observation_version=int(oms_obs.version),
-                ),
-                node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
-                observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),
-                observation_confidence=oms_obs.confidence,
-                source_id=oms_obs.sourceId if type(oms_obs.sourceId) is UUID else UUID(oms_obs.sourceId),
-                # TODO: Multiply by source weight if available
-                weight=self.confidence_weight_map[oms_obs.confidence],
-            )
+        obs_geo_data = decompose_observation_geometry(oms_obs)
 
-        if not is_new:
-            if point:
-                LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-            else:
-                LOGGER.warning("Unable to process point.")
-        if point:
-            with self.lock:
-                # we just received the point, so set the track_id time to now in the buffer
-                self.track_times[track_uuid] = now
-                self.track_node_buffer[track_uuid].append(point)
-            return True
-        return False
+        success = False
+        with db_session() as db:
+            for point_data in obs_geo_data:
+                # we're still using the point object for detections, so don't expire it
+                db.expire_on_commit = False
+                # create a point in the oms_sensemaking db, including the vehicle node_id
+                point = is_new = None
+                LOGGER.info(f' coordinates: Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})')
+                try:
+                    point, is_new = Point.get_or_create(
+                        db,
+                        defaults=dict(
+                            acm=oms_obs.acm,
+                            altitude=None,
+                            # The below altitude setting can cause Shapely methods to fail if only some points have
+                            #   a Z coordinate. Mismatched coordinate array lengths (2 vs 3) will break the LineString
+                            #   and MultiLineString methods used by sensemakers to output results. This must be dealt
+                            #   with before we can handle unreliable altitudes in OMS observations.
+                            # altitude=oms_obs.geometry["coordinates"][2]
+                            # if oms_obs.geometry["coordinates"][2:]
+                            # else None,
+                            detection_time=point_data["detection_time"],
+                            node_version=int(node_version),
+                            observation_version=int(oms_obs.version),
+                        ),
+                        location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
+                        node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
+                        observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),
+                        observation_confidence=oms_obs.confidence,
+                        source_id=oms_obs.sourceId if type(oms_obs.sourceId) is UUID else UUID(oms_obs.sourceId),
+                        # TODO: Multiply by source weight if available
+                        weight=self.confidence_weight_map[oms_obs.confidence],
+                    )
+                except Exception:
+                    LOGGER.warning("Unable to process point.")
+                    LOGGER.warning(traceback.format_exc())
+                    continue
+
+                if point:
+                    if not is_new:
+                        LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+                    with self.lock:
+                        # we just received the point, so set the track_id time to now in the buffer
+                        self.track_times[track_uuid] = now
+                        self.track_node_buffer[track_uuid].append(point)
+                        success = True
+        return success
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
@@ -266,12 +282,12 @@ class GeospatialSensemakerController(SensemakerController):
         oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
         # Filter observations
-        # Only process if there is an observation and it has a geojson point
+        # Only process if there is an observation and it has a geojson Point or LineString
         if not oms_obs:
             return None
 
-        can_handle_geometry = oms_obs.geometry["type"].lower() != "point"
-        if can_handle_geometry:
+        cannot_handle_geometry = oms_obs.geometry["type"].lower() not in ("point", "linestring")
+        if cannot_handle_geometry:
             return None
 
         return oms_obs

@@ -5,16 +5,19 @@ import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
-from datetime import UTC, datetime
+from collections.abc import Iterable, Sequence
+from datetime import UTC, datetime, timedelta, timezone
 from functools import cached_property
+from typing import TypedDict
 
-import geopy.distance
+import geopy.distance as gd
+from dateutil.parser import isoparse
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
 from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
+from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from pydantic import BaseModel
 from shapely import LineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
@@ -42,6 +45,11 @@ track_points_table = Table(
     Column("track_id", ForeignKey("tracks.track_id"), primary_key=True),
     Column("point_id", ForeignKey("points.point_id"), primary_key=True),
 )
+
+
+class TimedCoords(TypedDict):
+    detection_time: datetime
+    coordinates: Sequence[int]
 
 
 class OmsGeoMixin(MappedAsDataclass):
@@ -435,7 +443,7 @@ class CommonSenseFilter(BaseModel):
             if last_good_point.altitude is not None:
                 last_altitude_point = last_good_point
             time_delta = abs(cur_point.detection_time - last_good_point.detection_time)
-            distance: float = geopy.distance.geodesic(
+            distance: float = gd.geodesic(
                 (cur_point.coordinates[1], cur_point.coordinates[0]),
                 (last_good_point.coordinates[1], last_good_point.coordinates[0]),
             ).meters
@@ -513,3 +521,71 @@ def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
     :return: A Track.
     """
     return db.execute(select(Track).filter_by(track_uuid=track_uuid)).unique().scalar_one()
+
+
+def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[TimedCoords]:
+    if oms_obs.geometry["type"] == "Point":
+        return [
+            {
+                "detection_time": isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
+                "coordinates": oms_obs.geometry["coordinates"],
+            }
+        ]
+    if oms_obs.geometry["type"] == "LineString":
+        start_time = isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc)
+        end_time = isoparse(oms_obs.endTime).replace(tzinfo=timezone.utc)
+        # Always remember to convert lon/lat to lat/lon to use geopy distance calc
+        total_distance: float = gd.geodesic(
+            *(gd.lonlat(*obs_coords) for obs_coords in oms_obs.geometry["coordinates"])
+        ).meters
+        total_time = end_time - start_time
+        # Handle 0 elapsed time by giving all points the same time
+        if total_time.total_seconds() == 0:
+            LOGGER.debug("Handling 0 elapsed time...")
+            return [
+                {
+                    "detection_time": start_time,
+                    "coordinates": coordinates,
+                }
+                for coordinates in oms_obs.geometry["coordinates"]
+            ]
+        # Handle 0 movement by dividing the time evenly across points
+        if total_distance == 0:
+            LOGGER.debug("Handling 0 distance...")
+            timed_coords: list[TimedCoords] = [
+                {
+                    "detection_time": start_time + total_time * idx / (len(oms_obs.geometry["coordinates"]) - 1),
+                    "coordinates": coordinates,
+                }
+                for idx, coordinates in enumerate(oms_obs.geometry["coordinates"])
+            ]
+            # Eliminate rounding errors on final coordinate time
+            timed_coords[-1]["detection_time"] = end_time
+            return timed_coords
+        average_velocity_mps = total_distance / total_time.total_seconds()
+        # Assuming constant velocity: coordinate times are proportional to distance travelled so far
+        # The start point needs special handling because calling gd.geodesic() with a single coordinate
+        # raises an exception
+        LOGGER.debug("Handling non-zero time and distance")
+        timed_coords = [
+            {
+                "detection_time": start_time,
+                "coordinates": oms_obs.geometry["coordinates"][0],
+            }
+        ] + [
+            {
+                "detection_time": start_time
+                + timedelta(
+                    seconds=gd.geodesic(
+                        *(gd.lonlat(*coords) for coords in oms_obs.geometry["coordinates"][: idx + 1])
+                    ).meters
+                    / average_velocity_mps
+                ),
+                "coordinates": oms_obs.geometry["coordinates"][idx],
+            }
+            for idx in range(1, len(oms_obs.geometry["coordinates"]))
+        ]
+        # Eliminate rounding errors on final coordinate time
+        timed_coords[-1]["detection_time"] = end_time
+        return timed_coords
+    return []
