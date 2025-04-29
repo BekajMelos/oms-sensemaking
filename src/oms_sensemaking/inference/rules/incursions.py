@@ -127,19 +127,29 @@ class Incursion(BaseRule):
         incursion_activity = activity_response.data[0]
 
         # Update start/end times and add observation to incursion activity
+        activity_labels = incursion_activity.labels
+        if activity_labels is None:
+            activity_labels = []
+        activity_labels.append(SETTINGS.sm_enriched_label)
         updated_activity_input = UpdateActivityInput(
             id=incursion_activity.id,
             startTime=inc_attr.start_time.isoformat(),
             endTime=inc_attr.end_time.isoformat(),
             addObservationIds=[observation.id],
+            labels=activity_labels
         )
         oms_client.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
+        attribute_labels = existing_incursion_attribute.labels
+        if attribute_labels is None:
+            attribute_labels = []
+        attribute_labels.append(SETTINGS.sm_enriched_label)
         updated_attribute_input = UpdateAttributeInput(
             id=existing_incursion_attribute.id,
             valueStart=inc_attr.start_time.isoformat(),
-            valueEnd=inc_attr.end_time.isoformat()
+            valueEnd=inc_attr.end_time.isoformat(),
+            labels=attribute_labels
         )
         oms_client.update_attribute(updated_attribute_input)
 

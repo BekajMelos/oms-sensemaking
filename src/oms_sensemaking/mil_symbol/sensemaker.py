@@ -374,9 +374,14 @@ class MilSymbolSensemaker(Sensemaker):
         :param code: code to set for symbolIdCode
         :return: None
         """
+        node_labels = oms_node.labels
+        if node_labels is None:
+            node_labels = []
+        node_labels.append(SETTINGS.sm_enriched_label)
         update_node_input = UpdateNodeInput(
             id=oms_node.id,
-            symbolIdCode=code
+            symbolIdCode=code,
+            labels=node_labels
         )
         self.oms_crud_tool.update_node(update_node_input)
 
