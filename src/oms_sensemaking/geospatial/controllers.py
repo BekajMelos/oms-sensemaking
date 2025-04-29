@@ -5,6 +5,7 @@ import logging
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
+from itertools import groupby
 from operator import attrgetter
 from queue import SimpleQueue
 from threading import Event, Timer
@@ -189,42 +190,50 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             points = self.track_node_buffer[track_uuid]
                             points.sort(key=attrgetter("detection_time"))
+
                             # Get the IRI hierarchy for the node
                             oms_node = self.oms_crud_tool.get_node(points[0].node_id)
-                            ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
-                            for csf in self.common_sense_filters:
-                                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                    LOGGER.debug(
-                                        "Running common sense filter %s on single points in track %s",
-                                        csf.name,
-                                        track_uuid,
-                                    )
-                                    points = csf.filter_points(points)
-                            # Execute a track weaver on the buffered Points and save the new Track with the chosen UUID
-                            weaved_track = self.track_weaver.execute(points)
-                            for csf in self.common_sense_filters:
-                                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                    LOGGER.debug(
-                                        "Running common sense filter %s on point deltas in track %s",
-                                        csf.name,
-                                        track_uuid,
-                                    )
-                                    weaved_track.points = csf.filter_point_deltas(weaved_track.points)
-                            # Abort and do not clear buffer if final track has less than 2 points
-                            if len(weaved_track.points) < 2:
-                                continue
-                            track_dict = {
-                                "points": weaved_track.points,
-                                "node_id": weaved_track.node_id,
-                                "algorithm": weaved_track.algorithm,
-                                "observation_ids": weaved_track.observation_ids,
-                                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
-                            }
-                            track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
-                            LOGGER.info(f"Track completed: {track_uuid}")
-                            oms_track = APITrack(track).create_oms_track()
-                            LOGGER.info(f"OMS Track published: {oms_track.id}")
-                            self.log_track_comparison(points=points, track=track)
+
+                            # groupby points into separate 7 day bins here
+                            time_bins = self.bin_points_for_track(points)
+                            for binned_points in time_bins.values():
+                                ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
+                                for csf in self.common_sense_filters:
+                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                        LOGGER.debug(
+                                            "Running common sense filter %s on single points in track %s",
+                                            csf.name,
+                                            track_uuid,
+                                        )
+                                        binned_points = csf.filter_points(binned_points)
+                                # Execute a track weaver on the buffered Points
+                                # and save the new Track with the chosen UUID
+                                weaved_track = self.track_weaver.execute(binned_points)
+                                for csf in self.common_sense_filters:
+                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                                        LOGGER.debug(
+                                            "Running common sense filter %s on point deltas in track %s",
+                                            csf.name,
+                                            track_uuid,
+                                        )
+                                        weaved_track.points = csf.filter_point_deltas(weaved_track.points)
+                                # Abort and do not clear buffer if final track has less than 2 points
+                                if len(weaved_track.points) < 2:
+                                    continue
+                                track_dict = {
+                                    "points": weaved_track.points,
+                                    "node_id": weaved_track.node_id,
+                                    "algorithm": weaved_track.algorithm,
+                                    "observation_ids": weaved_track.observation_ids,
+                                    "acm": aac_client.get_acm_rollup(
+                                        [{"ACM": point.acm} for point in weaved_track.points]
+                                    ),
+                                }
+                                track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
+                                LOGGER.info(f"Track completed: {track_uuid}")
+                                oms_track = APITrack(track).create_oms_track()
+                                LOGGER.info(f"OMS Track published: {oms_track.id}")
+                                self.log_track_comparison(points=binned_points, track=track)
                         except (ValueError, IndexError) as e:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
                             LOGGER.warning(e)
@@ -342,6 +351,21 @@ class GeospatialSensemakerController(SensemakerController):
 
     def is_generated_track(self, obs: ObservationObservation):
         return hasattr(obs, "labels") and obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
+
+    def bin_points_for_track(self, points: list[Point]):
+        points.reverse()
+        track_timeframe = 7 * 24 * 60 * 60 * 1000
+        # for key, group in groupby(points, lambda x: x // track_timeframe):
+        time_bins = {
+            k: tuple(g)
+            for k, g in groupby(
+                (p for p in points if p.weight > 0),
+                key=lambda x: x.detection_time.timestamp() // track_timeframe,
+            )
+        }
+        for key in time_bins:
+            time_bins[key] = tuple(time_bins[key][::-1])
+        return time_bins
 
 
 class GeoQueueFilter(EventFilter):
