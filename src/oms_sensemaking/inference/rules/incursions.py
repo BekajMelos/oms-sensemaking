@@ -149,6 +149,7 @@ class Incursion(BaseRule):
             id=existing_incursion_attribute.id,
             valueStart=inc_attr.start_time.isoformat(),
             valueEnd=inc_attr.end_time.isoformat(),
+            labels=attribute_labels
         )
         oms_client.update_attribute(updated_attribute_input)
 
