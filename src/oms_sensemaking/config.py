@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
@@ -472,11 +473,12 @@ class Settings(BaseSettings):
         """
         if isinstance(field_value, str):
             return field_value
+        encoded_pw = quote_plus(values.get(f"{settings_prefix}password") or "")
 
         return PostgresDsn.build(
             scheme="postgresql+psycopg",
             username=values.get(f"{settings_prefix}user"),
-            password=values.get(f"{settings_prefix}password") or "",
+            password=encoded_pw,
             host=values.get(f"{settings_prefix}host") or "localhost",
             port=int(values.get(f"{settings_prefix}port") or 5432),
             path=values.get(f"{settings_prefix}schema") or ""
