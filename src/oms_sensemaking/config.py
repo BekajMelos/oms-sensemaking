@@ -288,7 +288,10 @@ class Settings(BaseSettings):
         "https://foundry.ai.mil/ontology/4901-001/operatedBy", description="IRI for Operated By"
     )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
-                                          description="Tag for OMSB objects from the geospatial sensemakers")
+        description="Tag for OMSB objects from the geospatial sensemakers")
+    max_track_time_length_seconds: int = Field(7 * 24 * 60 * 60,
+        description="Max amount of time in seconds a track can be from earliest start time to last start time",
+        examples=[86400, 604800])
 
     # Common Sense Filtering Settings
     apply_common_sense_filters: bool = Field(True, description="Toggle on/off Common Sense Filters")

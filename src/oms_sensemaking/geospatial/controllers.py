@@ -354,17 +354,16 @@ class GeospatialSensemakerController(SensemakerController):
 
     def bin_points_for_track(self, points: list[Point]):
         points.reverse()
-        track_timeframe = 7 * 24 * 60 * 60 * 1000
         # for key, group in groupby(points, lambda x: x // track_timeframe):
         time_bins = {
-            k: tuple(g)
+            k: list(g)
             for k, g in groupby(
                 (p for p in points if p.weight > 0),
-                key=lambda x: x.detection_time.timestamp() // track_timeframe,
+                key=lambda x: x.detection_time.timestamp() // SETTINGS.max_track_time_length_seconds,
             )
         }
         for key in time_bins:
-            time_bins[key] = tuple(time_bins[key][::-1])
+            time_bins[key].reverse()
         return time_bins
 
 
