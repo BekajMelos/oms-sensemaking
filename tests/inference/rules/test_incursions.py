@@ -52,6 +52,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
+    attr.labels = []
     return attr
 
 
@@ -73,6 +74,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
+    attr.labels = []
     return attr
 
 
@@ -195,6 +197,7 @@ def mock_get_activities(mocker: MockerFixture):
     mock_activity_response = MagicMock()
     mock_activity = MagicMock()
     mock_activity.id = "activity_id"
+    mock_activity.labels = []
     mock_activity_response.data = [mock_activity]
     mock_get_activities.return_value = mock_activity_response
     return mock_get_activities
@@ -406,6 +409,7 @@ def test_two_existing_incursions(
             id=attribute1.id,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )
     mock_update_activity.assert_called_with(
@@ -414,6 +418,7 @@ def test_two_existing_incursions(
             addObservationIds=[observational_node_region1.id],
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )
 
@@ -453,6 +458,7 @@ def test_existing_incursion_nonoverlapping_time(
             id=attribute2.id,
             valueStart=attribute2.valueStart,
             valueEnd=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label,]
         )
     )
     mock_update_activity.assert_called_with(
@@ -461,5 +467,6 @@ def test_existing_incursion_nonoverlapping_time(
             addObservationIds=[observational_node_region1.id],
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )

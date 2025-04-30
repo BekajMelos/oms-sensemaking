@@ -32,7 +32,8 @@ def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str)
         tags=["test"],
         classIri=class_iri,
         symbolIdCode=symbol_id_code,
-        allegiance="AA"
+        allegiance="AA",
+        labels=[]
     )
     node = oms_crud_tool.create_node(create_node_input)
     return node
@@ -88,7 +89,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -143,7 +145,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -195,7 +198,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -251,7 +255,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 

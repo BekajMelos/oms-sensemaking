@@ -230,7 +230,6 @@ DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, det
     ],
 }
 
-CotravelSM = CotravelSensemaker(OmsCrudTool)
 
 @pytest.fixture(scope="function")
 def tester_db(db: Session) -> Generator[Session, Any, None]:
