@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ## [0.4.0] - 2025-04-17
 
 ### Added
+- Added documentation for the Mil Symbol Sensemaker
 - Updated NSO Resolution to use average colocation difference to determine duplicates
 - Common sense filtering by node IRI
 - Push Track Observations to the OMS API
