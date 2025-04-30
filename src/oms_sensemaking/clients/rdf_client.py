@@ -3,7 +3,7 @@ import logging
 
 from fastapi import HTTPException, Response
 from pydantic import UUID4
-from rdflib import Graph, Literal, URIRef
+from rdflib import RDF, Graph, Literal, Namespace, URIRef
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
@@ -34,21 +34,34 @@ class RDFClient:
             raise HTTPException(status_code=400, detail="Unsupported format")
         dict_obj = json.loads(obj)
         g = Graph()
+        oms = Namespace("http://all-source-oms-object.com/") # custom general oms namespace for now
+        acm = Namespace("https://foundry.ai.mil/ontology/4901-001/hasSecurityClassificationMarking")
+        # allegiance = Namespace("https://foundry.ai.mil/ontology/4901-001/hasAllegianceTo")
+        # aor = Namespace("https://foundry.ai.mil/ontology/4901-001/AreaOfResponsibility")
+        # eoid = Namespace("https://foundry.ai.mil/ontology/4901-001/hasEnterpriseObjectID")
+        g.bind("oms", oms)
+        g.bind("acm", acm)
 
         subject_id = dict_obj.get("id")
         subject = URIRef(f"{subject_id}")
+        g.add((subject, RDF.type, oms.oms_node))
+
+        def get_predicate(key):
+            if key.startswith("acm_"):
+                return acm[key[len("acm_"):]]
+            return URIRef(key)
 
         def add_triples(subj, obj, prefix=""):
             if isinstance(obj, dict):
                 for k, v in obj.items():
-                    predicate = URIRef(f"{prefix + k}")
+                    # predicate = URIRef(f"{prefix + k}")
                     add_triples(subj, v, prefix=prefix + k + "_")
             elif isinstance(obj, list):
-                predicate = URIRef(f"{prefix.rstrip('_')}")
+                predicate = get_predicate(prefix.rstrip('_'))
                 for item in obj:
                     g.add((subj, predicate, Literal(item)))
             elif obj is not None:
-                predicate = URIRef(f"{prefix.rstrip('_')}")
+                predicate = get_predicate(prefix.rstrip('_'))
                 g.add((subj, predicate, Literal(obj)))
 
         for key, value in dict_obj.items():
