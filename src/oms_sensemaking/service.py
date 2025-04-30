@@ -14,7 +14,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import about, health, nlp, semantic
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
-from oms_sensemaking.core.events import NoOpEventConsumer, SQSListener
+from oms_sensemaking.core.events import NoOpEventConsumer, RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
@@ -30,18 +30,20 @@ def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(
-            SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
         ),
         InferenceSensemakerController(
-            SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url, event_filter=InferenceQueueFilter())
+            RabbitMQListener(
+                "InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter()
+            )
         ),
         ResolutionSensemakerController(
-            SQSListener("ResolutionSQSListener", SETTINGS.sqs_res_queue_url, event_filter=ResolutionQueueFilter())
+            RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter())
         ),
         MilSymbolSensemakerController(
-            SQSListener(
-                "MilSymbolSQSListener",
-                SETTINGS.mil_symbol_settings.sqs_mil_symbol_queue_url,
+            RabbitMQListener(
+                "MilSymbolRMQListener",
+                SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
                 event_filter=MilSymbolQueueFilter(),
             )
         ),

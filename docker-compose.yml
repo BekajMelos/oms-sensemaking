@@ -7,10 +7,6 @@ services:
     ports:
       - 5001:${UVICORN_PORT:-8443}
     environment:
-      # AWS
-      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL:-http://localstack:4566}
-      #SQS_GEO_QUEUE_URL: ${SQS_GEO_QUEUE_URL}
-
       # database config
       DB_HOST: postgis
       DB_USER: ${DB_USER:-${PGUSER:-appuser}}
@@ -93,8 +89,6 @@ services:
     depends_on:
       postgis:
         condition: service_healthy
-      localstack:
-        condition: service_started
       rabbitmq:
         condition: service_started
       aac2:
@@ -120,14 +114,12 @@ services:
       - ./etc/whitelist.txt:/opt/oms-bridge/etc/whitelist.txt
       - ./docker/omsb/LocalCollectionStatusThresholds.yaml:/opt/oms-bridge/etc/collectionstatus/CollectionStatusThresholds.yaml
       - ./docker/omsb/SystemLabels.yaml:/opt/oms-bridge/etc/config/external/SystemLabels.yaml
-      - ./docker/omsb/Classes.csv:/opt/oms-bridge/etc/ontology/Classes.csv  # TODO remove
+      - ./docker/omsb/Classes.csv:/opt/oms-bridge/etc/config/external/Classes.csv  # TODO remove
     ports:
       - "8010:8000"
       - "8020:8443"
     depends_on:
       postgis:
-        condition: service_started
-      localstack:
         condition: service_started
       rabbitmq:
         condition: service_healthy

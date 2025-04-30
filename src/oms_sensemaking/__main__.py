@@ -49,7 +49,7 @@ options:
 
 Examples
 --------
-Run and listen for events from SQS::
+Run and listen for events from rmq:
 
     $ python -m oms_sensemaking geo
 
@@ -79,6 +79,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter
 from oms_sensemaking.inference.controllers import InferenceQueueFilter
 
@@ -195,11 +196,10 @@ def run_geospatial(args: Namespace) -> None:
     # TODO: Handle PKCS12
 
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
     geo = GeospatialSensemakerController(
-        SQSListener("GeoSQSListener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+        RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
     )
 
     start_controller_and_wait(geo)
@@ -208,11 +208,10 @@ def run_geospatial(args: Namespace) -> None:
 def run_inference() -> None:
     """Run the inference algorithms."""
     # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import SQSListener
     from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
     inference = InferenceSensemakerController(
-        SQSListener("InferenceSQSListener", SETTINGS.sqs_inference_queue_url, event_filter=InferenceQueueFilter())
+        RabbitMQListener("InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter())
     )
 
     start_controller_and_wait(inference)

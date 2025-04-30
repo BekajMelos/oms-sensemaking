@@ -9,10 +9,9 @@ from time import sleep
 from typing import Protocol
 from uuid import UUID, uuid4
 
-import boto3
-from botocore.client import BaseClient
-from botocore.exceptions import BotoCoreError
+import pika
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
+from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from oms_sensemaking.config import SETTINGS
 
@@ -122,37 +121,56 @@ class AuditLogEventConsumer(ABC):
         raise NotImplementedError()
 
 
-class BaseSQSListener(AuditLogEventConsumer):
-    """An abstract base class for SQS audit log event consumers."""
+class BaseRabbitMQListener(AuditLogEventConsumer):
+    """An abstract base class for RabbitMQ audit log event consumers."""
 
     def __init__(
         self,
         name: str,
-        queue_url: str,
+        queue_name: str,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
-        """Create a new instance of SQSListener."""
+        """Create a new instance of BaseRabbitMQListener."""
         super().__init__(handle_event)
         self._name = name
-        self._queue_url = queue_url
+        self._queue_name = queue_name
         self._event_filter = event_filter
+        self._connection = None
+        self._channel = None
 
-        #: SQS client.
-        self.sqs: BaseClient = boto3.client(
-            "sqs",
-            region_name=SETTINGS.aws_region_name,
-            use_ssl=SETTINGS.aws_use_ssl,
-            verify=SETTINGS.aws_verify,
-            endpoint_url=SETTINGS.aws_endpoint_url,
-            aws_access_key_id=SETTINGS.aws_access_key_id,
-            aws_secret_access_key=SETTINGS.aws_secret_access_key,
-        )
+    def _connect(self):
+        """Establish connection to RabbitMQ server."""
+        try:
+            credentials = pika.PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
+            parameters = pika.ConnectionParameters(
+                host=SETTINGS.rabbitmq_host,
+                port=SETTINGS.rabbitmq_port,
+                virtual_host=SETTINGS.rabbitmq_vhost,
+                credentials=credentials,
+            )
+            self._connection = pika.BlockingConnection(parameters)
+            self._channel = self._connection.channel()
+            self._channel.queue_declare(queue=self._queue_name, durable=True)
+            LOGGER.info(f"Connected to RabbitMQ queue: {self._queue_name}")
+            return True
+        except (AMQPConnectionError, AMQPChannelError) as ex:
+            LOGGER.error(f"Failed to connect to RabbitMQ: {ex}")
+            return False
+
+    def _disconnect(self):
+        """Close connection to RabbitMQ server."""
+        if self._connection and self._connection.is_open:
+            try:
+                self._connection.close()
+                LOGGER.info("Disconnected from RabbitMQ")
+            except Exception as ex:
+                LOGGER.error(f"Error disconnecting from RabbitMQ: {ex}")
 
     @abstractmethod
     def process_audit_log_events(self) -> None:
         """
-        Process audit log events from an SQS queue.
+        Process audit log events from a RabbitMQ queue.
 
         Subclasses should override this and call ``self.event_handler.handle_event`` for
         each ``AuditLogEvent`` processed.
@@ -160,73 +178,87 @@ class BaseSQSListener(AuditLogEventConsumer):
         raise NotImplementedError()
 
 
-class SQSListener(BaseSQSListener):
-    """An SQS AuditLogEventConsumer that consumes OMS events."""
+class RabbitMQListener(BaseRabbitMQListener):
+    """A RabbitMQ AuditLogEventConsumer that consumes OMS events."""
 
     def __init__(
         self,
         name: str,
-        queue_url: str,
+        queue_name: str,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
-        """Create a new instance of SqsAuditLogEventConsumer."""
-        super().__init__(name, queue_url, handle_event, event_filter)
+        """Create a new instance of RabbitMQListener."""
+        super().__init__(name, queue_name, handle_event, event_filter)
+
+    def callback(self, ch, method, properties, body):
+        if self.stopped.is_set():
+            LOGGER.debug(f"Shutting down {self._name}")
+            return
+
+        try:
+            audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
+
+            if self._event_filter and not self._event_filter.passes_filter(audit_log):
+                LOGGER.warning(
+                    f"{self._name} Filtered {audit_log.action} {audit_log.objectType}:"
+                    + f"{audit_log.objectId} from queue {self._queue_name}"
+                )
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+                return
+
+            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}")
+
+            if self.handle_event(audit_log):
+                LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+            else:
+                LOGGER.warning("Audit log event was not processed successfully.")
+                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        except Exception as ex:
+            LOGGER.error(f"Error processing message: {ex}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
     def process_audit_log_events(self) -> None:
-        """Process audit log events from OMS."""
+        """Process audit log events from RabbitMQ."""
         if not callable(self.handle_event):
             raise ValueError(f"handle_event must be a callable object, got {type(self.handle_event)}")
 
         while not self.stopped.is_set():
-            LOGGER.info("Waiting for events in SQS")
+            LOGGER.info(f"{self._name} waiting for events in RabbitMQ queue {self._queue_name}")
 
-            for _ in range(0, SETTINGS.sqs_read_loops):
-                if self.stopped.is_set():
-                    LOGGER.debug(f"Shutting down {self._name}")
-                    break
+            if not self._connect():
+                LOGGER.error("Failed to connect to RabbitMQ. Retrying in a few seconds...")
+                sleep(SETTINGS.rmq_read_wait_seconds)
+                continue
 
-                # Receive message from SQS queue
-                LOGGER.debug(f"{self._name} checking queue with url {self._queue_url}")
-                try:
-                    response = self.sqs.receive_message(
-                        QueueUrl=self._queue_url,
-                        AttributeNames=["SentTimestamp"],
-                        MaxNumberOfMessages=10,
-                        MessageAttributeNames=["All"],
-                        VisibilityTimeout=0,
-                        WaitTimeSeconds=0,
-                    )
-                except (BotoCoreError, self.sqs.exceptions.QueueDoesNotExist) as ex:
-                    LOGGER.error(f"Unable to connect to SQS: {ex}. Trying again...")
-                    sleep(SETTINGS.sqs_read_wait_seconds)
-                    break
+            try:
+                # Start consuming messages
+                self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)
 
-                if "Messages" not in response:
-                    LOGGER.debug("No Messages in response.")
-                    sleep(SETTINGS.sqs_read_wait_seconds)
-                    continue
+                while not self.stopped.is_set():
+                    try:
+                        self._connection.process_data_events(time_limit=1)
+                    except Exception as ex:
+                        LOGGER.error(f"Error processing RabbitMQ events: {ex}")
+                        break
 
-                for message in response["Messages"]:
-                    audit_log: AuditLogEvent = AuditLogEvent.from_json((message["Body"]))
-                    if self._event_filter and not self._event_filter.passes_filter(audit_log):
-                        LOGGER.warning(
-                            f"{self._name} Filtered {audit_log.action} {audit_log.objectType}:"
-                            + f"{audit_log.objectId} from queue {self._queue_url}"
-                        )
-                        self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
-                        continue
+            except (AMQPConnectionError, AMQPChannelError) as ex:
+                LOGGER.error(f"RabbitMQ connection error: {ex}. Reconnecting...")
+                sleep(SETTINGS.rmq_read_wait_seconds)
+            except Exception as ex:
+                LOGGER.error(f"Unexpected error in RabbitMQ listener: {ex}")
+                sleep(SETTINGS.rmq_read_wait_seconds)
+            finally:
+                self._disconnect()
 
-                    LOGGER.info(
-                        f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}"
-                    )
+                if not self.stopped.is_set():
+                    sleep(SETTINGS.rmq_read_wait_seconds)
 
-                    if self.handle_event(audit_log):
-                        # Delete received message from queue - required, so you don't get the same message
-                        LOGGER.info(f"Deleting processed object {audit_log.objectId} from {self._queue_url}")
-                        self.sqs.delete_message(QueueUrl=self._queue_url, ReceiptHandle=message["ReceiptHandle"])
-                    else:
-                        LOGGER.warning("audit log event was not processed successfully.")
+    def stop(self) -> None:
+        """Stop consuming events and close the connection."""
+        super().stop()
+        self._disconnect()
 
 
 class DummyAuditLogEventConsumer(AuditLogEventConsumer):
@@ -239,7 +271,7 @@ class DummyAuditLogEventConsumer(AuditLogEventConsumer):
     def process_audit_log_events(self) -> None:
         """Mimics event processing."""
         count: int = 0
-        LOGGER.info("subscribing to SQS events")
+        LOGGER.info("subscribing to RMQ events")
 
         while not self.stopped.is_set():
             sleep(5)

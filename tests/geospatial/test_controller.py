@@ -8,14 +8,14 @@ import pytest
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.events import SQSListener
+from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 
 
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
-        SQSListener("geo test queue listener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+        RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
     return controller

@@ -74,12 +74,6 @@ class LogConfig(BaseSettings):
             "oms_sdk": {
                 "level": self.log_level
             },
-            "boto3": {
-                "level": "INFO"
-            },
-            "botocore": {
-                "level": "INFO"
-            },
             "httpcore": {
                 "level": "INFO"
             },
@@ -99,10 +93,10 @@ class MilSymbolSettings(BaseModel):
         ["Oms Sensemaking", "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
-    sqs_mil_symbol_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger",
-        description="the SQS Resolution Queue URL",
-        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger"]
+    rmq_mil_symbol_queue_name: str = Field(
+        "milSymbolTrigger",
+        description="the RMQ Resolution Queue name",
+        examples=["milSymbolTrigger"]
     )
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
     affiliation_iris: list[str] = Field(
@@ -351,36 +345,30 @@ class Settings(BaseSettings):
     n_tracks: int = Field(5, description="Number of similar tracks to return")
     within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")
 
-    # AWS SQS Settings
-    aws_endpoint_url: str = Field("http://localhost:4566", description="SQS Endpoint")
-    aws_access_key_id: str = Field("FAKE", description="AWS Access Key")
-    aws_secret_access_key: str = Field("FAKE", description="AWS Secret Key")
-    aws_region_name: str = Field("us-east-1", description="AWS Region")
-    aws_use_ssl: bool = Field(False, description="Boolean to use SSL for SQS Connection")
-    aws_verify: bool = Field(False, description="Boolean to use SSL verification for SQS Connection")
+    # RabbitMQ Settings
+    rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
+    rabbitmq_port: int = Field("5672", description="RabbitMQ port")
+    rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
+    rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
+    rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
 
-    sqs_read_loops: int = Field(
-        20,
-        description="Number of times to look for SQS messages. This number * 10 is how many "
-        "messages can be received per poll",
+    rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
+    rmq_geo_queue_name: str = Field(
+        "geoSensemakerTrigger",
+        description="the RMQ Geo Sensemaker Queue name",
+        examples=["geoSensemakerTrigger"]
     )
-    sqs_read_wait_seconds: int = Field(5, description="How long to wait when waiting for SQS messages")
-    sqs_geo_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger",
-        description="the SQS Geo Sensemaker Queue URL",
-        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger"]
-    )
-    sqs_inference_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger",
-        description="the SQS Inference Sensemaker Queue URL",
-        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/inferenceSensemakerTrigger"]
+    rmq_inference_queue_name: str = Field(
+        "inferenceSensemakerTrigger",
+        description="the RMQ Inference Sensemaker Queue name",
+        examples=["inferenceSensemakerTrigger"]
     )
 
     # Resolution Sensemaker Settings
-    sqs_res_queue_url: str = Field(
-        "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger",
-        description="the SQS Resolution Queue URL",
-        examples=["http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger"]
+    rmq_res_queue_name: str = Field(
+        "resolutionTrigger",
+        description="the RMQ Resolution Queue name",
+        examples=["resolutionTrigger"]
     )
     enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
     resolution_sensemaker_tag: str = Field("resolution_tag",
