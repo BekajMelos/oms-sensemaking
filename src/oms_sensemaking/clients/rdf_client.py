@@ -2,7 +2,7 @@ import json
 import logging
 
 from fastapi import HTTPException, Response
-from pydantic import UUID4
+from oms_sdk.generated.generated_graphql_client import NodeQuery
 from rdflib import RDF, Graph, Literal, Namespace, URIRef
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -10,11 +10,12 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 class RDFClient:
-    def get_rdf_from_id(self, obj_id: UUID4, format: str, oms_crud_tool: OmsCrudTool):
+    def get_rdf_from_id(self, obj_id: str, format: str, oms_crud_tool: OmsCrudTool):
         """Return service information."""
         LOGGER.info(f"RDF API request from object: {obj_id}")
         try:
-            node = oms_crud_tool.get_node(obj_id)
+            query = NodeQuery(guideIds=[obj_id])
+            node = oms_crud_tool.get_nodes(query)
             obj_json = node.model_dump_json()
             return self.json_to_rdf(obj_json, format)
         except KeyError as e:
@@ -32,19 +33,26 @@ class RDFClient:
     def json_to_rdf(self, obj, format):
         if format not in ["turtle", "json-ld", "n3", "nt"]:
             raise HTTPException(status_code=400, detail="Unsupported format")
+
         dict_obj = json.loads(obj)
+
+        # Focus only on the first item in the "data" list
+        if "data" not in dict_obj or not dict_obj["data"]:
+            raise HTTPException(status_code=400, detail="Missing 'data' field")
+        data_obj = dict_obj["data"][0]
+
         g = Graph()
-        oms = Namespace("http://all-source-oms-object.com/") # custom general oms namespace for now
-        acm = Namespace("https://foundry.ai.mil/ontology/4901-001/hasSecurityClassificationMarking")
-        # allegiance = Namespace("https://foundry.ai.mil/ontology/4901-001/hasAllegianceTo")
-        # aor = Namespace("https://foundry.ai.mil/ontology/4901-001/AreaOfResponsibility")
-        # eoid = Namespace("https://foundry.ai.mil/ontology/4901-001/hasEnterpriseObjectID")
+        oms = Namespace("https://oms.dodiis.ic.gov/ontology/")
+        acm = Namespace("https://oms.dodiis.ic.gov/ontology/acm/")
         g.bind("oms", oms)
         g.bind("acm", acm)
 
-        subject_id = dict_obj.get("id")
-        subject = URIRef(f"{subject_id}")
-        g.add((subject, RDF.type, oms.oms_node))
+        subject_id = data_obj.get("guideId")
+        if not subject_id:
+            raise HTTPException(status_code=400, detail="Missing 'id' in data object")
+
+        subject = URIRef("https://oms.dodiis.ic.gov/ontology/guideId/" + f"{subject_id}")
+        g.add((subject, RDF.type, oms.node))
 
         def get_predicate(key):
             if key.startswith("acm_"):
@@ -54,7 +62,6 @@ class RDFClient:
         def add_triples(subj, obj, prefix=""):
             if isinstance(obj, dict):
                 for k, v in obj.items():
-                    # predicate = URIRef(f"{prefix + k}")
                     add_triples(subj, v, prefix=prefix + k + "_")
             elif isinstance(obj, list):
                 predicate = get_predicate(prefix.rstrip('_'))
@@ -64,8 +71,9 @@ class RDFClient:
                 predicate = get_predicate(prefix.rstrip('_'))
                 g.add((subj, predicate, Literal(obj)))
 
-        for key, value in dict_obj.items():
-            if key != "id" and key != "permissions":
+        for key, value in data_obj.items():
+            if key not in ["guideId", "permissions"]:  # Ignore 'permissions' and 'id' (already used)
                 add_triples(subject, value, prefix=key + "_")
+
         output = g.serialize(format=format, sort=True)
         return Response(content=output, media_type="text/plain")
