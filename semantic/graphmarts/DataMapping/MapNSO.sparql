@@ -31,8 +31,7 @@ WHERE {
       	ingest_omsb_graphmart:Observation.start_time ?time .
     }
     
-    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
-    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    # Using OMSB2 IRIs for now (ask a teammate for the source)
     BIND(IRI("https://foundry.ai.mil/MIDB_GST/v1/Located_At") AS ?located_at)
     BIND(IRI("https://foundry.ai.mil/DICO/v3.1.0/Start_Time") AS ?start)
     BIND(IRI("https://foundry.ai.mil/DICO/v3.1.0/non_specific_Object") AS ?nso)

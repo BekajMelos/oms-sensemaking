@@ -18,12 +18,7 @@ to *oms-sensemaking*.
 
 ### Tracking Work
 
-All works should be associated with a an issue in the [ticket tracker]. There
-are several templates that can be used depending on the type of issue:
-
-- [New Feature](<./.gitea/issue_template/New Feature.md>)
-- [Enhancement or Refactor](<./.gitea/issue_template/Enhancement or Refactor.md>)
-- [Bug](./.gitea/issue_template/Bug.md)
+Ask a teammate for guidance.
 
 
 ### Making Changes
@@ -69,19 +64,7 @@ are several templates that can be used depending on the type of issue:
 
 ### Submitting Changes For Review
 
-- Push your topic branch to Gitea
-
-- Submit a Pull Request
-
-  + Use the [Pull Request Template](./.gitlab/Pull Request Template.md)
-
-  + Include a detailed description of how to test the changes
-
-  + Include the ticket number and/or a link to the ticket
-
-  + Include test steps for verifying the changes
-
-- Gather feedback through Gitea's [Pull Requests] feature
+Ask a teammate for guidance.
 
 
 ### Reviewing Pull Requests
@@ -90,7 +73,7 @@ are several templates that can be used depending on the type of issue:
 
 - Follow the test instructions provided in the pull request
 
-- Use Gitea to comment on the merge request if you have any questions or
+- Comment on the merge request if you have any questions or
   concerns
 
 - Use your best judgement before approving merge requests
@@ -104,7 +87,7 @@ are several templates that can be used depending on the type of issue:
 The author of the Pull Request should be responsible for merging, once there is
 an approval.
 
-If Gitea can handle the merge automatically, you will be presented with options
+If the merge can succeed automatically, you will be presented with options
 for what type of merge commit you would like to create. In addition to selecting
 the type of merge commit to use, you may also be presented with the option to
 delete the the branch once merged, which is recommended.
@@ -115,4 +98,4 @@ will be resonsible for resolving them.
 
 [How to Write a Git Commit Message]: https://chris.beams.io/posts/git-commit/
 [Ticket Tracker]: https://jira.code.dodiis.mil
-[Pull Requests]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/pulls/
+[Pull Requests]: Repository for oms-sensemaking

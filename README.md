@@ -47,25 +47,9 @@ Microservice that provides analytics for OMS data.
 > at `<path_to_oms-sensemaking>/.venv/bin/python3` and run `python -V` to verify the version matches what's
 > in `.python-version`
 
-3. Configure pip to use Gitea's private PyPI
+3. Configure pip to use a private PyPI
 
-   Create a `~/.netrc` file:
-
-   ```
-   # ~/.netrc
-   machine tex.gerbil-cloud.ts.net
-   login your-login-here
-   password "your password"
-   ```
-
-   Create a project-level configuration in `.venv/pip.conf`:
-
-   ```
-   # .venv/pip.conf --- local project pip configuration.
-   [global]
-   index-url = https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
-   extra-index-url = https://pypi.org/simple
-   ```
+   Ask a teammate for guidance
 
 4. Install Project Dependencies
 
@@ -91,32 +75,9 @@ static site will be located in the `site` directory).
 
 ## Build Docker Image and Test in Tex
 
-```shell
-# create the "latest" docker image
-make build-docker
+Ask a teammate for guidance.
 
-# find the new docker image (it has the newest timestamp),
-docker image ls | grep sense
 
-# tag it as "latest-test"
-docker image tag IMAGE_ID_HERE tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-sensemaking:latest-test
+## Relevant links
 
-# push "latest-test" to tex registry
-docker image push tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-sensemaking:latest-test
-
-# update docker image in charts/omsb-sensemaking in omsb-helm-chart repo to latest-test
-```
-
-[Install Docker Engine]: https://docs.docker.com/engine/install/
-
-[pyenv]: https://github.com/pyenv/pyenv
-
-[Setting up an OMS Sensemaking Development Environment]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/src/branch/main/docs/dev-guide/dev.md
-
-[mkdocs]: https://www.mkdocs.org/
-
-[mkdocstring]: https://mkdocstrings.github.io/
-
-[Git]: https://git-scm.com/
-
-[Git LFS]: https://git-lfs.com/
+Ask a teammate for guidance.
