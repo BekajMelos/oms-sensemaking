@@ -9,8 +9,8 @@ from time import sleep
 from typing import Protocol
 from uuid import UUID, uuid4
 
-import pika
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
+from pika import BlockingConnection, ConnectionParameters, PlainCredentials
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from oms_sensemaking.config import SETTINGS
@@ -136,20 +136,20 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._name = name
         self._queue_name = queue_name
         self._event_filter = event_filter
-        self._connection = None
+        self._connection: BlockingConnection = None
         self._channel = None
 
     def _connect(self):
         """Establish connection to RabbitMQ server."""
         try:
-            credentials = pika.PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
-            parameters = pika.ConnectionParameters(
+            credentials = PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
+            parameters = ConnectionParameters(
                 host=SETTINGS.rabbitmq_host,
                 port=SETTINGS.rabbitmq_port,
                 virtual_host=SETTINGS.rabbitmq_vhost,
                 credentials=credentials,
             )
-            self._connection = pika.BlockingConnection(parameters)
+            self._connection = BlockingConnection(parameters)
             self._channel = self._connection.channel()
             self._channel.queue_declare(queue=self._queue_name, durable=True)
             LOGGER.info(f"Connected to RabbitMQ queue: {self._queue_name}")
@@ -234,7 +234,7 @@ class RabbitMQListener(BaseRabbitMQListener):
 
             try:
                 # Start consuming messages
-                self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)
+                self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
 
                 while not self.stopped.is_set():
                     try:

@@ -347,7 +347,7 @@ class Settings(BaseSettings):
 
     # RabbitMQ Settings
     rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
-    rabbitmq_port: int = Field("5672", description="RabbitMQ port")
+    rabbitmq_port: int = Field(5672, description="RabbitMQ port")
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
     rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
     rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
