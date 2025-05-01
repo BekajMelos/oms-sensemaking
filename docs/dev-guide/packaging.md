@@ -107,11 +107,9 @@ To cut new release:
         make distclean build
         ```
 
-3. Create a *release* page in Gitea
+3. Create a *release* page
 
     - Navigate to the tags section of the repo and location the tag you just created
-
-        For example `https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/new?tag=v1.2.3`
 
     - Click the *New Release* link
 
@@ -127,7 +125,7 @@ To cut new release:
 2. Create a git tag
     - Follow [Versioning Instructions](#versioning-oms-sensemaking) to create tag
 3. Run the sync job locally
-    - Clone https://tex.gerbil-cloud.ts.net:3000/DevOps/sync-artifacts
+    - Clone the Devops/sync-artifacts repo
     - Install the `aws` cli https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
     - (optional) Update `respositories.csv` to just include the repos you care about
     - Ask teammate for `~/.aws/credentials` file
