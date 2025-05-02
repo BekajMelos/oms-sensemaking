@@ -94,9 +94,9 @@ class MilSymbolSettings(BaseModel):
         description="Military Symbol Sensemaker tags"
     )
     rmq_mil_symbol_queue_name: str = Field(
-        "milSymbolTrigger",
+        "mil-symbol-trigger",
         description="the RMQ Resolution Queue name",
-        examples=["milSymbolTrigger"]
+        examples=["mil-symbol-trigger"]
     )
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
     affiliation_iris: list[str] = Field(
@@ -354,21 +354,21 @@ class Settings(BaseSettings):
 
     rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
     rmq_geo_queue_name: str = Field(
-        "geoSensemakerTrigger",
+        "geo-sensemaker-trigger",
         description="the RMQ Geo Sensemaker Queue name",
-        examples=["geoSensemakerTrigger"]
+        examples=["geo-sensemaker-trigger"]
     )
     rmq_inference_queue_name: str = Field(
-        "inferenceSensemakerTrigger",
+        "infer-sensemaker-trigger",
         description="the RMQ Inference Sensemaker Queue name",
-        examples=["inferenceSensemakerTrigger"]
+        examples=["infer-sensemaker-trigger"]
     )
 
     # Resolution Sensemaker Settings
     rmq_res_queue_name: str = Field(
-        "resolutionTrigger",
+        "resolution-trigger",
         description="the RMQ Resolution Queue name",
-        examples=["resolutionTrigger"]
+        examples=["resolution-trigger"]
     )
     enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
     resolution_sensemaker_tag: str = Field("resolution_tag",
