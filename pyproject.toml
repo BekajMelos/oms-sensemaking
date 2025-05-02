@@ -69,12 +69,6 @@ build = [  # dependnecies for building the project wheel and docker image
     'setuptools_scm==8.1'
 ]
 
-
-[project.urls]
-Homepage = 'https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking'
-Issues = 'https://tex.gerbil-cloud.ts.net:3000/issues'
-
-
 [build-system]
 requires = [
     'setuptools==71.1.0',

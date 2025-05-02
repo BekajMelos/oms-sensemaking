@@ -17,7 +17,7 @@ jobs:
       - name: Configure Private PyPI
         run: |
           cat > ~/.netrc <<EOF
-          machine tex.gerbil-cloud.ts.net
+          machine ${{ vars.GIT_HOST }}
           login ${{ gitea.repository_owner }}
           password ${{ secrets.pypi_token }}
 
@@ -29,7 +29,7 @@ jobs:
           python-version-file: ".python-version"
       - name: Install dependencies
         env:
-          PIP_INDEX_URL: https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
+          PIP_INDEX_URL: ${{ vars.PIP_INDEX }}
           PIP_EXTRA_INDEX_URL: https://pypi.org/simple
         run: |
           python -m venv .venv
@@ -53,14 +53,14 @@ jobs:
       USER_DN: "cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us"
       CERT_PATH: ./etc/pki/test10.pem
       KEY_PATH: ./etc/pki/test10.key
-      OMSB_URL: https://tex.gerbil-cloud.ts.net:30000/services/oms-bridge/2.0/graphql
+      OMSB_URL: ${{ vars.OMSB_GRAPHQL_ENDPOINT }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Configure Private PyPI
         run: |
           cat > ~/.netrc <<EOF
-          machine tex.gerbil-cloud.ts.net
+          machine ${{ vars.GIT_HOST }}
           login ${{ gitea.repository_owner }}
           password ${{ secrets.pypi_token }}
 
@@ -72,7 +72,7 @@ jobs:
           python-version-file: ".python-version"
       - name: Install dependencies
         env:
-          PIP_INDEX_URL: https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
+          PIP_INDEX_URL: ${{ vars.PIP_INDEX }}
           PIP_EXTRA_INDEX_URL: https://pypi.org/simple
         run: |
           sudo apt-get update

@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ## [0.4.0] - 2025-04-17
 
 ### Added
+- Added documentation for the Mil Symbol Sensemaker
 - Updated NSO Resolution to use average colocation difference to determine duplicates
 - Common sense filtering by node IRI
 - Push Track Observations to the OMS API
@@ -69,12 +70,3 @@ from Grimlock 17 (IRIs, ActivityState, altered object labels)
 
 ### Changed
 - None
-
-
-
-[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.4.0...main
-[0.4.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.4.0
-[0.3.1]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.1
-[0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.0
-[0.2.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.2.0
-[0.1.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.1.0
