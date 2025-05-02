@@ -209,17 +209,21 @@ class GeospatialSensemakerController(SensemakerController):
 
                             # Get the IRI hierarchy for the node
                             oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+                            ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
 
-                            # groupby points into separate 7 day bins here
                             time_bins = self.bin_points_for_track(points)
+
                             for binned_points in time_bins.values():
-                                ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
+                                # since we split the track points into bins, each bin needs an id
+                                sub_track_id = uuid4()
+                                LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+
                                 for csf in self.common_sense_filters:
                                     if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
                                         LOGGER.debug(
                                             "Running common sense filter %s on single points in track %s",
                                             csf.name,
-                                            track_uuid,
+                                            sub_track_id,
                                         )
                                         binned_points = csf.filter_points(binned_points)
                                 # Execute a track weaver on the buffered Points
@@ -230,7 +234,7 @@ class GeospatialSensemakerController(SensemakerController):
                                         LOGGER.debug(
                                             "Running common sense filter %s on point deltas in track %s",
                                             csf.name,
-                                            track_uuid,
+                                            sub_track_id,
                                         )
                                         weaved_track.points = csf.filter_point_deltas(weaved_track.points)
                                 # Abort and do not clear buffer if final track has less than 2 points
@@ -245,8 +249,12 @@ class GeospatialSensemakerController(SensemakerController):
                                         [{"ACM": point.acm} for point in weaved_track.points]
                                     ),
                                 }
-                                track, _ = Track.get_or_create(session=db, defaults=track_dict, track_uuid=track_uuid)
-                                LOGGER.info(f"Track completed: {track_uuid}")
+                                track, _ = Track.get_or_create(
+                                    session=db,
+                                    defaults=track_dict,
+                                    track_uuid=sub_track_id,
+                                )
+                                LOGGER.info(f"Track completed: {sub_track_id}")
                                 oms_track = APITrack(track).create_oms_track()
                                 LOGGER.info(f"OMS Track published: {oms_track.id}")
                                 self.log_track_comparison(points=binned_points, track=track)
