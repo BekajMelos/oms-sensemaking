@@ -11,106 +11,424 @@
     "bindings": [
         {
             "arguments": {},
-            "destination": "geoSensemakerTrigger",
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ACTIVITY.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-wfs-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ACTIVITY.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-wfs-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-wfs-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-guide-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-guide-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.UPDATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-wfs-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-aor-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-aor-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.RESTORE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-aor-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.UPDATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ORIGINATOR.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.PROVIDER.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.RELATIONSHIP.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
+            "destination_type": "queue",
+            "routing_key": "audit.SOURCE.*",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "oms-ess-trigger",
             "destination_type": "queue",
             "routing_key": "",
-            "source": "audit.exchange",
+            "source": "oms.ess.resync.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "geoSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "geoSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.RESTORE",
+            "source": "oms.audits.exchange",
             "vhost": "/"
         },
         {
             "arguments": {},
             "destination": "inferenceSensemakerTrigger",
             "destination_type": "queue",
-            "routing_key": "",
-            "source": "audit.exchange",
+            "routing_key": "audit.ACTIVITY.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ACTIVITY.RESTORE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.RESTORE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ACTIVITY.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "inferenceSensemakerTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.OBSERVATION.RESTORE",
+            "source": "oms.audits.exchange",
             "vhost": "/"
         },
         {
             "arguments": {},
             "destination": "milSymbolTrigger",
             "destination_type": "queue",
-            "routing_key": "",
-            "source": "audit.exchange",
+            "routing_key": "audit.ATTRIBUTE.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "milSymbolTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.RESTORE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "milSymbolTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.UPDATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "milSymbolTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "milSymbolTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.RESTORE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "milSymbolTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.NODE.UPDATE",
+            "source": "oms.audits.exchange",
             "vhost": "/"
         },
         {
             "arguments": {},
             "destination": "resolutionTrigger",
             "destination_type": "queue",
-            "routing_key": "",
-            "source": "audit.exchange",
+            "routing_key": "audit.ATTRIBUTE.CREATE",
+            "source": "oms.audits.exchange",
+            "vhost": "/"
+        },
+        {
+            "arguments": {},
+            "destination": "resolutionTrigger",
+            "destination_type": "queue",
+            "routing_key": "audit.ATTRIBUTE.RESTORE",
+            "source": "oms.audits.exchange",
             "vhost": "/"
         }
     ],
     "queues": [
-        {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "name": "resolutionTrigger",
-            "type": "classic",
-            "vhost": "/"
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
         },
-        {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "name": "geoSensemakerTrigger",
-            "type": "classic",
-            "vhost": "/"
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms-guide-trigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
         },
-        {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "name": "inferenceSensemakerTrigger",
-            "type": "classic",
-            "vhost": "/"
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms-aor-trigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
         },
-        {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "name": "milSymbolTrigger",
-            "type": "classic",
-            "vhost": "/"
-        }
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms-ess-trigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms-wfs-trigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "geoSensemakerTrigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "inferenceSensemakerTrigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "milSymbolTrigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "resolutionTrigger",
+        "type": "quorum",
+        "vhost": "/"
+      }
     ],
     "parameters": [],
     "policies": [],
-    "rabbitmq_version": "3.13.7",
-    "rabbit_version": "3.13.7",
+    "rabbitmq_version": "4.0.5",
+    "rabbit_version": "4.0.5",
     "exchanges": [
-        {
-            "arguments": {},
-            "auto_delete": false,
-            "durable": true,
-            "name": "audit.exchange",
-            "type": "fanout",
-            "vhost": "/"
-        }
+      {
+        "arguments": {},
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms.audits.exchange",
+        "type": "topic",
+        "vhost": "/"
+      },
+      {
+        "arguments": {},
+        "auto_delete": false,
+        "durable": true,
+        "name": "oms.ess.resync.exchange",
+        "type": "direct",
+        "vhost": "/"
+      }
+    ],
+    "vhosts": [
+      {
+        "default_queue_type": "classic",
+        "limits": [],
+        "metadata": {
+          "description": "Default virtual host",
+          "tags": []
+        },
+        "name": "/"
+      }
     ],
     "users": [
-        {
-            "hashing_algorithm": "rabbit_password_hashing_sha256",
-            "limits": {},
-            "name": "oms-bridge",
-            "password_hash": "yYTFsuT8cEX7r0blS1XVo0B20awXANzn0XBOksQnmQeK56nb",
-            "tags": [
-                "administrator"
-            ]
-        }
+      {
+        "hashing_algorithm": "rabbit_password_hashing_sha256",
+        "limits": {},
+        "name": "oms-bridge",
+        "password_hash": "yYTFsuT8cEX7r0blS1XVo0B20awXANzn0XBOksQnmQeK56nb",
+        "tags": [
+          "administrator"
+        ]
+      }
     ],
-    "topic_permissions": [],
-    "vhosts": [
-        {
-            "limits": [],
-            "metadata": {
-                "description": "Default virtual host",
-                "tags": []
-            },
-            "name": "/"
-        }
+    "global_parameters": [
+      {
+        "name": "cluster_tags",
+        "value": []
+      }
     ],
-    "global_parameters": []
+    "topic_permissions": []
 }

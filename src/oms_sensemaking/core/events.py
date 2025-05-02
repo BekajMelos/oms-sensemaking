@@ -151,7 +151,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             )
             self._connection = BlockingConnection(parameters)
             self._channel = self._connection.channel()
-            self._channel.queue_declare(queue=self._queue_name, durable=True)
+            self._channel.queue_declare(queue=self._queue_name, durable=True, arguments={"x-delivery-limit": -1, "x-queue-type": "quorum"})
             LOGGER.info(f"Connected to RabbitMQ queue: {self._queue_name}")
             return True
         except (AMQPConnectionError, AMQPChannelError) as ex:
