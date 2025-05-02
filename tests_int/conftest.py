@@ -19,6 +19,7 @@ from sqlalchemy.orm.session import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
@@ -112,3 +113,13 @@ def mil_symbol_rules() -> dict:
     with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
         rules = json.load(fd)
     return rules
+
+@pytest.fixture
+def aircraft_geo_config() -> dict:
+    with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
+        config = json.load(fd)
+
+    geo_config = GeospatialSensemakerConfig(
+        **config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {}))
+
+    return geo_config.model_dump()

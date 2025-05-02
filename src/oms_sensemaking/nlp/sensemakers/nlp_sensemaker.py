@@ -32,7 +32,7 @@ class NlpSensemaker(Sensemaker):
         self.version = (1, 0, 0)
         self.corenlp_client = client
 
-    def process_data(self, data: SubmissionData) -> EntitiesAndRelationships:
+    def process_data(self, data: SubmissionData, config: dict | None = None) -> EntitiesAndRelationships:
         """
         Run the data through an NLP pipeline.
 

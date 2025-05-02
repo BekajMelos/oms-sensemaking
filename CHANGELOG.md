@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated Geosensemakers to use settings based on IRI from config
 
 ### Fixed
 
@@ -33,6 +34,7 @@ All notable changes to this project will be documented in this file.
 - Added CA Cert argument to AAC Client
 
 ### Changed
+- Geosensemakers get runtime configs per node IRI based on geo_sensemaker_config.json file
 - Docker tag version number has missing `v`
 - Changed Grimlock version from 14 to 17
 - Updated Sensemaking smoke tests
