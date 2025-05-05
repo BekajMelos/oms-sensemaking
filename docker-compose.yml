@@ -80,7 +80,7 @@ services:
       - postgis
 
   omsb-init:
-    image: tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
+    image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
     container_name: omsb-init
     env_file:
       - ./docker/omsb/omsb.env
@@ -107,7 +107,7 @@ services:
   #       trace being logged. This can be ignored, since the purpose of this
   #       configuration is to provide a minimal omsb for development & testing.
   omsb2:
-    image: tex.gerbil-cloud.ts.net:5000/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
+    image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
     environment:
       # PostgreSQL/PostGIS variables
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -156,7 +156,7 @@ services:
   aac2:
 #    hostname: aac2
 #    container_name: aac2
-    image: tex.gerbil-cloud.ts.net:5000/dpaas-internal/aac/ent-aac-service:2.1.15.3
+    image: ${DOCKER_REGISTRY}/dpaas-internal/aac/ent-aac-service:2.1.15.3
     command: sh -c "./entrypoint.sh"
     volumes:
       - ./etc/pki:/opt/common/pki

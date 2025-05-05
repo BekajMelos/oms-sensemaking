@@ -10,6 +10,7 @@ from oms_sdk.generated.generated_graphql_client.client import Client
 
 from oms_sensemaking.config import SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
@@ -67,3 +68,26 @@ def mil_symbol_rules() -> Dict:
     with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
         rules = json.load(fd)
     return rules
+
+
+@pytest.fixture
+def geo_config() -> dict:
+    with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
+        config = json.load(fd)
+    return config
+
+
+@pytest.fixture
+def aircraft_geo_config(geo_config) -> dict:
+    config = GeospatialSensemakerConfig(
+        **geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {}))
+
+    return config.model_dump()
+
+
+@pytest.fixture
+def watercraft_geo_config(geo_config) -> dict:
+    config = GeospatialSensemakerConfig(
+        **geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", {}))
+
+    return config.model_dump()

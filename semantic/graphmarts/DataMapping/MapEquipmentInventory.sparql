@@ -134,8 +134,7 @@ WHERE {
         )) .
       BIND(IRI(CONCAT("http://cambridgesemantics.com/Layer/1f3cbffb3f734b0193ab88e3f0e55c81/Node/",?member_part_node_id2)) AS ?member_part_obj_id2 )
     }    
-    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
-    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    # Using OMSB2 IRIs for now (ask a teammate for the source)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/CollectionOfEquipmentItems") AS ?equipment_inventory_class)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
     BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000178") AS ?has_continuant_part_at_some_time)

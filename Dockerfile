@@ -121,8 +121,7 @@ ARG BUILD_DATE
 
 ARG VCS_REF
 
-# default to private PyPI
-ARG PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
+ARG PIP_INDEX_URL
 
 # fallback to public PyPI
 ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"

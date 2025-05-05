@@ -80,7 +80,10 @@ class MilSymbolSensemaker(Sensemaker):
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, oms_object: AttributeAttribute | NodeNode) -> List[SymbolCodeUpdate]:
+    def process_data(
+            self,
+            oms_object: AttributeAttribute | NodeNode,
+            config: dict | None = None) -> List[SymbolCodeUpdate]:
         """
         Update a Node's symbol code based on its attributes and metadata
 

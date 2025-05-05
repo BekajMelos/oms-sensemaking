@@ -26,8 +26,7 @@
     5. Navigate to the API at https://localhost:5001/docs
         1. If you are having issues getting the app to load, compare your `.env` with the `.env.template`
 3. In `chronicle-ui`
-   1. Follow the chronicle _Setup_ steps in the readme and specifically the _Setup env w/ `oms-bridge`_ instructions
-       * https://tex.gerbil-cloud.ts.net:3000/oms/chronicle-ui#setup
+   1. Follow the chronicle _Setup_ steps in the readme and specifically the _Setup env w/ `oms-bridge`_ instructions in the `chronicle-ui` repository
    2. Run `npm install` and `npm start`
    3. Navigate to the chronicle page at http://localhost:5173/
       1. If you have issues getting the page to load, ensure you have downloaded all certificates from `chronicle-ui/etc/test-certs` and marked them as 'trusted'. To do this:
@@ -38,9 +37,8 @@
          5. If you are still having issues, try closing/reopening Chrome and/or restarting your Macbook
 4. In `oms-bridge`
     1. Follow the  `oms-bridge` _Setup_ and _Running Docker Only Environment_ steps. Choose the branch/tag for the
-       version of OMS you are working with.
-       * https://tex.gerbil-cloud.ts.net:3000/oms/oms-bridge#
-    2. Create a `.env.` and include the following
+       version of OMS you are working with. This can be found in the `oms-bridge` repository.
+    2. Create a `.env` and include the following
         ```
         COMPOSE_PROFILES=remote
         OMSB_CORS_ALLOWED_ORIGIN=http://localhost:8000
@@ -193,7 +191,7 @@
         - Additionally, a `Report` Object should exist and have a `Relationship: describes` to every single Entity that it produced.
     2. For SQS Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):
         1. In `oms-data-gen` (Needed for Geospatial Sensemaker Data):
-            1. Follow the setup steps in the readme: https://tex.gerbil-cloud.ts.net:3000/oms/oms-data-gen/
+            1. Follow the setup steps in the `oms-data-gen` readme.
                 1. Update the `.env` to set the `OMSB_URL` and `PKCS12_PASSWORD`
                     * `OMSB_URL="https://localhost:8443/graphql"`
                     * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `oms-sensemaking`)

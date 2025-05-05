@@ -287,17 +287,11 @@ class Settings(BaseSettings):
     db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
 
     # Geospatial Sensemaking Settings
+    geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",
+                                                 description="Path to the Geospatial Sensemaker Config")
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
-    valid_observed_threshold_seconds: int = Field(
-        900, description="Threshold for amount of between Track Point Observations"
-    )
     cache_entry_expire_sec: int = Field(30, description="How long to wait for new points before creating a new Track")
-    geohash_low: int = Field(5, description="Low geohash")
-    geohash_high: int = Field(7, description="High geohash")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
-    operated_by_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/operatedBy", description="IRI for Operated By"
-    )
     geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
                                           description="Tag for OMSB objects from the geospatial sensemakers")
 
@@ -320,7 +314,6 @@ class Settings(BaseSettings):
 
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
-    loiter_min_time: int = Field(900, description="Minimum amount of time for a valid Loiter Event")
     loiter_event_name: str = Field("LoiterEvent", description="Name prefix for OMSB Loiter Event Nodes")
     loiter_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
                                    description="OMSB Loiter Event Node IRI")
@@ -331,21 +324,9 @@ class Settings(BaseSettings):
 
     # Cotravel Settings
     detect_cotravels: bool = Field(True, description="Toggle on/off Cotravel Detection")
-    min_cotravel_duration_seconds: int = Field(
-        1200, description="Minimum between Objects in a Track for a Cotravel Event"
-    )
-    min_lag_lead_duration_seconds: int = Field(
-        1200, description="Minimum amount between Objects in a Track for a Lag/Lead Event"
-    )
-    max_lag_lead_duration_seconds: int = Field(
-        2700, description="Maximum between Objects in a Track for a Lag/Lead Event"
-    )
 
     potential_duplicate_relationship_name: str = Field("Potential Duplicate",
                                                        description="Name for OMSB Potential Duplicate")
-    max_potential_duplicate_time_diff_seconds: int = Field(
-        30,
-        description="Max amount of time between colocated points to qualify a potential duplicate")
     cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
     lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
     cotravel_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
@@ -360,7 +341,6 @@ class Settings(BaseSettings):
     # Similar Track Settings
     similar_tracks: bool = Field(True, description="Toggle on/off Similar Track Calculations")
     n_tracks: int = Field(5, description="Number of similar tracks to return")
-    within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")
 
     # AWS SQS Settings
     aws_endpoint_url: str = Field("http://localhost:4566", description="SQS Endpoint")

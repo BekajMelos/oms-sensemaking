@@ -130,8 +130,7 @@ WHERE {
           BIND(IRI(CONCAT("https://blackcape.io/2025/01/omsdiekm/", ?partholder_node_id2)) AS ?partholder_obj_id2)
     }
     
-    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
-    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    # Using OMSB2 IRIs for now (ask a teammate for the source)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/EquipmentItem") AS ?equip_class)
     BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
     BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000196") AS ?bearer_of)

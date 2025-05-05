@@ -29,7 +29,7 @@ class InferenceSensemaker(Sensemaker):
                 self.config["rules"].append(rule)
                 self.engine.add_rule(rule)
 
-    def process_data(self, data: RuleContext) -> Iterable[FindingBase]:
+    def process_data(self, data: RuleContext, config: dict | None = None) -> Iterable[FindingBase]:
         """
         Process data.
 
