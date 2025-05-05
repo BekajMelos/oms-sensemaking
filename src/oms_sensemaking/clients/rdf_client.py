@@ -18,16 +18,10 @@ class RDFClient:
             node = oms_crud_tool.get_nodes(query)
             obj_json = node.model_dump_json()
             return self.json_to_rdf(obj_json, format)
-        except KeyError as e:
-            LOGGER.error(f"KeyError: Missing expected key in the object JSON - {str(e)}")
-        except TypeError as e:
-            LOGGER.error(f"TypeError: Incorrect type in the object JSON - {str(e)}")
-        except ValueError as e:
-            LOGGER.error(f"ValueError: Invalid data for object ID {obj_id} - {str(e)}")
-        except TimeoutError as e:
-            LOGGER.error(f"TimeoutError: Timeout occurred while fetching the node - {str(e)}")
+        except (ValueError, TimeoutError, AttributeError) as e:
+            LOGGER.error(f"Failed to fetch RDF for object ID {obj_id} - {str(e)}")
         except Exception as e:
-            LOGGER.error(f"Unexpected error: {repr(e)}")
+            LOGGER.exception(f"Unexpected error for object ID {obj_id}: {str(e)}")
         return None
 
     def json_to_rdf(self, obj, format):
@@ -72,7 +66,7 @@ class RDFClient:
                 g.add((subj, predicate, Literal(obj)))
 
         for key, value in data_obj.items():
-            if key not in ["guideId", "permissions"]:  # Ignore 'permissions' and 'id' (already used)
+            if key not in ["guideId", "permissions"]:  # Ignore 'permissions' and 'guideId' (already used)
                 add_triples(subject, value, prefix=key + "_")
 
         output = g.serialize(format=format, sort=True)
