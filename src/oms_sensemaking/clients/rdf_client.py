@@ -20,8 +20,6 @@ class RDFClient:
             return self.json_to_rdf(obj_json, format)
         except (ValueError, TimeoutError, AttributeError) as e:
             LOGGER.error(f"Failed to fetch RDF for object ID {obj_id} - {str(e)}")
-        except Exception as e:
-            LOGGER.exception(f"Unexpected error for object ID {obj_id}: {str(e)}")
         return None
 
     def json_to_rdf(self, obj, format):
