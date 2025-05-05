@@ -1,29 +1,52 @@
 import json
 import logging
+from typing import Optional
 
-from fastapi import HTTPException, Response
+from fastapi import HTTPException
 from oms_sdk.generated.generated_graphql_client import NodeQuery
 from rdflib import RDF, Graph, Literal, Namespace, URIRef
 
+from oms_sensemaking.api.schemas.rdf_format import RDFFormat
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 class RDFClient:
-    def get_rdf_from_id(self, obj_id: str, format: str, oms_crud_tool: OmsCrudTool):
-        """Return service information."""
+    def get_rdf_from_id(self, obj_id: str, format: RDFFormat, oms_crud_tool: OmsCrudTool) -> Optional[str]:
+        """
+        Fetch an object by ID and convert it to an RDF string in the specified format.
+
+        Args:
+            obj_id (str): The unique identifier of the object to fetch.
+            format (RDFFormat): The RDF serialization format ('turtle', 'json-ld', etc.).
+            oms_crud_tool (OmsCrudTool): An instance of the OMS CRUD tool used to query the object.
+
+        Returns:
+            Optional[str]: A string containing the serialized RDF representation of the object,
+                        or None if the object could not be fetched or converted.
+        """
         LOGGER.info(f"RDF API request from object: {obj_id}")
         try:
             query = NodeQuery(guideIds=[obj_id])
             node = oms_crud_tool.get_nodes(query)
             obj_json = node.model_dump_json()
-            return self.json_to_rdf(obj_json, format)
+            return self.json_to_rdf(obj_json, format.value)
         except (ValueError, TimeoutError, AttributeError) as e:
             LOGGER.error(f"Failed to fetch RDF for object ID {obj_id} - {str(e)}")
         return None
 
-    def json_to_rdf(self, obj, format):
-        if format not in ["turtle", "json-ld", "n3", "nt"]:
+    def json_to_rdf(self, obj, format) -> str:
+        """
+        Convert a JSON object to an RDF graph serialized in the specified format.
+
+        Args:
+            obj (dict): A JSON-like dictionary containing a "data" field with at least one object.
+            format (str): The desired RDF serialization format ('turtle', 'json-ld', 'n3', 'nt').
+
+        Returns:
+            str: A string representing the RDF graph serialized in the specified format.
+        """
+        if format not in RDFFormat.__members__.values():
             raise HTTPException(status_code=400, detail="Unsupported format")
 
         dict_obj = json.loads(obj)
@@ -41,9 +64,9 @@ class RDFClient:
 
         subject_id = data_obj.get("guideId")
         if not subject_id:
-            raise HTTPException(status_code=400, detail="Missing 'id' in data object")
+            raise HTTPException(status_code=400, detail="Missing 'guideId' in data object")
 
-        subject = URIRef("https://oms.dodiis.ic.gov/ontology/guideId/" + f"{subject_id}")
+        subject = URIRef("https://oms.dodiis.ic.gov/ontology/guideId/" + subject_id)
         g.add((subject, RDF.type, oms.node))
 
         def get_predicate(key):
@@ -67,5 +90,4 @@ class RDFClient:
             if key not in ["guideId", "permissions"]:  # Ignore 'permissions' and 'guideId' (already used)
                 add_triples(subject, value, prefix=key + "_")
 
-        output = g.serialize(format=format, sort=True)
-        return Response(content=output, media_type="text/plain")
+        return g.serialize(format=format, sort=True)
