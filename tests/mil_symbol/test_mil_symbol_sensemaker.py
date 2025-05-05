@@ -36,7 +36,8 @@ def oms_node() -> NodeNode:
         sourceId=uuid4(),
         acm=DEFAULT_ACM,
         symbolIdCode=None,
-        tier=ObjectTier.PRIMARY
+        tier=ObjectTier.PRIMARY,
+        labels=[]
     )
 
     return node

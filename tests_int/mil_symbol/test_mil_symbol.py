@@ -32,7 +32,8 @@ def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str)
         tags=["test"],
         classIri=class_iri,
         symbolIdCode=symbol_id_code,
-        allegiance="AA"
+        allegiance="AA",
+        labels=[]
     )
     node = oms_crud_tool.create_node(create_node_input)
     return node
@@ -88,7 +89,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -104,6 +106,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -142,7 +145,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -158,6 +162,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -193,7 +198,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -209,6 +215,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -248,7 +255,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     oms_crud_tool.update_node.assert_any_call(
             UpdateNodeInput(
                 id=oms_node.id,
-                symbolIdCode=symbols[1].new_symbol_id_code
+                symbolIdCode=symbols[1].new_symbol_id_code,
+                labels=[SETTINGS.sm_enriched_label]
             )
         )
 
@@ -264,6 +272,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,

@@ -322,7 +322,8 @@ def test_cotravel_success(
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+    sensemaker = CotravelSensemaker(mock_oms_crud_tool)
+    cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -339,6 +340,8 @@ def test_cotravel_success(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -349,6 +352,8 @@ def test_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -361,6 +366,8 @@ def test_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID1,
@@ -379,6 +386,8 @@ def test_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -462,7 +471,8 @@ def test_potential_duplicate_success(
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+    sensemaker = CotravelSensemaker(mock_oms_crud_tool)
+    cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
@@ -474,6 +484,8 @@ def test_potential_duplicate_success(
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=node_id,
             endNodeId=NODE_UUID1,
@@ -724,7 +736,8 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+    sensemaker = CotravelSensemaker(mock_oms_crud_tool)
+    cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 2
     cotravels = sorted(cotravels, key=lambda cotravel: cotravel.cotravel_type.value)  # check lag_lead first
@@ -750,6 +763,8 @@ def test_multiple_cotravel_success(
             name=SETTINGS.lag_lead_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -761,6 +776,8 @@ def test_multiple_cotravel_success(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -771,6 +788,8 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -783,6 +802,8 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID2,
@@ -795,6 +816,8 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -807,6 +830,8 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID3,
@@ -826,6 +851,8 @@ def test_multiple_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=lag_lead.to_geojson(),
             nodeId=cotravel_node_id,
@@ -842,6 +869,8 @@ def test_multiple_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -924,7 +953,8 @@ def test_lag_lead_success(
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+    sensemaker = CotravelSensemaker(mock_oms_crud_tool)
+    cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
@@ -941,6 +971,8 @@ def test_lag_lead_success(
             name=SETTINGS.lag_lead_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -951,6 +983,8 @@ def test_lag_lead_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -963,6 +997,8 @@ def test_lag_lead_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID1,
@@ -981,6 +1017,8 @@ def test_lag_lead_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -1140,7 +1178,8 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
 
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+    sensemaker = CotravelSensemaker(mock_oms_crud_tool)
+    cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
     cotravel: Cotravel = cotravels[0]
@@ -1157,6 +1196,8 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -1167,6 +1208,8 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -1179,6 +1222,8 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID2,
@@ -1197,6 +1242,8 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.cotravel_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,

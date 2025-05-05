@@ -100,4 +100,4 @@ class BaseRule(ABC, SensemakerMetaData):
     @property
     def version_string(self) -> str:
         """Return the algorithm version as a semantic version string."""
-        return ".".join(map(str, self.version))
+        return "v" + ".".join(map(str, self.version))

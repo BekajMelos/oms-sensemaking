@@ -23,7 +23,7 @@ class APITrack:
         return CreateObservationInput(
             acm=self.track.acm,
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[SETTINGS.sm_connected_track],
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.sm_connected_track],
             classIri=SETTINGS.track_iri,
             confidence=Confidence.UNKNOWN,
             sourceId=self.track.points[0].source_id,
