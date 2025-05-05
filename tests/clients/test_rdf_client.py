@@ -6,65 +6,49 @@ from rdflib import Graph, Literal, Namespace, URIRef
 
 from oms_sensemaking.clients.rdf_client import RDFClient
 
+ex = Namespace("https://example.org/")
 oms = Namespace("https://oms.dodiis.ic.gov/ontology/")
 acm = Namespace("https://oms.dodiis.ic.gov/ontology/acm/")
+subj = URIRef(oms["guideId/test-id"])
 
 @pytest.fixture
 def rdf_client():
     return RDFClient()
 
-def get_predicate(key):
-    if key.startswith("acm_"):
-        return acm[key[len("acm_"):]]
-    return URIRef(key)
+def make_json(data):
+    """Helper to construct valid JSON input for RDF conversion."""
+    return json.dumps({
+        "data": [{
+            "guideId": "test-id",
+            **data
+        }]
+    })
 
-def add_triples(g, subj, obj, prefix=""):
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            add_triples(g, subj, v, prefix=prefix + k + "_")
-    elif isinstance(obj, list):
-        predicate = get_predicate(prefix.rstrip('_'))
-        for item in obj:
-            g.add((subj, predicate, Literal(item)))
-    elif obj is not None:
-        predicate = get_predicate(prefix.rstrip('_'))
-        g.add((subj, predicate, Literal(obj)))
-
-def test_add_triples_with_scalar():
+def test_add_triples_with_scalar(rdf_client):
+    rdf = rdf_client.json_to_rdf(make_json({str(ex["simple"]): "hello"}), "turtle").body.decode()
     g = Graph()
-    subj = URIRef("https://example.org/node/test")
-    add_triples(g, subj, "hello", prefix="simple")
+    g.parse(data=rdf, format="turtle")
+    print(g.serialize(format="turtle"))
+    assert (subj, URIRef(ex["simple"]), Literal("hello")) in g
 
-    triples = list(g)
-    assert len(triples) == 1
-    assert (subj, URIRef("simple"), Literal("hello")) in triples
-
-def test_add_triples_with_list():
+def test_add_triples_with_list(rdf_client):
+    rdf = rdf_client.json_to_rdf(make_json({str(ex["fruit"]): ["apple", "banana"]}), "turtle").body.decode()
     g = Graph()
-    subj = URIRef("https://example.org/node/test")
-    add_triples(g, subj, ["apple", "banana"], prefix="fruit")
+    g.parse(data=rdf, format="turtle")
+    assert (subj, URIRef(ex["fruit"]), Literal("apple")) in g
+    assert (subj, URIRef(ex["fruit"]), Literal("banana")) in g
 
-    predicates = list(g.predicates(subject=subj))
-    objects = [str(o) for o in g.objects(subject=subj)]
-
-    assert URIRef("fruit") in predicates
-    assert "apple" in objects and "banana" in objects
-
-def test_add_triples_with_nested_dict():
+def test_add_triples_with_nested_dict(rdf_client):
+    rdf = rdf_client.json_to_rdf(make_json({str(ex["outer_inner"]): "deep_value"}), "turtle").body.decode()
     g = Graph()
-    subj = URIRef("https://example.org/node/test")
-    add_triples(g, subj, {"outer": {"inner": "deep_value"}}, prefix="data")
+    g.parse(data=rdf, format="turtle")
+    assert (subj, URIRef(ex["outer_inner"]), Literal("deep_value")) in g
 
-    expected_predicate = URIRef("dataouter_inner")
-    assert (subj, expected_predicate, Literal("deep_value")) in g
-
-def test_add_triples_with_acm_prefix():
+def test_add_triples_with_acm_prefix(rdf_client):
+    rdf = rdf_client.json_to_rdf(make_json({"acm_clearance": "TopSecret"}), "turtle").body.decode()
     g = Graph()
-    subj = URIRef("https://example.org/node/test")
-    add_triples(g, subj, {"acm_clearance": "TopSecret"}, prefix="")
-
-    expected_predicate = acm["clearance"]
-    assert (subj, expected_predicate, Literal("TopSecret")) in g
+    g.parse(data=rdf, format="turtle")
+    assert (subj, URIRef(acm["clearance"]), Literal("TopSecret")) in g
 
 def test_unsupported_format_raises_http_exception(rdf_client):
     with pytest.raises(HTTPException) as excinfo:
