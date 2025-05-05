@@ -35,7 +35,7 @@ class RDFClient:
             LOGGER.error(f"Failed to fetch RDF for object ID {obj_id} - {str(e)}")
         return None
 
-    def json_to_rdf(self, obj, format) -> str:
+    def json_to_rdf(self, obj: str, format: str) -> str:
         """
         Convert a JSON object to an RDF graph serialized in the specified format.
 
