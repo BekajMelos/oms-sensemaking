@@ -52,6 +52,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
+    attr.labels = []
     return attr
 
 
@@ -73,6 +74,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
+    attr.labels = []
     return attr
 
 
@@ -195,6 +197,7 @@ def mock_get_activities(mocker: MockerFixture):
     mock_activity_response = MagicMock()
     mock_activity = MagicMock()
     mock_activity.id = "activity_id"
+    mock_activity.labels = []
     mock_activity_response.data = [mock_activity]
     mock_get_activities.return_value = mock_activity_response
     return mock_get_activities
@@ -278,6 +281,8 @@ def test_new_incursion_region1(
             nodeId=incurring_object.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, rule.version_string],
             geometry=areas_of_interest[0],
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
@@ -287,6 +292,8 @@ def test_new_incursion_region1(
         CreateActivityInput(
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, rule.version_string],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[0]}",
@@ -332,6 +339,8 @@ def test_new_incursion_region2(
             nodeId=incurring_object.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, rule.version_string],
             geometry=areas_of_interest[1],
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
@@ -341,6 +350,8 @@ def test_new_incursion_region2(
         CreateActivityInput(
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, rule.version_string],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {areas_of_interest[1]}",
@@ -398,6 +409,7 @@ def test_two_existing_incursions(
             id=attribute1.id,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )
     mock_update_activity.assert_called_with(
@@ -406,6 +418,7 @@ def test_two_existing_incursions(
             addObservationIds=[observational_node_region1.id],
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )
 
@@ -445,6 +458,7 @@ def test_existing_incursion_nonoverlapping_time(
             id=attribute2.id,
             valueStart=attribute2.valueStart,
             valueEnd=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label,]
         )
     )
     mock_update_activity.assert_called_with(
@@ -453,5 +467,6 @@ def test_existing_incursion_nonoverlapping_time(
             addObservationIds=[observational_node_region1.id],
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
         )
     )

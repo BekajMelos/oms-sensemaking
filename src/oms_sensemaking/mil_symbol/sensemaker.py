@@ -80,7 +80,10 @@ class MilSymbolSensemaker(Sensemaker):
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, oms_object: AttributeAttribute | NodeNode) -> List[SymbolCodeUpdate]:
+    def process_data(
+            self,
+            oms_object: AttributeAttribute | NodeNode,
+            config: dict | None = None) -> List[SymbolCodeUpdate]:
         """
         Update a Node's symbol code based on its attributes and metadata
 
@@ -354,6 +357,7 @@ class MilSymbolSensemaker(Sensemaker):
 
                 attribute: CreateAttributeInput = CreateAttributeInput(
                     tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                    labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, self.version_string],
                     attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                     attributeType=AttributeType.STRING,
                     attributeValue=symbol_code_update.new_symbol_id_code,
@@ -373,9 +377,14 @@ class MilSymbolSensemaker(Sensemaker):
         :param code: code to set for symbolIdCode
         :return: None
         """
+        node_labels = oms_node.labels
+        if node_labels is None:
+            node_labels = []
+        node_labels.append(SETTINGS.sm_enriched_label)
         update_node_input = UpdateNodeInput(
             id=oms_node.id,
-            symbolIdCode=code
+            symbolIdCode=code,
+            labels=node_labels
         )
         self.oms_crud_tool.update_node(update_node_input)
 

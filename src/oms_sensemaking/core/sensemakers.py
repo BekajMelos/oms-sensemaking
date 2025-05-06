@@ -165,9 +165,9 @@ class Sensemaker(ABC, SensemakerMetaData):
     @property
     def version_string(self) -> str:
         """Return the algorithm version as a semantic version string."""
-        return ".".join(map(str, self.version))
+        return "v" + ".".join(map(str, self.version))
 
-    def execute(self, data: Any) -> Any:
+    def execute(self, *data: Any) -> Any:
         """
         Execute the Sensemaker.
 
@@ -183,7 +183,7 @@ class Sensemaker(ABC, SensemakerMetaData):
             with self.lock:
                 self.executed_at = datetime.now(tz=timezone.utc)
                 LOGGER.info(f"Running {self.name} {self.version_string}")
-                results: Any = self.process_data(data)
+                results: Any = self.process_data(*data)
                 self.save_findings(results)
                 try:
                     if results:
@@ -203,7 +203,7 @@ class Sensemaker(ABC, SensemakerMetaData):
     @abstractmethod
     # TODO: enforce common return format
     # def process_data(self, data: Any) -> Iterable[FindingBase]:
-    def process_data(self, data: Any) -> Any:
+    def process_data(self, data: Any, config: Any) -> Any:
         """
         Process data.
 

@@ -75,7 +75,11 @@ def get_random_emirates_stadium_point() -> str:
     return shapely.Point(random.uniform(lon_min, lon_max), random.uniform(lat_min, lat_max)).wkt
 
 
-def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_loiter_success(
+        mock_oms_client: MagicMock,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     """Simple success track."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -188,12 +192,13 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    sensemaker = LoiterSensemaker(mock_oms_crud_tool)
+    loiters = sensemaker.execute(track, aircraft_geo_config)
 
     assert len(loiters) == 1
     loiter: Loiter = loiters[0]
 
-    assert loiter.geohash_low == "gcpug"
+    assert loiter.geohash == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
     assert all(
@@ -213,6 +218,8 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
             name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -222,6 +229,8 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id,
             endNodeId=node_id,
@@ -240,6 +249,8 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
             attributeType=AttributeType.GEOSPATIAL.value,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter.to_geojson(),
             nodeId=loiter_node_id,
@@ -256,7 +267,11 @@ def test_loiter_success(mock_oms_client: MagicMock, db: Session, mock_oms_crud_t
     assert findings[0].finding_data["processed_points"][0]["location"] == to_shape(p2.location).wkt
 
 
-def test_loiter_invalid_not_long_enough(mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool):
+def test_loiter_invalid_not_long_enough(
+        mock_oms_client: MagicMock,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -337,11 +352,11 @@ def test_loiter_invalid_not_long_enough(mock_oms_client: MagicMock, db: Session,
         acm=ROLLUP_DEFAULT_ACM,
     )
 
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
     assert len(loiters) == 0
 
 
-def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool: OmsCrudTool):
+def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool, aircraft_geo_config: dict):
     """Failure. Unobserved for too long."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -447,13 +462,15 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool: OmsCrudTool):
         acm=ROLLUP_DEFAULT_ACM,
     )
 
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
     assert len(loiters) == 0
 
 
 def test_loiter_fails_valid_observed_threshold_within_geohash(
-    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
-):
+        mock_oms_client: MagicMock,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     """Don't remove valid loiters even if unobserved for too long."""
     # tests the find_prospective_loiters validity_time_diff
 
@@ -569,12 +586,12 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    sensemaker = LoiterSensemaker(mock_oms_crud_tool)
+    loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 1
     loiter = loiters[0]
 
-    assert loiter.geohash_low == "gcpug"
+    assert loiter.geohash == "gcpug"
     assert len(loiter.processed_points) == 5
     known_loiter_points = [p2, p3, p4, p5, p6]
     assert all(
@@ -594,6 +611,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
             name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -602,6 +621,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id,
             endNodeId=track.node_id,
@@ -619,6 +640,8 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter.to_geojson(),
             nodeId=loiter_node_id,
@@ -636,8 +659,10 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
 
 
 def test_loiter_success_multiple_in_same_geohash(
-    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
-):
+        mock_oms_client: MagicMock,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -805,12 +830,12 @@ def test_loiter_success_multiple_in_same_geohash(
     ]
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    sensemaker = LoiterSensemaker(mock_oms_crud_tool)
+    loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 2
 
     loiter1 = loiters[0]
-    assert loiter1.geohash_low == "gcpug"
+    assert loiter1.geohash == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
     assert all(
@@ -823,7 +848,7 @@ def test_loiter_success_multiple_in_same_geohash(
     assert loiter1.end_time == p6.detection_time
 
     loiter2 = loiters[1]
-    assert loiter2.geohash_low == "gcpug"
+    assert loiter2.geohash == "gcpug"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
     assert all(
@@ -844,6 +869,8 @@ def test_loiter_success_multiple_in_same_geohash(
             name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -853,6 +880,8 @@ def test_loiter_success_multiple_in_same_geohash(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id1,
             endNodeId=track.node_id,
@@ -865,6 +894,8 @@ def test_loiter_success_multiple_in_same_geohash(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id2,
             endNodeId=track.node_id,
@@ -883,6 +914,8 @@ def test_loiter_success_multiple_in_same_geohash(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter1.to_geojson(),
             nodeId=loiter_node_id1,
@@ -900,6 +933,8 @@ def test_loiter_success_multiple_in_same_geohash(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter2.to_geojson(),
             nodeId=loiter_node_id2,
@@ -917,8 +952,10 @@ def test_loiter_success_multiple_in_same_geohash(
 
 
 def test_loiter_success_multiple_in_different_geohash(
-    mock_oms_client: MagicMock, db: Session, mock_oms_crud_tool: OmsCrudTool
-):
+        mock_oms_client: MagicMock,
+        db: Session,
+        mock_oms_crud_tool: OmsCrudTool,
+        aircraft_geo_config: dict):
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -1086,12 +1123,12 @@ def test_loiter_success_multiple_in_different_geohash(
     ]
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
-
-    loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track)
+    sensemaker = LoiterSensemaker(mock_oms_crud_tool)
+    loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 2
 
     loiter1: Loiter = loiters[0]
-    assert loiter1.geohash_low == "gcpug"
+    assert loiter1.geohash == "gcpug"
     assert len(loiter1.processed_points) == 5
     known_loiter_points1 = [p2, p3, p4, p5, p6]
     assert all(
@@ -1104,7 +1141,7 @@ def test_loiter_success_multiple_in_different_geohash(
     assert loiter1.end_time == p6.detection_time
 
     loiter2: Loiter = loiters[1]
-    assert loiter2.geohash_low == "gcpvm"
+    assert loiter2.geohash == "gcpvm"
     assert len(loiter2.processed_points) == 4
     known_loiter_points2 = [p8, p9, p10, p11]
     assert all(
@@ -1125,6 +1162,8 @@ def test_loiter_success_multiple_in_different_geohash(
             name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -1134,6 +1173,8 @@ def test_loiter_success_multiple_in_different_geohash(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id1,
             endNodeId=track.node_id,
@@ -1146,6 +1187,8 @@ def test_loiter_success_multiple_in_different_geohash(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=loiter_node_id2,
             endNodeId=track.node_id,
@@ -1164,6 +1207,8 @@ def test_loiter_success_multiple_in_different_geohash(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter1.to_geojson(),
             nodeId=loiter_node_id1,
@@ -1180,6 +1225,8 @@ def test_loiter_success_multiple_in_different_geohash(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                    SETTINGS.loiter_sm_label, sensemaker.version_string],
             sourceId=p1.source_id,
             geometry=loiter2.to_geojson(),
             nodeId=loiter_node_id2,

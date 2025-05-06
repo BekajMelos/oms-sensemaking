@@ -27,6 +27,7 @@ class InOrOutOfGarrison(BaseRule):
 
     def __init__(self, name: str):
         self.name = name
+        self.version = (1, 0, 0)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -153,6 +154,8 @@ class InOrOutOfGarrison(BaseRule):
         # Create in/out of garrison activity pointing to observation
         garrison_activity = CreateActivityInput(
             acm=observation.acm,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.garrison_sm_label, self.version_string],
             classIri=SETTINGS.inference_garrison_class_iri,
             name=activity_name,
             state=activity_state,

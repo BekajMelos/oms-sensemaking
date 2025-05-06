@@ -195,7 +195,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
     yield db
 
 
-def test_most_similar_tracks_success_exact_same_path(tester_db: Session):
+def test_most_similar_tracks_success_exact_same_path(tester_db: Session, aircraft_geo_config):
     """Test similar track with same path."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -244,7 +244,7 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session):
         points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
-    similar_tracks = SimilarTracksSensemaker().execute(track)
+    similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
 
     assert len(similar_tracks.top_similarities.queue) == 2
     assert similar_tracks.top_similarities.queue[0][0] == 0.75
@@ -253,7 +253,7 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session):
     assert similar_tracks.top_similarities.queue[1][1] == TRACK_UUID3
 
 
-def test_most_similar_tracks_success_start(tester_db: Session):
+def test_most_similar_tracks_success_start(tester_db: Session, aircraft_geo_config):
     """Test similar track where ending point doesn't match the similar track."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -303,13 +303,13 @@ def test_most_similar_tracks_success_start(tester_db: Session):
         points=[p1, p2, p3], node_id=uuid4(), track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
-    similar_tracks = SimilarTracksSensemaker().execute(track)
+    similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
 
     assert len(similar_tracks.top_similarities.queue) == 1
     assert similar_tracks.top_similarities.queue[0][0] == 0.75
 
 
-def test_most_similar_tracks_success_end(tester_db: Session):
+def test_most_similar_tracks_success_end(tester_db: Session, aircraft_geo_config):
     """Test similar track where starting point doesn't match the similar track."""
     node_id = uuid4()
     track_uuid = uuid4()
@@ -358,7 +358,7 @@ def test_most_similar_tracks_success_end(tester_db: Session):
         points=[p1, p2, p3], node_id=uuid4(), track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
 
-    similar_tracks = SimilarTracksSensemaker().execute(track)
+    similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
 
     assert len(similar_tracks.top_similarities.queue) == 1
     assert similar_tracks.top_similarities.queue[0][0] == 0.75
