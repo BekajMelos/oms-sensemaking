@@ -382,7 +382,7 @@ class GeospatialSensemakerController(SensemakerController):
         time_bins = {
             k: list(g)
             for k, g in groupby(
-                (p for p in points if p.weight > 0),
+                points,
                 key=lambda x: x.detection_time.timestamp() // SETTINGS.max_track_time_length_seconds,
             )
         }
