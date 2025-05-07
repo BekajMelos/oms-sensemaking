@@ -37,39 +37,7 @@ source .venv/bin/activate                  # activate virtual environment
 
 ### Step 2: Configure Private PyPI
 
-*oms-sensemaking* includes a dependency on the [oms-sdk] which is hosted in a
-private PyPI. You can configure your system to authenticate automatically
-using a local `.netrc` file.
-
-Create a `.netrc` file in your home directory:
-
-```
-# ~/.netrc
-machine tex.gerbil-cloud.ts.net
-login your-login-here
-password "your password"
-```
-
-You will also need to configure pip to pull dependencies from the private PyPI
-first and fall back to the public PyPI. To do this, add a `pip.conf` file to
-your `.venv` directory with the following contents:
-
-```
-# .venv/pip.conf --- local project pip configuration.
-[global]
-index-url = https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple
-extra-index-url = https://pypi.org/simple
-```
-
-> ***NOTE***: Pip can alternatively be configured through environment variables:
->
-> ```sh
-> # default to private PyPI
-> export PIP_INDEX_URL="https://tex.gerbil-cloud.ts.net:3000/api/packages/oms/pypi/simple"
->
-> # fallback to public PyPI
-> export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
-> ```
+Ask a teammate for guidance.
 
 ### Step 3: Install Project Dependencies
 
@@ -102,13 +70,15 @@ cp .env.template .env
 At a minimum, you will need to have the following variables set, everything else
 will rely on the default values set in the applicaton's configuraton:
 
-| Variable Name       | Example                          | Description                                           |
-|:--------------------|:---------------------------------|:------------------------------------------------------|
-| `POSTGRES_PASSWORD` | `xxxxxxx`                        | The password for the PostgreSQL admmin user           |
-| `OMSB_VERSION`      | `Grimlock-INC-18`                | The version of oms-bridge                             |
-| `OMSB_URL`          | `https://localhost:8020/graphql` | URL for OMSB                                          |
-| `CERT_PATH`         | `./pki/test10.pem`               | Path to User PEM                                      |
-| `KEY_PATH`          | `./pki/test10.key`               | Path to User Key                                      |
+| Variable Name       | Example                                           | Description                                           |
+|:--------------------|:--------------------------------------------------|:------------------------------------------------------|
+| `POSTGRES_PASSWORD` | `xxxxxxx`                                         | The password for the PostgreSQL admmin user           |
+| `OMSB_VERSION`      | `Grimlock-INC-18`                                 | The version of oms-bridge                             |
+| `OMSB_URL`          | `https://localhost:8020/graphql`                  | URL for OMSB                                          |
+| `CERT_PATH`         | `./pki/test10.pem`                                | Path to User PEM                                      |
+| `KEY_PATH`          | `./pki/test10.key`                                | Path to User Key                                      |
+| `DOCKER_REGISTRY`   | `hostname:5000`                                   | Socket address of the remote docker registry          |
+| `PIP_INDEX`         | `https://host:3000/api/packages/oms/pypi/simple`  | URL for the private pip index                         |
 
 
 ### Step 5: Decrypt Certs
@@ -192,16 +162,7 @@ and/or the [MyPy extension for Visual Studio Code]
 
 To integrate with PyCharm, use the [PyCharm Ruff plugin].
 
-[pyenv]: https://github.com/yyuu/pyenv
-[Python]: https://www.python.org
-[ruff]: https://docs.astral.sh/ruff
-[Ruff extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
-[MyPy extension for Visual Studio Code]: https://marketplace.visualstudio.com/items?itemName=ms-python.mypy-type-checker
-[PyCharm Ruff plugin]: https://plugins.jetbrains.com/plugin/20574-ruff
-[black]: https://github.com/psf/black
-[mypy]: https://mypy-lang.org
-[venv]: https://docs.python.org/3/library/venv.html
-[oms-sdk]: https://tex.gerbil-cloud.ts.net:3000/data-team/omsb-2-common-utils-python
-[PEP 508]: https://peps.python.org/pep-0508/
-[Environment Variables]: ./env-vars.md
-[Install Docker Engine]: https://docs.docker.com/engine/install/
+
+#### Relevant links
+
+Ask a teammate for guidance.

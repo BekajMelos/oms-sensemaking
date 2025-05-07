@@ -1,5 +1,8 @@
 SHELL := /bin/bash
 
+include .env
+export
+
 .PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
@@ -45,6 +48,7 @@ build-docker:  ## Build docker image
           --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) \
           --build-arg BUILD_DATE=$(shell date +%Y%m%d%H%M) \
           --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
+		  --build-arg PIP_INDEX_URL=${PIP_INDEX} \
           --no-cache \
           -t oms_sensemaking:latest \
           --secret id=mynetrc,src=$${HOME}/.netrc \

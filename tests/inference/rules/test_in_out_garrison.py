@@ -340,6 +340,8 @@ def test_new_in_garrison(
     mock_create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node.acm,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.garrison_sm_label, rule.version_string],
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_in_garrison_activity_name,
             state=SETTINGS.inference_in_garrison_activity_state,
@@ -378,6 +380,8 @@ def test_new_out_garrison(
     mock_create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node2.acm,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.garrison_sm_label, rule.version_string],
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_out_of_garrison_activity_name,
             state=SETTINGS.inference_out_of_garrison_activity_state,

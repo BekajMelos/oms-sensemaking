@@ -1,0 +1,38 @@
+{
+  "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft": {
+    "valid_observed_threshold_seconds": 900,
+    "loiter_geohash": 5,
+    "cotravel_geohash": 5,
+    "similar_tracks_geohash": 5,
+    "loiter_min_time": 900,
+    "min_cotravel_duration_seconds": 1200,
+    "min_lag_lead_duration_seconds": 1200,
+    "max_lag_lead_duration_seconds": 2700,
+    "max_potential_duplicate_time_diff_seconds": 30,
+    "within_meters": 3000.0
+  },
+  "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft": {
+    "valid_observed_threshold_seconds": 900,
+    "loiter_geohash": 6,
+    "cotravel_geohash": 6,
+    "similar_tracks_geohash": 5,
+    "loiter_min_time": 1200,
+    "min_cotravel_duration_seconds": 3600,
+    "min_lag_lead_duration_seconds": 3600,
+    "max_lag_lead_duration_seconds": 4000,
+    "max_potential_duplicate_time_diff_seconds": 30,
+    "within_meters": 3000.0
+  },
+  "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle": {
+    "valid_observed_threshold_seconds": 900,
+    "loiter_geohash": 6,
+    "cotravel_geohash": 6,
+    "similar_tracks_geohash": 5,
+    "loiter_min_time": 1200,
+    "min_cotravel_duration_seconds": 1800,
+    "min_lag_lead_duration_seconds": 1800,
+    "max_lag_lead_duration_seconds": 2000,
+    "max_potential_duplicate_time_diff_seconds": 20,
+    "within_meters": 3000.0
+  }
+}

@@ -1,15 +1,26 @@
 """Geo Controller Unit Tests"""
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
+from typing import Callable
 from unittest import mock
 from uuid import uuid4
 
 import pytest
+import shapely
+from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode
 from pytest_mock import MockerFixture
 
+from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
+from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
+from oms_sensemaking.models.geo import Point, Track
 
 
 @pytest.fixture
@@ -18,6 +29,9 @@ def mock_geo_controller(mock_oms_client):
         RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
+
+    # disable autoflush so that flush_buffer doesn't go on forever. Without this the tests never end
+    controller.autoflush_enabled = False
     return controller
 
 
@@ -47,3 +61,113 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
     # Assertions
     assert "No node found. Unable to process observation." in caplog.text
     assert not handled
+
+
+@mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
+@mock.patch("oms_sensemaking.geospatial.controllers.APITrack")
+@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
+@mock.patch("oms_sensemaking.models.geo.aac_client")
+@mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
+@mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
+def test_geo_controller_config(
+    mock_executor: ThreadPoolExecutor,
+    mock_as_completed: Callable,
+    mock_aac_client1: AacClient,
+    mock_aac_client2: AacClient,
+    mock_api_track_client: APITrack,
+    mock_track_get_or_create: Callable,
+    mock_geo_controller: GeospatialSensemakerController,
+    aircraft_geo_config: dict,
+    watercraft_geo_config: dict,
+):
+    # register the sensemaker without starting the listener
+    mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
+
+    # mock oms call. Set classIri to Aircraft
+    oms_node = NodeNode.model_construct(
+        id=uuid4(),
+        name="test",
+        sourceId=uuid4(),
+        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
+        acm=DEFAULT_ACM,
+    )
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+
+    # mock track creation
+    track_uuid = uuid4()
+    node_uuid = uuid4()
+    # unimportant point
+    points = [
+        Point(
+            acm=DEFAULT_ACM,
+            location=shapely.Point(-0.030890, 51.509420).wkt,
+            altitude=None,
+            detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
+            node_id=node_uuid,
+            node_version=1,
+            observation_id=uuid4(),
+            observation_version=1,
+            source_id=uuid4(),
+            observation_confidence=Confidence.HIGH,
+        ),
+        Point(
+            acm=DEFAULT_ACM,
+            location=shapely.Point(-0.030890, 51.509420).wkt,
+            altitude=None,
+            detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
+            node_id=node_uuid,
+            node_version=1,
+            observation_id=uuid4(),
+            observation_version=1,
+            source_id=uuid4(),
+            observation_confidence=Confidence.HIGH,
+        ),
+    ]
+    track = Track(DEFAULT_ACM, points, uuid4(), "", [], track_uuid)
+    mock_track_get_or_create.return_value = (track, None)
+
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: points}
+    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+    mock_api_track_client.create_oms_track = mock.MagicMock()
+
+    # mock thread pool execution
+
+    # Create a mock executor that returns a future with a known result
+    instance = mock.MagicMock()
+    mock_executor.return_value.__enter__.return_value = instance
+    mock_as_completed.return_value = []
+
+    # mock execute function
+    mock_geo_controller._registry["geo"].execute = mock.MagicMock()
+
+    # Test Aircraft
+    # call flush buffer
+    mock_geo_controller.flush_buffer()
+
+    # Ensure that the aircraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, watercraft_geo_config)
+
+    # Test Watercraft
+    # mock oms call. Set classIri to Aircraft
+    oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: points}
+    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+    mock_api_track_client.create_oms_track = mock.MagicMock()
+
+    # mock thread pool execution
+
+    # Create a mock executor that returns a future with a known result
+    instance = mock.MagicMock()
+    mock_executor.return_value.__enter__.return_value = instance
+    mock_as_completed.return_value = []
+
+    # call flush buffer
+    mock_geo_controller.flush_buffer()
+
+    # Ensure that the watercraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, aircraft_geo_config)

@@ -80,8 +80,7 @@ WHERE {
     }    
     
 
-    # Using a tex-latest OMSB2 IRIs for now (see spreadsheet at
-    # https://docs.google.com/spreadsheets/d/1cajOVDD4yBVJCdNBYLy5PsZIfyRZG-57ujJjvXklBEw/edit)
+    # Using OMSB2 IRIs for now (ask a teammate for the source)
     BIND(IRI(?object_class_iri) AS ?class)
     #BIND(IRI("http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy") AS ?controlled_by)
     #BIND(IRI("http://purl.obolibrary.org/obo/BFO_0000196") AS ?bearer_of)

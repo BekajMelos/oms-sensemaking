@@ -68,7 +68,7 @@ class ResolutionSensemaker(Sensemaker):
         self.oms_crud_tool = oms_crud_tool
         self.duplicate_object_iris = duplicate_object_iris
 
-    def process_data(self, attribute: AttributeAttribute) -> list[DupFinding]:
+    def process_data(self, attribute: AttributeAttribute, config: dict | None = None) -> list[DupFinding]:
         """
         Determine if a created Node is the same as an existing note and suggest that they are merged
 
@@ -147,6 +147,7 @@ class ResolutionSensemaker(Sensemaker):
             rel: CreateRelationshipInput = CreateRelationshipInput(
                 name=SETTINGS.resolution_relationship_name,
                 tags=[SETTINGS.resolution_sensemaker_tag],
+                labels=[SETTINGS.sm_inferenced_label, SETTINGS.res_sm_label, self.version_string],
                 startNodeId=current_node_id,
                 endNodeId=node.id,
                 confidence=Confidence.HIGH.value,

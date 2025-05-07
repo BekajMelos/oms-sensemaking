@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Tracks are split when occurring longer than a configurable max timeframe
+- Queue Event logs include Queue Name
 
 ### Changed
 - Switched from SQS to RabbitMQ consumption
+- Updated Geosensemakers to use settings based on IRI from config
 
 ### Fixed
 
@@ -34,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Added CA Cert argument to AAC Client
 
 ### Changed
+- Geosensemakers get runtime configs per node IRI based on geo_sensemaker_config.json file
 - Docker tag version number has missing `v`
 - Changed Grimlock version from 14 to 17
 - Updated Sensemaking smoke tests
@@ -69,12 +73,3 @@ from Grimlock 17 (IRIs, ActivityState, altered object labels)
 
 ### Changed
 - None
-
-
-
-[Unreleased]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/compare/v0.4.0...main
-[0.4.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.4.0
-[0.3.1]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.1
-[0.3.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.3.0
-[0.2.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.2.0
-[0.1.0]: https://tex.gerbil-cloud.ts.net:3000/oms/oms-sensemaking/releases/tag/v0.1.0
