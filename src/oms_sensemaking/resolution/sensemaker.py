@@ -101,7 +101,7 @@ class ResolutionSensemaker(Sensemaker):
         # Attribute doesn't point to a node
         if not current_node_id:
             return []
-        
+
         current_iri = attribute.attributeIri
         all_attribute_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
         # Attribute not in relevant IRIs list
