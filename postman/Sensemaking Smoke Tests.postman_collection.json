@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "a9d06e74-9457-4ad9-95ac-611559998ec9",
+		"_postman_id": "ea1b9f37-d621-4d8a-ae42-09537433463a",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33407642"
+		"_exporter_id": "41174150"
 	},
 	"item": [
 		{
@@ -1037,8 +1037,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
 									}
 								},
 								"url": {
@@ -2687,8 +2687,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
 									}
 								},
 								"url": {
@@ -2748,8 +2748,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": \"{{nodeId2}}\"\n}"
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [\"{{nodeId2}}\"]\n    }\n}"
 									}
 								},
 								"url": {
@@ -4327,8 +4327,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
 									}
 								},
 								"url": {
@@ -4388,8 +4388,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": \"{{nodeId2}}\"\n}"
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [\"{{nodeId2}}\"]\n    }\n}"
 									}
 								},
 								"url": {
@@ -5063,166 +5063,6 @@
 		},
 		{
 			"key": "baseballCardId",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId1",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId2",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId3",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId4",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId5",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId6",
-			"value": ""
-		},
-		{
-			"key": "loiterobservationId7",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId1",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId2",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId3",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId4",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId5",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId6",
-			"value": ""
-		},
-		{
-			"key": "cotravelAobsId7",
-			"value": ""
-		},
-		{
-			"key": "nodeId2",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId1",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId2",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId3",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId4",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId5",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId6",
-			"value": ""
-		},
-		{
-			"key": "cotravelBobsId7",
-			"value": ""
-		},
-		{
-			"key": "nodeId1",
-			"value": ""
-		},
-		{
-			"key": "cotravelrelId1",
-			"value": ""
-		},
-		{
-			"key": "cotravelrelId2",
-			"value": ""
-		},
-		{
-			"key": "loiterrelId",
-			"value": ""
-		},
-		{
-			"key": "loiternodeId",
-			"value": ""
-		},
-		{
-			"key": "loiterattrId",
-			"value": ""
-		},
-		{
-			"key": "cotravelnode1",
-			"value": ""
-		},
-		{
-			"key": "cotravelnode2",
-			"value": ""
-		},
-		{
-			"key": "cotravelrelId3",
-			"value": ""
-		},
-		{
-			"key": "cotravelrelId4",
-			"value": ""
-		},
-		{
-			"key": "cotravelattrId1",
-			"value": ""
-		},
-		{
-			"key": "cotravelattrId2",
-			"value": ""
-		},
-		{
-			"key": "cotraveltrackobsId1",
-			"value": ""
-		},
-		{
-			"key": "cotraveltrackobsId2",
-			"value": ""
-		},
-		{
-			"key": "loitertrackobsId1",
-			"value": ""
-		},
-		{
-			"key": "loitertrackobsId2",
-			"value": ""
-		},
-		{
-			"key": "cotravelnodeId",
-			"value": ""
-		},
-		{
-			"key": "cotravelnodeId2",
 			"value": ""
 		}
 	]

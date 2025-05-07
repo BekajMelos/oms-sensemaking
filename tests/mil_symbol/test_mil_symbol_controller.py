@@ -10,7 +10,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, NodeNode, ObjectType
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.events import AuditLogEvent, SQSListener
+from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.controllers import (
     MilSymbolQueueFilter,
@@ -22,7 +22,7 @@ from oms_sensemaking.mil_symbol.controllers import (
 @pytest.fixture
 def mock_mil_sym_controller():
     controller = MilSymbolSensemakerController(
-        SQSListener("MilSymbolSQSListener", SETTINGS.sqs_res_queue_url, event_filter=MilSymbolQueueFilter())
+        RabbitMQListener("MilSymbolRMQListener", SETTINGS.rmq_res_queue_name, event_filter=MilSymbolQueueFilter())
     )
     return controller
 
