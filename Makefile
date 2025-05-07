@@ -48,6 +48,7 @@ build-docker:  ## Build docker image
           --no-cache \
           -t oms_sensemaking:latest \
           --secret id=mynetrc,src=$${HOME}/.netrc \
+          --platform linux/amd64,linux/arm64 \
           .
 
 build-docs:  ## Build project documentation static site.
