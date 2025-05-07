@@ -13,6 +13,7 @@ from oms_sdk.generated.generated_graphql_client import (
     TimeQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
+    UuidQueryByList,
 )
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
@@ -119,7 +120,7 @@ class Incursion(BaseRule):
         # Fetch corresponding incursion activity
         activity_query = ActivityQuery(
             name=StringQuery(equals="Incursion"),
-            nodeIds=[incurring_object.id],
+            nodeIds=UuidQueryByList(in_=[incurring_object.id]),
             startTime=TimeQuery(gte=existing_incursion_attribute.valueStart),
             endTime=TimeQuery(lte=existing_incursion_attribute.valueEnd),
         )

@@ -15,7 +15,7 @@ from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.events import SQSListener
+from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
@@ -26,7 +26,7 @@ from oms_sensemaking.models.geo import Point, Track
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
-        SQSListener("geo test queue listener", SETTINGS.sqs_geo_queue_url, event_filter=GeoQueueFilter())
+        RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
 
@@ -78,7 +78,7 @@ def test_geo_controller_config(
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
     aircraft_geo_config: dict,
-    watercraft_geo_config: dict
+    watercraft_geo_config: dict,
 ):
     # register the sensemaker without starting the listener
     mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
@@ -89,7 +89,7 @@ def test_geo_controller_config(
         name="test",
         sourceId=uuid4(),
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
     )
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
 
@@ -121,7 +121,7 @@ def test_geo_controller_config(
             observation_version=1,
             source_id=uuid4(),
             observation_confidence=Confidence.HIGH,
-        )
+        ),
     ]
     track = Track(DEFAULT_ACM, points, uuid4(), "", [], track_uuid)
     mock_track_get_or_create.return_value = (track, None)

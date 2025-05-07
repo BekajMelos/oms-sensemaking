@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipQuery,
     StringQuery,
     UpdateActivityInput,
+    UuidQueryByList,
 )
 
 from oms_sensemaking.clients.instances import oms_client
@@ -65,7 +66,7 @@ class InOrOutOfGarrison(BaseRule):
 
             # Find garrison coordinates through location attribute
             garrison_attribute_query = AttributeQuery(
-                nodeIds=[garrison_object_id],
+                nodeIds=UuidQueryByList(in_=[garrison_object_id]),
                 attributeIris=[SETTINGS.inference_geo_attribute_iri]
             )
             garrison_attribute_res = oms_client.get_attributes(garrison_attribute_query)
@@ -97,7 +98,7 @@ class InOrOutOfGarrison(BaseRule):
         activity_query = ActivityQuery(
             name=StringQuery(equals=activity_name),
             state=StringQuery(equals=activity_state),
-            nodeIds=[obs.nodeId]
+            nodeIds=UuidQueryByList(in_=[obs.nodeId])
         )
         activity_response = oms_client.get_activities(activity_query)
         existing_activities = activity_response.data

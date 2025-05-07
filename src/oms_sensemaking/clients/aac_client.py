@@ -57,7 +57,7 @@ class AacClient:
         else:
             LOGGER.debug("AAC Client verification disabled")
 
-        self.client = httpx.Client(verify=verify)
+        self.client = httpx.Client(verify=verify, timeout=30)
 
     def __del__(self):
         """
