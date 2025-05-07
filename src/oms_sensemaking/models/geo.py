@@ -19,7 +19,7 @@ from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from pydantic import BaseModel
-from shapely import LineString, to_geojson
+from shapely import LineString, MultiLineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -233,13 +233,60 @@ class Track(BaseORM, SecurityMarkingMixin):
             return None
         return self.points[-1].detection_time
 
-    def to_linestring(self) -> LineString:
+    def to_linestring(self, points: list[Point]) -> LineString:
         """Return a linestring representation of the track."""
-        return LineString([point.coordinates for point in self.points])
+        return LineString([point.coordinates for point in points])
+
+    def to_multilinestring(self, split_points: list[list[Point]]) -> MultiLineString:
+        return MultiLineString([self.to_linestring(points_line) for points_line in split_points])
+
+    def straddles_antimeridian(self, point1: Point, point2: Point):
+        """
+        Return True if the line connecting point1 and point2 crosses the antimeridian, where point1 and point2
+        are consecutive points in a track
+        """
+
+        point1_lon = point1.coordinates[0]
+        point2_lon = point2.coordinates[0]
+
+        if point1_lon * point2_lon >= 0:
+            return False
+
+        if point1_lon > 0:
+            return point2_lon < -(180 - point1_lon)
+        else:
+            return point1_lon < -(180 - point2_lon)
+
+    def split_track_over_antimeridian(self) -> list[list[Point]]:
+        """
+        Check if track crosses antimeridian and if so, split into
+        two arrays of points (one for each side of antimeridian)
+        """
+
+        if len(self.points) < 2:
+            return []
+
+        antimeridian_crossing_index = -1
+        for i in range(len(self.points) - 2):
+            if self.straddles_antimeridian(self.points[i], self.points[i+1]):
+                antimeridian_crossing_index = i
+                break
+
+        if antimeridian_crossing_index < 0:
+            return []
+
+        left_line = self.points[0:i+1]
+        right_line = self.points[i+1, len(self.points)]
+        return [left_line, right_line]
 
     def to_geometry(self) -> dict:
-        """Return a linestring dict representation of the track."""
-        return json.loads(to_geojson(self.to_linestring()))
+        """Return a lineString or multiLineString dict representation of the track."""
+        split_points = self.split_track_over_antimeridian()
+        if not split_points:
+            string_representation = self.to_linestring(self.points)
+        else:
+            string_representation = self.to_multilinestring(self, split_points)
+        return json.loads(to_geojson(string_representation))
 
 
 class TrackWeaverBase(ABC):
