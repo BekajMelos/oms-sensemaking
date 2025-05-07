@@ -25,6 +25,7 @@ done
 if [ $count -eq $DB_MAX_CONNECTION_ATTEMPTS ]; then
   echo "Unable to establish database connection, exiting."
   echo "$alembic_output" >&2
+  sleep 100000
   exit 1
 fi
 echo "$alembic_output" >&2
