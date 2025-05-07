@@ -110,6 +110,25 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     )
     assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(unsupported_attribute) == []
 
+    # Test Failure. Irrelevant attribute IRI
+    new_irrelevant_attribute = AttributeAttribute.model_construct(
+        attributeIri="bleh",
+        attributeValue=EQUIPMENT_CODE,
+        nodeId=new_equipment_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_irrelevant_attribute) == []
+
+    # Test Failure. Attribute not pointing to a node
+    new_no_node_attribute = AttributeAttribute.model_construct(
+        attributeIri=EQUIPMENT_CODE_IRI,
+        attributeValue=EQUIPMENT_CODE,
+        nodeId=None,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_no_node_attribute) == []
 
     # Test Failure. BE_NUMBER given but no OSUFFIX in DB. Criteria not met
     new_be_number_attribute = AttributeAttribute.model_construct(
