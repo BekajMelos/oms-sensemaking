@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Switched from SQS to RabbitMQ consumption
 - Updated Geosensemakers to use settings based on IRI from config
+- Updated OMS dependency to Grimlock-INC-19
 
 ### Fixed
 
