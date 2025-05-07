@@ -36,12 +36,36 @@ def name_attr(mocker: MockerFixture):
 
     return attr
 
+@pytest.fixture
+def invalid_attr(mocker: MockerFixture):
+    """
+    Attribute not pointing to a node
+    """
+    attr = mocker.Mock(spec=AttributeAttribute)
+    attr.id = "junk won't match"
+    attr.acm = DEFAULT_ACM
+    attr.labels = [SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                   SETTINGS.add_has_name_sm_label, AddHasNameAttribute.version_string]
+    attr.attributeIri = SETTINGS.inference_add_has_name_attribute_iri
+    attr.attributeName = SETTINGS.inference_add_has_name_attribute_iri.split("/")[-1]
+    attr.attributeValue = "some attr name"
+    attr.attributeType = AttributeType.BOOLEAN
+    attr.confidence = Confidence.MODERATE
+    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
+    attr.nodeId = None
+
+    return attr
+
 
 def test_evaluate_none_input():
     """Test to verify we only run the rule against attributes"""
     rule = AddHasNameAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
+def test_evaluate_attribute_no_node(invalid_attr):
+    """Test to verify we only run the rule against attributes pointing to nodes"""
+    rule = AddHasNameAttribute("some name")
+    assert not rule.evaluate(RuleContext()), "should only run for attributes pointing to nodes"
 
 def test_evaluate_attribute_input(name_attr):
     """Test to verify valid inputs are recognized as such"""

@@ -3,6 +3,7 @@
 import copy
 import logging
 from dataclasses import dataclass, field
+from itertools import chain
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -96,8 +97,17 @@ class ResolutionSensemaker(Sensemaker):
         :return: List of OMSB Attributes to look for
 
         """
-        current_iri = attribute.attributeIri
         current_node_id = attribute.nodeId
+        # Attribute doesn't point to a node
+        if not current_node_id:
+            return []
+        
+        current_iri = attribute.attributeIri
+        all_attribute_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
+        # Attribute not in relevant IRIs list
+        if current_iri not in all_attribute_iris:
+            return []
+
         duplicate_object_attributes = [attribute]
         class_iri = self.oms_crud_tool.get_node(current_node_id).classIri
 

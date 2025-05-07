@@ -51,6 +51,7 @@ class AddHasNameAttribute(BaseRule):
 
         return (
             rule_context.attribute
+            and rule_context.attribute.nodeId
             and rule_context.attribute.attributeIri == SETTINGS.inference_add_has_name_attribute_iri
             and rule_context.attribute.attributeValue
         )
