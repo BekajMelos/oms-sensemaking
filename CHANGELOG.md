@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Tracks are split when occurring longer than a configurable max timeframe
+- Queue Event logs include Queue Name
 
 ### Changed
 - Updated Geosensemakers to use settings based on IRI from config

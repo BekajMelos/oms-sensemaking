@@ -212,6 +212,8 @@ class LoiterSensemaker(Sensemaker):
             name=SETTINGS.loiter_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, self.version_string],
             classIri=SETTINGS.loiter_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -220,6 +222,8 @@ class LoiterSensemaker(Sensemaker):
 
         create_relationship_input = CreateRelationshipInput(
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, self.version_string],
             name=SETTINGS.loiter_event_name,
             startNodeId=published_node.id,
             endNodeId=loiter.vehicle_id,
@@ -237,6 +241,8 @@ class LoiterSensemaker(Sensemaker):
             attributeType=AttributeType.GEOSPATIAL.value,
             confidence=Confidence.HIGH.value,
             tags=tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
+                        SETTINGS.loiter_sm_label, self.version_string],
             sourceId=source_id,
             geometry=loiter.to_geojson(),
             nodeId=published_node.id,

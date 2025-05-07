@@ -33,6 +33,7 @@ class Incursion(BaseRule):
 
     def __init__(self, name: str):
         self.name = name
+        self.version = (1, 0, 0)
         self.features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
@@ -126,19 +127,29 @@ class Incursion(BaseRule):
         incursion_activity = activity_response.data[0]
 
         # Update start/end times and add observation to incursion activity
+        activity_labels = incursion_activity.labels
+        if activity_labels is None:
+            activity_labels = []
+        activity_labels.append(SETTINGS.sm_enriched_label)
         updated_activity_input = UpdateActivityInput(
             id=incursion_activity.id,
             startTime=inc_attr.start_time.isoformat(),
             endTime=inc_attr.end_time.isoformat(),
             addObservationIds=[observation.id],
+            labels=activity_labels
         )
         oms_client.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
+        attribute_labels = existing_incursion_attribute.labels
+        if attribute_labels is None:
+            attribute_labels = []
+        attribute_labels.append(SETTINGS.sm_enriched_label)
         updated_attribute_input = UpdateAttributeInput(
             id=existing_incursion_attribute.id,
             valueStart=inc_attr.start_time.isoformat(),
             valueEnd=inc_attr.end_time.isoformat(),
+            labels=attribute_labels
         )
         oms_client.update_attribute(updated_attribute_input)
 
@@ -157,6 +168,8 @@ class Incursion(BaseRule):
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, self.version_string],
             geometry=geo_of_interest,
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
@@ -167,6 +180,8 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
+            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
+                    SETTINGS.incursion_sm_label, self.version_string],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
