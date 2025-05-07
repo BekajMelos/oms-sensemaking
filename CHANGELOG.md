@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+## [0.5.0] - 2025-05-07
+
+### Added
 - Tracks are split when occurring longer than a configurable max timeframe
 - Queue Event logs include Queue Name
 
