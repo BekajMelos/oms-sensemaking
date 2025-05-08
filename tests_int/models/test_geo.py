@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
+import shapely
 from geolib import geohash
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Confidence
@@ -14,6 +15,7 @@ from sqlalchemy.exc import StatementError
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.models.geo import Point, Track, get_track
+from tests_int.geospatial.test_similar_tracks import ROLLUP_DEFAULT_ACM
 
 ATTR_ID_FFX: UUID = UUID("f604f7d3-b78d-49af-a2cf-75eae08cec52")
 NODE_ID_FFX: UUID = UUID("6796b293-e0b2-4ba3-a361-c59c6e07248b")
@@ -291,3 +293,222 @@ def test_get_track_uuid_str(tester_db: Session):
     assert len(track.points) == 12
     assert track.points[0].node_id == NODE_ID
     assert track.points[0].observation_id == DATA[TRACK_UUID][0][5]
+
+
+def test_geometry_crosses_antimeridian_same_lat(tester_db: Session):
+    """Test that to_geoemtry splits input into MultiLineString"""
+    node_id = uuid4()
+    track_uuid = uuid4()
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(178, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+    )
+    geometry = track.to_geometry()
+    #assert geometry["type"] == "MultiLineString"
+    expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]],
+                                [[180.0, 22.6683], [-179.0, 22.6683]]],
+                'type': 'MultiLineString'}
+    assert geometry == expected
+
+
+def test_geometry_crosses_antimeridian_diff_lat(tester_db: Session):
+    """Test that to_geoemtry splits input into MultiLineString"""
+    node_id = uuid4()
+    track_uuid = uuid4()
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(178, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-179, 24.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+    )
+    geometry = track.to_geometry()
+    #assert geometry["type"] == "MultiLineString"
+    expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 23.6683]],
+                                [[180.0, 23.6683], [-179.0, 24.6683]]],
+                'type': 'MultiLineString'}
+    assert geometry == expected
+
+
+def test_geometry_crosses_antimeridian_other_direction(tester_db: Session):
+    """Test that to_geoemtry splits input into MultiLineString"""
+    node_id = uuid4()
+    track_uuid = uuid4()
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-178, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(-179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+    )
+    geometry = track.to_geometry()
+    #assert geometry["type"] == "MultiLineString"
+    expected = {'coordinates': [[[-178.0, 22.6683], [-179.0, 22.6683], [180.0, 22.6683]],
+                                [[180.0, 22.6683], [179.0, 22.6683]]],
+                'type': 'MultiLineString'}
+    assert geometry == expected
+
+
+def test_geometry_not_crosses_antimeridian(tester_db: Session):
+    """Test that to_geoemtry splits input into MultiLineString"""
+    node_id = uuid4()
+    track_uuid = uuid4()
+    p1 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(178, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p2 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(179, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    p3 = Point(
+        acm=DEFAULT_ACM,
+        location=shapely.Point(180, 22.6683).wkt,
+        altitude=None,
+        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
+        node_id=node_id,
+        node_version=1,
+        observation_id=uuid4(),
+        observation_version=1,
+        source_id=uuid4(),
+        observation_confidence=Confidence.HIGH,
+    )
+
+    # Create Track Object
+    track = Track(
+        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+    )
+    geometry = track.to_geometry()
+    #assert geometry["type"] == "MultiLineString"
+    expected = {'coordinates': [[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]],
+                'type': 'LineString'}
+    assert geometry == expected

@@ -233,31 +233,40 @@ class Track(BaseORM, SecurityMarkingMixin):
             return None
         return self.points[-1].detection_time
 
-    def to_linestring(self, points: list[Point]) -> LineString:
-        """Return a linestring representation of the track."""
-        return LineString([point.coordinates for point in points])
+    def to_linestring(self, coords: list[list[float]]) -> LineString:
+        """Return a LineString representation of the track given an array of coordinates"""
+        return LineString(coords)
 
-    def to_multilinestring(self, split_points: list[list[Point]]) -> MultiLineString:
-        return MultiLineString([self.to_linestring(points_line) for points_line in split_points])
+    def to_multilinestring(self, split_coords: list[list[list[float]]]) -> MultiLineString:
+        """Return a MultiLinestring representation of the track given an array of coordinate arrays"""
+        return MultiLineString([self.to_linestring(coords_line) for coords_line in split_coords])
 
-    def straddles_antimeridian(self, point1: Point, point2: Point):
+    def antimeridian_intersection(self, point1_coords: list[float], point2_coords: list[float]) -> list[float]:
         """
         Return True if the line connecting point1 and point2 crosses the antimeridian, where point1 and point2
         are consecutive points in a track
         """
 
-        point1_lon = point1.coordinates[0]
-        point2_lon = point2.coordinates[0]
+        point1_lon = point1_coords[0]
+        point2_lon = point2_coords[0]
 
-        if point1_lon * point2_lon >= 0:
-            return False
+        point1_lat = point1_coords[1]
+        point2_lat = point2_coords[1]
 
-        if point1_lon > 0:
-            return point2_lon < -(180 - point1_lon)
+        if abs(point1_lon - point2_lon) <= 180:
+            return None
+
+        if point2_lon < 0:
+            point2_lon += 360
         else:
-            return point1_lon < -(180 - point2_lon)
+            point1_lon += 360
+        slope = (point2_lat - point1_lat) / (point2_lon - point1_lon)
+        lat_int = slope * (180 - point1_lon) + point1_lat
 
-    def split_track_over_antimeridian(self) -> list[list[Point]]:
+        return [180, lat_int]
+
+
+    def split_track_over_antimeridian(self) -> list[list[list[float]]]:
         """
         Check if track crosses antimeridian and if so, split into
         two arrays of points (one for each side of antimeridian)
@@ -266,26 +275,28 @@ class Track(BaseORM, SecurityMarkingMixin):
         if len(self.points) < 2:
             return []
 
+        points_coords = [point.coordinates for point in self.points]
         antimeridian_crossing_index = -1
-        for i in range(len(self.points) - 2):
-            if self.straddles_antimeridian(self.points[i], self.points[i+1]):
+        for i in range(len(points_coords) - 1):
+            intersection = self.antimeridian_intersection(points_coords[i], points_coords[i+1])
+            if intersection:
                 antimeridian_crossing_index = i
                 break
 
         if antimeridian_crossing_index < 0:
             return []
 
-        left_line = self.points[0:i+1]
-        right_line = self.points[i+1, len(self.points)]
+        left_line = points_coords[0:i+1] + [intersection]
+        right_line = [intersection] + points_coords[i+1: len(points_coords)]
         return [left_line, right_line]
 
     def to_geometry(self) -> dict:
         """Return a lineString or multiLineString dict representation of the track."""
         split_points = self.split_track_over_antimeridian()
         if not split_points:
-            string_representation = self.to_linestring(self.points)
+            string_representation = self.to_linestring([point.coordinates for point in self.points])
         else:
-            string_representation = self.to_multilinestring(self, split_points)
+            string_representation = self.to_multilinestring(split_points)
         return json.loads(to_geojson(string_representation))
 
 
