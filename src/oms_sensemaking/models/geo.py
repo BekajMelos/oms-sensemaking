@@ -294,10 +294,10 @@ class Track(BaseORM, SecurityMarkingMixin):
         """Return a lineString or multiLineString dict representation of the track."""
         split_points = self.split_track_over_antimeridian()
         if not split_points:
-            string_representation = self.to_linestring([point.coordinates for point in self.points])
+            linestring_representation = self.to_linestring([point.coordinates for point in self.points])
+            return json.loads(to_geojson(linestring_representation))
         else:
-            string_representation = self.to_multilinestring(split_points)
-        return json.loads(to_geojson(string_representation))
+            return json.loads(to_geojson(self.to_multilinestring(split_points)))
 
 
 class TrackWeaverBase(ABC):
