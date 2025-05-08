@@ -254,7 +254,7 @@ class Track(BaseORM, SecurityMarkingMixin):
         point2_lat = point2_coords[1]
 
         if abs(point1_lon - point2_lon) <= 180:
-            return None
+            return []
 
         if point2_lon < 0:
             point2_lon += 360
