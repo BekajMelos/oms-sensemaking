@@ -1,8 +1,27 @@
 {
-    "MIL_SYMBOL_2525C": {
+    "MIL_SYMBOL_2525B": {
         "STANDARD_IDENTITY_LISTS":  {
             "P": ["pending"],
             "U": ["unknown"],
+            "A": ["assumed friend", "assumed friendly"],
+            "F": ["friend", "friendly"],
+            "N": ["neutral"],
+            "S": ["suspect", "assumed hostile"],
+            "H": ["hostile"],
+            "G": ["exercise pending"],
+            "W": ["exercise unknown"],
+            "M": ["exercise assumed friend", "exercise assumed friendly"],
+            "D": ["exercise friend", "exercise friendly"],
+            "L": ["exercise neutral"],
+            "J": ["joker"],
+            "K": ["faker"],
+            "O": ["none specified"]
+        }
+    },
+    "MIL_SYMBOL_2525C": {
+        "STANDARD_IDENTITY_LISTS":  {
+            "P": ["pending"],
+            "U": ["unknown", "none specified"],
             "A": ["assumed friend", "assumed friendly"],
             "F": ["friend", "friendly"],
             "N": ["neutral"],
