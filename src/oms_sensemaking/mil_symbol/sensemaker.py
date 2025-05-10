@@ -163,7 +163,7 @@ class MilSymbolSensemaker(Sensemaker):
 
         symbol_code_update_b = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
-            new_symbol_id_code=code_2525c.formatted_code,
+            new_symbol_id_code=code_2525b.formatted_code,
             acm=code_2525c.get_acm()
         )
 
