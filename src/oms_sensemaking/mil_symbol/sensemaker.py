@@ -119,10 +119,11 @@ class MilSymbolSensemaker(Sensemaker):
                 code_2525b = MilSymbol2525B(symbol_id_code, self.settings)
                 code_2525c = to_2525c_from_2525b(code_2525b, self.settings)
                 code_2525d = to_2525d(code_2525c, self.settings)
-        # receive 2525C
-            code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
-            code_2525b = code_2525c
-            code_2525d = to_2525d(code_2525c, self.settings)
+            else:
+            # receive 2525C
+                code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
+                code_2525b = code_2525c
+                code_2525d = to_2525d(code_2525c, self.settings)
         else:
             LOGGER.info(f"Unsupported SDIC for {symbol_id_code}")
             return []
