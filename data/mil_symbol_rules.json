@@ -74,7 +74,7 @@
         },
         "STANDARD_IDENTITY_LISTS": {
             "0": ["pending"],
-            "1": ["unknown"],
+            "1": ["unknown", "none specified"],
             "2": ["assumed friend", "assumed friendly"],
             "3": ["friend", "friendly"],
             "4": ["neutral"],
