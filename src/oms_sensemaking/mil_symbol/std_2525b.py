@@ -10,7 +10,7 @@ from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 LOGGER = logging.getLogger(__name__)
 
 class MilSymbol2525B(MilSymbol):
-
+    NONE_SPECIFIED_AFFILIATION_CODE = "O"
     UNKNOWN_DIMENSION_CODE = "Z"
 
     MIL_SYM_2525B_STD_IDENTITY_IDX = 1
