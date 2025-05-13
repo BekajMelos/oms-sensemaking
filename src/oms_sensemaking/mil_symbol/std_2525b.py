@@ -8,4 +8,4 @@ LOGGER = logging.getLogger(__name__)
 
 class MilSymbol2525B(MilSymbol2525BandC):
     NONE_SPECIFIED_AFFILIATION_CODE = "O"
-    CODE_TYPE_CONFIG = "MIL_SYMBOL_2525B"
+    code_type_config = "MIL_SYMBOL_2525B"
