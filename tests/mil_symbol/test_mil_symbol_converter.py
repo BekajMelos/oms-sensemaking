@@ -1,5 +1,5 @@
 """MilSymbol Sensemaker Unit Tests"""
-from oms_sensemaking.mil_symbol.converters import MilSymbol2525B, to_2525c, to_2525c_from_2525b, to_2525d
+from oms_sensemaking.mil_symbol.converters import MilSymbol2525B, to_2525c, to_2525d
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
 
@@ -35,13 +35,13 @@ def test_convert_to_2525d(mil_symbol_rules):
 
 def test_convert_to_2525c_from_2525b(mil_symbol_rules):
     code_b = MilSymbol2525B("SOAF------*****", mil_symbol_rules)
-    assert to_2525c_from_2525b(code_b, mil_symbol_rules).formatted_code == "SUAF------*****"
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SUAF------*****"
 
     code_b = MilSymbol2525B("SSSA------*****", mil_symbol_rules)
-    assert to_2525c_from_2525b(code_b, mil_symbol_rules).formatted_code == "SSSA------*****"
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SSSA------*****"
 
     code_b = MilSymbol2525B("SOUD------*****", mil_symbol_rules)
-    assert to_2525c_from_2525b(code_b, mil_symbol_rules).formatted_code == "SUUD------*****"
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SUUD------*****"
 
     code_b = MilSymbol2525B("SNGC------*****", mil_symbol_rules)
-    assert to_2525c_from_2525b(code_b, mil_symbol_rules).formatted_code == "SNGC------*****"
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SNGC------*****"

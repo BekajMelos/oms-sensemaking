@@ -24,7 +24,7 @@ class MilSymbol2525BandC(MilSymbol):
     MIL_SYM_2525_B_C_STD_IDENTITY_IDX = 1
     MIL_SYM_2525_B_C_DIMENSION_IDX = 2
     MIL_SYM_2525_B_C_STATUS_IDX = 3
-
+    CODE_TYPE_CONFIG = "MIL_SYMBOL_2525C" # Default config type is 2525C settings
 
     @property
     def formatted_code(self) -> str:
@@ -58,7 +58,7 @@ class MilSymbol2525BandC(MilSymbol):
         if affiliation_attr:
             node_standard_identity = affiliation_attr.attributeValue
             # Default to 2525C config settings for affiliation, gets overwritten in child classes
-            for code, standard_identity_list in self.settings["MIL_SYMBOL_2525C"]["STANDARD_IDENTITY_LISTS"].items():
+            for code, standard_identity_list in self.settings[self.CODE_TYPE_CONFIG]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
@@ -82,7 +82,7 @@ class MilSymbol2525BandC(MilSymbol):
             :return: boolean indicating whether update was made or not
             """
             current_iri = current_iri.lower()
-            for code, dimension_iris in self.settings["MIL_SYMBOL_2525_B_C"]["DIMENSION_IRIS"].items():
+            for code, dimension_iris in self.settings[self.CODE_TYPE_CONFIG]["DIMENSION_IRIS"].items():
                 dimension_iris = [dimension_iri.lower() for dimension_iri in dimension_iris]
                 if current_iri in dimension_iris:
                     self.update_code(self.MIL_SYM_2525_B_C_DIMENSION_IDX, code)
@@ -111,7 +111,7 @@ class MilSymbol2525BandC(MilSymbol):
 
         if status_attr:
             status = status_attr.attributeValue
-            for code, status_list in self.settings["MIL_SYMBOL_2525_B_C"]["STATUS_LISTS"].items():
+            for code, status_list in self.settings[self.CODE_TYPE_CONFIG]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525_B_C_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))

@@ -32,7 +32,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
-from oms_sensemaking.mil_symbol.converters import to_2525c, to_2525c_from_2525b, to_2525d
+from oms_sensemaking.mil_symbol.converters import to_2525c, to_2525d
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
@@ -120,7 +120,7 @@ class MilSymbolSensemaker(Sensemaker):
                 MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE):
             # receive 2525B
                 code_2525b = MilSymbol2525B(symbol_id_code, self.settings)
-                code_2525c = to_2525c_from_2525b(code_2525b, self.settings)
+                code_2525c = to_2525c(code_2525b, self.settings)
                 code_2525d = to_2525d(code_2525c, self.settings)
             else:
             # receive 2525C
