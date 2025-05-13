@@ -113,8 +113,10 @@ class MilSymbolSensemaker(Sensemaker):
             code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
             code_2525c = to_2525c(code_2525d,self.settings)
             code_2525b = MilSymbol2525B(code_2525c.code, self.settings)
-        elif len(symbol_id_code) == 15:
-            if symbol_id_code[MilSymbol2525B.MIL_SYM_2525C_STD_IDENTITY_IDX] == "O":
+        elif len(symbol_id_code) == 15: # 2525C and 2525B both have a code length of 15
+            # The difference between 2525B and 2525C is that B has a "O" affiliation code
+            # which means 'none specificied' and this is not present in 2525C or 2525D
+            if symbol_id_code[MilSymbol2525B.MIL_SYM_2525B_STD_IDENTITY_IDX] == "O":
             # receive 2525B
                 code_2525b = MilSymbol2525B(symbol_id_code, self.settings)
                 code_2525c = to_2525c_from_2525b(code_2525b, self.settings)

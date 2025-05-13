@@ -371,7 +371,14 @@ def test_execute(mock_source, db, mil_symbol_rules):
     # ensure findings cleared at end of test cases
     findings = db.execute(delete(Finding))
 
-    # case 8 (B and C difference)
+def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symbol_rules):
+    oms_crud_tool = OmsCrudTool()
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
+
+    # mock create_attribute
+    oms_crud_tool.create_attribute = mock.MagicMock()
+    oms_crud_tool.update_node = mock.MagicMock()
+
     oms_node = create_node(
         oms_crud_tool,
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
@@ -424,7 +431,14 @@ def test_execute(mock_source, db, mil_symbol_rules):
     # clear findings
     findings = db.execute(delete(Finding))
 
-# case 9 (retreive D standard, B and C difference)
+def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symbol_rules):
+    oms_crud_tool = OmsCrudTool()
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
+
+    # mock create_attribute
+    oms_crud_tool.create_attribute = mock.MagicMock()
+    oms_crud_tool.update_node = mock.MagicMock()
+
     oms_node = create_node(
         oms_crud_tool,
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
@@ -477,7 +491,14 @@ def test_execute(mock_source, db, mil_symbol_rules):
     # clear findings
     findings = db.execute(delete(Finding))
 
-# case 10 (retreive B standard, B and C difference)
+def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symbol_rules):
+    oms_crud_tool = OmsCrudTool()
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
+
+    # mock create_attribute
+    oms_crud_tool.create_attribute = mock.MagicMock()
+    oms_crud_tool.update_node = mock.MagicMock()
+
     oms_node = create_node(
         oms_crud_tool,
         "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle",

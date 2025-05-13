@@ -119,7 +119,16 @@ def test_process_data(
     assert code_c.new_symbol_id_code == "SFPP------*****"
     assert code_b.new_symbol_id_code == "SFPP------*****"
 
-    # case 4
+@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+def test_correct_updates_made_when_none_specified(
+    mock_get_acm: AacClient,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    mil_symbol_rules: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+    mock_get_acm.return_value = DEFAULT_ACM
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
         attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="none specified"))
