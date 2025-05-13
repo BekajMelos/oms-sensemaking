@@ -5329,7 +5329,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
+										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
 										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
 									}
 								},
@@ -5423,7 +5423,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
+										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
 										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
 									}
 								},
