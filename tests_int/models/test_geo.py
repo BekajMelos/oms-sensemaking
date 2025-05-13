@@ -345,7 +345,7 @@ def test_geometry_crosses_antimeridian_same_lat(tester_db: Session):
     geometry = track.to_geometry()
     #assert geometry["type"] == "MultiLineString"
     expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]],
-                                [[180.0, 22.6683], [-179.0, 22.6683]]],
+                                [[-180.0, 22.6683], [-179.0, 22.6683]]],
                 'type': 'MultiLineString'}
     assert geometry == expected
 
@@ -400,7 +400,7 @@ def test_geometry_crosses_antimeridian_diff_lat(tester_db: Session):
     geometry = track.to_geometry()
     #assert geometry["type"] == "MultiLineString"
     expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 23.6683]],
-                                [[180.0, 23.6683], [-179.0, 24.6683]]],
+                                [[-180.0, 23.6683], [-179.0, 24.6683]]],
                 'type': 'MultiLineString'}
     assert geometry == expected
 
@@ -454,7 +454,7 @@ def test_geometry_crosses_antimeridian_other_direction(tester_db: Session):
     )
     geometry = track.to_geometry()
     #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[[-178.0, 22.6683], [-179.0, 22.6683], [180.0, 22.6683]],
+    expected = {'coordinates': [[[-178.0, 22.6683], [-179.0, 22.6683], [-180.0, 22.6683]],
                                 [[180.0, 22.6683], [179.0, 22.6683]]],
                 'type': 'MultiLineString'}
     assert geometry == expected

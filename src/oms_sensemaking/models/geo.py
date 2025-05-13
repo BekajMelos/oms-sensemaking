@@ -11,6 +11,7 @@ from functools import cached_property
 from typing import TypedDict
 
 import geopy.distance as gd
+import numpy
 from dateutil.parser import isoparse
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
@@ -263,7 +264,8 @@ class Track(BaseORM, SecurityMarkingMixin):
         slope = (point2_lat - point1_lat) / (point2_lon - point1_lon)
         lat_int = slope * (180 - point1_lon) + point1_lat
 
-        return [180, lat_int]
+        # Return left line intersection point
+        return [numpy.sign(point1_coords[0])*180, lat_int]
 
 
     def split_track_over_antimeridian(self) -> list[list[list[float]]]:
@@ -278,16 +280,17 @@ class Track(BaseORM, SecurityMarkingMixin):
         points_coords = [point.coordinates for point in self.points]
         antimeridian_crossing_index = -1
         for i in range(len(points_coords) - 1):
-            intersection = self.antimeridian_intersection(points_coords[i], points_coords[i+1])
-            if intersection:
+            left_intersection = self.antimeridian_intersection(points_coords[i], points_coords[i+1])
+            if left_intersection:
                 antimeridian_crossing_index = i
                 break
 
         if antimeridian_crossing_index < 0:
             return []
 
-        left_line = points_coords[0:i+1] + [intersection]
-        right_line = [intersection] + points_coords[i+1: len(points_coords)]
+        right_intersection = [-left_intersection[0], left_intersection[1]]
+        left_line = points_coords[0:i+1] + [left_intersection]
+        right_line = [right_intersection] + points_coords[i+1: len(points_coords)]
         return [left_line, right_line]
 
     def to_geometry(self) -> dict:
