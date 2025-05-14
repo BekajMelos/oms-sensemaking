@@ -112,6 +112,8 @@ class MilSymbolSettings(BaseModel):
     )
 
     # War, Pending, Unknown, Present
+    default_2525b_code: str = Field(
+        "SUZP------*****", description="Default 2525B code")
     default_2525c_code: str = Field(
         "SUZP------*****", description="Default 2525C code")
     # Reality, Pending, Unknown, Present, Military

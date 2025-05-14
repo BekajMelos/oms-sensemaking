@@ -32,7 +32,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
-from oms_sensemaking.mil_symbol.converters import to_2525c, to_2525d
+from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
@@ -112,7 +112,7 @@ class MilSymbolSensemaker(Sensemaker):
         # recieve 2525D
             code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
             code_2525c = to_2525c(code_2525d,self.settings)
-            code_2525b = MilSymbol2525B(code_2525c.code, self.settings)
+            code_2525b = to_2525b(code_2525c, self.settings)
         elif len(symbol_id_code) == 15: # 2525C and 2525B both have a code length of 15
             # The difference between 2525B and 2525C is that B has a "O" affiliation code
             # which means 'none specificied' and this is not present in 2525C or 2525D
@@ -125,7 +125,7 @@ class MilSymbolSensemaker(Sensemaker):
             else:
             # receive 2525C
                 code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
-                code_2525b = MilSymbol2525B(code_2525c.code, self.settings)
+                code_2525b = to_2525b(code_2525c, self.settings)
                 code_2525d = to_2525d(code_2525c, self.settings)
         else:
             LOGGER.info(f"Unsupported SDIC for {symbol_id_code}")
