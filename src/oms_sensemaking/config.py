@@ -88,7 +88,8 @@ class LogConfig(BaseSettings):
 
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Icon", description="Military Symbol Sensemaker tags")
+        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        description="Military Symbol Sensemaker tags")
     mil_symbol_sensemaker_tags: list[str] = Field(
         ["Oms Sensemaking", "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
@@ -111,6 +112,8 @@ class MilSymbolSettings(BaseModel):
     )
 
     # War, Pending, Unknown, Present
+    default_2525b_code: str = Field(
+        "SUZP------*****", description="Default 2525B code")
     default_2525c_code: str = Field(
         "SUZP------*****", description="Default 2525C code")
     # Reality, Pending, Unknown, Present, Military

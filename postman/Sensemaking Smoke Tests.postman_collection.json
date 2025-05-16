@@ -4586,6 +4586,955 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Inference",
+			"item": [
+				{
+					"name": "Incursion",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 1 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionobservationId1\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.70,\n                    19.65\n                ]\n            }\n            startTime: \"2024-03-15T18:00:32.000Z\"\n            endTime: \"2024-03-15T18:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 1 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionobservationId2\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.68,\n                    19.66\n                ]\n            }\n            startTime: \"2024-03-15T18:20:32.000Z\"\n            endTime: \"2024-03-15T18:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 2 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionobservationId3\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.67,\n                    19.67\n                ]\n            }\n            startTime: \"2024-03-15T18:38:32.000Z\"\n            endTime: \"2024-03-15T18:38:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 4",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 3 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionobservationId4\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.66,\n                    19.68\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Observation 5",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 4 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionobservationId5\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.63,\n                    19.70\n                ]\n            }\n            startTime: \"2024-03-15T19:20:32.000Z\"\n            endTime: \"2024-03-15T19:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Track Observation Ids",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.observations && ",
+											"                      response.data.observations.data && ",
+											"                      response.data.observations.data.length > 0 && ",
+											"                      response.data.observations.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    pm.collectionVariables.set(\"incursiontrackobs\", response.data.observations.data[0].id);",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 15 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 30000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Track Observation Tag 1 Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Track Obs Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursiontrackobs\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursiontrackobs\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Confirm Incursion is made",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.attributes && ",
+											"                      response.data.attributes.data && ",
+											"                      response.data.attributes.data.length > 0 && ",
+											"                      response.data.attributes.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    pm.collectionVariables.set(\"incursionattrid\", response.data.attributes.data[0].id);",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 15000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Incursion Attr Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Attr Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Incursion Activity Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.activities && ",
+											"                      response.data.activities.data && ",
+											"                      response.data.activities.data.length > 0 && ",
+											"                      response.data.activities.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionactid\", response.data.activities.data[0].id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
+										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Incursion Activity Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Activity Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $activityid: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityid\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Incursion Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	],
 	"event": [
@@ -5063,6 +6012,38 @@
 		},
 		{
 			"key": "baseballCardId",
+			"value": ""
+		},
+		{
+			"key": "incursionobservationId1",
+			"value": ""
+		},
+		{
+			"key": "incursionobservationId2",
+			"value": ""
+		},
+		{
+			"key": "incursionobservationId3",
+			"value": ""
+		},
+		{
+			"key": "incursionobservationId4",
+			"value": ""
+		},
+		{
+			"key": "incursionobservationId5",
+			"value": ""
+		},
+		{
+			"key": "incursionattrid",
+			"value": ""
+		},
+		{
+			"key": "incursionactid",
+			"value": ""
+		},
+		{
+			"key": "incursiontrackobs",
 			"value": ""
 		}
 	]
