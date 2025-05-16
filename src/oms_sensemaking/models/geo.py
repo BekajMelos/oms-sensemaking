@@ -244,8 +244,8 @@ class Track(BaseORM, SecurityMarkingMixin):
 
     def antimeridian_intersection(self, point1_coords: list[float], point2_coords: list[float]) -> list[float]:
         """
-        Return True if the line connecting point1 and point2 crosses the antimeridian, where point1 and point2
-        are consecutive points in a track
+        Returns the point1 intersection point if the line connecting point1 and point2 crosses
+        the antimeridian, where point1 and point2 are consecutive points in a track
         """
 
         point1_lon = point1_coords[0]
@@ -264,40 +264,40 @@ class Track(BaseORM, SecurityMarkingMixin):
         slope = (point2_lat - point1_lat) / (point2_lon - point1_lon)
         lat_int = slope * (180 - point1_lon) + point1_lat
 
-        # Return left line intersection point
+        # Return point1 intersection point
         return [numpy.sign(point1_coords[0])*180, lat_int]
 
 
-    def split_track_over_antimeridian(self) -> list[list[list[float]]]:
+    def split_track_over_antimeridian(self, track: list[list[float]]) -> list[list[list[float]]]:
         """
         Check if track crosses antimeridian and if so, split into
         two arrays of points (one for each side of antimeridian)
         """
 
-        if len(self.points) < 2:
-            return []
+        if len(track) < 2:
+            return [track]
 
-        points_coords = [point.coordinates for point in self.points]
         antimeridian_crossing_index = -1
-        for i in range(len(points_coords) - 1):
-            left_intersection = self.antimeridian_intersection(points_coords[i], points_coords[i+1])
-            if left_intersection:
+        for i in range(len(track) - 1):
+            first_intersection = self.antimeridian_intersection(track[i], track[i+1])
+            if first_intersection:
                 antimeridian_crossing_index = i
                 break
 
         if antimeridian_crossing_index < 0:
-            return []
+            return [track]
 
-        right_intersection = [-left_intersection[0], left_intersection[1]]
-        left_line = points_coords[0:i+1] + [left_intersection]
-        right_line = [right_intersection] + points_coords[i+1: len(points_coords)]
-        return [left_line, right_line]
+        second_intersection = [-first_intersection[0], first_intersection[1]]
+        left_line = track[0:i+1] + [first_intersection]
+        right_line = [second_intersection] + track[i+1: len(track)]
+        return [left_line] + self.split_track_over_antimeridian(right_line)
 
     def to_geometry(self) -> dict:
         """Return a lineString or multiLineString dict representation of the track."""
-        split_points = self.split_track_over_antimeridian()
-        if not split_points:
-            linestring_representation = self.to_linestring([point.coordinates for point in self.points])
+        track = [point.coordinates for point in self.points]
+        split_points = self.split_track_over_antimeridian(track)
+        if len(split_points) == 1:
+            linestring_representation = self.to_linestring(track)
             return json.loads(to_geojson(linestring_representation))
         else:
             return json.loads(to_geojson(self.to_multilinestring(split_points)))
