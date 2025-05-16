@@ -79,10 +79,11 @@ def test_process_data(
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSD------*****"
 
     # case 2
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
@@ -95,10 +96,11 @@ def test_process_data(
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SSAX------*****"
+    assert code_b.new_symbol_id_code == "SSAX------*****"
 
     # case 3
     sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
@@ -111,10 +113,37 @@ def test_process_data(
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-3-05-0-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SFPP------*****"
+    assert code_b.new_symbol_id_code == "SFPP------*****"
+
+@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+def test_correct_updates_made_when_none_specified(
+    mock_get_acm: AacClient,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    mil_symbol_rules: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+    mock_get_acm.return_value = DEFAULT_ACM
+    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
+        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="none specified"))
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="present"))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+    oms_node.symbolIdCode = "SOPP------*****"
+    oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
+
+    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
+    assert code_d.new_symbol_id_code == "10-0-1-05-0-0-00-000000-00-00"
+    assert code_c.new_symbol_id_code == "SUPP------*****"
+    assert code_b.new_symbol_id_code == "SOPP------*****"
 
 
 def test_get_starting_symbol_id_code(
@@ -366,12 +395,13 @@ def test_dimension_enrichment(
     oms_node.classIri = "http://omsb/test/UnknownHelicopter"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
 
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAD------*****"
 
 
 @mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.aac_client')
@@ -396,10 +426,11 @@ def test_acms(
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSD------*****"
     mock_aac_client.get_acm_rollup.assert_any_call([
         {"ACM": ts_acm}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM},
     ])
@@ -442,9 +473,10 @@ def test_controlling_affiliation_enrichment(
     ### Test non-derivative node doesn't get checked
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
+    assert len(symbols) == 3
     assert symbols[0].new_symbol_id_code == "10-0-0-01-3-0-00-000000-00-00"
     assert symbols[1].new_symbol_id_code == "SPAD------*****"
+    assert symbols[2].new_symbol_id_code == "SPAD------*****"
     mock_oms_crud_tool.get_nodes.assert_not_called()
 
     ### Test actually checking controlling node affiliations
@@ -458,10 +490,11 @@ def test_controlling_affiliation_enrichment(
 
     oms_node.symbolIdCode = "10-0-0-00-0-0-00-000000-00-00"
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 2
-    code_d, code_c = symbols
+    assert len(symbols) == 3
+    code_d, code_c, code_b = symbols
 
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAD------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()
