@@ -128,8 +128,12 @@ class ResolutionSensemaker(Sensemaker):
                 self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
             )
 
-            if len(duplicate_object_attributes) != len(duplicate_identifiers):
-                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching. Ignoring.")
+            # return empty list if attributes found do not match criteria amount of identifiers
+            # also return empty list if any of the attribute objects are not populated with an actual value
+            if ((len(duplicate_object_attributes) != len(duplicate_identifiers))
+                or (any(attribute.attributeValue == "" for attribute in duplicate_object_attributes))):
+                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching"
+                "or attribute values are not populated. Ignoring.")
                 return []
 
         return duplicate_object_attributes
