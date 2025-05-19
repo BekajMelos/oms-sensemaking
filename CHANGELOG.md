@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Queue Event logs include Queue Name
 - Track LineString geometries crossing antimeridian are split into a MultiLineString 
 containing the segments to the left and right of the antimeridian
+- Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
 
 ### Changed
 - Switched from SQS to RabbitMQ consumption
