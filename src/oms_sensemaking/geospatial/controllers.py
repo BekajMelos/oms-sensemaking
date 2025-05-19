@@ -272,8 +272,10 @@ class GeospatialSensemakerController(SensemakerController):
 
                     node = self.oms_crud_tool.get_node(track.node_id)
 
-                    provider_id = node.trackProviderId
+                    provider_id = None
                     default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+                    if node.trackProviderId:
+                        provider_id = node.trackProviderId
                     provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
                     geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
