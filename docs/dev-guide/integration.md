@@ -13,6 +13,7 @@
         * `OMSB_VERSION=<OMSB_VERSION>`
         * `OMSB_URL="https://<your_ip_address>:8443/graphql"`
         * `AAC_URL="http://<your_ip_address>:5022"`
+        * `RABBITMQ_HOST=<your_ip_address>`
     3. Set the sensemaker RMQ queue name. `oms-bridge` does not support all of our RMQ Queues, so only one sensemaker can be used at a time at the moment.
         1. Update the `.env` to set the RMQ queue to the `oms-wfs-trigger` (we're temporarily using that queue)
             * Set the appropriate RMQ_<sensemaker>_QUEUE_NAME to the `oms-wfs-trigger`
