@@ -10,12 +10,12 @@ from time import sleep
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 import pika
+import pika.spec
+from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pika import BlockingConnection, ConnectionParameters, PlainCredentials
 from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
-import pika.spec
 
 from oms_sensemaking.config import SETTINGS
 
@@ -208,7 +208,7 @@ class RabbitMQListener(BaseRabbitMQListener):
         if self.stopped.is_set():
             LOGGER.debug(f"Shutting down {self._name}")
             return
-        
+
         object_id = None
 
         try:
@@ -224,14 +224,14 @@ class RabbitMQListener(BaseRabbitMQListener):
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 return
 
-            if self.handle_event(audit_log):
+            if self.handle_event and self.handle_event(audit_log):
                 LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             else:
                 LOGGER.warning(
                     f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        except Exception as ex:
+        except Exception:
             LOGGER.error(f"{self._name} Error processing message (Object ID: {object_id}): {traceback.format_exc()}")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
