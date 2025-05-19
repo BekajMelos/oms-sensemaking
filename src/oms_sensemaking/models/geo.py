@@ -11,6 +11,7 @@ from functools import cached_property
 from typing import TypedDict
 
 import geopy.distance as gd
+import numpy
 from dateutil.parser import isoparse
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
@@ -19,7 +20,7 @@ from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from pydantic import BaseModel
-from shapely import LineString, to_geojson
+from shapely import LineString, MultiLineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -233,13 +234,74 @@ class Track(BaseORM, SecurityMarkingMixin):
             return None
         return self.points[-1].detection_time
 
-    def to_linestring(self) -> LineString:
-        """Return a linestring representation of the track."""
-        return LineString([point.coordinates for point in self.points])
+    def to_linestring(self, coords: list[list[float]]) -> LineString:
+        """Return a LineString representation of the track given an array of coordinates"""
+        return LineString(coords)
+
+    def to_multilinestring(self, split_coords: list[list[list[float]]]) -> MultiLineString:
+        """Return a MultiLinestring representation of the track given an array of coordinate arrays"""
+        return MultiLineString([self.to_linestring(coords_line) for coords_line in split_coords])
+
+    def antimeridian_intersection(self, point1_coords: list[float], point2_coords: list[float]) -> list[float]:
+        """
+        Returns the point1 intersection point if the line connecting point1 and point2 crosses
+        the antimeridian, where point1 and point2 are consecutive points in a track
+        """
+
+        point1_lon = point1_coords[0]
+        point2_lon = point2_coords[0]
+
+        point1_lat = point1_coords[1]
+        point2_lat = point2_coords[1]
+
+        if abs(point1_lon - point2_lon) <= 180:
+            return []
+
+        if point2_lon < 0:
+            point2_lon += 360
+        else:
+            point1_lon += 360
+        slope = (point2_lat - point1_lat) / (point2_lon - point1_lon)
+        lat_int = slope * (180 - point1_lon) + point1_lat
+
+        # Return point1 intersection point
+        return [numpy.sign(point1_coords[0])*180, lat_int]
+
+
+    def split_track_over_antimeridian(self, track: list[list[float]]) -> list[list[list[float]]]:
+        """
+        Check if track crosses antimeridian and if so, split into
+        two arrays of points (one for each side of antimeridian)
+        """
+
+        if len(track) < 2:
+            return [track]
+
+        true_crossing_index = -1
+        # Iterate over points in track to check if line between pair of consecutive points intersect with antimeridian
+        for curr_crossing_index in range(len(track) - 1):
+            first_inters = self.antimeridian_intersection(track[curr_crossing_index], track[curr_crossing_index+1])
+            if first_inters:
+                true_crossing_index = curr_crossing_index
+                break
+
+        if true_crossing_index < 0:
+            return [track]
+
+        second_inters = [-first_inters[0], first_inters[1]]
+        left_line = track[0:curr_crossing_index+1] + [first_inters]
+        right_line = [second_inters] + track[curr_crossing_index+1: len(track)]
+        return [left_line] + self.split_track_over_antimeridian(right_line)
 
     def to_geometry(self) -> dict:
-        """Return a linestring dict representation of the track."""
-        return json.loads(to_geojson(self.to_linestring()))
+        """Return a lineString or multiLineString dict representation of the track."""
+        track = [point.coordinates for point in self.points]
+        split_points = self.split_track_over_antimeridian(track)
+        if len(split_points) == 1:
+            linestring_representation = self.to_linestring(track)
+            return json.loads(to_geojson(linestring_representation))
+        else:
+            return json.loads(to_geojson(self.to_multilinestring(split_points)))
 
 
 class TrackWeaverBase(ABC):

@@ -7,12 +7,15 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated OMS dependency to Grimlock-INC-21
 
 ## [0.5.0] - 2025-05-07
 
 ### Added
 - Tracks are split when occurring longer than a configurable max timeframe
 - Queue Event logs include Queue Name
+- Track LineString geometries crossing antimeridian are split into a MultiLineString 
+containing the segments to the left and right of the antimeridian
 
 ### Changed
 - Switched from SQS to RabbitMQ consumption
