@@ -88,7 +88,8 @@ class LogConfig(BaseSettings):
 
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
-        "https://foundry.ai.mil/INDOPACOM/v5/Icon", description="Military Symbol Sensemaker tags")
+        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        description="Military Symbol Sensemaker tags")
     mil_symbol_sensemaker_tags: list[str] = Field(
         ["Oms Sensemaking", "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
@@ -114,6 +115,8 @@ class MilSymbolSettings(BaseModel):
         description="Attribute Iris for full mil symbol codes")
 
     # War, Pending, Unknown, Present
+    default_2525b_code: str = Field(
+        "SUZP------*****", description="Default 2525B code")
     default_2525c_code: str = Field(
         "SUZP------*****", description="Default 2525C code")
     # Reality, Pending, Unknown, Present, Military
@@ -383,7 +386,7 @@ class Settings(BaseSettings):
 
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-19", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-21", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cacert_path: str | None = Field(
