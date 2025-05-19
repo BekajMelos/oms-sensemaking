@@ -461,7 +461,8 @@ class MilSymbolSensemaker(Sensemaker):
         :return: boolean
         """
 
-        if self.is_attribute(oms_object) and self.has_mil_symbol_sensemaker_tags(oms_object.tags): 
+        if self.is_attribute(oms_object) and (
+            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or self.has_mil_symbol_sensemaker_tags(oms_object.tags)): 
             LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
             return True
         return False
