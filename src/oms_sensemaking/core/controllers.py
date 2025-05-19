@@ -139,8 +139,8 @@ class SensemakerController:
                     _ = future.result()
 
                 executor.shutdown(wait=True)
-        except Exception:
-            LOGGER.exception(f"Error encountered while processing object {event.objectId}")
+        except Exception as e:
+            LOGGER.exception(f"Error encountered while processing object {event.objectId}: {str(e)}")
 
         return True
 

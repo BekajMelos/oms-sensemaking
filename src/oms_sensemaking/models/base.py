@@ -153,8 +153,8 @@ def utcnow_with_timezone() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class AuditMixin(MappedAsDataclass):
-    """Declare audit attributes."""
+class CreatedAuditMixin(MappedAsDataclass):
+    """Declare create audit attributes."""
 
     created_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
@@ -165,6 +165,9 @@ class AuditMixin(MappedAsDataclass):
         init=False,
     )
 
+class UpdatedAuditMixin(MappedAsDataclass):
+    """Declare update autdit attributes."""
+
     updated_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
@@ -174,6 +177,10 @@ class AuditMixin(MappedAsDataclass):
         comment="The time the record was last updated.",
         init=False,
     )
+
+
+class AuditMixin(CreatedAuditMixin, UpdatedAuditMixin):
+    """Declare audit attributes."""
 
 
 class SecurityMarkingMixin(MappedAsDataclass):

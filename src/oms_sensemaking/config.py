@@ -31,6 +31,10 @@ class LogConfig(BaseSettings):
             "formatter": "custom",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stderr"
+        },
+        "db_handler": {
+            "formatter": "custom",
+            "class": "oms_sensemaking.core.logging.handlers.DatabaseHandler"
         }
     }
 
@@ -62,7 +66,7 @@ class LogConfig(BaseSettings):
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
         return {
             "": {  # root logger
-                "handlers": ["default"],
+                "handlers": ["default", "db_handler"],
                 "level": self.log_level,
                 "propagate": False,
             },
