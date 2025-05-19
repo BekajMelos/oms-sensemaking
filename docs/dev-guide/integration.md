@@ -7,21 +7,17 @@
     1. Deteremine your IP address: `ipconfig getifaddr en0`
     2. Update the `.env` with the following values. _Please note the uncommented and commented settings_
         * `# POSTGRES_PORT=5432`
-        * `AWS_ENDPOINT_URL="http://<your_ip_address>:4566"`
-        * `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
         * `# CORENLP_EXPOSE_PORT=9000`
-        * `CORENLP_HOST=corenlp:9000`
-        * `# SQS_RES_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
-        * `# MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+        * `# CORENLP_HOST=corenlp:9000`
+        * `RMQ_GEO_QUEUE_NAME=oms-wfs-trigger`
         * `OMSB_VERSION=<OMSB_VERSION>`
         * `OMSB_URL="https://<your_ip_address>:8443/graphql"`
         * `AAC_URL="http://<your_ip_address>:5022"`
     3. Set the sensemaker sqs queue url. `oms-bridge` does not support all of our SQS Queues, so only one sensemaker can be used at a time at the moment.
         1. Update the `.env` to set the SQS queue to the wfsTrigger (we're temporarily using that queue)
-            * Set the appropriate QUEUE_URL to the wfsTrigger
-            * URL should be `"http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
-            * QUEUE Settings are `SQS_GEO_QUEUE_URL`, `SQS_RES_QUEUE_URL`, `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`
-            * Example for the Geo sensemakers: `SQS_GEO_QUEUE_URL="http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/wfsTrigger"`
+            * Set the appropriate RMQ_<sensemaker>_QUEUE_NAME to the `oms-wfs-trigger`
+            * QUEUE Settings are `RMQ_GEO_QUEUE_NAME`, `RMQ_INFERENCE_QUEUE_NAME`, `RMQ_RES_QUEUE_NAME`, `RMQ_MIL_SYMBOL_QUEUE_NAME`
+            * Example for the Geo sensemakers: `RMQ_GEO_QUEUE_NAME=oms-wfs-trigger`
     4. Run `docker compose up -d`
     5. Navigate to the API at https://localhost:5001/docs
         1. If you are having issues getting the app to load, compare your `.env` with the `.env.template`
@@ -41,21 +37,13 @@
     2. Create a `.env` and include the following
         ```
         COMPOSE_PROFILES=remote
-        OMSB_CORS_ALLOWED_ORIGIN=http://localhost:8000
-        OMSB_TAG=INC-14   # your preferred version
+        OMSB_CORS_ALLOWED_ORIGIN=http://localhost:5173
+        OMSB_TAG=INC-20
+        DOCKER_REGISTRY=tex.gerbil-cloud.ts.net:5000
         ```
     3. For SQS Listening Sensemakers:
         1. Updates to `docker-compose.yml`
             * Comment out the `wfs-service` service so that service doesn't take items from the queue.
-            * Remove the IP Addresses from the `localstack` ports
-            ```
-            localstack:
-                container_name: localstack
-                image: ${DOCKER_REGISTRY}/localstack/localstack:4.0.3
-                ports:
-                - "4566:4566"            # LocalStack Gateway             # remove "127.0.0.1:"
-                - "4510-4559:4510-4559"  # external services port range   # remove "127.0.0.1:"
-            ```
     4. Run `make refresh`. This may take a few minutes.
       * You can follow the `graphql` logs with `make dockerlogs c=graphql`
           * Look for "OMS Bridge Started!"
