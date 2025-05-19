@@ -271,7 +271,11 @@ class GeospatialSensemakerController(SensemakerController):
                             continue
 
                     node = self.oms_crud_tool.get_node(track.node_id)
-                    geo_config = GeospatialSensemakerConfig(**self.config.get(node.classIri, {}))
+
+                    provider_id = node.trackProviderId
+                    default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+                    provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
+                    geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
                     try:
                         with ThreadPoolExecutor() as executor:

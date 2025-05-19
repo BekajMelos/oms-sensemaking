@@ -294,6 +294,10 @@ class Settings(BaseSettings):
     max_track_time_length_seconds: int = Field(7 * 24 * 60 * 60,
         description="Max amount of time in seconds a track can be from earliest start time to last start time",
         examples=[86400, 604800])
+    geo_sensemaker_config_default_provider_id: str = Field(
+        "default_provider_id",
+        description="Default provider ID in geo sensemaker config file"
+    )
 
     # Common Sense Filtering Settings
     apply_common_sense_filters: bool = Field(True, description="Toggle on/off Common Sense Filters")
