@@ -67,12 +67,36 @@ def tester_db():
         sourceId=uuid4(),
         acm=DEFAULT_ACM
     )
+    facility_node_empty_string = NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="facility_empty_string",
+        tier=ObjectTier.PRIMARY,
+        classIri="https://foundry.ai.mil/ontology/4901-001/Facility"
+    )
+    empty_string_be_num_attribute = AttributeAttribute.model_construct(
+        attributeIri=BE_NUMBER_IRI,
+        attributeValue="",
+        nodeId=facility_node_empty_string.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    empty_string_osuffix_num_attribute = AttributeAttribute.model_construct(
+        attributeIri=OSUFFIX_IRI,
+        attributeValue="",
+        nodeId=facility_node_empty_string.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
 
     return [original_facility_node,
            original_be_number_attribute,
            original_osuffix_attribute,
            original_equipment_node,
-           original_equipment_code_attribute]
+           original_equipment_code_attribute,
+           facility_node_empty_string,
+           empty_string_be_num_attribute,
+           empty_string_osuffix_num_attribute]
 
 
 def test_resolution_sensemaker(db, mock_source, tester_db):
@@ -205,3 +229,48 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert findings[1].acm == tester_db[4].acm
     assert findings[1].finding_data["start_node_id"] == str(new_equipment_node.id)
     assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
+
+def test_resolution_no_relationship_empty_string(db, mock_source, tester_db):
+    """Test Resolution Sensemaker"""
+    with open(SETTINGS.duplicate_object_iris_file_path) as fd:
+            duplicate_object_iris = json.load(fd)
+    mock_oms_crud_tool = mock.MagicMock(spec=OmsCrudTool)
+    facility_node = NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="facility_node",
+        tier=ObjectTier.PRIMARY,
+        classIri="https://foundry.ai.mil/ontology/4901-001/Facility"
+    )
+    # Get Relationships Mock
+    mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
+
+    # Get Node Mock
+    mock_oms_crud_tool.get_node.return_value = facility_node
+
+    facility_be_num_attribute = AttributeAttribute.model_construct(
+        attributeIri=BE_NUMBER_IRI,
+        attributeValue="",
+        nodeId=facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    facility_osuffix_num_attribute = AttributeAttribute.model_construct(
+        attributeIri=OSUFFIX_IRI,
+        attributeValue="",
+        nodeId=facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+
+    mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[tester_db[5]])
+    mock_oms_crud_tool.get_node_attribute_by_iri.return_value = [facility_osuffix_num_attribute]
+    assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(facility_be_num_attribute) == []
+
+    findings = db.execute(
+        select(Finding).filter(
+            Finding.finding_type == FindingType.RESOLUTION_DUPLICATE.value
+            )
+        ).scalars().all()
+
+    assert len(findings) == 0
