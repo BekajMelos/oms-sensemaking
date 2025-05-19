@@ -331,7 +331,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
         "10-0-0-01-0-0-00-000000-00-00"
     )
 
-    #test
     # ICON's are published by this Sensemaker so it doesn't need to process them
     oms_attribute = create_attribute(
         oms_node, SETTINGS.mil_symbol_settings.symbol_attribute_iri, "SNPP------*****", mock_source)
