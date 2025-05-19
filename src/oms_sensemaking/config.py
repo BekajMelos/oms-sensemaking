@@ -82,6 +82,9 @@ class LogConfig(BaseSettings):
             },
             "urllib3": {
                 "level": "INFO"
+            },
+            "pika": {
+                "level": "INFO"
             }
         }
 

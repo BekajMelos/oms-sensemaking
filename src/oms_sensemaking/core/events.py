@@ -2,6 +2,7 @@
 
 import json
 import logging
+import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Event, Thread
@@ -10,8 +11,11 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
+import pika
 from pika import BlockingConnection, ConnectionParameters, PlainCredentials
+from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
+import pika.spec
 
 from oms_sensemaking.config import SETTINGS
 
@@ -141,6 +145,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
 
     def _connect(self):
         """Establish connection to RabbitMQ server."""
+        LOGGER.info(f"Trying to connect to {self._queue_name} at {SETTINGS.rabbitmq_host}:{SETTINGS.rabbitmq_port}")
         try:
             credentials = PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
             parameters = ConnectionParameters(
@@ -193,13 +198,23 @@ class RabbitMQListener(BaseRabbitMQListener):
         """Create a new instance of RabbitMQListener."""
         super().__init__(name, queue_name, handle_event, event_filter)
 
-    def callback(self, ch, method, properties, body):
+    def callback(
+            self,
+            ch: Channel,
+            method: pika.spec.Basic.Deliver,
+            properties: pika.spec.BasicProperties,
+            body: bytes):
+
         if self.stopped.is_set():
             LOGGER.debug(f"Shutting down {self._name}")
             return
+        
+        object_id = None
 
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
+            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}")
+            object_id = audit_log.objectId
 
             if self._event_filter and not self._event_filter.passes_filter(audit_log):
                 LOGGER.warning(
@@ -209,17 +224,16 @@ class RabbitMQListener(BaseRabbitMQListener):
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 return
 
-            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}")
-
             if self.handle_event(audit_log):
                 LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             else:
-                LOGGER.warning(f"{self._name} Audit log event was not processed successfully.")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+                LOGGER.warning(
+                    f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
+                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
         except Exception as ex:
-            LOGGER.error(f"{self._name} Error processing message: {ex}")
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+            LOGGER.error(f"{self._name} Error processing message (Object ID: {object_id}): {traceback.format_exc()}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
     def process_audit_log_events(self) -> None:
         """Process audit log events from RabbitMQ."""
