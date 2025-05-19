@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Elasticsearch and ESS added to the docker-compose setup
 
 ### Changed
 
