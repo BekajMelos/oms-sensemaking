@@ -97,7 +97,7 @@ class MilSymbolSensemaker(Sensemaker):
 
         if oms_node is None:
             return []
-        
+
         symbol_id_code = self.get_starting_symbol_id_code(oms_object, oms_node)
         if not symbol_id_code:
             symbol_id_code = SETTINGS.mil_symbol_settings.default_2525d_code
@@ -106,7 +106,7 @@ class MilSymbolSensemaker(Sensemaker):
 
         code_2525c = None
         code_2525d = None
-        
+
         trimmed_symbol_id_code = symbol_id_code.replace("-", "")
         if len(trimmed_symbol_id_code) == 20 and re.match(r'^([\d]{20})$', trimmed_symbol_id_code):
             code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
@@ -167,9 +167,10 @@ class MilSymbolSensemaker(Sensemaker):
         :param oms_node: Node with symbol id code to update
         :return: The starting symbol id code
         """
-        if self.is_attribute(oms_object) and oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris:
+        if self.is_attribute(oms_object) and (
+        oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris):
             symbol_id_code = oms_object.attributeValue
-        else: 
+        else:
             symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
             LOGGER.debug(f"Node does not have symbolIdCode set. "
@@ -462,7 +463,8 @@ class MilSymbolSensemaker(Sensemaker):
         """
 
         if self.is_attribute(oms_object) and (
-            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or self.has_mil_symbol_sensemaker_tags(oms_object.tags)): 
+            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or
+            self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
             LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
             return True
         return False

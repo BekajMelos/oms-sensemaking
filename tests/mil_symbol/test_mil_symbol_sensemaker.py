@@ -133,7 +133,7 @@ def test_get_starting_symbol_id_code(
         oms_object: AttributeAttribute,
         mil_symbol_rules: Dict):
 
-    
+
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
      # Don't actually get the ontology class from API

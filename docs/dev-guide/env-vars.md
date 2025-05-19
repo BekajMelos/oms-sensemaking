@@ -133,3 +133,4 @@
 | `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS`             | `'["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]'`                                            | List of Affiliation IRIs to enrich from                        | No             |
 | `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
 | `MIL_SYMBOL_SETTINGS__RULES_FILE_PATH`              | `./data/mil_symbol_rules.json`                                                                    | Path to the Mil Symbol Rules config file                       | No             |
+| `MIL_SYMBOL_ATTRIBUTE_CODE_IRIS`                    | `'["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"]'`                     | Attribute Iris for full mil symbol codes                       | No             |
