@@ -13,8 +13,8 @@
         * `OMSB_VERSION=<OMSB_VERSION>`
         * `OMSB_URL="https://<your_ip_address>:8443/graphql"`
         * `AAC_URL="http://<your_ip_address>:5022"`
-    3. Set the sensemaker sqs queue url. `oms-bridge` does not support all of our SQS Queues, so only one sensemaker can be used at a time at the moment.
-        1. Update the `.env` to set the SQS queue to the wfsTrigger (we're temporarily using that queue)
+    3. Set the sensemaker RMQ queue name. `oms-bridge` does not support all of our RMQ Queues, so only one sensemaker can be used at a time at the moment.
+        1. Update the `.env` to set the RMQ queue to the `oms-wfs-trigger` (we're temporarily using that queue)
             * Set the appropriate RMQ_<sensemaker>_QUEUE_NAME to the `oms-wfs-trigger`
             * QUEUE Settings are `RMQ_GEO_QUEUE_NAME`, `RMQ_INFERENCE_QUEUE_NAME`, `RMQ_RES_QUEUE_NAME`, `RMQ_MIL_SYMBOL_QUEUE_NAME`
             * Example for the Geo sensemakers: `RMQ_GEO_QUEUE_NAME=oms-wfs-trigger`
@@ -41,7 +41,7 @@
         OMSB_TAG=INC-20
         DOCKER_REGISTRY=tex.gerbil-cloud.ts.net:5000
         ```
-    3. For SQS Listening Sensemakers:
+    3. For RMQ Listening Sensemakers:
         1. Updates to `docker-compose.yml`
             * Comment out the `wfs-service` service so that service doesn't take items from the queue.
     4. Run `make refresh`. This may take a few minutes.
@@ -177,7 +177,7 @@
         ```
 
         - Additionally, a `Report` Object should exist and have a `Relationship: describes` to every single Entity that it produced.
-    2. For SQS Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):
+    2. For RMQ Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):
         1. In `oms-data-gen` (Needed for Geospatial Sensemaker Data):
             1. Follow the setup steps in the `oms-data-gen` readme.
                 1. Update the `.env` to set the `OMSB_URL` and `PKCS12_PASSWORD`
