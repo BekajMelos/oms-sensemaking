@@ -109,6 +109,9 @@ class MilSymbolSettings(BaseModel):
         ["https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"],
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
+    mil_symbol_attribute_code_iris: list[str] = Field(
+        ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
+        description="Attribute Iris for full mil symbol codes")
 
     # War, Pending, Unknown, Present
     default_2525c_code: str = Field(

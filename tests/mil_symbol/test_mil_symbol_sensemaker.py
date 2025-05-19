@@ -42,6 +42,16 @@ def oms_node() -> NodeNode:
 
     return node
 
+@pytest.fixture
+def oms_object() -> AttributeAttribute:
+    attribute_val = AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        attributeValue="attributeValue",
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM
+    )
+    return attribute_val
 
 def create_attribute(attribute_iri = None, attribute_value = None, acm=DEFAULT_ACM) -> AttributeAttribute:
     attr = AttributeAttribute.model_construct(
@@ -120,20 +130,32 @@ def test_process_data(
 def test_get_starting_symbol_id_code(
         mock_oms_crud_tool: OmsCrudTool,
         oms_node: NodeNode,
+        oms_object: AttributeAttribute,
         mil_symbol_rules: Dict):
 
+    
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
-    # Don't actually get the ontology class from API
+     # Don't actually get the ontology class from API
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
 
-    # Test that the node's symbol code is used if set
-    oms_node.symbolIdCode = "10-1-1-01-1-1-11-000000-00-00"
-    code = sensemaker.get_starting_symbol_id_code(oms_node)
+    # Case where oms_object is an attribute and returns a valid mil symbol attributeIris
+    code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
+    assert code == "attributeValue"
+
+    # Case where oms_object is an attribute that does not have a valid milsymbol attributeIri and node has symboldIdCode
+    oms_object.attributeIri = "invalidIri"
+    oms_node.symbolIdCode = "symbol_id_code"
+    code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
+    assert code == "symbol_id_code"
+
+    # Case whwere oms_object is not an attribute but is an oms_node with a symbol_id_code
+    oms_object = oms_node
+    code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
+    assert code == "symbol_id_code"
 
     # make sure we just used the node's symbolIdCode
     mock_oms_crud_tool.get_ontology_class.assert_not_called()
-    assert code == "10-1-1-01-1-1-11-000000-00-00"
 
     # Test that we search the ontology for a default code
     # mock getting the ontology classes
@@ -160,9 +182,8 @@ def test_get_starting_symbol_id_code(
 
     # if code is not present, try to get a default code
     oms_node.symbolIdCode = None
-    code = sensemaker.get_starting_symbol_id_code(oms_node)
+    code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "10-0-0-01-0-0-00-000000-00-00"
-
 
 def test_get_default_symbol_id_code_regular_traversal(
     mock_oms_crud_tool: OmsCrudTool,
