@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated OMS dependency to Grimlock-INC-21
 
+### Fixed
+- Fixed bug where exceptions in RabbitMQListeners would cause excessive requests to core
+
 ## [0.5.0] - 2025-05-07
 
 ### Added

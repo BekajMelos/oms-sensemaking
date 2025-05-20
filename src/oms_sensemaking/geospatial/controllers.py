@@ -176,8 +176,8 @@ class GeospatialSensemakerController(SensemakerController):
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
                 except Exception:
-                    LOGGER.warning("Unable to process point.")
-                    LOGGER.warning(traceback.format_exc())
+                    LOGGER.error("Unable to process point.")
+                    LOGGER.error(traceback.format_exc())
                     continue
 
                 if point:
@@ -264,9 +264,9 @@ class GeospatialSensemakerController(SensemakerController):
                                 oms_track = APITrack(track).create_oms_track()
                                 LOGGER.info(f"OMS Track published: {oms_track.id}")
                                 self.log_track_comparison(points=binned_points, track=track)
-                        except (ValueError, IndexError) as e:
+                        except Exception:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.warning(e)
+                            LOGGER.error(traceback.format_exc())
                             self.track_times[track_uuid] = None
                             continue
 
