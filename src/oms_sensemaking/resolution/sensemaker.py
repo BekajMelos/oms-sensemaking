@@ -124,9 +124,15 @@ class ResolutionSensemaker(Sensemaker):
         if len(duplicate_identifiers) > 1:
             other_iris: list[str] = copy.copy(duplicate_identifiers)
             other_iris.remove(current_iri)
-            duplicate_object_attributes.extend(
-                self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            )
+            # duplicate_object_attributes.extend(
+            #     self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
+            # )
+
+            # temporary solution for if multiple attributes are added with the same 'key' but different values
+            other_attributes = self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
+            if len(other_attributes) > 1:
+                other_attributes = other_attributes[:1]
+            duplicate_object_attributes.extend(other_attributes)
 
             # return empty list if attributes found do not match criteria amount of identifiers
             # also return empty list if any of the attribute objects are not populated with an actual value
