@@ -209,11 +209,9 @@ class ResolutionSensemaker(Sensemaker):
             for attribute in attributes
         ]
 
-        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(hasMatch=node_attribute_subqueries[0])
-        if len(node_attribute_subqueries) > 1:
-            node_attribute_query.and_ = [
-                NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries[1:]
-            ]
+        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
+            and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
+            )
 
         query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 
