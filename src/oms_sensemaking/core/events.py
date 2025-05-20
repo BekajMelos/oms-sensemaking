@@ -213,7 +213,7 @@ class RabbitMQListener(BaseRabbitMQListener):
 
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
-            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}:" + f"{audit_log.objectId}")
+            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}: {audit_log.objectId}")
             object_id = audit_log.objectId
 
             if self._event_filter and not self._event_filter.passes_filter(audit_log):

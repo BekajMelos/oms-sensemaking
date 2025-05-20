@@ -40,7 +40,7 @@
         COMPOSE_PROFILES=remote
         OMSB_CORS_ALLOWED_ORIGIN=http://localhost:5173
         OMSB_TAG=INC-20
-        DOCKER_REGISTRY=tex.gerbil-cloud.ts.net:5000
+        DOCKER_REGISTRY=<insert_docker_registry>
         ```
     3. For RMQ Listening Sensemakers:
         1. Updates to `docker-compose.yml`
