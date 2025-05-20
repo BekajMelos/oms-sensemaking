@@ -124,12 +124,22 @@ class ResolutionSensemaker(Sensemaker):
         if len(duplicate_identifiers) > 1:
             other_iris: list[str] = copy.copy(duplicate_identifiers)
             other_iris.remove(current_iri)
-            duplicate_object_attributes.extend(
-                self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            )
+            # duplicate_object_attributes.extend(
+            #     self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
+            # )
 
-            if len(duplicate_object_attributes) != len(duplicate_identifiers):
-                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching. Ignoring.")
+            # temporary solution for if multiple attributes are added with the same 'key' but different values
+            other_attributes = self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
+            if len(other_attributes) > 1:
+                other_attributes = other_attributes[:1]
+            duplicate_object_attributes.extend(other_attributes)
+
+            # return empty list if attributes found do not match criteria amount of identifiers
+            # also return empty list if any of the attribute objects are not populated with an actual value
+            if ((len(duplicate_object_attributes) != len(duplicate_identifiers))
+                or (any(attribute.attributeValue == "" for attribute in duplicate_object_attributes))):
+                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching"
+                "or attribute values are not populated. Ignoring.")
                 return []
 
         return duplicate_object_attributes
@@ -205,11 +215,9 @@ class ResolutionSensemaker(Sensemaker):
             for attribute in attributes
         ]
 
-        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(hasMatch=node_attribute_subqueries[0])
-        if len(node_attribute_subqueries) > 1:
-            node_attribute_query.and_ = [
-                NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries[1:]
-            ]
+        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
+            and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
+            )
 
         query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 
