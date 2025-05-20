@@ -270,10 +270,11 @@ class GeospatialSensemakerController(SensemakerController):
                             self.track_times[track_uuid] = None
                             continue
 
-                    node = self.oms_crud_tool.get_node(track.node_id)
-                    geo_config = GeospatialSensemakerConfig(**self.config.get(node.classIri, {}))
-
                     try:
+                        # temp fix to prevent UnboundLocalError on `track`
+                        node = self.oms_crud_tool.get_node(track.node_id)
+                        geo_config = GeospatialSensemakerConfig(**self.config.get(node.classIri, {}))
+
                         with ThreadPoolExecutor() as executor:
                             futures = []
                             for sensemaker in self._registry.values():
