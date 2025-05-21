@@ -8,7 +8,7 @@
 #
 #   IMAGE_NAME:      The image name of the base image. Defaults to "python".
 #
-#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.6".
+#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.10".
 #
 #   DOCKER_PROXY:    The prefix for the docker repository where the base image is
 #                    hosted. This should end in a forward slash. Defaults to
@@ -47,7 +47,7 @@
 ARG IMAGE_NAME="python"
 
 # The version of Python to use.
-ARG PYTHON_VERSION="3.12.6"
+ARG PYTHON_VERSION="3.12.10"
 
 # The docker image prefix.
 ARG DOCKER_PROXY="docker.io/library"
