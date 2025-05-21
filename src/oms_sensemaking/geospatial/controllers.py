@@ -176,8 +176,8 @@ class GeospatialSensemakerController(SensemakerController):
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
                 except Exception:
-                    LOGGER.warning("Unable to process point.")
-                    LOGGER.warning(traceback.format_exc())
+                    LOGGER.error("Unable to process point.")
+                    LOGGER.error(traceback.format_exc())
                     continue
 
                 if point:
@@ -264,22 +264,23 @@ class GeospatialSensemakerController(SensemakerController):
                                 oms_track = APITrack(track).create_oms_track()
                                 LOGGER.info(f"OMS Track published: {oms_track.id}")
                                 self.log_track_comparison(points=binned_points, track=track)
-                        except (ValueError, IndexError) as e:
+                        except Exception:
                             # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.warning(e)
+                            LOGGER.error(traceback.format_exc())
                             self.track_times[track_uuid] = None
                             continue
 
-                    node = self.oms_crud_tool.get_node(track.node_id)
-
-                    provider_id = None
-                    default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
-                    if node.trackProviderId:
-                        provider_id = node.trackProviderId
-                    provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
-                    geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
-
                     try:
+                        # temp fix to prevent UnboundLocalError on `track`
+                        node = self.oms_crud_tool.get_node(track.node_id)
+
+                        provider_id = None
+                        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+                        if node.trackProviderId:
+                            provider_id = node.trackProviderId
+                        provider_config = self.config.get(provider_id,default_config) if provider_id else default_config
+                        geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
+
                         with ThreadPoolExecutor() as executor:
                             futures = []
                             for sensemaker in self._registry.values():

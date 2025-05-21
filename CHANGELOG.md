@@ -5,9 +5,25 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Elasticsearch and ESS added to the docker-compose setup
+
+### Changed
+
+### Fixed
+- Fixed error with single point tracks
+
+## [0.6.0] - 2025-05-20
+
+### Added
+- Added MIL-STD-2525B Support
 
 ### Changed
 - Updated OMS dependency to Grimlock-INC-21
+
+### Fixed
+- Fixed bug where exceptions in RabbitMQListeners would cause excessive requests to core
+- Fixed bug where empty attribute values would be matched by resolution sensemaker
+- Fixed bug where resolution sensemaker would match with incomplete lists
 
 ## [0.5.0] - 2025-05-07
 

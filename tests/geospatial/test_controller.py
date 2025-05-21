@@ -77,19 +77,21 @@ def test_geo_controller_config(
     mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
-    aircraft_geo_config: dict,
-    watercraft_geo_config: dict,
+    default_aircraft_config: dict,
+    default_watercraft_config: dict,
+    provider_1_aircraft_config: dict
 ):
     # register the sensemaker without starting the listener
     mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
 
-    # mock oms call. Set classIri to Aircraft
+    # mock oms call. Set classIri to Watercraft
     oms_node = NodeNode.model_construct(
         id=uuid4(),
         name="test",
         sourceId=uuid4(),
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         acm=DEFAULT_ACM,
+        trackProviderId=None
     )
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
 
@@ -142,15 +144,16 @@ def test_geo_controller_config(
     # mock execute function
     mock_geo_controller._registry["geo"].execute = mock.MagicMock()
 
-    # Test Aircraft
+    # Test Watercraft without provider
     # call flush buffer
     mock_geo_controller.flush_buffer()
 
-    # Ensure that the aircraft config is used
-    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, watercraft_geo_config)
+    # Ensure that the default watercraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_watercraft_config)
 
-    # Test Watercraft
-    # mock oms call. Set classIri to Aircraft
+
+    # Test Aircraft without provider
+    # mock oms call. Set classIri to aircraft
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
     # set up track buffer
@@ -169,5 +172,28 @@ def test_geo_controller_config(
     # call flush buffer
     mock_geo_controller.flush_buffer()
 
-    # Ensure that the watercraft config is used
-    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, aircraft_geo_config)
+    # Ensure that the default aircraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_aircraft_config)
+
+
+    # Test Aircraft with provider
+    oms_node.trackProviderId = "provider_1_id"
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: points}
+    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+    mock_api_track_client.create_oms_track = mock.MagicMock()
+
+    # mock thread pool execution
+
+    # Create a mock executor that returns a future with a known result
+    instance = mock.MagicMock()
+    mock_executor.return_value.__enter__.return_value = instance
+    mock_as_completed.return_value = []
+
+    # call flush buffer
+    mock_geo_controller.flush_buffer()
+
+    # Ensure that the provider_1 aircraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, provider_1_aircraft_config)

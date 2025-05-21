@@ -98,7 +98,7 @@ services:
     profiles:
       - local
 
-  # NOTE: The omsb container should not require the "ess" or "guide" services,
+  # NOTE: The omsb container should not require the "guide" service,
   #       but it may try to resolve the hostnames, which results in a stack
   #       trace being logged. This can be ignored, since the purpose of this
   #       configuration is to provide a minimal omsb for development & testing.
@@ -221,11 +221,116 @@ services:
       start_period: 20s
       start_interval: 5s
 
+  # 8.x supported by ESS 3
+  elasticsearch8:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch8
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - 'ES_JAVA_OPTS=-XX:UseSVE=0 -Xms750m -Xmx750m'
+      - 'CLI_JAVA_OPTS=-XX:UseSVE=0'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    restart: always
+
+  ess3:
+    container_name: ess3
+    hostname: ess3
+    image: ${DOCKER_REGISTRY}/dpaas-internal/ess/ess-3:1.2.6
+    volumes:
+      - ./etc/pki:/opt/common/pki
+      - ./etc/es/v8/omsb-node-document-index.json:/omsb-node-document-index.json
+    environment:
+      WHITELIST_ENTRIES: ${MEME_WHITELIST}
+      ADMIN_TOKENS: ${MEME_WHITELIST}
+      COM_DECIPHERNOW_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/twlserver.jks
+      COM_DECIPHERNOW_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.jks
+      SSL_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
+      SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
+      CLOUDSHARE_KEYSTORE: /opt/common/pki/twlserver.jks
+      CLOUDSHARE_TRUSTSTORE: /opt/common/pki/truststore.jks
+      CTE_USERSERVICE_KEYSTORE: /opt/common/pki/twlserver.jks
+      CTE_USERSERVICE_TRUSTSTORE: /opt/common/pki/truststore.jks
+      ZK_SSL_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
+      ZK_SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
+      SEARCH_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
+      SEARCH_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
+      GOV_IC_CTE_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/twlserver.jks
+      GOV_IC_CTE_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.jks
+      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKKEYSTORE: /opt/common/pki/twlserver.jks
+      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKTRUSTSTORE: /opt/common/pki/truststore.jks
+      COM_TWITTER_FINATRA_CONFIG_KEYPATH: /opt/common/pki/twlserver.jks
+      COM_TWITTER_FINATRA_CONFIG_CERTIFICATEPATH: /opt/common/pki/truststore.jks
+      AAC_HOST: http://aac2:3000
+      BANNED_PARAMS: query,q
+      ES_HOSTS: http://elasticsearch8:9200
+      HOST: 0.0.0.0
+      LOG_LEVEL: info
+      PORT: 3000
+      SNIPPET_TYPE: elasticsearch8
+      WAIT_HOSTS: elasticsearch8:9200
+      PUT_URL_PATTERNS: /es/{index},/es/{index}/_doc/{id}
+      POST_URL_PATTERNS: /es/{index}/_doc/{id},/es/{index}/_update/{id},/es/{index}/_delete_by_query
+      DELETE_URL_PATTERNS: /es/{index},/es/{index}/_doc/{id}
+      HEAD_URL_PATTERNS: /es/{index}
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "waiting for elasticsearch8..."
+        until curl -sS "http://elasticsearch8:9200/_cat/health?h=status" | grep -q "green\|yellow"; do
+          sleep 1
+        done
+        sleep 10
+
+        echo "inserting omsb_node_index..."
+        curl -v -X PUT "http://elasticsearch8:9200/omsb_node_index" -H "Content-Type: application/json" -d @/omsb-node-document-index.json
+
+        /app/ess
+    ports:
+      - "7399:3000"
+    depends_on:
+      - aac2
+      - elasticsearch8
+
+  ess-indexer-service:
+    image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
+    container_name: ess-indexer-service
+    env_file:
+      - docker/local/docker.env
+    environment:
+      - OMSB_SERVICE=ess-indexer
+      - OMSB_ENABLE_LIQUIBASE=false
+      - POSTGRES_HOST=postgis
+    volumes:
+      - ./etc/pki:/opt/oms-bridge/pki
+      - ./etc/whitelist.txt:/opt/oms-bridge/etc/config/external/Whitelist.txt
+      - ./etc/config/external/CollectionStatusThresholds.yaml:/opt/oms-bridge/etc/config/external/CollectionStatusThresholds.yaml
+    depends_on:
+      omsb-init:
+        condition: service_started
+      ess3:
+        condition: service_started
+
 volumes:
   doccano-db:
   localstack:
   pgadmin:
   postgis:
+  elasticsearch:
 
 secrets:
   mynetrc:

@@ -1,0 +1,90 @@
+logging:
+  level:
+    root: ${SPRING_LOG_LEVEL_ROOT}
+    io.bc.omsb: ${SPRING_LOG_LEVEL_OMSB}
+    org.springframework.jdbc: ${SPRING_LOG_LEVEL_DEFAULT}
+    liquibase: ${SPRING_LOG_LEVEL_DEFAULT}
+spring:
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    show-sql: true
+  properties:
+    hibernate:
+      format_sql: true
+  graphql:
+    websocket:
+      path: /graphql
+    graphiql:
+      enabled: false
+  web:
+    resources:
+      static-locations: ${SPRING_STATIC_LOCATION}
+  security:
+    user:
+      name: ${SPRING_SECURITY_NAME}
+      password: ${SPRING_SECURITY_PW}
+  r2dbc:
+    url: r2dbc:${POSTGRES_PROTOCOL}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=require
+    pool:
+      enabled: true
+      initial-size: ${SPRING_POOL_INITIAL_SIZE}
+      max-size: ${SPRING_POOL_MAX_SIZE}
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  sql-datasource:
+    jdbcUrl: jdbc:${POSTGRES_PROTOCOL}://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=require
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driverClassName: org.postgresql.Driver
+    liquibase:
+      enabled: ${OMSB_ENABLE_LIQUIBASE}
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+server:
+  ssl:
+    key-store: ${TLS_KEYSTORE}
+    key-store-password: ${TLS_KEYSTORE_PASSWORD}
+    trust-store: ${TLS_TRUSTSTORE}
+    trust-store-password: ${TLS_TRUSTSTORE_PASSWORD}
+    enabled: ${TLS_ENABLED}
+    protocol: "TLS"
+    enabled-protocols: "TLSv1.2, TLSv1.3"
+    ciphers: "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384"
+  port: ${TLS_SERVER_PORT}
+  compression:
+    enabled: true
+    mime-types: 'text/html, text/xml, text/plain, text/css, text/javascript, application/javascript, application/json'
+    min-response-size: 1024
+    excluded-user-agents: ^.*$
+  https:
+    enabled: true
+  http2:
+    enabled: true
+  servlet:
+    session:
+      timeout: 5m
+      cookie:
+        secure: true
+        http-only: true
+        same-site: lax
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+oms:
+  exp_env_enabled: ${OMSB_EXP_ENV_ENABLED}
+events:
+  rabbit:
+    publisher:
+      retry:
+        max_attempts: 20
+        backoff_ms: 50
+        max_backoff_ms: 1000
