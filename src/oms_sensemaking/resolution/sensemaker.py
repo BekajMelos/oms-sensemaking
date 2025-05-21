@@ -123,14 +123,15 @@ class ResolutionSensemaker(Sensemaker):
         if not object_class_in_config or not attribute_in_duplicate_identifiers or already_ran:
             return []
 
-        # duplicate_object_attributes: list[list[AttributeAttribute]] = []
+        # Instantiate the return object with the current attribute
+        # gets passed if just one identifier
         duplicate_object_attributes = [[attribute]]
         # Get this nodes info and make sure we satisfy the requirements
         if len(duplicate_identifiers) > 1:
             other_iris: list[str] = copy.copy(duplicate_identifiers)
             other_iris.remove(current_iri)
             other_attributes = self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            if len(other_attributes) > 1:
+            if len(other_attributes) > 0:
                 attribute_groups_dict: dict[str, list[AttributeAttribute]] = {}
                 for other_attr in other_attributes:
                     iri = other_attr.attributeIri
@@ -144,11 +145,6 @@ class ResolutionSensemaker(Sensemaker):
                         continue
                     else:
                         duplicate_object_attributes.append(group)
-            elif other_attributes == 1:
-                # if there is just one other attribute, simply check if it has valid value
-                # and extend it to the lone current attribute
-                if other_attributes[0].attributeValue != "":
-                    duplicate_object_attributes[0].extend(other_attributes)
 
             for combination in duplicate_object_attributes:
                 if len(combination) != len(duplicate_identifiers):
