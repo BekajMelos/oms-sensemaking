@@ -3,7 +3,7 @@
 import copy
 import logging
 from dataclasses import dataclass, field
-from itertools import chain
+from itertools import chain, product
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -89,7 +89,7 @@ class ResolutionSensemaker(Sensemaker):
 
         return results
 
-    def meets_criteria(self, attribute: AttributeAttribute) -> list[AttributeAttribute]:
+    def meets_criteria(self, attribute: AttributeAttribute) -> list[list[AttributeAttribute]]:
         """
         Gather the criteria needed to check for duplicates in OMSB.
 
@@ -108,7 +108,10 @@ class ResolutionSensemaker(Sensemaker):
         if current_iri not in all_attribute_iris:
             return []
 
-        duplicate_object_attributes = [attribute]
+        # Attribute does not have a valid value and is an empty string
+        # need all attributes to contain a valid value
+        if attribute.attributeValue == "":
+            return []
         class_iri = self.oms_crud_tool.get_node(current_node_id).classIri
 
         already_ran = self.has_already_ran(current_node_id)
@@ -120,27 +123,36 @@ class ResolutionSensemaker(Sensemaker):
         if not object_class_in_config or not attribute_in_duplicate_identifiers or already_ran:
             return []
 
+        # duplicate_object_attributes: list[list[AttributeAttribute]] = []
+        duplicate_object_attributes = [[attribute]]
         # Get this nodes info and make sure we satisfy the requirements
         if len(duplicate_identifiers) > 1:
             other_iris: list[str] = copy.copy(duplicate_identifiers)
             other_iris.remove(current_iri)
-            # duplicate_object_attributes.extend(
-            #     self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            # )
-
-            # temporary solution for if multiple attributes are added with the same 'key' but different values
             other_attributes = self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
             if len(other_attributes) > 1:
-                other_attributes = other_attributes[:1]
-            duplicate_object_attributes.extend(other_attributes)
+                attribute_groups_dict: dict[str, list[AttributeAttribute]] = {}
+                for other_attr in other_attributes:
+                    iri = other_attr.attributeIri
+                    if iri not in attribute_groups_dict:
+                        attribute_groups_dict[iri] = []
+                    attribute_groups_dict[iri].append(other_attr)
+                attribute_groups = list(attribute_groups_dict.values())
+                for combo in product(*attribute_groups):
+                    group = [attribute] + list(combo)
+                    if any(attr.attributeValue == "" for attr in group):
+                        continue
+                    else:
+                        duplicate_object_attributes.append(group)
+            elif other_attributes == 1:
+                # if there is just one other attribute, simply check if it has valid value
+                # and extend it to the lone current attribute
+                if other_attributes[0].attributeValue != "":
+                    duplicate_object_attributes[0].extend(other_attributes)
 
-            # return empty list if attributes found do not match criteria amount of identifiers
-            # also return empty list if any of the attribute objects are not populated with an actual value
-            if ((len(duplicate_object_attributes) != len(duplicate_identifiers))
-                or (any(attribute.attributeValue == "" for attribute in duplicate_object_attributes))):
-                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching"
-                "or attribute values are not populated. Ignoring.")
-                return []
+            for combination in duplicate_object_attributes:
+                if len(combination) != len(duplicate_identifiers):
+                    duplicate_object_attributes.remove(combination)
 
         return duplicate_object_attributes
 
@@ -199,30 +211,30 @@ class ResolutionSensemaker(Sensemaker):
             return True
         return False
 
-    def find_duplicates(self, attributes: list[AttributeAttribute]) -> list[NodeNode]:
+    def find_duplicates(self, combinations: list[list[AttributeAttribute]]) -> list[NodeNode]:
         """
         Deteremine if there are matching objects in OMSB
 
         :param attributes: List of attributes to match nodes against in OMSB
         :return: List of duplicate nodes
         """
+        for group in combinations:
+            node_attribute_subqueries: list[NodeAttributeSubQuery] = [
+                NodeAttributeSubQuery(
+                    attributeIris=[attribute.attributeIri],
+                    attributeValue=StringQuery(equals=attribute.attributeValue, ignoreCase=True),
+                )
+                for attribute in group
+            ]
 
-        node_attribute_subqueries: list[NodeAttributeSubQuery] = [
-            NodeAttributeSubQuery(
-                attributeIris=[attribute.attributeIri],
-                attributeValue=StringQuery(equals=attribute.attributeValue, ignoreCase=True),
-            )
-            for attribute in attributes
-        ]
+            node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
+                and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
+                )
 
-        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
-            and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
-            )
+            query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 
-        query: NodeQuery = NodeQuery(attributes=node_attribute_query)
+            nodes_response = self.oms_crud_tool.get_nodes(query)
 
-        nodes_response = self.oms_crud_tool.get_nodes(query)
-
-        if nodes_response and nodes_response.data:
-            return nodes_response.data
+            if nodes_response and nodes_response.data:
+                return nodes_response.data
         return []
