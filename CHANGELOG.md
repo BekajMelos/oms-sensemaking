@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Elasticsearch and ESS added to the docker-compose setup
 
 ### Changed
+- Updated Python to 3.12.10
 
 ### Fixed
 - Fixed error with single point tracks
