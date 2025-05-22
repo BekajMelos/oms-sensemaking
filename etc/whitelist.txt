@@ -1,2 +1,4 @@
 cn=test tester100,ou=people,ou=dae,ou=chimera,o=u.s. government,c=us
 cn=jade.meme.bia-boeing.com
+cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us
+cn=oms.apps.dev.dpaas.dodiis.mil,ou=dia,ou=dod,o=u.s. government,c=us
