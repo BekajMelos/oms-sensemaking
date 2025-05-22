@@ -99,7 +99,7 @@ class RDFClient:
 
         # present relationships of node
         rel_dict = json.loads(relationships_obj)
-        if len(rel_dict["data"]) > 0: # relationships could not exist meaning "data" is empty
+        if "data" in rel_dict and len(rel_dict["data"]) > 0: # relationships could not exist meaning "data" is empty
             for rel in rel_dict["data"]:
                 rel_uri = URIRef(f"https://oms.dodiis.ic.gov/ontology/relationship/{rel['id']}")
                 g.add((rel_uri, RDF.type, oms.relationship))

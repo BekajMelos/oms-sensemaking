@@ -26,14 +26,17 @@ def make_json(data):
     })
 
 def test_add_triples_with_scalar(rdf_client):
-    rdf = rdf_client.json_to_rdf(make_json({str(ex["simple"]): "hello"}), RDFFormat.turtle.value)
+    relationships_obj = json.dumps({"relationships": []})
+    rdf = rdf_client.json_to_rdf(make_json({str(ex["simple"]): "hello"}), relationships_obj, RDFFormat.turtle.value)
     rdf_response = Response(content=rdf, media_type="text/plain").body.decode()
     g = Graph()
     g.parse(data=rdf_response, format="turtle")
     assert (subj, URIRef(ex["simple"]), Literal("hello")) in g
 
 def test_add_triples_with_list(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     rdf = rdf_client.json_to_rdf(make_json({str(ex["fruit"]): ["apple", "banana"]}),
+                                 relationships_obj,
                                  RDFFormat.turtle.value)
     rdf_response = Response(content = rdf, media_type="text/plain").body.decode()
     g = Graph()
@@ -42,7 +45,9 @@ def test_add_triples_with_list(rdf_client):
     assert (subj, URIRef(ex["fruit"]), Literal("banana")) in g
 
 def test_add_triples_with_nested_dict(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     rdf = rdf_client.json_to_rdf(make_json({str(ex["outer_inner"]): "deep_value"}),
+                                 relationships_obj,
                                  RDFFormat.turtle.value)
     rdf_response = Response(content = rdf, media_type="text/plain").body.decode()
     g = Graph()
@@ -50,7 +55,9 @@ def test_add_triples_with_nested_dict(rdf_client):
     assert (subj, URIRef(ex["outer_inner"]), Literal("deep_value")) in g
 
 def test_add_triples_with_acm_prefix(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     rdf = rdf_client.json_to_rdf(make_json({"acm_clearance": "TopSecret"}),
+                                 relationships_obj,
                                  RDFFormat.turtle.value)
     rdf_response = Response(content = rdf, media_type="text/plain").body.decode()
     g = Graph()
@@ -58,18 +65,21 @@ def test_add_triples_with_acm_prefix(rdf_client):
     assert (subj, URIRef(acm["clearance"]), Literal("TopSecret")) in g
 
 def test_unsupported_format_raises_http_exception(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     with pytest.raises(HTTPException) as excinfo:
         rdf_client.json_to_rdf(json.dumps({
             "data": [{"guideId": "test"}]
-        }), "unsupported")
+        }), relationships_obj, "unsupported")
     assert excinfo.value.status_code == 400
 
 def test_missing_data_raises_http_exception(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     with pytest.raises(HTTPException) as excinfo:
-        rdf_client.json_to_rdf(json.dumps({"other": []}), RDFFormat.turtle.value)
+        rdf_client.json_to_rdf(json.dumps({"other": []}), relationships_obj, RDFFormat.turtle.value)
     assert excinfo.value.status_code == 400
 
 def test_missing_guide_id_raises_http_exception(rdf_client):
+    relationships_obj = json.dumps({"relationships": []})
     with pytest.raises(HTTPException) as excinfo:
-        rdf_client.json_to_rdf(json.dumps({"data": [{}]}), RDFFormat.turtle.value)
+        rdf_client.json_to_rdf(json.dumps({"data": [{}]}), relationships_obj, RDFFormat.turtle.value)
     assert excinfo.value.status_code == 400
