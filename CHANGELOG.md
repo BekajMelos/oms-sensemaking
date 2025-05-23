@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-
+- Added two helper methods to the Resolution sensemaker and created the 
+AttributeCombinations and Criteria helper classes for resolution sensemaker
 ### Changed
 
 ### Fixed
-
+- Fixed the Resolution sensemaker's inability to process multiple attributes used
+for identifying duplicates
 ## [0.6.1] - 2025-05-21
 
 ### Added

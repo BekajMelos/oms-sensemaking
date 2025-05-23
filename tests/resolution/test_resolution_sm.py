@@ -65,12 +65,12 @@ def test_is_valid_false_cases(duplicate_object_iris, attr_kwargs):
     mock_crud = mock.MagicMock(spec=OmsCrudTool)
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud)
     result = sensemaker.is_valid(attr)
-    assert result is False
+    assert result == (False, None)
 
 def test_is_valid_already_ran_false(duplicate_object_iris, test_attribute, mock_crud_tool):
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
     with mock.patch.object(ResolutionSensemaker, 'has_already_ran', return_value=True):
-        assert sensemaker.is_valid(test_attribute) is False
+        assert sensemaker.is_valid(test_attribute) == (False, None)
 
 def test_is_valid_true_case(duplicate_object_iris, test_attribute, mock_crud_tool):
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)

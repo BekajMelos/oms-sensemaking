@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Tuple, Union
+from typing import Tuple
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -100,7 +100,7 @@ class ResolutionSensemaker(Sensemaker):
 
         """
         is_valid = self.is_valid(attribute)
-        valid, node_iri = is_valid if isinstance(is_valid, tuple) else (is_valid, None)
+        valid, node_iri = is_valid
         if not valid or node_iri is None:
             return []
         return AttributeCombinations(attribute, oms_client, self.duplicate_object_iris).gather(node_iri)
@@ -172,7 +172,7 @@ class ResolutionSensemaker(Sensemaker):
         node = self.oms_crud_tool.get_node(node_id)
         return node.classIri
 
-    def is_valid(self, current_attr: AttributeAttribute) -> Union[bool, Tuple[bool, str]]:
+    def is_valid(self, current_attr: AttributeAttribute) -> Tuple[bool, str | None]:
         '''
         A helper method that checks if the current attribute and the node
         it is associated with are valid objects that
@@ -183,25 +183,25 @@ class ResolutionSensemaker(Sensemaker):
         '''
         current_node_id = current_attr.nodeId
         if not current_node_id:
-            return False
+            return (False, None)
 
         current_iri = current_attr.attributeIri
         all_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
         if current_iri not in all_iris:
-            return False
+            return (False, None)
 
         if current_attr.attributeValue == "":
-            return False
+            return (False, None)
 
         class_iri = self.current_class_iri(current_attr)
         if class_iri not in self.duplicate_object_iris:
-            return False
+            return (False, None)
 
         if current_iri not in self.duplicate_object_iris[class_iri]:
-            return False
+            return (False, None)
 
         if self.has_already_ran(current_node_id):
-            return False
+            return (False, None)
 
         return (True, class_iri)
 
