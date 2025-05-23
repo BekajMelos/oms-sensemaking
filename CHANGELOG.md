@@ -10,6 +10,17 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.6.1] - 2025-05-21
+
+### Added
+- Elasticsearch and ESS added to the docker-compose setup
+
+### Changed
+- Updated Python to 3.12.10
+
+### Fixed
+- Fixed error with single point tracks
+
 ## [0.6.0] - 2025-05-20
 
 ### Added
@@ -28,7 +39,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Tracks are split when occurring longer than a configurable max timeframe
 - Queue Event logs include Queue Name
-- Track LineString geometries crossing antimeridian are split into a MultiLineString 
+- Track LineString geometries crossing antimeridian are split into a MultiLineString
 containing the segments to the left and right of the antimeridian
 
 ### Changed
