@@ -166,7 +166,7 @@ def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
     # Case where oms_object is an attribute and returns a valid mil symbol attributeIris
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "attributeValue"
-    
+
 def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
         mock_oms_crud_tool: OmsCrudTool,
         oms_node: NodeNode,
@@ -196,12 +196,12 @@ def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
     oms_node.symbolIdCode = "symbol_id_code"
     oms_object = oms_node
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
-    
+
     # make sure we just used the node's symbolIdCode
     mock_oms_crud_tool.get_ontology_class.assert_not_called()
 
     assert code == "symbol_id_code"
-    
+
 def test_get_starting_symbol_id_code(
         mock_oms_crud_tool: OmsCrudTool,
         oms_node: NodeNode,
@@ -213,7 +213,7 @@ def test_get_starting_symbol_id_code(
      # Don't actually get the ontology class from API
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
 
-    # Test that we search the ontology for a default code 
+    # Test that we search the ontology for a default code
     mock_oms_crud_tool.get_ontology_class.side_effect = [
         OntologyClassOntologyClass.model_construct(
             iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
