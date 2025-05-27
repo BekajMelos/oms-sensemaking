@@ -186,8 +186,9 @@ class MilSymbolSensemaker(Sensemaker):
 
     def get_starting_symbol_id_code(self, oms_object: AttributeAttribute | NodeNode, oms_node: NodeNode) -> str:
         """
-        Get the initial symbol id code, whether from the node itself, or its parents
+        Get the initial symbol id code, with the priority order Attribute -> Node.symbolIdCode -> derivedFrom(classIri)
 
+        :param oms_object: Attribute or Node with symbold id code
         :param oms_node: Node with symbol id code to update
         :return: The starting symbol id code
         """
@@ -197,7 +198,7 @@ class MilSymbolSensemaker(Sensemaker):
         else:
             symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
-            LOGGER.debug(f"Node does not have symbolIdCode set. "
+            LOGGER.debug(f"Node and Attribute do not have a symbol to use for the symbol_id_code."
                         f"Getting default from omsb based on iri {oms_node.classIri}")
             symbol_id_code = self.get_default_symbol_id_code(oms_node.classIri)
 

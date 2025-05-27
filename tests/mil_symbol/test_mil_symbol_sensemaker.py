@@ -155,22 +155,25 @@ def test_correct_updates_made_when_none_specified(
     assert code_c.new_symbol_id_code == "SUPP------*****"
     assert code_b.new_symbol_id_code == "SOPP------*****"
 
-
-def test_get_starting_symbol_id_code(
+def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
         mock_oms_crud_tool: OmsCrudTool,
         oms_node: NodeNode,
         oms_object: AttributeAttribute,
         mil_symbol_rules: Dict):
 
-
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
-
-     # Don't actually get the ontology class from API
-    mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
 
     # Case where oms_object is an attribute and returns a valid mil symbol attributeIris
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "attributeValue"
+    
+def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
+        mock_oms_crud_tool: OmsCrudTool,
+        oms_node: NodeNode,
+        oms_object: AttributeAttribute,
+        mil_symbol_rules: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # Case where oms_object is an attribute that does not have a valid milsymbol attributeIri and node has symboldIdCode
     oms_object.attributeIri = "invalidIri"
@@ -178,16 +181,39 @@ def test_get_starting_symbol_id_code(
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "symbol_id_code"
 
-    # Case whwere oms_object is not an attribute but is an oms_node with a symbol_id_code
+def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
+        mock_oms_crud_tool: OmsCrudTool,
+        oms_node: NodeNode,
+        oms_object: AttributeAttribute,
+        mil_symbol_rules: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+    # Don't actually get the ontology class from API
+    mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
+
+    # Case where oms_object is not an attribute but is an oms_node with a symbol_id_code
+    oms_node.symbolIdCode = "symbol_id_code"
     oms_object = oms_node
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
-    assert code == "symbol_id_code"
-
+    
     # make sure we just used the node's symbolIdCode
     mock_oms_crud_tool.get_ontology_class.assert_not_called()
 
-    # Test that we search the ontology for a default code
-    # mock getting the ontology classes
+    assert code == "symbol_id_code"
+    
+def test_get_starting_symbol_id_code(
+        mock_oms_crud_tool: OmsCrudTool,
+        oms_node: NodeNode,
+        oms_object: AttributeAttribute,
+        mil_symbol_rules: Dict):
+
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+     # Don't actually get the ontology class from API
+    mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
+
+    # Test that we search the ontology for a default code 
     mock_oms_crud_tool.get_ontology_class.side_effect = [
         OntologyClassOntologyClass.model_construct(
             iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
@@ -211,6 +237,7 @@ def test_get_starting_symbol_id_code(
 
     # if code is not present, try to get a default code
     oms_node.symbolIdCode = None
+    oms_object.attributeIri = "fakeIri"
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
