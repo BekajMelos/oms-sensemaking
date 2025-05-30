@@ -13,6 +13,7 @@ AttributeCombinations and Criteria helper classes for resolution sensemaker
 - Fixed the Resolution sensemaker's inability to process multiple attributes used
 for identifying duplicates
 - Handling connection errors with RabbitMQ
+- Made Mil Symbol logic user uppercase values to make config lookups case insensitive
 
 ## [0.6.1] - 2025-05-21
 

@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MilSymbol2525D(MilSymbol):
+    """Class for MIL-STD-2525D format SIDCs"""
 
     UNKNOWN_DIMENSION_CODE = "00"
 
