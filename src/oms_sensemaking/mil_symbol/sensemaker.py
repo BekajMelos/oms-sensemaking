@@ -1,6 +1,5 @@
 """Military Symbol Sensemakers."""
 import logging
-import re
 import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -33,38 +32,12 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
-from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
+from oms_sensemaking.mil_symbol.mil_symbol_maker import MilSymbolMaker
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
 
 LOGGER = logging.getLogger(__name__)
-
-
-class MilSymbolMaker:
-
-    @staticmethod
-    def make(symbol_id_code: str, settings: Dict) -> MilSymbol | None:
-
-        symbol_id_code = symbol_id_code.upper()
-
-        trimmed_symbol_id_code = symbol_id_code.replace("-", "")
-        if len(trimmed_symbol_id_code) == 20 and re.match(r'^([\d]{20})$', trimmed_symbol_id_code):
-            # recieve 2525D
-            return MilSymbol2525D(trimmed_symbol_id_code, settings)
-        elif len(symbol_id_code) == 15: # 2525C and 2525B both have a code length of 15
-            # The difference between 2525B and 2525C is that B has a "O" affiliation code
-            # which means 'none specificied' and this is not present in 2525C or 2525D
-            if (symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX] ==
-                MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE):
-            # receive 2525B
-                return MilSymbol2525B(symbol_id_code, settings)
-            else:
-                # receive 2525C
-                return MilSymbol2525C(symbol_id_code, settings)
-
-        LOGGER.info(f"Unsupported SIDC for {symbol_id_code}")
-        return None
 
 
 @dataclass
