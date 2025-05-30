@@ -6,13 +6,13 @@ All notable changes to this project will be documented in this file.
 - Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
 
 ### Added
-- Added two helper methods to the Resolution sensemaker and created the 
-AttributeCombinations and Criteria helper classes for resolution sensemaker
+- Added two helper methods to the Resolution sensemaker and created the AttributeCombinations and Criteria helper classes for resolution sensemaker
+- RDF endpoint displays relationships to objects
+
 ### Changed
 
 ### Fixed
-- Fixed the Resolution sensemaker's inability to process multiple attributes used
-for identifying duplicates
+- Fixed the Resolution sensemaker's inability to process multiple attributes used for identifying duplicates
 - Handling connection errors with RabbitMQ
 - Made Mil Symbol logic user uppercase values to make config lookups case insensitive
 
