@@ -109,7 +109,7 @@ def test_process_data(
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="present"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
-    oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
+    oms_node.symbolIdCode = "spzp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
@@ -118,6 +118,7 @@ def test_process_data(
     assert code_d.new_symbol_id_code == "10-0-3-05-0-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SFPP------*****"
     assert code_b.new_symbol_id_code == "SFPP------*****"
+
 
 @mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
 def test_correct_updates_made_when_none_specified(
@@ -135,7 +136,7 @@ def test_correct_updates_made_when_none_specified(
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="present"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
-    oms_node.symbolIdCode = "SOPP------*****"
+    oms_node.symbolIdCode = "sopp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
