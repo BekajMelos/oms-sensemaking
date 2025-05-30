@@ -95,9 +95,11 @@ class MilSymbolSensemaker(Sensemaker):
         if self.is_attribute_to_ignore(oms_object):
             return []
         oms_node = self.get_node_from_input(oms_object)
+
         if oms_node is None:
             return []
-        symbol_id_code = self.get_starting_symbol_id_code(oms_node)
+
+        symbol_id_code = self.get_starting_symbol_id_code(oms_object, oms_node)
         if not symbol_id_code:
             symbol_id_code = SETTINGS.mil_symbol_settings.default_2525d_code
             LOGGER.info(f"No default code for {oms_node.classIri}. Starting from default {symbol_id_code}")
@@ -175,17 +177,22 @@ class MilSymbolSensemaker(Sensemaker):
 
         return results
 
-    def get_starting_symbol_id_code(self, oms_node: NodeNode) -> str:
+    def get_starting_symbol_id_code(self, oms_object: AttributeAttribute | NodeNode, oms_node: NodeNode) -> str:
         """
-        Get the initial symbol id code, whether from the node itself, or its parents
+        Get the initial symbol id code, with the priority order Attribute -> Node.symbolIdCode -> derivedFrom(classIri)
 
+        :param oms_object: Attribute or Node with symbold id code
         :param oms_node: Node with symbol id code to update
         :return: The starting symbol id code
         """
-        symbol_id_code = oms_node.symbolIdCode
+        if self.is_attribute(oms_object) and (
+        oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris):
+            symbol_id_code = oms_object.attributeValue
+        else:
+            symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
-            LOGGER.debug(f"Node does not have symbolIdCode set. "
-                         f"Getting default from omsb based on iri {oms_node.classIri}")
+            LOGGER.debug(f"Node and Attribute do not have a symbol to use for the symbol_id_code."
+                        f"Getting default from omsb based on iri {oms_node.classIri}")
             symbol_id_code = self.get_default_symbol_id_code(oms_node.classIri)
 
         return symbol_id_code
@@ -476,6 +483,6 @@ class MilSymbolSensemaker(Sensemaker):
         if self.is_attribute(oms_object) and (
             SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or
             self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
-                LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
-                return True
+            LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
+            return True
         return False

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+- Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
 
 ### Added
 - Added two helper methods to the Resolution sensemaker and created the 
