@@ -1,3 +1,4 @@
+"""Module for base mil symbol classes"""
 import uuid
 from abc import ABC, abstractmethod
 from queue import PriorityQueue
@@ -7,9 +8,10 @@ from oms_sensemaking.clients.instances import aac_client
 
 
 class MilSymbol(ABC):
+    """Base Class for Mil Symbols"""
 
     def __init__(self, code: str, settings: Dict) -> None:
-        self.code = code
+        self.code = code.upper()
         self.settings = settings
         self.acms: List[Dict] = []
 

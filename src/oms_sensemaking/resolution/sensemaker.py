@@ -1,9 +1,9 @@
 """Resolution Sensemakers."""
 
-import copy
 import logging
 from dataclasses import dataclass, field
 from itertools import chain
+from typing import Tuple
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -23,6 +23,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.resolution.attribute_combinations import AttributeCombinations
 
 LOGGER = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class ResolutionSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, duplicate_object_iris, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, duplicate_object_iris: dict[str, list[str]], oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -81,7 +82,7 @@ class ResolutionSensemaker(Sensemaker):
 
         results = []
 
-        criterion: list[AttributeAttribute] = self.meets_criteria(attribute)
+        criterion: list[list[AttributeAttribute]] = self.gather_criteria(attribute)
         if criterion:
             dups: list[NodeNode] = self.find_duplicates(criterion)
             dup_findings: list[DupFinding] = self.create_duplicate_findings(attribute, dups)
@@ -89,60 +90,18 @@ class ResolutionSensemaker(Sensemaker):
 
         return results
 
-    def meets_criteria(self, attribute: AttributeAttribute) -> list[AttributeAttribute]:
+    def gather_criteria(self, attribute: AttributeAttribute) -> list[list[AttributeAttribute]]:
         """
         Gather the criteria needed to check for duplicates in OMSB.
 
         :param attribute: Initial OMSB Attribute Object
-        :return: List of OMSB Attributes to look for
+        :return: List of possible lists of attributes to look for
 
         """
-        current_node_id = attribute.nodeId
-        # Attribute doesn't point to a node
-        if not current_node_id:
+        valid, node_iri = self.is_valid(attribute)
+        if not valid or node_iri is None:
             return []
-
-        current_iri = attribute.attributeIri
-        all_attribute_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
-        # Attribute not in relevant IRIs list
-        if current_iri not in all_attribute_iris:
-            return []
-
-        duplicate_object_attributes = [attribute]
-        class_iri = self.oms_crud_tool.get_node(current_node_id).classIri
-
-        already_ran = self.has_already_ran(current_node_id)
-        object_class_in_config = class_iri in self.duplicate_object_iris
-        if object_class_in_config:
-            duplicate_identifiers = self.duplicate_object_iris[class_iri]
-            attribute_in_duplicate_identifiers = attribute.attributeIri in duplicate_identifiers
-
-        if not object_class_in_config or not attribute_in_duplicate_identifiers or already_ran:
-            return []
-
-        # Get this nodes info and make sure we satisfy the requirements
-        if len(duplicate_identifiers) > 1:
-            other_iris: list[str] = copy.copy(duplicate_identifiers)
-            other_iris.remove(current_iri)
-            # duplicate_object_attributes.extend(
-            #     self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            # )
-
-            # temporary solution for if multiple attributes are added with the same 'key' but different values
-            other_attributes = self.oms_crud_tool.get_node_attribute_by_iri(attribute.nodeId, other_iris)
-            if len(other_attributes) > 1:
-                other_attributes = other_attributes[:1]
-            duplicate_object_attributes.extend(other_attributes)
-
-            # return empty list if attributes found do not match criteria amount of identifiers
-            # also return empty list if any of the attribute objects are not populated with an actual value
-            if ((len(duplicate_object_attributes) != len(duplicate_identifiers))
-                or (any(attribute.attributeValue == "" for attribute in duplicate_object_attributes))):
-                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching"
-                "or attribute values are not populated. Ignoring.")
-                return []
-
-        return duplicate_object_attributes
+        return AttributeCombinations(attribute, self.oms_crud_tool, self.duplicate_object_iris).gather(node_iri)
 
     def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: list[NodeNode]) -> list[DupFinding]:
         """
@@ -199,30 +158,76 @@ class ResolutionSensemaker(Sensemaker):
             return True
         return False
 
-    def find_duplicates(self, attributes: list[AttributeAttribute]) -> list[NodeNode]:
-        """
-        Deteremine if there are matching objects in OMSB
+    def current_class_iri(self, attribute: AttributeAttribute) -> str:
+        '''
+        A helper method that returns the current class IRI of the node associated with
+        the current attribute being examined
 
-        :param attributes: List of attributes to match nodes against in OMSB
+        :param attribute: The current attribute associated with a node.
+        :return: str value of the class IRI of the node
+        '''
+        node_id = attribute.nodeId
+        node = self.oms_crud_tool.get_node(node_id)
+        return node.classIri
+
+    def is_valid(self, current_attr: AttributeAttribute) -> Tuple[bool, str | None]:
+        '''
+        A helper method that checks if the current attribute and the node
+        it is associated with are valid objects that
+        can be used to search for duplicate nodes
+
+        :param current_attr: The current attribute which is associated with a node
+        :return: bool value of whether the attribute and its node are valid
+        '''
+        current_node_id = current_attr.nodeId
+        if not current_node_id:
+            return (False, None)
+
+        current_iri = current_attr.attributeIri
+        all_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
+        if current_iri not in all_iris:
+            return (False, None)
+
+        if current_attr.attributeValue == "":
+            return (False, None)
+
+        class_iri = self.current_class_iri(current_attr)
+        if class_iri not in self.duplicate_object_iris:
+            return (False, None)
+
+        if current_iri not in self.duplicate_object_iris[class_iri]:
+            return (False, None)
+
+        if self.has_already_ran(current_node_id):
+            return (False, None)
+
+        return (True, class_iri)
+
+    def find_duplicates(self, combinations: list[list[AttributeAttribute]]) -> list[NodeNode]:
+        """
+        Determine if there are matching objects in OMSB
+
+        :param combinations: A list of lists. The inner lists are various groupings and combinations
+        of attributes coming from a current node that may match to other nodes' set of attributes
         :return: List of duplicate nodes
         """
+        for group in combinations:
+            node_attribute_subqueries: list[NodeAttributeSubQuery] = [
+                NodeAttributeSubQuery(
+                    attributeIris=[attribute.attributeIri],
+                    attributeValue=StringQuery(equals=attribute.attributeValue, ignoreCase=True),
+                )
+                for attribute in group
+            ]
 
-        node_attribute_subqueries: list[NodeAttributeSubQuery] = [
-            NodeAttributeSubQuery(
-                attributeIris=[attribute.attributeIri],
-                attributeValue=StringQuery(equals=attribute.attributeValue, ignoreCase=True),
-            )
-            for attribute in attributes
-        ]
+            node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
+                and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
+                )
 
-        node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
-            and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
-            )
+            query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 
-        query: NodeQuery = NodeQuery(attributes=node_attribute_query)
+            nodes_response = self.oms_crud_tool.get_nodes(query)
 
-        nodes_response = self.oms_crud_tool.get_nodes(query)
-
-        if nodes_response and nodes_response.data:
-            return nodes_response.data
+            if nodes_response and nodes_response.data:
+                return nodes_response.data
         return []

@@ -1,6 +1,5 @@
 """Military Symbol Sensemakers."""
 import logging
-import re
 import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -33,6 +32,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
+from oms_sensemaking.mil_symbol.mil_symbol_maker import MilSymbolMaker
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
@@ -95,9 +95,11 @@ class MilSymbolSensemaker(Sensemaker):
         if self.is_attribute_to_ignore(oms_object):
             return []
         oms_node = self.get_node_from_input(oms_object)
+
         if oms_node is None:
             return []
-        symbol_id_code = self.get_starting_symbol_id_code(oms_node)
+
+        symbol_id_code = self.get_starting_symbol_id_code(oms_object, oms_node)
         if not symbol_id_code:
             symbol_id_code = SETTINGS.mil_symbol_settings.default_2525d_code
             LOGGER.info(f"No default code for {oms_node.classIri}. Starting from default {symbol_id_code}")
@@ -107,28 +109,21 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525c = None
         code_2525d = None
 
-        trimmed_symbol_id_code = symbol_id_code.replace("-", "")
-        if len(trimmed_symbol_id_code) == 20 and re.match(r'^([\d]{20})$', trimmed_symbol_id_code):
-        # recieve 2525D
-            code_2525d = MilSymbol2525D(trimmed_symbol_id_code, self.settings)
-            code_2525c = to_2525c(code_2525d,self.settings)
+        mil_symbol = MilSymbolMaker.make(symbol_id_code, self.settings)
+
+        if isinstance(mil_symbol, MilSymbol2525D):
+            code_2525d = mil_symbol
+            code_2525c = to_2525c(code_2525d, self.settings)
             code_2525b = to_2525b(code_2525c, self.settings)
-        elif len(symbol_id_code) == 15: # 2525C and 2525B both have a code length of 15
-            # The difference between 2525B and 2525C is that B has a "O" affiliation code
-            # which means 'none specificied' and this is not present in 2525C or 2525D
-            if (symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX] ==
-                MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE):
-            # receive 2525B
-                code_2525b = MilSymbol2525B(symbol_id_code, self.settings)
-                code_2525c = to_2525c(code_2525b, self.settings)
-                code_2525d = to_2525d(code_2525c, self.settings)
-            else:
-            # receive 2525C
-                code_2525c = MilSymbol2525C(symbol_id_code, self.settings)
-                code_2525b = to_2525b(code_2525c, self.settings)
-                code_2525d = to_2525d(code_2525c, self.settings)
+        elif isinstance(mil_symbol, MilSymbol2525C):
+            code_2525c = mil_symbol
+            code_2525b = to_2525b(code_2525c, self.settings)
+            code_2525d = to_2525d(code_2525c, self.settings)
+        elif isinstance(mil_symbol, MilSymbol2525B):
+            code_2525b = mil_symbol
+            code_2525c = to_2525c(code_2525b, self.settings)
+            code_2525d = to_2525d(code_2525c, self.settings)
         else:
-            LOGGER.info(f"Unsupported SDIC for {symbol_id_code}")
             return []
 
         # use this to compare codes before and after enrichment to determine if we need to publish
@@ -182,17 +177,22 @@ class MilSymbolSensemaker(Sensemaker):
 
         return results
 
-    def get_starting_symbol_id_code(self, oms_node: NodeNode) -> str:
+    def get_starting_symbol_id_code(self, oms_object: AttributeAttribute | NodeNode, oms_node: NodeNode) -> str:
         """
-        Get the initial symbol id code, whether from the node itself, or its parents
+        Get the initial symbol id code, with the priority order Attribute -> Node.symbolIdCode -> derivedFrom(classIri)
 
+        :param oms_object: Attribute or Node with symbold id code
         :param oms_node: Node with symbol id code to update
         :return: The starting symbol id code
         """
-        symbol_id_code = oms_node.symbolIdCode
+        if self.is_attribute(oms_object) and (
+        oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris):
+            symbol_id_code = oms_object.attributeValue
+        else:
+            symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
-            LOGGER.debug(f"Node does not have symbolIdCode set. "
-                         f"Getting default from omsb based on iri {oms_node.classIri}")
+            LOGGER.debug(f"Node and Attribute do not have a symbol to use for the symbol_id_code."
+                        f"Getting default from omsb based on iri {oms_node.classIri}")
             symbol_id_code = self.get_default_symbol_id_code(oms_node.classIri)
 
         return symbol_id_code
@@ -483,6 +483,6 @@ class MilSymbolSensemaker(Sensemaker):
         if self.is_attribute(oms_object) and (
             SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or
             self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
-                LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
-                return True
+            LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
+            return True
         return False
