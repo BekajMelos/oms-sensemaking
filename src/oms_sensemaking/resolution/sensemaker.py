@@ -19,7 +19,6 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 from oms_sdk.generated.generated_graphql_client.enums import Confidence
 
-from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
@@ -99,11 +98,10 @@ class ResolutionSensemaker(Sensemaker):
         :return: List of possible lists of attributes to look for
 
         """
-        is_valid = self.is_valid(attribute)
-        valid, node_iri = is_valid
+        valid, node_iri = self.is_valid(attribute)
         if not valid or node_iri is None:
             return []
-        return AttributeCombinations(attribute, oms_client, self.duplicate_object_iris).gather(node_iri)
+        return AttributeCombinations(attribute, self.oms_crud_tool, self.duplicate_object_iris).gather(node_iri)
 
     def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: list[NodeNode]) -> list[DupFinding]:
         """
