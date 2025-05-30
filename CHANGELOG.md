@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- RDF endpoint displays relationships to objects
 
 ### Changed
 
