@@ -12,6 +12,8 @@ AttributeCombinations and Criteria helper classes for resolution sensemaker
 ### Fixed
 - Fixed the Resolution sensemaker's inability to process multiple attributes used
 for identifying duplicates
+- Handling connection errors with RabbitMQ
+
 ## [0.6.1] - 2025-05-21
 
 ### Added
