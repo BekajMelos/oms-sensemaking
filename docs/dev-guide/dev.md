@@ -41,15 +41,15 @@ Ask a teammate for guidance.
 
 ### Step 3: Install Project Dependencies
 
-- Upgrade *pip*/*wheel*
+- Upgrade *pip* and *wheel*
 - Install *Development*, *Run Time*, and *Built Time* Dependencies
 - Integrate ruff with the project's SCM via [pre-commit] and Git's pre-commit hooks (configured in `.pre-commit-config.yaml`)
 
 These are handled by running the following make command:
 
-'''
+```
 make install
-'''
+```
 
 
 ### Step 4: Configure Local Environment Variables

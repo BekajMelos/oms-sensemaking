@@ -50,7 +50,7 @@ Microservice that provides analytics for OMS data.
 
    Ask a teammate for guidance
 
-4. Upgrade pip/wheel and Install Project Dependencies
+4. Upgrade pip and wheel | Install Project Dependencies
 
    ```
    $ make install
