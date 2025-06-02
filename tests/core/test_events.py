@@ -1,4 +1,5 @@
 """Module for testing event listeners"""
+
 import socket
 from unittest import mock
 

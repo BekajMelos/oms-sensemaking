@@ -1,4 +1,5 @@
 """OMS Sensemaking - Analytics for OMS."""
+
 from contextlib import suppress
 from importlib.metadata import PackageNotFoundError, version
 

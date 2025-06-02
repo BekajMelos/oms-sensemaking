@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 
 
@@ -24,8 +23,8 @@ class GeospatialSensemakerConfig(BaseModel):
         2700, description="Maximum between Objects in a Track for a Lag/Lead Event"
     )
     max_potential_duplicate_time_diff_seconds: int = Field(
-        30,
-        description="Max amount of time between colocated points to qualify a potential duplicate")
+        30, description="Max amount of time between colocated points to qualify a potential duplicate"
+    )
 
     # Similar Track Settings
     within_meters: float = Field(3000.0, description="Used to define the search space for potential similar tracks")

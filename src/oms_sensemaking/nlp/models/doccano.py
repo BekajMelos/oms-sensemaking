@@ -1,4 +1,5 @@
 """Classes to support working with Doccano."""
+
 from dataclasses import dataclass
 
 

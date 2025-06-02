@@ -1,4 +1,5 @@
 """Military Symbol Sensemakers."""
+
 import logging
 import uuid
 from dataclasses import dataclass, field
@@ -82,9 +83,8 @@ class MilSymbolSensemaker(Sensemaker):
         self.oms_crud_tool = oms_crud_tool
 
     def process_data(
-            self,
-            oms_object: AttributeAttribute | NodeNode,
-            config: dict | None = None) -> List[SymbolCodeUpdate]:
+        self, oms_object: AttributeAttribute | NodeNode, config: dict | None = None
+    ) -> List[SymbolCodeUpdate]:
         """
         Update a Node's symbol code based on its attributes and metadata
 
@@ -156,13 +156,13 @@ class MilSymbolSensemaker(Sensemaker):
         symbol_code_update_c = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525c.formatted_code,
-            acm=code_2525c.get_acm()
+            acm=code_2525c.get_acm(),
         )
 
         symbol_code_update_b = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525b.formatted_code,
-            acm=code_2525c.get_acm()
+            acm=code_2525c.get_acm(),
         )
 
         results: List[SymbolCodeUpdate] = [symbol_code_update_d, symbol_code_update_c, symbol_code_update_b]
@@ -186,13 +186,16 @@ class MilSymbolSensemaker(Sensemaker):
         :return: The starting symbol id code
         """
         if self.is_attribute(oms_object) and (
-        oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris):
+            oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris
+        ):
             symbol_id_code = oms_object.attributeValue
         else:
             symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
-            LOGGER.debug(f"Node and Attribute do not have a symbol to use for the symbol_id_code."
-                        f"Getting default from omsb based on iri {oms_node.classIri}")
+            LOGGER.debug(
+                f"Node and Attribute do not have a symbol to use for the symbol_id_code."
+                f"Getting default from omsb based on iri {oms_node.classIri}"
+            )
             symbol_id_code = self.get_default_symbol_id_code(oms_node.classIri)
 
         return symbol_id_code
@@ -228,9 +231,9 @@ class MilSymbolSensemaker(Sensemaker):
 
         context_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
             oms_node.id,
-            SETTINGS.mil_symbol_settings.is_reality_context_iris +
-            SETTINGS.mil_symbol_settings.is_exercise_context_iris +
-            SETTINGS.mil_symbol_settings.is_simulation_context_iris
+            SETTINGS.mil_symbol_settings.is_reality_context_iris
+            + SETTINGS.mil_symbol_settings.is_exercise_context_iris
+            + SETTINGS.mil_symbol_settings.is_simulation_context_iris,
         )
 
         if context_attrs:
@@ -248,9 +251,8 @@ class MilSymbolSensemaker(Sensemaker):
         """
 
         affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id,
-            SETTINGS.mil_symbol_settings.affiliation_iris
-            )
+            oms_node.id, SETTINGS.mil_symbol_settings.affiliation_iris
+        )
 
         if affiliation_attrs:
             return affiliation_attrs[0]
@@ -267,30 +269,29 @@ class MilSymbolSensemaker(Sensemaker):
                             hasMatch=NodeRelationshipSubQuery(
                                 objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
                                 relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.OUTGOING
+                                direction=RelationshipDirection.OUTGOING,
                             )
                         ),
                         NodeRelationshipQuery(
                             hasMatch=NodeRelationshipSubQuery(
                                 objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
                                 relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.INCOMING
+                                direction=RelationshipDirection.INCOMING,
                             )
-                        )
+                        ),
                     ]
                 )
             )
         )
 
-        LOGGER.debug('Affiliation code is still unknown. Checking ancestor related controlling nodes')
+        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
 
         if not parent_nodes.data:
             return None
 
         for node in parent_nodes.data:
             parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id,
-                SETTINGS.mil_symbol_settings.affiliation_iris
+                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
             )
 
             if parent_affiliation_attrs:
@@ -305,8 +306,7 @@ class MilSymbolSensemaker(Sensemaker):
         :return: The Node's status
         """
         status_attr: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id,
-            SETTINGS.mil_symbol_settings.status_iris
+            oms_node.id, SETTINGS.mil_symbol_settings.status_iris
         )
 
         if status_attr:
@@ -327,9 +327,9 @@ class MilSymbolSensemaker(Sensemaker):
         has_parent = True
         current_iri = oms_node.classIri
         while has_parent:
-
             ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(
-                iri=current_iri)
+                iri=current_iri
+            )
 
             if not ontology_class or not ontology_class.parentOntologyClasses:
                 break
@@ -341,11 +341,9 @@ class MilSymbolSensemaker(Sensemaker):
 
         return iris
 
-
-    def publish_attributes(self,
-                           oms_node: NodeNode,
-                           symbol_code_updates: List[SymbolCodeUpdate],
-                           source_id: uuid.UUID) -> None:
+    def publish_attributes(
+        self, oms_node: NodeNode, symbol_code_updates: List[SymbolCodeUpdate], source_id: uuid.UUID
+    ) -> None:
         """
         Create and return duplicate finding objects from matched nodes
 
@@ -361,24 +359,20 @@ class MilSymbolSensemaker(Sensemaker):
         attribute_query = AttributeQuery(
             nodeIds=[oms_node.id],
             attributeIris=[SETTINGS.mil_symbol_settings.symbol_attribute_iri],
-            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
         )
         attributes = self.oms_crud_tool.get_attributes(attribute_query)
         if attributes and attributes.data:
             try:
-                for (existing_icon, symbol_code_update) in zip(attributes.data, symbol_code_updates, strict=True):
+                for existing_icon, symbol_code_update in zip(attributes.data, symbol_code_updates, strict=True):
                     update_attribute_input = UpdateAttributeInput(
-                        id=existing_icon.id,
-                        attributeValue=symbol_code_update.new_symbol_id_code
+                        id=existing_icon.id, attributeValue=symbol_code_update.new_symbol_id_code
                     )
-                    self.oms_crud_tool.update_attribute(
-                        update_attribute_input
-                    )
+                    self.oms_crud_tool.update_attribute(update_attribute_input)
             except ValueError:
                 LOGGER.exception("Unable to update Icon Attributes.")
         else:
             for symbol_code_update in symbol_code_updates:
-
                 attribute: CreateAttributeInput = CreateAttributeInput(
                     tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
                     labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, self.version_string],
@@ -388,7 +382,7 @@ class MilSymbolSensemaker(Sensemaker):
                     confidence=Confidence.HIGH.value,
                     acm=symbol_code_update.get_acm(),
                     nodeId=oms_node.id,
-                    sourceId=source_id
+                    sourceId=source_id,
                 )
                 self.oms_crud_tool.create_attribute(attribute)
 
@@ -405,11 +399,7 @@ class MilSymbolSensemaker(Sensemaker):
         if node_labels is None:
             node_labels = []
         node_labels.append(SETTINGS.sm_enriched_label)
-        update_node_input = UpdateNodeInput(
-            id=oms_node.id,
-            symbolIdCode=code,
-            labels=node_labels
-        )
+        update_node_input = UpdateNodeInput(id=oms_node.id, symbolIdCode=code, labels=node_labels)
         self.oms_crud_tool.update_node(update_node_input)
 
     def get_node_from_input(self, oms_object: AttributeAttribute | NodeNode) -> Optional[NodeNode]:
@@ -449,11 +439,13 @@ class MilSymbolSensemaker(Sensemaker):
         :return: bool
         """
 
-        return isinstance(oms_object,
-                          AttributeAttribute |
-                          CreateAttributeCreateAttribute |
-                          RestoreAttributeRestoreAttribute |
-                          UpdateAttributeUpdateAttribute)
+        return isinstance(
+            oms_object,
+            AttributeAttribute
+            | CreateAttributeCreateAttribute
+            | RestoreAttributeRestoreAttribute
+            | UpdateAttributeUpdateAttribute,
+        )
 
     def has_mil_symbol_sensemaker_tags(self, tags: List[str]):
         """
@@ -481,8 +473,9 @@ class MilSymbolSensemaker(Sensemaker):
         """
 
         if self.is_attribute(oms_object) and (
-            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri or
-            self.has_mil_symbol_sensemaker_tags(oms_object.tags)):
+            SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri
+            or self.has_mil_symbol_sensemaker_tags(oms_object.tags)
+        ):
             LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
             return True
         return False

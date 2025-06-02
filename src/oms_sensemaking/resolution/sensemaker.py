@@ -159,26 +159,26 @@ class ResolutionSensemaker(Sensemaker):
         return False
 
     def current_class_iri(self, attribute: AttributeAttribute) -> str:
-        '''
+        """
         A helper method that returns the current class IRI of the node associated with
         the current attribute being examined
 
         :param attribute: The current attribute associated with a node.
         :return: str value of the class IRI of the node
-        '''
+        """
         node_id = attribute.nodeId
         node = self.oms_crud_tool.get_node(node_id)
         return node.classIri
 
     def is_valid(self, current_attr: AttributeAttribute) -> Tuple[bool, str | None]:
-        '''
+        """
         A helper method that checks if the current attribute and the node
         it is associated with are valid objects that
         can be used to search for duplicate nodes
 
         :param current_attr: The current attribute which is associated with a node
         :return: bool value of whether the attribute and its node are valid
-        '''
+        """
         current_node_id = current_attr.nodeId
         if not current_node_id:
             return (False, None)
@@ -222,7 +222,7 @@ class ResolutionSensemaker(Sensemaker):
 
             node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
                 and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
-                )
+            )
 
             query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 

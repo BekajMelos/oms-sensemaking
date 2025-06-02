@@ -98,12 +98,13 @@ class PotentialMatch:
             self.num_points = self.num_points + 1
             self.total_time_diff = self.total_time_diff + current_time_diff
             avg_time_diff = self.total_time_diff.total_seconds() / self.num_points
-            is_potential_duplicate = (timedelta(seconds=avg_time_diff) <=
-                                      timedelta(seconds=self.config["max_potential_duplicate_time_diff_seconds"]))
+            is_potential_duplicate = timedelta(seconds=avg_time_diff) <= timedelta(
+                seconds=self.config["max_potential_duplicate_time_diff_seconds"]
+            )
 
-            self.is_true_cotravel = (self.is_true_cotravel and
-                                     (current_time_diff <=
-                                      timedelta(seconds=self.config["min_lag_lead_duration_seconds"])))
+            self.is_true_cotravel = self.is_true_cotravel and (
+                current_time_diff <= timedelta(seconds=self.config["min_lag_lead_duration_seconds"])
+            )
 
             if is_potential_duplicate:
                 self.cotravel_type = CotravelType.potential_duplicate
@@ -119,10 +120,7 @@ class PotentialMatch:
     def check_valid_cotravel_duration(self) -> bool:
         """Check whether a PotentialMatch has met the duration requirements."""
         min_duration = timedelta(seconds=self.config["min_cotravel_duration_seconds"])
-        return (
-            self.last_time1 - self.start_time1 >= min_duration
-            and self.last_time2 - self.start_time2 >= min_duration
-        )
+        return self.last_time1 - self.start_time1 >= min_duration and self.last_time2 - self.start_time2 >= min_duration
 
 
 @dataclass
@@ -278,7 +276,6 @@ class CotravelSensemaker(Sensemaker):
         node = self.oms_crud_tool.get_node(id=data.node_id)
 
         for cotravel in cotravels:
-
             # Coerce potential duplicate into cotravel if it's not an NSO Node
             if cotravel.cotravel_type == CotravelType.potential_duplicate and not node.isNso:
                 # Potential Duplicate only valid on NSO nodes
@@ -334,7 +331,6 @@ class CotravelSensemaker(Sensemaker):
             )
 
             return list(tuple(row) for row in query.all())
-
 
     def determine_cotravels(self, track: Track, colocations: list[Colocation]) -> list[Cotravel]:
         """
@@ -402,7 +398,7 @@ class CotravelSensemaker(Sensemaker):
                         colocation.db_point.detection_time,
                         colocation.track1_id,
                         colocation.track2_id,
-                        self.config
+                        self.config,
                     )
             else:
                 # if no potential match already exists, create and start checking
@@ -416,7 +412,7 @@ class CotravelSensemaker(Sensemaker):
                     colocation.db_point.detection_time,
                     colocation.track1_id,
                     colocation.track2_id,
-                    self.config
+                    self.config,
                 )
 
         # check the last point for a valid cotravel
@@ -468,8 +464,12 @@ class CotravelSensemaker(Sensemaker):
         # Resolution Relationship
         create_relationship_input = CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
-                    SETTINGS.cotravel_sm_label, self.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.geospatial_sm_label,
+                SETTINGS.cotravel_sm_label,
+                self.version_string,
+            ],
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
@@ -490,8 +490,12 @@ class CotravelSensemaker(Sensemaker):
         name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
         tags = [SETTINGS.geo_sensemaker_event_tag]
-        labels=[SETTINGS.sm_inferenced_label, SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label, self.version_string]
+        labels = [
+            SETTINGS.sm_inferenced_label,
+            SETTINGS.geospatial_sm_label,
+            SETTINGS.cotravel_sm_label,
+            self.version_string,
+        ]
 
         create_node_input = CreateNodeInput(
             acm=cotravel.get_acm(),

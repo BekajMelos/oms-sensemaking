@@ -11,6 +11,7 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+
 class RDFClient:
     def get_rdf_from_id(self, obj_id: str, format: RDFFormat, oms_crud_tool: OmsCrudTool) -> Optional[str]:
         """
@@ -79,7 +80,7 @@ class RDFClient:
 
         def get_predicate(key):
             if key.startswith("acm_"):
-                return acm[key[len("acm_"):]]
+                return acm[key[len("acm_") :]]
             return URIRef(key)
 
         def add_triples(subj, obj, prefix=""):
@@ -87,11 +88,11 @@ class RDFClient:
                 for k, v in obj.items():
                     add_triples(subj, v, prefix=prefix + k + "_")
             elif isinstance(obj, list):
-                predicate = get_predicate(prefix.rstrip('_'))
+                predicate = get_predicate(prefix.rstrip("_"))
                 for item in obj:
                     g.add((subj, predicate, Literal(item)))
             elif obj is not None:
-                predicate = get_predicate(prefix.rstrip('_'))
+                predicate = get_predicate(prefix.rstrip("_"))
                 g.add((subj, predicate, Literal(obj)))
 
         for key, value in node_data_obj.items():
@@ -100,7 +101,7 @@ class RDFClient:
 
         # present relationships of node
         rel_dict = json.loads(relationships_obj)
-        if "data" in rel_dict and len(rel_dict["data"]) > 0: # relationships could not exist meaning "data" is empty
+        if "data" in rel_dict and len(rel_dict["data"]) > 0:  # relationships could not exist meaning "data" is empty
             for rel in rel_dict["data"]:
                 rel_uri = URIRef(f"https://oms.dodiis.ic.gov/ontology/relationship/{rel['id']}")
                 g.add((rel_uri, RDF.type, oms.relationship))

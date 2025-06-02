@@ -1,4 +1,5 @@
 """MilSymbol Sensemaker Unit Tests"""
+
 from oms_sensemaking.mil_symbol.converters import MilSymbol2525B, to_2525b, to_2525c, to_2525d
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D

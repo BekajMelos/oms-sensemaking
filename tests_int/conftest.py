@@ -34,7 +34,7 @@ from oms_sensemaking.clients.instances import SessionLocal
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
 alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "migrations")))
-escaped_uri = SETTINGS.db_uri.replace('%','%%')
+escaped_uri = SETTINGS.db_uri.replace("%", "%%")
 alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 
 # NLP Configuration
@@ -114,12 +114,14 @@ def mil_symbol_rules() -> dict:
         rules = json.load(fd)
     return rules
 
+
 @pytest.fixture
 def aircraft_geo_config() -> dict:
     with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
         config = json.load(fd)
 
     geo_config = GeospatialSensemakerConfig(
-        **config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {}))
+        **config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
+    )
 
     return geo_config.model_dump()

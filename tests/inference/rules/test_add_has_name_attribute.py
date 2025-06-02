@@ -24,8 +24,12 @@ def name_attr(mocker: MockerFixture):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "junk won't match"
     attr.acm = DEFAULT_ACM
-    attr.labels = [SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                   SETTINGS.add_has_name_sm_label, AddHasNameAttribute.version_string]
+    attr.labels = [
+        SETTINGS.sm_inferenced_label,
+        SETTINGS.inference_sm_label,
+        SETTINGS.add_has_name_sm_label,
+        AddHasNameAttribute.version_string,
+    ]
     attr.attributeIri = SETTINGS.inference_add_has_name_attribute_iri
     attr.attributeName = SETTINGS.inference_add_has_name_attribute_iri.split("/")[-1]
     attr.attributeValue = "some attr name"
@@ -36,6 +40,7 @@ def name_attr(mocker: MockerFixture):
 
     return attr
 
+
 @pytest.fixture
 def invalid_attr(mocker: MockerFixture):
     """
@@ -44,8 +49,12 @@ def invalid_attr(mocker: MockerFixture):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "junk won't match"
     attr.acm = DEFAULT_ACM
-    attr.labels = [SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                   SETTINGS.add_has_name_sm_label, AddHasNameAttribute.version_string]
+    attr.labels = [
+        SETTINGS.sm_inferenced_label,
+        SETTINGS.inference_sm_label,
+        SETTINGS.add_has_name_sm_label,
+        AddHasNameAttribute.version_string,
+    ]
     attr.attributeIri = SETTINGS.inference_add_has_name_attribute_iri
     attr.attributeName = SETTINGS.inference_add_has_name_attribute_iri.split("/")[-1]
     attr.attributeValue = "some attr name"
@@ -62,10 +71,12 @@ def test_evaluate_none_input():
     rule = AddHasNameAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes"
 
+
 def test_evaluate_attribute_no_node(invalid_attr):
     """Test to verify we only run the rule against attributes pointing to nodes"""
     rule = AddHasNameAttribute("some name")
     assert not rule.evaluate(RuleContext()), "should only run for attributes pointing to nodes"
+
 
 def test_evaluate_attribute_input(name_attr):
     """Test to verify valid inputs are recognized as such"""
@@ -98,8 +109,12 @@ def test_has_action_already_ran(mocker: MockerFixture, name_attr):
             sourceId=name_attr.sourceId,
             nodeIds=[name_attr.nodeId],
             tags=SETTINGS.inference_tags,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.add_has_name_sm_label, rule.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.add_has_name_sm_label,
+                rule.version_string,
+            ],
         )
     )
 
@@ -126,8 +141,12 @@ def test_action_creates_attribute(mocker: MockerFixture, name_attr):
             nodeId=name_attr.nodeId,
             acm=name_attr.acm,
             tags=SETTINGS.inference_tags,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.add_has_name_sm_label, rule.version_string]
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.add_has_name_sm_label,
+                rule.version_string,
+            ],
         )
     )
     expected_findings = [AddHasNameFinding(name_attr.acm, create_attr_response.id)]

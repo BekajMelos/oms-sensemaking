@@ -137,7 +137,7 @@ class Incursion(BaseRule):
             startTime=inc_attr.start_time.isoformat(),
             endTime=inc_attr.end_time.isoformat(),
             addObservationIds=[observation.id],
-            labels=activity_labels
+            labels=activity_labels,
         )
         oms_client.update_activity(updated_activity_input)
 
@@ -150,7 +150,7 @@ class Incursion(BaseRule):
             id=existing_incursion_attribute.id,
             valueStart=inc_attr.start_time.isoformat(),
             valueEnd=inc_attr.end_time.isoformat(),
-            labels=attribute_labels
+            labels=attribute_labels,
         )
         oms_client.update_attribute(updated_attribute_input)
 
@@ -169,8 +169,12 @@ class Incursion(BaseRule):
             nodeId=incurring_object.id,
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.incursion_sm_label, self.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                self.version_string,
+            ],
             geometry=geo_of_interest,
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
@@ -181,8 +185,12 @@ class Incursion(BaseRule):
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.incursion_sm_label, self.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                self.version_string,
+            ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
             description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
