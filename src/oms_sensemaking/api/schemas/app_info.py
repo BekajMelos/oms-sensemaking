@@ -1,4 +1,5 @@
 """Schemas representing metadata about the application."""
+
 from pydantic import BaseModel, Field
 
 

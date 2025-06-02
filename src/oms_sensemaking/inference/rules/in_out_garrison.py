@@ -1,4 +1,3 @@
-
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -55,9 +54,7 @@ class InOrOutOfGarrison(BaseRule):
         # Find garrison node id through garrison relationship
         garrison_relationship_query = RelationshipQuery(
             objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(
-                startNodeIds=[obs.nodeId]
-            )
+            nodes=RelationshipNodeQuery(startNodeIds=[obs.nodeId]),
         )
         garrison_relationship_res = oms_client.get_relationships(garrison_relationship_query)
         if len(garrison_relationship_res.data):
@@ -66,8 +63,7 @@ class InOrOutOfGarrison(BaseRule):
 
             # Find garrison coordinates through location attribute
             garrison_attribute_query = AttributeQuery(
-                nodeIds=UuidQueryByList(in_=[garrison_object_id]),
-                attributeIris=[SETTINGS.inference_geo_attribute_iri]
+                nodeIds=UuidQueryByList(in_=[garrison_object_id]), attributeIris=[SETTINGS.inference_geo_attribute_iri]
             )
             garrison_attribute_res = oms_client.get_attributes(garrison_attribute_query)
             if len(garrison_attribute_res.data):
@@ -83,10 +79,7 @@ class InOrOutOfGarrison(BaseRule):
                 self._create_or_update_garrison_activity(obs, node_object, in_garrison)
 
     def _create_or_update_garrison_activity(
-        self,
-        obs: ObservationObservation,
-        node_object: NodeNode,
-        in_garrison: bool
+        self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -98,7 +91,7 @@ class InOrOutOfGarrison(BaseRule):
         activity_query = ActivityQuery(
             name=StringQuery(equals=activity_name),
             state=StringQuery(equals=activity_state),
-            nodeIds=UuidQueryByList(in_=[obs.nodeId])
+            nodeIds=UuidQueryByList(in_=[obs.nodeId]),
         )
         activity_response = oms_client.get_activities(activity_query)
         existing_activities = activity_response.data
@@ -111,8 +104,9 @@ class InOrOutOfGarrison(BaseRule):
             # Update existing activity if times overlap or if node_object stayed in/out of
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
-            if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(node_object,
-                                                                                                            obs):
+            if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(
+                node_object, obs
+            ):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
                 self._update_existing_activity(obs, existing_activity, enhanced_activity)
@@ -127,7 +121,7 @@ class InOrOutOfGarrison(BaseRule):
         self,
         observation: ObservationObservation,
         existing_activity: ActivitiesActivitiesData,
-        enhanced_activity: GenericNodeTimeframe
+        enhanced_activity: GenericNodeTimeframe,
     ):
         """
         Update an existing activity with updated start/end times
@@ -139,15 +133,11 @@ class InOrOutOfGarrison(BaseRule):
             startTime=enhanced_activity.start_time.isoformat(),
             endTime=enhanced_activity.end_time.isoformat(),
             addObservationIds=[observation.id],
-            nodeId=observation.nodeId
+            nodeId=observation.nodeId,
         )
         oms_client.update_activity(updated_activity_input)
 
-    def _handle_new_activity(
-        self,
-        observation: ObservationObservation,
-        activity_name: str,
-        activity_state: str):
+    def _handle_new_activity(self, observation: ObservationObservation, activity_name: str, activity_state: str):
         """
         Create new activity pointing to observation
         """
@@ -155,8 +145,12 @@ class InOrOutOfGarrison(BaseRule):
         # Create in/out of garrison activity pointing to observation
         garrison_activity = CreateActivityInput(
             acm=observation.acm,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.garrison_sm_label, self.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.garrison_sm_label,
+                self.version_string,
+            ],
             classIri=SETTINGS.inference_garrison_class_iri,
             name=activity_name,
             state=activity_state,
@@ -179,5 +173,8 @@ class InOrOutOfGarrison(BaseRule):
         activity_query = ActivityQuery(observationIds=[obs.id])
         activities = oms_client.get_activities(activity_query).data
 
-        return any(act.name == SETTINGS.inference_in_garrison_activity_name
-                    or act.name == SETTINGS.inference_out_of_garrison_activity_name for act in activities)
+        return any(
+            act.name == SETTINGS.inference_in_garrison_activity_name
+            or act.name == SETTINGS.inference_out_of_garrison_activity_name
+            for act in activities
+        )

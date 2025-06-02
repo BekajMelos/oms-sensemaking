@@ -38,11 +38,13 @@ class MilSymbol2525BandC(MilSymbol):
         "Return the formatted code"
         return self.code
 
-    def enrich(self,
-               affiliation_attr: Optional[AttributeAttribute],
-               oms_node: NodeNode,
-               ancestor_iris: List[str],
-               status_attr: Optional[AttributeAttribute]) -> None:
+    def enrich(
+        self,
+        affiliation_attr: Optional[AttributeAttribute],
+        oms_node: NodeNode,
+        ancestor_iris: List[str],
+        status_attr: Optional[AttributeAttribute],
+    ) -> None:
         """Enrich the code given node attribute data
 
         :param affiliation_attr: Optional Attribute for the affiliation
@@ -70,7 +72,7 @@ class MilSymbol2525BandC(MilSymbol):
                     self.update_code(self.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
-                    LOGGER.debug(f'Updated std identity: {code} b/c {node_standard_identity}')
+                    LOGGER.debug(f"Updated std identity: {code} b/c {node_standard_identity}")
                     break
 
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
@@ -94,7 +96,7 @@ class MilSymbol2525BandC(MilSymbol):
                 if current_iri in dimension_iris:
                     self.update_code(self.MIL_SYM_2525_B_C_DIMENSION_IDX, code)
                     self.acms.append(oms_node.acm)
-                    LOGGER.debug(f'Updated dimension: {code} b/c {current_iri}')
+                    LOGGER.debug(f"Updated dimension: {code} b/c {current_iri}")
                     return True
             return False
 
@@ -104,7 +106,7 @@ class MilSymbol2525BandC(MilSymbol):
         dimension_code = self.code[self.MIL_SYM_2525_B_C_DIMENSION_IDX]
         code_is_unknown = dimension_code == self.UNKNOWN_DIMENSION_CODE
         if code_is_unknown:
-            LOGGER.debug(f'Dimension code is still unknown. Checking ancestor iris: {ancestor_iris}')
+            LOGGER.debug(f"Dimension code is still unknown. Checking ancestor iris: {ancestor_iris}")
             for iri in ancestor_iris:
                 if update_dimension(iri):
                     return
@@ -123,5 +125,5 @@ class MilSymbol2525BandC(MilSymbol):
                     self.update_code(self.MIL_SYM_2525_B_C_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
-                    LOGGER.debug(f'Updated status: {code} b/c {status}')
+                    LOGGER.debug(f"Updated status: {code} b/c {status}")
                     break

@@ -1,4 +1,5 @@
 """Utilities for working with processed results."""
+
 from dataclasses import dataclass
 
 from collections_extended import RangeMap

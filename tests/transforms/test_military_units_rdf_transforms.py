@@ -7,14 +7,13 @@ from oms_sensemaking.transforms.json2rdf import JSON2RDF
 
 
 def test_mil_unit_transform():
-
-    with open('./tests/transforms/transform-test-config.yml', 'r') as config_data:
+    with open("./tests/transforms/transform-test-config.yml", "r") as config_data:
         configs = yaml.safe_load(config_data.read())
 
-    with open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", 'r') as test_obj_fin:
+    with open(f"{configs.get('test_input_path')}{configs.get('test_input_files')[0]}", "r") as test_obj_fin:
         test_obj = json.loads(test_obj_fin.read())
 
-    assert (len(test_obj) > 0)
+    assert len(test_obj) > 0
 
     # instantiate an empty rdflib Graph
     aligned_graph = Graph()
@@ -35,9 +34,10 @@ def test_mil_unit_transform():
 
     # create the transformer executable
     mil_unit_transformer = JSON2RDF(
-        construct=configs.get('construct_query_path')
-        , source_model=configs.get('source_model_path')
-        , ns_uri=configs.get('namespace_uri'))
+        construct=configs.get("construct_query_path"),
+        source_model=configs.get("source_model_path"),
+        ns_uri=configs.get("namespace_uri"),
+    )
 
     # pass the json object to the transformer executable, which returns
     # (1) the triple generator
@@ -46,12 +46,12 @@ def test_mil_unit_transform():
 
     for stmt in aligned_triples:
         aligned_graph.add(stmt)
-    assert (len(aligned_graph) > 0)
+    assert len(aligned_graph) > 0
 
     # TODO: SPARQL validations here
 
     # drop a copy of the RDF graph in test output
-    output_path = configs.get('test_output_path')
-    output_file = configs.get('test_input_files')[0].replace('.json', '.ttl')
-    with open(f"{output_path}{output_file}", 'w') as ttl_output:
-        ttl_output.write(aligned_graph.serialize(format='ttl'))
+    output_path = configs.get("test_output_path")
+    output_file = configs.get("test_input_files")[0].replace(".json", ".ttl")
+    with open(f"{output_path}{output_file}", "w") as ttl_output:
+        ttl_output.write(aligned_graph.serialize(format="ttl"))

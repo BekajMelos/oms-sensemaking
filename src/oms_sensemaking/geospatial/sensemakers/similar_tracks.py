@@ -85,9 +85,7 @@ class SimilarTracksSensemaker(Sensemaker):
         """Create a new instance of SimilarTracksSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
-        self.config = {
-            "n_tracks": SETTINGS.n_tracks
-        }
+        self.config = {"n_tracks": SETTINGS.n_tracks}
 
     def process_data(self, data: Track, config: dict) -> TopSimilar:
         """

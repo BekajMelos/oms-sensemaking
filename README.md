@@ -40,7 +40,6 @@ Microservice that provides analytics for OMS data.
    ```
    $ pyenv exec python -m venv --prompt sensemaking .venv  # create the virtual environment
    $ source .venv/bin/activate                  # activate the virtual environment
-   $ pip install --upgrade pip wheel            # update the core packaging tools
    ```
 
 > ***TIP***: After activating the virtual environment, run `which python3` to verify it's looking
@@ -51,10 +50,10 @@ Microservice that provides analytics for OMS data.
 
    Ask a teammate for guidance
 
-4. Install Project Dependencies
+4. Upgrade pip and wheel | Install Project Dependencies
 
    ```
-   $ pip install -e ".[dev,docs,test,build]"
+   $ make install
    ```
 
 5. Decrypt Certs

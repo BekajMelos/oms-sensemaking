@@ -10,8 +10,9 @@ router: APIRouter = APIRouter()
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
-@router.get('/{obj_id:path}')
-@router.get('/{obj_id:path}.{format}')
+
+@router.get("/{obj_id:path}")
+@router.get("/{obj_id:path}.{format}")
 def rdf_resolver(obj_id: str, format: RDFFormat = RDFFormat.turtle) -> Response:
     """
     Resolve an object ID into its RDF representation.

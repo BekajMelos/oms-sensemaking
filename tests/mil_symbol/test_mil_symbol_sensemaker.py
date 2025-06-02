@@ -1,4 +1,5 @@
 """MilSymbol Sensemaker Unit Tests"""
+
 from typing import Dict, List
 from unittest import mock
 from uuid import uuid4
@@ -22,25 +23,26 @@ from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCod
 
 @pytest.fixture
 def mock_oms_crud_tool():
-
     oms_crud_tool = OmsCrudTool()
     oms_crud_tool.oms_client = mock.MagicMock()
     return oms_crud_tool
+
 
 @pytest.fixture
 def oms_node() -> NodeNode:
     node = NodeNode.model_construct(
         id=uuid4(),
-        classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
         name="test",
         sourceId=uuid4(),
         acm=DEFAULT_ACM,
         symbolIdCode=None,
         tier=ObjectTier.PRIMARY,
-        labels=[]
+        labels=[],
     )
 
     return node
+
 
 @pytest.fixture
 def oms_object() -> AttributeAttribute:
@@ -49,29 +51,23 @@ def oms_object() -> AttributeAttribute:
         attributeIri="http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
         attributeValue="attributeValue",
         sourceId=uuid4(),
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
     )
     return attribute_val
 
-def create_attribute(attribute_iri = None, attribute_value = None, acm=DEFAULT_ACM) -> AttributeAttribute:
+
+def create_attribute(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) -> AttributeAttribute:
     attr = AttributeAttribute.model_construct(
-        id=uuid4(),
-        attributeIri=attribute_iri,
-        attributeValue=attribute_value,
-        sourceId=uuid4(),
-        acm=acm
+        id=uuid4(), attributeIri=attribute_iri, attributeValue=attribute_value, sourceId=uuid4(), acm=acm
     )
 
     return attr
 
 
-@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_process_data(
-    mock_get_acm: AacClient,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict):
-
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     ### Mocks
@@ -79,12 +75,16 @@ def test_process_data(
     mock_get_acm.return_value = DEFAULT_ACM
 
     # case 1
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
-        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
@@ -96,12 +96,16 @@ def test_process_data(
     assert code_b.new_symbol_id_code == "SHSD------*****"
 
     # case 2
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", attribute_value="true"
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="suspect"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="destroyed"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
-        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
 
@@ -113,12 +117,16 @@ def test_process_data(
     assert code_b.new_symbol_id_code == "SSAX------*****"
 
     # case 3
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="friendly"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="present"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
-        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
     oms_node.symbolIdCode = "spzp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
@@ -130,22 +138,23 @@ def test_process_data(
     assert code_b.new_symbol_id_code == "SFPP------*****"
 
 
-@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_correct_updates_made_when_none_specified(
-    mock_get_acm: AacClient,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict):
-
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     mock_get_acm.return_value = DEFAULT_ACM
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="none specified"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="present"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
-        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
     oms_node.symbolIdCode = "sopp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
@@ -156,24 +165,20 @@ def test_correct_updates_made_when_none_specified(
     assert code_c.new_symbol_id_code == "SUPP------*****"
     assert code_b.new_symbol_id_code == "SOPP------*****"
 
-def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
-        mock_oms_crud_tool: OmsCrudTool,
-        oms_node: NodeNode,
-        oms_object: AttributeAttribute,
-        mil_symbol_rules: Dict):
 
+def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # Case where oms_object is an attribute and returns a valid mil symbol attributeIris
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "attributeValue"
 
-def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
-        mock_oms_crud_tool: OmsCrudTool,
-        oms_node: NodeNode,
-        oms_object: AttributeAttribute,
-        mil_symbol_rules: Dict):
 
+def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # Case where oms_object is an attribute that does not have a valid milsymbol attributeIri and node has symboldIdCode
@@ -182,12 +187,10 @@ def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "symbol_id_code"
 
-def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
-        mock_oms_crud_tool: OmsCrudTool,
-        oms_node: NodeNode,
-        oms_object: AttributeAttribute,
-        mil_symbol_rules: Dict):
 
+def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # Don't actually get the ontology class from API
@@ -203,15 +206,13 @@ def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
 
     assert code == "symbol_id_code"
 
-def test_get_starting_symbol_id_code(
-        mock_oms_crud_tool: OmsCrudTool,
-        oms_node: NodeNode,
-        oms_object: AttributeAttribute,
-        mil_symbol_rules: Dict):
 
+def test_get_starting_symbol_id_code(
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
-     # Don't actually get the ontology class from API
+    # Don't actually get the ontology class from API
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
 
     # Test that we search the ontology for a default code
@@ -221,19 +222,20 @@ def test_get_starting_symbol_id_code(
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(iri="http://omsb/test/SmallTouringHelicopter")
-            ]),
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/SmallTouringHelicopter",
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(iri="http://omsb/test/TouringHelicopter")
-            ]),
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/TouringHelicopter",
             defaultSymbolIdCode="10-0-0-01-0-0-00-000000-00-00",
-            parentOntologyClasses=[
-                OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")
-            ])
+            parentOntologyClasses=[OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")],
+        ),
     ]
 
     # if code is not present, try to get a default code
@@ -242,9 +244,8 @@ def test_get_starting_symbol_id_code(
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
-def test_get_default_symbol_id_code_regular_traversal(
-    mock_oms_crud_tool: OmsCrudTool,
-    mil_symbol_rules: Dict):
+
+def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool: OmsCrudTool, mil_symbol_rules: Dict):
     """Test traversing ontology for parent classes with codes"""
 
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
@@ -257,16 +258,16 @@ def test_get_default_symbol_id_code_regular_traversal(
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(iri="http://omsb/test/TouringHelicopter")
-            ]),
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/TouringHelicopter",
             defaultSymbolIdCode=None,
-            parentOntologyClasses=[
-                OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")
-            ]),
+            parentOntologyClasses=[OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")],
+        ),
         OntologyClassOntologyClass.model_construct(
-            iri="http://omsb/test/Helicopter",
-            defaultSymbolIdCode="10-0-0-01-0-0-00-000000-00-00")
+            iri="http://omsb/test/Helicopter", defaultSymbolIdCode="10-0-0-01-0-0-00-000000-00-00"
+        ),
     ]
 
     initial_iri = "http://omsb/test/SmallTouringHelicopter"
@@ -275,9 +276,8 @@ def test_get_default_symbol_id_code_regular_traversal(
 
 
 def test_get_default_symbol_id_code_no_parents(
-        mock_oms_crud_tool: OmsCrudTool,
-        oms_node: NodeNode,
-        mil_symbol_rules: Dict):
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+):
     """test get_default_symbol_id_code when there's no code and no parents to traverse"""
 
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
@@ -286,9 +286,8 @@ def test_get_default_symbol_id_code_no_parents(
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
     mock_oms_crud_tool.get_ontology_class.side_effect = [
         OntologyClassOntologyClass.model_construct(
-            iri="http://omsb/test/SmallTouringHelicopter",
-            parentOntologyClasses=[],
-            defaultSymbolIdCode=None)
+            iri="http://omsb/test/SmallTouringHelicopter", parentOntologyClasses=[], defaultSymbolIdCode=None
+        )
     ]
 
     initial_iri = "http://omsb/test/SmallTouringHelicopter"
@@ -302,14 +301,14 @@ def test_get_context(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_sy
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_context(oms_node)
-    mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(
-            attributeIris=
-                SETTINGS.mil_symbol_settings.is_reality_context_iris +
-                SETTINGS.mil_symbol_settings.is_exercise_context_iris +
-                SETTINGS.mil_symbol_settings.is_simulation_context_iris
-            ,
-            nodeIds=[oms_node.id]
-        ))
+    mock_oms_crud_tool.oms_client.attributes.assert_called_with(
+        query=AttributeQuery(
+            attributeIris=SETTINGS.mil_symbol_settings.is_reality_context_iris
+            + SETTINGS.mil_symbol_settings.is_exercise_context_iris
+            + SETTINGS.mil_symbol_settings.is_simulation_context_iris,
+            nodeIds=[oms_node.id],
+        )
+    )
 
 
 def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
@@ -318,21 +317,18 @@ def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mi
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_affiliation(oms_node)
-    mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(
-            attributeIris=SETTINGS.mil_symbol_settings.affiliation_iris,
-            nodeIds=[oms_node.id]
-        ))
+    mock_oms_crud_tool.oms_client.attributes.assert_called_with(
+        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.affiliation_iris, nodeIds=[oms_node.id])
+    )
 
 
 def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
-
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     sensemaker.get_status(oms_node)
-    mock_oms_crud_tool.oms_client.attributes.assert_called_with(query=AttributeQuery(
-            attributeIris=SETTINGS.mil_symbol_settings.status_iris,
-            nodeIds=[oms_node.id]
-        ))
+    mock_oms_crud_tool.oms_client.attributes.assert_called_with(
+        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.status_iris, nodeIds=[oms_node.id])
+    )
 
 
 def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
@@ -350,40 +346,41 @@ def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: Node
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(iri="http://omsb/test/TouringHelicopter")
-            ]),
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/TouringHelicopter",
             defaultSymbolIdCode=None,
-            parentOntologyClasses=[
-                OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")
-            ]),
+            parentOntologyClasses=[OntologyClassOntologyClass.model_construct(iri="http://omsb/test/Helicopter")],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/Helicopter",
             defaultSymbolIdCode="10-0-0-01-0-0-00-000000-00-00",
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(
-                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft")
-            ]),
+                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+                )
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
             defaultSymbolIdCode=None,
-            parentOntologyClasses=[]),
+            parentOntologyClasses=[],
+        ),
     ]
 
     iris = sensemaker.get_node_ancestors_iris(oms_node)
     assert iris == [
         "http://omsb/test/TouringHelicopter",
         "http://omsb/test/Helicopter",
-        "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+        "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
     ]
 
 
-@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_dimension_enrichment(
-    mock_get_acm: mock.MagicMock,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict):
+    mock_get_acm: mock.MagicMock, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+):
     """Test that the dimension is updated based on the parent IRIs"""
 
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
@@ -401,37 +398,43 @@ def test_dimension_enrichment(
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(iri="http://omsb/test/TouringHelicopter")
-            ]),
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://omsb/test/TouringHelicopter",
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(
-                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft")
-            ]),
+                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+                )
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
                 OntologyClassOntologyClass.model_construct(
-                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle")
-            ]),
+                    iri="http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"
+                )
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
             iri="http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle",
             defaultSymbolIdCode=None,
             parentOntologyClasses=[
-                OntologyClassOntologyClass.model_construct(
-                    iri="http://purl.obolibrary.org/obo/BFO_0000040")
-            ]),
+                OntologyClassOntologyClass.model_construct(iri="http://purl.obolibrary.org/obo/BFO_0000040")
+            ],
+        ),
         OntologyClassOntologyClass.model_construct(
-            iri="http://purl.obolibrary.org/obo/BFO_0000040",
-            defaultSymbolIdCode=None,
-            parentOntologyClasses=[]
-            )
+            iri="http://purl.obolibrary.org/obo/BFO_0000040", defaultSymbolIdCode=None, parentOntologyClasses=[]
+        ),
     ]
 
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
@@ -439,7 +442,9 @@ def test_dimension_enrichment(
             "http://omsb/test/TouringHelicopter",
             "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
             "http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle",
-            "http://purl.obolibrary.org/obo/BFO_0000040"])
+            "http://purl.obolibrary.org/obo/BFO_0000040",
+        ]
+    )
     oms_node.symbolIdCode = None
     oms_node.classIri = "http://omsb/test/UnknownHelicopter"
 
@@ -453,24 +458,27 @@ def test_dimension_enrichment(
     assert code_b.new_symbol_id_code == "SHAD------*****"
 
 
-@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.aac_client')
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
 def test_acms(
     mock_aac_client: mock.MagicMock,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
     mil_symbol_rules: Dict,
-    ts_acm: Dict):
-
+    ts_acm: Dict,
+):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
     # case 1
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true",
-        acm=ts_acm))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true", acm=ts_acm
+        )
+    )
     sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
-        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"])
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
@@ -480,17 +488,20 @@ def test_acms(
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
     assert code_b.new_symbol_id_code == "SHSD------*****"
-    mock_aac_client.get_acm_rollup.assert_any_call([
-        {"ACM": ts_acm}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM}, {"ACM": DEFAULT_ACM},
-    ])
+    mock_aac_client.get_acm_rollup.assert_any_call(
+        [
+            {"ACM": ts_acm},
+            {"ACM": DEFAULT_ACM},
+            {"ACM": DEFAULT_ACM},
+            {"ACM": DEFAULT_ACM},
+        ]
+    )
 
 
-@mock.patch('oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm')
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_controlling_affiliation_enrichment(
-    mock_get_acm: AacClient,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict):
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+):
     """Test that the affiliation is updated based on the parent controlling nodes"""
 
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
@@ -504,20 +515,21 @@ def test_controlling_affiliation_enrichment(
         return_value=NodesNodes.model_construct(data=[NodeNode.model_construct(id=uuid4())])
     )
 
-    mock_oms_crud_tool.get_node_attribute_by_iri = mock.MagicMock(
-        side_effect=[
-            []
-        ]
-    )
+    mock_oms_crud_tool.get_node_attribute_by_iri = mock.MagicMock(side_effect=[[]])
 
-    sensemaker.get_context = mock.MagicMock(return_value=create_attribute(
-        attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"))
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
     sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=[
             "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
             "http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle",
-            "http://purl.obolibrary.org/obo/BFO_0000040"])
+            "http://purl.obolibrary.org/obo/BFO_0000040",
+        ]
+    )
 
     ### Test non-derivative node doesn't get checked
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
@@ -532,10 +544,7 @@ def test_controlling_affiliation_enrichment(
     oms_node.tier = ObjectTier.DERIVATIVE
 
     # set no affiliation for the node but hostile for the parent node
-    mock_oms_crud_tool.get_node_attribute_by_iri.side_effect = [
-        [],
-        [create_attribute(attribute_value="hostile")]
-    ]
+    mock_oms_crud_tool.get_node_attribute_by_iri.side_effect = [[], [create_attribute(attribute_value="hostile")]]
 
     oms_node.symbolIdCode = "10-0-0-00-0-0-00-000000-00-00"
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)

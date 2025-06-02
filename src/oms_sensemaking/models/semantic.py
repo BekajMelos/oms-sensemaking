@@ -16,78 +16,23 @@ from .base import AuditMixin, BaseORM, SecurityMarkingMixin
 
 
 class OmsNodeMixin(MappedAsDataclass):
-
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        nullable=False,
-        comment='ID (primary key)'
+        UUID(as_uuid=True), primary_key=True, nullable=False, comment="ID (primary key)"
     )
-    version: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment='version'
-    )
-    acm: Mapped[dict] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment='acm'
-    )
-    tags: Mapped[list[str]] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment='tags'
-    )
-    guide_id: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='guideID'
-    )
-    name: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='name'
-    )
-    tier: Mapped[ObjectTier] = mapped_column(
-        Enum(ObjectTier),
-        nullable=False,
-        comment='tier'
-    )
-    class_iri: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='classIri'
-    )
-    class_name: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='className'
-    )
-    ifc_codes: Mapped[list[str]] = mapped_column(
-        JSONB,
-        nullable=False,
-        comment='ifcCodes'
-    )
-    allegiance: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='allegiance'
-    )
-    allegiance_aor: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='allegianceAor'
-    )
-    current_aor: Mapped[str] = mapped_column(
-        String,
-        nullable=False,
-        comment='currentAor'
-    )
-    is_nso: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        comment='isNso (boolean)'
-    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, comment="version")
+    acm: Mapped[dict] = mapped_column(JSONB, nullable=False, comment="acm")
+    tags: Mapped[list[str]] = mapped_column(JSONB, nullable=False, comment="tags")
+    guide_id: Mapped[str] = mapped_column(String, nullable=False, comment="guideID")
+    name: Mapped[str] = mapped_column(String, nullable=False, comment="name")
+    tier: Mapped[ObjectTier] = mapped_column(Enum(ObjectTier), nullable=False, comment="tier")
+    class_iri: Mapped[str] = mapped_column(String, nullable=False, comment="classIri")
+    class_name: Mapped[str] = mapped_column(String, nullable=False, comment="className")
+    ifc_codes: Mapped[list[str]] = mapped_column(JSONB, nullable=False, comment="ifcCodes")
+    allegiance: Mapped[str] = mapped_column(String, nullable=False, comment="allegiance")
+    allegiance_aor: Mapped[str] = mapped_column(String, nullable=False, comment="allegianceAor")
+    current_aor: Mapped[str] = mapped_column(String, nullable=False, comment="currentAor")
+    is_nso: Mapped[bool] = mapped_column(Boolean, nullable=False, comment="isNso (boolean)")
+
 
 class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin):
     """
@@ -112,4 +57,4 @@ class Node(BaseORM, OmsNodeMixin, SecurityMarkingMixin, AuditMixin):
     - is_nso
     """
 
-    __tablename__: str = 'nodes'
+    __tablename__: str = "nodes"

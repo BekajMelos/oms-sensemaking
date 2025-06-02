@@ -1,4 +1,5 @@
 """Module for base mil symbol classes"""
+
 import uuid
 from abc import ABC, abstractmethod
 from queue import PriorityQueue

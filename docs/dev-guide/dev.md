@@ -41,17 +41,15 @@ Ask a teammate for guidance.
 
 ### Step 3: Install Project Dependencies
 
-1. Upgrade *pip* and *wheel*
+- Upgrade *pip* and *wheel*
+- Install *Development*, *Run Time*, and *Built Time* Dependencies
+- Integrate ruff with the project's SCM via [pre-commit] and Git's pre-commit hooks (configured in `.pre-commit-config.yaml`)
 
-        pip install --upgrade pip wheel
+These are handled by running the following make command:
 
-2. Install *Development*, *Run Time*, and *Built Time* Dependencies
-
-    > ***NOTE***: *oms_sensemaking* has at least two "extra" sets of
-    > dependencies defined: "dev" and "test". See the
-    > `project.optional-dependencies` declaration in `pyproject.toml`.
-
-        pip install -e ".[build,dev,docs,test]"
+```
+make install
+```
 
 
 ### Step 4: Configure Local Environment Variables
@@ -142,16 +140,6 @@ make format
 ```
 
 ### Integrating Code Quality Tools
-
-#### pre-commit
-
-To integrate ruff with the project's SCM via [pre-commit] and Git's pre-commit hooks:
-
-```
-pre-commit install
-```
-
-> This will use the configuration in `.pre-commit-config.yaml`
 
 #### Visual Studio Code
 

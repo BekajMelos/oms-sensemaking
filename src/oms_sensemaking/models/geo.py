@@ -265,8 +265,7 @@ class Track(BaseORM, SecurityMarkingMixin):
         lat_int = slope * (180 - point1_lon) + point1_lat
 
         # Return point1 intersection point
-        return [numpy.sign(point1_coords[0])*180, lat_int]
-
+        return [numpy.sign(point1_coords[0]) * 180, lat_int]
 
     def split_track_over_antimeridian(self, track: list[list[float]]) -> list[list[list[float]]]:
         """
@@ -280,7 +279,7 @@ class Track(BaseORM, SecurityMarkingMixin):
         true_crossing_index = -1
         # Iterate over points in track to check if line between pair of consecutive points intersect with antimeridian
         for curr_crossing_index in range(len(track) - 1):
-            first_inters = self.antimeridian_intersection(track[curr_crossing_index], track[curr_crossing_index+1])
+            first_inters = self.antimeridian_intersection(track[curr_crossing_index], track[curr_crossing_index + 1])
             if first_inters:
                 true_crossing_index = curr_crossing_index
                 break
@@ -289,8 +288,8 @@ class Track(BaseORM, SecurityMarkingMixin):
             return [track]
 
         second_inters = [-first_inters[0], first_inters[1]]
-        left_line = track[0:curr_crossing_index+1] + [first_inters]
-        right_line = [second_inters] + track[curr_crossing_index+1: len(track)]
+        left_line = track[0 : curr_crossing_index + 1] + [first_inters]
+        right_line = [second_inters] + track[curr_crossing_index + 1 : len(track)]
         return [left_line] + self.split_track_over_antimeridian(right_line)
 
     def to_geometry(self) -> dict:
