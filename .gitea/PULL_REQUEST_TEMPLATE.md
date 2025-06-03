@@ -13,7 +13,7 @@ Mention if there are new dependencies or resources needed to verify this branch.
 * checkout this branch
 * Run `source .venv/bin/activate`
 * Copy updates from `.env.template` to `.env`
-* Run `pip install -e ".[dev,docs,test,build]"`
+* Run `make install`
 * Run `make up`
 * Run `make fix`, verify no changes
 * Run `make test`, verify no failures

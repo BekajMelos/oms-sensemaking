@@ -32,7 +32,6 @@ class MilSymbol2525BandC(MilSymbol):
         """
         Subclasses define their own config type
         """
-        pass
 
     @property
     def formatted_code(self) -> str:

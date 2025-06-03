@@ -2,6 +2,7 @@
 
 import json
 import logging
+import socket
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -14,6 +15,7 @@ import pika
 import pika.spec
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pika import BlockingConnection, ConnectionParameters, PlainCredentials
+from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
@@ -141,9 +143,9 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._queue_name = queue_name
         self._event_filter = event_filter
         self._connection: BlockingConnection = None
-        self._channel = None
+        self._channel: BlockingChannel = None
 
-    def _connect(self):
+    def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
         LOGGER.info(f"Trying to connect to {self._queue_name} at {SETTINGS.rabbitmq_host}:{SETTINGS.rabbitmq_port}")
         try:
@@ -161,7 +163,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             )
             LOGGER.info(f"Connected to RabbitMQ queue: {self._queue_name}")
             return True
-        except (AMQPConnectionError, AMQPChannelError) as ex:
+        except (AMQPConnectionError, AMQPChannelError, socket.gaierror) as ex:
             LOGGER.error(f"{self._name} Failed to connect to RabbitMQ: {ex}")
             return False
 

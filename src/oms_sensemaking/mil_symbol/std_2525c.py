@@ -8,4 +8,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MilSymbol2525C(MilSymbol2525BandC):
+    """Class for MIL-STD-2525C format SIDCs"""
+
     code_type_config = "MIL_SYMBOL_2525C"
