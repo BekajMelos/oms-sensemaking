@@ -79,7 +79,7 @@ def test_geo_controller_config(
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
     default_watercraft_config: dict,
-    provider_1_aircraft_config: dict
+    provider_1_aircraft_config: dict,
 ):
     # register the sensemaker without starting the listener
     mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
@@ -90,10 +90,16 @@ def test_geo_controller_config(
         name="test",
         sourceId=uuid4(),
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
-        acm=DEFAULT_ACM,
-        trackProviderId=None
+        acm=DEFAULT_ACM
     )
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+
+    mock_response_provider = mock.MagicMock()
+    mock_response_provider.source.provider.id = "provider_1_id"
+
+    mock_method = mock.MagicMock()
+    mock_method.side_effect = [None, None, mock_response_provider]
+    mock_geo_controller.oms_crud_tool.get_observation_with_provider = mock_method
 
     # mock track creation
     track_uuid = uuid4()
@@ -114,7 +120,7 @@ def test_geo_controller_config(
         ),
         Point(
             acm=DEFAULT_ACM,
-            location=shapely.Point(-0.030890, 51.509420).wkt,
+            location=shapely.Point(-0.040890, 51.509420).wkt,
             altitude=None,
             detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
             node_id=node_uuid,
@@ -177,7 +183,7 @@ def test_geo_controller_config(
 
 
     # Test Aircraft with provider
-    oms_node.trackProviderId = "provider_1_id"
+
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: points}
@@ -197,3 +203,6 @@ def test_geo_controller_config(
 
     # Ensure that the provider_1 aircraft config is used
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, provider_1_aircraft_config)
+
+    # Ensure provider id is fetched from most recent observation
+    mock_geo_controller.oms_crud_tool.get_observation_with_provider.assert_called_with(points[-1].observation_id)

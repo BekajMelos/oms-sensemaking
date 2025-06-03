@@ -36,6 +36,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationObservation,
     ObservationQuery,
     ObservationsObservations,
+    ObservationWithProviderObservation,
     OntologyClassOntologyClass,
     OriginatorQuery,
     OriginatorsOriginators,
@@ -180,6 +181,11 @@ class OmsCrudTool:
         """Get existing Observation from OMS"""
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
+
+    def get_observation_with_provider(self, id: UUID) -> Optional[ObservationWithProviderObservation]:
+        """Get existing Observation with provider info from OMS"""
+        observation_with_provider = self.oms_client.observation_with_provider(IdQuery(id=id))
+        return observation_with_provider
 
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
