@@ -1,4 +1,5 @@
 """Utilities for working with Doccano results."""
+
 from dataclasses import dataclass
 
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity

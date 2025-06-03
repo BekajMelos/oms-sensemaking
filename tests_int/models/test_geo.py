@@ -343,10 +343,11 @@ def test_geometry_crosses_antimeridian_same_lat(tester_db: Session):
         points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
     geometry = track.to_geometry()
-    #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]],
-                                [[-180.0, 22.6683], [-179.0, 22.6683]]],
-                'type': 'MultiLineString'}
+    # assert geometry["type"] == "MultiLineString"
+    expected = {
+        "coordinates": [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]], [[-180.0, 22.6683], [-179.0, 22.6683]]],
+        "type": "MultiLineString",
+    }
     assert geometry == expected
 
 
@@ -398,10 +399,11 @@ def test_geometry_crosses_antimeridian_diff_lat(tester_db: Session):
         points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
     geometry = track.to_geometry()
-    #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 23.6683]],
-                                [[-180.0, 23.6683], [-179.0, 24.6683]]],
-                'type': 'MultiLineString'}
+    # assert geometry["type"] == "MultiLineString"
+    expected = {
+        "coordinates": [[[178.0, 22.6683], [179.0, 22.6683], [180.0, 23.6683]], [[-180.0, 23.6683], [-179.0, 24.6683]]],
+        "type": "MultiLineString",
+    }
     assert geometry == expected
 
 
@@ -453,10 +455,14 @@ def test_geometry_crosses_antimeridian_other_direction(tester_db: Session):
         points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
     geometry = track.to_geometry()
-    #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[[-178.0, 22.6683], [-179.0, 22.6683], [-180.0, 22.6683]],
-                                [[180.0, 22.6683], [179.0, 22.6683]]],
-                'type': 'MultiLineString'}
+    # assert geometry["type"] == "MultiLineString"
+    expected = {
+        "coordinates": [
+            [[-178.0, 22.6683], [-179.0, 22.6683], [-180.0, 22.6683]],
+            [[180.0, 22.6683], [179.0, 22.6683]],
+        ],
+        "type": "MultiLineString",
+    }
     assert geometry == expected
 
 
@@ -508,10 +514,10 @@ def test_geometry_not_crosses_antimeridian(tester_db: Session):
         points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
     )
     geometry = track.to_geometry()
-    #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]],
-                'type': 'LineString'}
+    # assert geometry["type"] == "MultiLineString"
+    expected = {"coordinates": [[178.0, 22.6683], [179.0, 22.6683], [180.0, 22.6683]], "type": "LineString"}
     assert geometry == expected
+
 
 def test_geometry_crosses_antimeridian_three_intersections(tester_db: Session):
     """Test that to_geometry splits input into MultiLineString"""
@@ -596,14 +602,16 @@ def test_geometry_crosses_antimeridian_three_intersections(tester_db: Session):
 
     # Create Track Object
     points = [p1, p2, p3, p4, p5, p6]
-    track = Track(
-        points=points, node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
-    )
+    track = Track(points=points, node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM)
     geometry = track.to_geometry()
-    #assert geometry["type"] == "MultiLineString"
-    expected = {'coordinates': [[[-178.0, 22], [-180.0, 22]],
-                                [[180.0, 22], [178.0, 22], [176, 20], [180, 20]],
-                                [[-180, 20], [-176.0, 20], [-174,18], [-180, 18]],
-                                [[180, 18], [174, 18]]],
-                'type': 'MultiLineString'}
+    # assert geometry["type"] == "MultiLineString"
+    expected = {
+        "coordinates": [
+            [[-178.0, 22], [-180.0, 22]],
+            [[180.0, 22], [178.0, 22], [176, 20], [180, 20]],
+            [[-180, 20], [-176.0, 20], [-174, 18], [-180, 18]],
+            [[180, 18], [174, 18]],
+        ],
+        "type": "MultiLineString",
+    }
     assert geometry == expected

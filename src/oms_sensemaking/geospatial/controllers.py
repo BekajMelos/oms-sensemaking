@@ -279,17 +279,14 @@ class GeospatialSensemakerController(SensemakerController):
 
                         # Fetch provider id from most recent observation
                         if len(track.points):
-                            print(f"list of obs: {[point.observation_id for point in track.points]}")
-                            print(f"list of obs times: {[point.detection_time for point in track.points]}")
                             obs_id = track.points[-1].observation_id
-                            print(f"obs rn: {obs_id}")
-                            print("about to call")
                             obs_with_provider = self.oms_crud_tool.get_observation_with_provider(obs_id)
                             if obs_with_provider:
-                                print("with provider")
                                 provider_id = obs_with_provider.source.provider.id
 
-                        provider_config = self.config.get(provider_id,default_config) if provider_id else default_config
+                        provider_config = (
+                            self.config.get(provider_id, default_config) if provider_id else default_config
+                        )
                         geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
                         with ThreadPoolExecutor() as executor:

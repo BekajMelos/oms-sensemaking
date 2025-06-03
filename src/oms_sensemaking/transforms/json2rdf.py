@@ -26,8 +26,8 @@ class DateEncoder(object):
     def __init__(self):
         self.datetime_pattern_Z = re.compile(r"(\d{4}-\d{2}-\d{2})(T| )(\d{2}:\d{2}:\d{2})Z")
         self.datetime_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})(T| )([0-9]{2}:[0-9]{2}:[0-9]{2})")
-        self.date_pattern = re.compile(r'\d{4}-\d{2}-\d{2}')
-        self.numeric_date_valid = re.compile(r'\d{8}')
+        self.date_pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
+        self.numeric_date_valid = re.compile(r"\d{8}")
 
     def __call__(self, input_string):
         print(input_string)
@@ -60,8 +60,8 @@ class DateEncoder(object):
 
         elif self.numeric_date_valid.search(input_string) and len(input_string) == 8:
             try:
-                dt = datetime.strptime(input_string, '%Y%m%d')
-                return dt.strftime('%Y-%m-%d'), XSD.date
+                dt = datetime.strptime(input_string, "%Y%m%d")
+                return dt.strftime("%Y-%m-%d"), XSD.date
             except Exception:
                 return None, None
 
@@ -72,22 +72,42 @@ class DateEncoder(object):
 class AccessControlMarking(object):
     def __init__(self, namespace=None):
         self.acm_keys = sorted(
-            ['_source_acm_disponly_to', '_source_acm_f_macs', '_source_acm_fgi_open', '_source_acm_disp_only',
-             '_source_acm_f_sar_id', '_source_acm_sci_ctrls', '_source_acm_banner', '_source_acm_classif',
-             '_source_acm_dissem_countries', '_source_acm_portion', '_source_acm_f_missions',
-             '_source_acm_owner_prod', '_source_acm_dissem_ctrls', '_source_acm_non_ic', '_source_acm_rel_to',
-             '_source_acm_macs', '_source_acm_atom_energy', '_source_acm_f_regions', '_source_acm_f_clearance',
-             '_source_acm_f_share', '_source_acm_f_sci_ctrls', '_source_acm_f_oc_org', '_source_acm_f_atom_energy',
-             '_source_acm_sar_id', '_source_acm_accms', '_source_acm_f_accms', '_source_acm_fgi_protect',
-             '_source_acm_version'
-             ])  # sorted order
+            [
+                "_source_acm_disponly_to",
+                "_source_acm_f_macs",
+                "_source_acm_fgi_open",
+                "_source_acm_disp_only",
+                "_source_acm_f_sar_id",
+                "_source_acm_sci_ctrls",
+                "_source_acm_banner",
+                "_source_acm_classif",
+                "_source_acm_dissem_countries",
+                "_source_acm_portion",
+                "_source_acm_f_missions",
+                "_source_acm_owner_prod",
+                "_source_acm_dissem_ctrls",
+                "_source_acm_non_ic",
+                "_source_acm_rel_to",
+                "_source_acm_macs",
+                "_source_acm_atom_energy",
+                "_source_acm_f_regions",
+                "_source_acm_f_clearance",
+                "_source_acm_f_share",
+                "_source_acm_f_sci_ctrls",
+                "_source_acm_f_oc_org",
+                "_source_acm_f_atom_energy",
+                "_source_acm_sar_id",
+                "_source_acm_accms",
+                "_source_acm_f_accms",
+                "_source_acm_fgi_protect",
+                "_source_acm_version",
+            ]
+        )  # sorted order
         self.namespace = namespace
 
     def __call__(self, data):
-
         signature = []
         for k in self.acm_keys:
-
             attr = data.get(k)
             # attr is a collection
             if isinstance(attr, list):
@@ -103,7 +123,7 @@ class AccessControlMarking(object):
                 else:
                     signature.append(str(attr.strip()))
 
-        acm_guid = md5("".join(signature).encode('utf-8')).hexdigest()
+        acm_guid = md5("".join(signature).encode("utf-8")).hexdigest()
         return acm_guid
 
 
@@ -113,14 +133,16 @@ class JSON2RDF(object):
         self.source_data = None
 
         # construct query
-        with open(construct, 'r') as construct_query_text:
+        with open(construct, "r") as construct_query_text:
             self.construct = construct_query_text.read()
 
         self.record_ns = Namespace(ns_uri)
         qry = "SELECT * WHERE {?datatype_property a owl:DatatypeProperty; rdfs:label ?l; rdfs:range ?range}"
-        self.source_model = Graph().parse(source_model, format='ttl')
-        self.source_lookup = {r.get('l').value: {'uri': r.get('datatype_property'), 'datatype': r.get('range')} for r in
-                              self.source_model.query(qry)}
+        self.source_model = Graph().parse(source_model, format="ttl")
+        self.source_lookup = {
+            r.get("l").value: {"uri": r.get("datatype_property"), "datatype": r.get("range")}
+            for r in self.source_model.query(qry)
+        }
         self.encode_date = DateEncoder()
         self.make_acm = AccessControlMarking()
 
@@ -144,18 +166,17 @@ class JSON2RDF(object):
         self.source_data = {k: df[k][0] for k in df}
         record = BNode()
         self.g.add((record, RDF.type, self.record_ns.Record))
-        self.source_data['_derived_acm_guid'] = self.make_acm(self.source_data)
+        self.source_data["_derived_acm_guid"] = self.make_acm(self.source_data)
 
         for k in self.source_data:
             if k not in self.source_lookup:
                 continue
 
             value = self.source_data[k]
-            datatype = self.source_lookup.get(k).get('datatype')
-            datatype_property = self.source_lookup.get(k).get('uri')
+            datatype = self.source_lookup.get(k).get("datatype")
+            datatype_property = self.source_lookup.get(k).get("uri")
 
             if isinstance(value, list):
-
                 if len(value) == 0:
                     continue
 

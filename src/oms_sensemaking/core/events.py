@@ -199,12 +199,8 @@ class RabbitMQListener(BaseRabbitMQListener):
         super().__init__(name, queue_name, handle_event, event_filter)
 
     def callback(
-            self,
-            ch: Channel,
-            method: pika.spec.Basic.Deliver,
-            properties: pika.spec.BasicProperties,
-            body: bytes):
-
+        self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes
+    ):
         if self.stopped.is_set():
             LOGGER.debug(f"Shutting down {self._name}")
             return
@@ -228,8 +224,7 @@ class RabbitMQListener(BaseRabbitMQListener):
                 LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             else:
-                LOGGER.warning(
-                    f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
+                LOGGER.warning(f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
         except Exception:
             LOGGER.error(f"{self._name} Error processing message (Object ID: {object_id}): {traceback.format_exc()}")

@@ -1,4 +1,5 @@
 """Alembic environment configuration."""
+
 from logging.config import fileConfig
 
 from alembic import context
@@ -18,7 +19,7 @@ config = context.config
 
 # this will overwrite the ini-file sqlalchemy.url path
 # with the path given in the config of the main code
-escaped_uri = SETTINGS.db_uri.replace('%','%%')
+escaped_uri = SETTINGS.db_uri.replace("%", "%%")
 config.set_main_option("sqlalchemy.url", escaped_uri)
 
 # Interpret the config file for Python logging.

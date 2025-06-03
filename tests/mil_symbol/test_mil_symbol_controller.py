@@ -63,9 +63,8 @@ def test_mil_sym_controller(
 
     # test attribute
     oms_attribute = AttributeAttribute.model_construct(
-        id=uuid4(),
-        nodeId=oms_node.id, sourceId=uuid4(),
-        acm=DEFAULT_ACM)
+        id=uuid4(), nodeId=oms_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
+    )
     mock_mil_sym_controller.oms_crud_tool.get_attribute = mock.MagicMock()
     mock_mil_sym_controller.oms_crud_tool.get_attribute.return_value = oms_attribute
 

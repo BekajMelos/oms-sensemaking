@@ -90,7 +90,7 @@ def test_geo_controller_config(
         name="test",
         sourceId=uuid4(),
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
-        acm=DEFAULT_ACM
+        acm=DEFAULT_ACM,
     )
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
 
@@ -104,6 +104,7 @@ def test_geo_controller_config(
     # mock track creation
     track_uuid = uuid4()
     node_uuid = uuid4()
+    observation_2_id = uuid4()
     # unimportant point
     points = [
         Point(
@@ -125,7 +126,7 @@ def test_geo_controller_config(
             detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
             node_id=node_uuid,
             node_version=1,
-            observation_id=uuid4(),
+            observation_id=observation_2_id,
             observation_version=1,
             source_id=uuid4(),
             observation_confidence=Confidence.HIGH,
@@ -157,7 +158,6 @@ def test_geo_controller_config(
     # Ensure that the default watercraft config is used
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_watercraft_config)
 
-
     # Test Aircraft without provider
     # mock oms call. Set classIri to aircraft
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
@@ -180,7 +180,6 @@ def test_geo_controller_config(
 
     # Ensure that the default aircraft config is used
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_aircraft_config)
-
 
     # Test Aircraft with provider
 
@@ -205,4 +204,4 @@ def test_geo_controller_config(
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, provider_1_aircraft_config)
 
     # Ensure provider id is fetched from most recent observation
-    mock_geo_controller.oms_crud_tool.get_observation_with_provider.assert_called_with(points[-1].observation_id)
+    mock_geo_controller.oms_crud_tool.get_observation_with_provider.assert_called_with(observation_2_id)

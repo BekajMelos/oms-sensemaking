@@ -1,4 +1,5 @@
 """Utlities for working with tokens."""
+
 from dataclasses import dataclass
 
 

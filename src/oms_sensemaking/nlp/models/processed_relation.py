@@ -1,4 +1,5 @@
 """Utilities for working with processed relation data."""
+
 from dataclasses import dataclass
 
 

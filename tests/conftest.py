@@ -1,4 +1,5 @@
 """PyTest Configuration."""
+
 import json
 from logging.config import dictConfig
 from typing import Dict
@@ -17,45 +18,35 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 
 SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
+
 @pytest.fixture
 def ts_acm():
     acm = {
         "classif": "TS",
         "classif_type": "US",
-        "owner_prod": [
-            "USA"
-        ],
-        "sci_ctrls": [
-            "TK"
-        ],
-        "dissem_ctrls": [
-            "NF"
-        ],
+        "owner_prod": ["USA"],
+        "sci_ctrls": ["TK"],
+        "dissem_ctrls": ["NF"],
         "rsrc_elem": False,
         "ex_from_rollup": False,
         "portion": "TS//TK//NF",
         "banner": "TOP SECRET//TK//NOFORN",
-        "dissem_countries": [
-            "USA"
-        ],
-        "f_clearance": [
-            "ts"
-        ],
-        "f_sci_ctrls": [
-            "tk"
-        ]
+        "dissem_countries": ["USA"],
+        "f_clearance": ["ts"],
+        "f_sci_ctrls": ["tk"],
     }
     return acm
+
 
 @pytest.fixture
 def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
+
 @pytest.fixture
 def mock_oms_crud_tool():
-
     def mock_all_but_rehydrate_oms_obj_method(name, *args, **kwargs):
-        if name == 'rehydrate_oms_obj':
+        if name == "rehydrate_oms_obj":
             return OmsCrudTool().rehydrate_oms_obj(*args, **kwargs)  # Call the real method1
         else:
             return mock.MagicMock()(*args, **kwargs)  # Mock other methods
@@ -81,22 +72,27 @@ def geo_config() -> dict:
 def default_aircraft_config(geo_config) -> dict:
     default_geo_config = geo_config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
     config = GeospatialSensemakerConfig(
-        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {}))
+        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
+    )
 
     return config.model_dump()
+
 
 @pytest.fixture
 def provider_1_aircraft_config(geo_config) -> dict:
     provider_1_geo_config = geo_config.get("provider_1_id", {})
     config = GeospatialSensemakerConfig(
-        **provider_1_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {}))
+        **provider_1_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
+    )
 
     return config.model_dump()
+
 
 @pytest.fixture
 def default_watercraft_config(geo_config) -> dict:
     default_geo_config = geo_config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
     config = GeospatialSensemakerConfig(
-        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", {}))
+        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", {})
+    )
 
     return config.model_dump()

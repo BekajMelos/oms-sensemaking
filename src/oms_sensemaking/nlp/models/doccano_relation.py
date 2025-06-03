@@ -1,4 +1,5 @@
 """Utilities for working with Doccano relations."""
+
 from dataclasses import dataclass
 
 

@@ -1,4 +1,5 @@
 """Military Symbol Standard 2525D."""
+
 import logging
 from typing import Dict, List, Optional
 
@@ -13,7 +14,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MilSymbol2525D(MilSymbol):
-
     UNKNOWN_DIMENSION_CODE = "00"
 
     # E.g.  10000100000000000000
@@ -23,7 +23,6 @@ class MilSymbol2525D(MilSymbol):
     MIL_SYM_2525D_DIMENSION_IDX_1 = 5
     MIL_SYM_2525D_STATUS_IDX = 6
 
-
     def __init__(self, code: str, settings: Dict) -> None:
         super().__init__(code, settings)
         self.code = code.replace("-", "")
@@ -32,15 +31,19 @@ class MilSymbol2525D(MilSymbol):
     def formatted_code(self) -> str:
         "Return the code formatted into dash separated sections"
 
-        return (f"{self.code[0:2]}-{self.code[2]}-{self.code[3]}-{self.code[4:6]}-{self.code[6]}-"
-                f"{self.code[7]}-{self.code[8:10]}-{self.code[10:16]}-{self.code[16:18]}-{self.code[18:20]}")
+        return (
+            f"{self.code[0:2]}-{self.code[2]}-{self.code[3]}-{self.code[4:6]}-{self.code[6]}-"
+            f"{self.code[7]}-{self.code[8:10]}-{self.code[10:16]}-{self.code[16:18]}-{self.code[18:20]}"
+        )
 
-    def enrich(self,
-               context_attr: Optional[AttributeAttribute],
-               affiliation_attr: Optional[AttributeAttribute],
-               oms_node: NodeNode,
-               ancestor_iris: List[str],
-               status_attr: Optional[AttributeAttribute]) -> None:
+    def enrich(
+        self,
+        context_attr: Optional[AttributeAttribute],
+        affiliation_attr: Optional[AttributeAttribute],
+        oms_node: NodeNode,
+        ancestor_iris: List[str],
+        status_attr: Optional[AttributeAttribute],
+    ) -> None:
         """Enrich the code given node attribute data
 
         :param context_attr: Optional Attribute for the context
@@ -70,7 +73,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
                     self.source_ids.put((3, context_attr.sourceId))
                     self.acms.append(context_attr.acm)
-                    LOGGER.debug(f'Updated context: {code} b/c {context}')
+                    LOGGER.debug(f"Updated context: {code} b/c {context}")
                     break
 
     def enrich_affiliation(self, affiliation_attr: Optional[AttributeAttribute]) -> None:
@@ -87,7 +90,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
                     self.source_ids.put((1, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
-                    LOGGER.debug(f'Updated std identity: {code} b/c {node_standard_identity}')
+                    LOGGER.debug(f"Updated std identity: {code} b/c {node_standard_identity}")
                     break
 
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
@@ -113,7 +116,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_1, code[1])
                     self.acms.append(oms_node.acm)
-                    LOGGER.debug(f'Updated dimension: {code} b/c {current_iri}')
+                    LOGGER.debug(f"Updated dimension: {code} b/c {current_iri}")
                     return True
             return False
 
@@ -123,11 +126,10 @@ class MilSymbol2525D(MilSymbol):
         dimension_code = self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0] + self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0]
         code_is_unknown = dimension_code == self.UNKNOWN_DIMENSION_CODE
         if code_is_unknown:
-            LOGGER.debug(f'Dimension code is still unknown. Checking ancestor iris: {ancestor_iris}')
+            LOGGER.debug(f"Dimension code is still unknown. Checking ancestor iris: {ancestor_iris}")
             for iri in ancestor_iris:
                 if update_dimension(iri):
                     return
-
 
     def enrich_status(self, status_attr: Optional[AttributeAttribute]) -> None:
         """Update Status
@@ -143,5 +145,5 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
                     self.source_ids.put((2, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
-                    LOGGER.debug(f'Updated status: {code} b/c {status}')
+                    LOGGER.debug(f"Updated status: {code} b/c {status}")
                     break

@@ -136,10 +136,13 @@ class ResolutionSensemaker(Sensemaker):
 
             # return empty list if attributes found do not match criteria amount of identifiers
             # also return empty list if any of the attribute objects are not populated with an actual value
-            if ((len(duplicate_object_attributes) != len(duplicate_identifiers))
-                or (any(attribute.attributeValue == "" for attribute in duplicate_object_attributes))):
-                LOGGER.debug("Node does not have all required fields for Duplicate Object Matching"
-                "or attribute values are not populated. Ignoring.")
+            if (len(duplicate_object_attributes) != len(duplicate_identifiers)) or (
+                any(attribute.attributeValue == "" for attribute in duplicate_object_attributes)
+            ):
+                LOGGER.debug(
+                    "Node does not have all required fields for Duplicate Object Matching"
+                    "or attribute values are not populated. Ignoring."
+                )
                 return []
 
         return duplicate_object_attributes
@@ -217,7 +220,7 @@ class ResolutionSensemaker(Sensemaker):
 
         node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
             and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
-            )
+        )
 
         query: NodeQuery = NodeQuery(attributes=node_attribute_query)
 

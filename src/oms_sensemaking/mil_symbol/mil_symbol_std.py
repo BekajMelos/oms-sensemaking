@@ -7,7 +7,6 @@ from oms_sensemaking.clients.instances import aac_client
 
 
 class MilSymbol(ABC):
-
     def __init__(self, code: str, settings: Dict) -> None:
         self.code = code
         self.settings = settings

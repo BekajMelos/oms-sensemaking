@@ -75,8 +75,8 @@ class NlpOmsPublisher(OmsPublisher):
             first_ent_id = relationship["entities"][0]["uuid"]
             second_ent_id = relationship["entities"][1]["uuid"]
             relationship_type = relationship["type"]
-            relationship_iri = (
-                SETTINGS.nlp_relationship_iris.get(relationship_type, SETTINGS.nlp_default_relationship_iri)
+            relationship_iri = SETTINGS.nlp_relationship_iris.get(
+                relationship_type, SETTINGS.nlp_default_relationship_iri
             )
 
             if first_ent_id in self.node_id_mapping and second_ent_id in self.node_id_mapping:

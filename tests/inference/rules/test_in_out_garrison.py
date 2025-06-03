@@ -94,6 +94,7 @@ def observational_node(mocker: MockerFixture):
 
     return obs
 
+
 @pytest.fixture
 def observational_node2(mocker: MockerFixture):
     """
@@ -116,6 +117,7 @@ def observational_node2(mocker: MockerFixture):
 
     return obs
 
+
 @pytest.fixture
 def garrison_object(mocker: MockerFixture):
     """
@@ -130,6 +132,7 @@ def garrison_object(mocker: MockerFixture):
 
     return node
 
+
 @pytest.fixture
 def initial_object(mocker: MockerFixture):
     """
@@ -143,6 +146,7 @@ def initial_object(mocker: MockerFixture):
     node.tier = "DERIVATIVE"
 
     return node
+
 
 @pytest.fixture
 def garrison_relationship(mocker: MockerFixture):
@@ -164,6 +168,7 @@ def garrison_relationship(mocker: MockerFixture):
 
     return relationship
 
+
 @pytest.fixture
 def in_garrison_activity1(mocker: MockerFixture):
     """
@@ -183,6 +188,7 @@ def in_garrison_activity1(mocker: MockerFixture):
     activity.endTime = "2023-01-01T00:00:00+00:00"
 
     return activity
+
 
 @pytest.fixture
 def in_garrison_activity2(mocker: MockerFixture):
@@ -204,6 +210,7 @@ def in_garrison_activity2(mocker: MockerFixture):
 
     return activity
 
+
 @pytest.fixture
 def out_garrison_activity1(mocker: MockerFixture):
     """
@@ -224,6 +231,7 @@ def out_garrison_activity1(mocker: MockerFixture):
 
     return activity
 
+
 @pytest.fixture
 def out_garrison_activity2(mocker: MockerFixture):
     """
@@ -243,6 +251,7 @@ def out_garrison_activity2(mocker: MockerFixture):
     activity.endTime = "2026-05-01T00:00:00+00:00"
 
     return activity
+
 
 # Mock methods
 @pytest.fixture
@@ -268,6 +277,7 @@ def mock_get_activities(mocker: MockerFixture):
     mock_activity_response.data = []
     mock_get_activities.return_value = mock_activity_response
     return mock_get_activities
+
 
 @pytest.fixture
 def mock_get_relationships(mocker: MockerFixture, garrison_relationship):
@@ -322,7 +332,7 @@ def test_new_in_garrison(
     mock_get_relationships,
     mock_get_activities,
     mock_create_activity,
-    geo_attribute1
+    geo_attribute1,
 ):
     # Scenario: Observation input yields new in garrison activity
     mock_attribute_response = MagicMock()
@@ -341,8 +351,12 @@ def test_new_in_garrison(
     mock_create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node.acm,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.garrison_sm_label, rule.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.garrison_sm_label,
+                rule.version_string,
+            ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_in_garrison_activity_name,
             state=SETTINGS.inference_in_garrison_activity_state,
@@ -353,6 +367,7 @@ def test_new_in_garrison(
         )
     )
 
+
 def test_new_out_garrison(
     observational_node2,
     garrison_object,
@@ -361,7 +376,7 @@ def test_new_out_garrison(
     mock_get_relationships,
     mock_get_activities,
     mock_create_activity,
-    geo_attribute1
+    geo_attribute1,
 ):
     # Scenario: Observation input yields new out of garrison activity
     mock_attribute_response = MagicMock()
@@ -381,8 +396,12 @@ def test_new_out_garrison(
     mock_create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node2.acm,
-            labels=[SETTINGS.sm_inferenced_label, SETTINGS.inference_sm_label,
-                    SETTINGS.garrison_sm_label, rule.version_string],
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.garrison_sm_label,
+                rule.version_string,
+            ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name=SETTINGS.inference_out_of_garrison_activity_name,
             state=SETTINGS.inference_out_of_garrison_activity_state,
@@ -392,6 +411,7 @@ def test_new_out_garrison(
             endTime=observational_node2.endTime,
         )
     )
+
 
 def test_update_in_garrison(
     observational_node,
@@ -404,7 +424,7 @@ def test_update_in_garrison(
     mock_update_activity,
     geo_attribute1,
     in_garrison_activity1,
-    in_garrison_activity2
+    in_garrison_activity2,
 ):
     # Scenario: Observation input yields updating an in garrison activity
     mock_attribute_response = MagicMock()
@@ -421,9 +441,7 @@ def test_update_in_garrison(
     mock_get_relationships.assert_called_with(
         RelationshipQuery(
             objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(
-                startNodeIds=["initial_object_id"]
-            )
+            nodes=RelationshipNodeQuery(startNodeIds=["initial_object_id"]),
         )
     )
     mock_get_attributes.assert_called_with(
@@ -436,16 +454,16 @@ def test_update_in_garrison(
         ObservationQuery(
             nodeId=["initial_object_id"],
             startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
-            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00")
+            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
         )
     )
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
-            id = in_garrison_activity2.id,
-            startTime = in_garrison_activity2.startTime,
-            endTime = in_garrison_activity2.endTime,
+            id=in_garrison_activity2.id,
+            startTime=in_garrison_activity2.startTime,
+            endTime=in_garrison_activity2.endTime,
             addObservationIds=[observational_node.id],
-            nodeId=observational_node.nodeId
+            nodeId=observational_node.nodeId,
         )
     )
 
@@ -460,7 +478,7 @@ def test_update_out_garrison(
     mock_get_observations,
     mock_update_activity,
     geo_attribute1,
-    out_garrison_activity1
+    out_garrison_activity1,
 ):
     # Scenario: Observation input yields updating an out of garrison activity
     # that has non overlapping time with observation
@@ -482,9 +500,7 @@ def test_update_out_garrison(
     mock_get_relationships.assert_called_with(
         RelationshipQuery(
             objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(
-                startNodeIds=["initial_object_id"]
-            )
+            nodes=RelationshipNodeQuery(startNodeIds=["initial_object_id"]),
         )
     )
     mock_get_attributes.assert_called_with(
@@ -497,15 +513,15 @@ def test_update_out_garrison(
         ObservationQuery(
             nodeId=["initial_object_id"],
             startTime=TimeQuery(gt="2024-01-01T00:00:00+00:00"),
-            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00")
+            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
         )
     )
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
-            id = out_garrison_activity1.id,
-            startTime = observational_node2.startTime,
-            endTime = out_garrison_activity1.endTime,
+            id=out_garrison_activity1.id,
+            startTime=observational_node2.startTime,
+            endTime=out_garrison_activity1.endTime,
             addObservationIds=[observational_node2.id],
-            nodeId=observational_node2.nodeId
+            nodeId=observational_node2.nodeId,
         )
     )
