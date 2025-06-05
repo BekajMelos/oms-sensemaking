@@ -94,7 +94,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
@@ -139,7 +139,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
@@ -184,7 +184,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
@@ -229,7 +229,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Loiter Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -1413,7 +1413,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
@@ -1458,7 +1458,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
@@ -1503,7 +1503,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
@@ -1548,7 +1548,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Cotravel Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -1978,7 +1978,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Cotravel Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -3208,7 +3208,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
@@ -3253,7 +3253,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
@@ -3298,7 +3298,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
@@ -3343,7 +3343,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"NSO Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -3773,7 +3773,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"NSO Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -4675,7 +4675,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
@@ -4720,7 +4720,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"name\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
@@ -4765,7 +4765,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"name\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
@@ -4810,7 +4810,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"name\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Incursion Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
@@ -5535,6 +5535,3010 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Resolution",
+			"item": [
+				{
+					"name": "Normal Match",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node A",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId1\", json.data.createAttribute.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node B",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId2\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Resolution Relationship Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.relationships && ",
+											"                      response.data.relationships.data && ",
+											"                      response.data.relationships.data.length > 0 && ",
+											"                      response.data.relationships.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
+											"        let id = response.data.relationships.data[i].id",
+											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
+											"    }",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 5000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $endNodeId: UUID!\n    $endNodeId2: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId, $endNodeId2]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"endNodeId\": {{nodeId}},\n    \"endNodeId2\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Resolution Rel Tag 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Resolution Rel Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid1\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid1\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Resolution Rel Tag (Possible)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Resolution Rel Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid2\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid2\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"if (!pm.collectionVariables.get(\"resolutionrelationshipid2\")) {",
+											"    // Set a flag to indicate skipping",
+											"    pm.variables.set(\"skipRequest\", true);",
+											"",
+											"    // Overwrite the URL to prevent hitting the real endpoint",
+											"    pm.request.url = 'https://postman-echo.com/status/204'; // 204 = No Content",
+											"    pm.request.method = 'GET';",
+											"",
+											"    // Optional: Clear body, headers, etc.",
+											"    pm.request.body = {};",
+											"    pm.request.headers.clear();",
+											"    console.log(\"Skipping request due to missing collection variable.\");",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Resolution Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Multi Attribute Match",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node A",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num Copy 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"13579\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num Copy 3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"67890\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId1\", json.data.createAttribute.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node B",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId2\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Resolution Relationship Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.relationships && ",
+											"                      response.data.relationships.data && ",
+											"                      response.data.relationships.data.length > 0 && ",
+											"                      response.data.relationships.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
+											"        let id = response.data.relationships.data[i].id",
+											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
+											"    }",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 5000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $endNodeId: UUID!\n    $endNodeId2: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId, $endNodeId2]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"endNodeId\": {{nodeId}},\n    \"endNodeId2\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Resolution Rel Tag 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Resolution Rel Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid1\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid1\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Resolution Rel Tag (Possible)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Resolution Rel Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid2\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"resolutionrelationshipid2\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"if (!pm.collectionVariables.get(\"resolutionrelationshipid2\")) {",
+											"    // Set a flag to indicate skipping",
+											"    pm.variables.set(\"skipRequest\", true);",
+											"",
+											"    // Overwrite the URL to prevent hitting the real endpoint",
+											"    pm.request.url = 'https://postman-echo.com/status/204'; // 204 = No Content",
+											"    pm.request.method = 'GET';",
+											"",
+											"    // Optional: Clear body, headers, etc.",
+											"    pm.request.body = {};",
+											"    pm.request.headers.clear();",
+											"    console.log(\"Skipping request due to missing collection variable.\");",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Resolution Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "No Match Empty String Values",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node A",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId1\", json.data.createAttribute.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node B",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId2\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get No Relationship Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"if (response.data.relationships.totalSize == 0) {",
+											"    pm.test(\"Response contains no relationships\", function () {",
+											"    pm.expect(response.data.relationships.totalSize).to.eql(0);",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
+											"        let id = response.data.relationships.data[i].id",
+											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
+											"    }",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 5000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $endNodeId: UUID!\n    $endNodeId2: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId, $endNodeId2]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"endNodeId\": {{nodeId}},\n    \"endNodeId2\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Resolution Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "No Match On Mismatch Keys",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node A",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute A OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId1\", json.data.createAttribute.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node B",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId2\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"US\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B BE Num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Attribute B OSuffix",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Attribute Created\", function () {",
+											"    pm.expect(json.data.createAttribute.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get No Relationship Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"if (response.data.relationships.totalSize == 0) {",
+											"    pm.test(\"Response contains no relationships\", function () {",
+											"    pm.expect(response.data.relationships.totalSize).to.eql(0);",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
+											"        let id = response.data.relationships.data[i].id",
+											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
+											"    }",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 5000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $endNodeId: UUID!\n    $endNodeId2: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId, $endNodeId2]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"endNodeId\": {{nodeId}},\n    \"endNodeId2\": \"{{nodeId2}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Resolution Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	],
 	"event": [
@@ -6044,6 +9048,166 @@
 		},
 		{
 			"key": "incursiontrackobs",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId1",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId2",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId3",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId4",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId5",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId6",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId7",
+			"value": ""
+		},
+		{
+			"key": "loiterrelId",
+			"value": ""
+		},
+		{
+			"key": "loiternodeId",
+			"value": ""
+		},
+		{
+			"key": "loitertrackobsId1",
+			"value": ""
+		},
+		{
+			"key": "loitertrackobsId2",
+			"value": ""
+		},
+		{
+			"key": "loiterattrId",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId1",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId2",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId3",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId4",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId5",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId6",
+			"value": ""
+		},
+		{
+			"key": "cotravelAobsId7",
+			"value": ""
+		},
+		{
+			"key": "nodeId2",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId1",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId2",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId3",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId4",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId5",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId6",
+			"value": ""
+		},
+		{
+			"key": "cotravelBobsId7",
+			"value": ""
+		},
+		{
+			"key": "cotravelrelId1",
+			"value": ""
+		},
+		{
+			"key": "cotravelnode1",
+			"value": ""
+		},
+		{
+			"key": "cotravelrelId2",
+			"value": ""
+		},
+		{
+			"key": "cotravelnodeId2",
+			"value": ""
+		},
+		{
+			"key": "cotraveltrackobsId1",
+			"value": ""
+		},
+		{
+			"key": "cotraveltrackobsId2",
+			"value": ""
+		},
+		{
+			"key": "cotravelattrId1",
+			"value": ""
+		},
+		{
+			"key": "benumattributeId1",
+			"value": ""
+		},
+		{
+			"key": "osuffixattributeId1",
+			"value": ""
+		},
+		{
+			"key": "benumattributeId2",
+			"value": ""
+		},
+		{
+			"key": "osuffixattributeId2",
+			"value": ""
+		},
+		{
+			"key": "resolutionrelationshipid1",
+			"value": ""
+		},
+		{
+			"key": "resolutionrelationshipid2",
 			"value": ""
 		}
 	]
