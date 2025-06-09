@@ -25,6 +25,8 @@ class MilSymbol2525BandC(MilSymbol):
     MIL_SYM_2525_B_C_STD_IDENTITY_IDX = 1
     MIL_SYM_2525_B_C_DIMENSION_IDX = 2
     MIL_SYM_2525_B_C_STATUS_IDX = 3
+    MIL_SYM_2525_B_C_SYM_MOD_IDX_0 = 10
+    MIL_SYM_2525_B_C_SYM_MOD_IDX_1 = 11
 
     @property
     @abstractmethod
