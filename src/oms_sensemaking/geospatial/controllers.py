@@ -277,7 +277,7 @@ class GeospatialSensemakerController(SensemakerController):
                         provider_id = None
                         default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
 
-                        # Fetch provider id from most recent observation
+                        # Fetch source/provider id from last (can be any) point in track
                         if len(track.points):
                             obs_id = track.points[-1].observation_id
                             obs_with_provider = self.oms_crud_tool.get_observation_with_provider(obs_id)
