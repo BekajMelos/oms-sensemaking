@@ -122,12 +122,13 @@ class SensemakerController:
 
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
-        # extract info from OMS via API calls
-        oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
-        if not oms_obj:
-            return True
-
         try:
+            # extract info from OMS via API calls
+            oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+            if not oms_obj:
+                LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
+                return True
+
             with ThreadPoolExecutor() as executor:
                 futures = []
                 for sensemaker in self._registry.values():
