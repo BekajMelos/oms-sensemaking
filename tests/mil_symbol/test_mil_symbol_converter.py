@@ -67,6 +67,15 @@ def test_convert_to_2525c_from_2525b(mil_symbol_rules):
     code_b = MilSymbol2525B("sngc------bB***", mil_symbol_rules)
     assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SNGC------BB***"
 
+    code_b = MilSymbol2525B("sngc------****a", mil_symbol_rules)
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SNGC------****A"
+
+    code_b = MilSymbol2525B("sngc------****N", mil_symbol_rules)
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SNGC------****N"
+
+    code_b = MilSymbol2525B("sngc------****s", mil_symbol_rules)
+    assert to_2525c(code_b, mil_symbol_rules).formatted_code == "SNGC------****S"
+
 
 def test_convert_to_2525b(mil_symbol_rules):
     """Test converting C to B"""
@@ -97,3 +106,12 @@ def test_convert_to_2525b(mil_symbol_rules):
 
     code_c = MilSymbol2525C("suaf------*a***", mil_symbol_rules)
     assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------*A***"
+
+    code_c = MilSymbol2525C("suaf------****G", mil_symbol_rules)
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****G"
+
+    code_c = MilSymbol2525C("suaf------****c", mil_symbol_rules)
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****C"
+
+    code_c = MilSymbol2525C("suaf------****E", mil_symbol_rules)
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****E"
