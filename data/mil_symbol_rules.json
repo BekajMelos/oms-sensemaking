@@ -175,6 +175,14 @@
             "MY": ["mobility amphibious"],
             "NS": ["towed array short"],
             "NL": ["towed array long"]
+        },
+        "ORDER_OF_BATTLE": {
+            "A": ["air ob"],
+            "E": ["electronic ob"],
+            "C": ["civilian ob"],
+            "G": ["ground ob"],
+            "N": ["maritime ob"],
+            "S": ["strategic force related"]
         }
     },
     "MIL_SYMBOL_2525C": {
@@ -360,6 +368,14 @@
             "MY": ["mobility amphibious"],
             "NS": ["towed array short"],
             "NL": ["towed array long"]
+        },
+        "ORDER_OF_BATTLE": {
+            "A": ["air ob"],
+            "E": ["electronic ob"],
+            "C": ["civilian ob"],
+            "G": ["ground ob"],
+            "N": ["maritime ob"],
+            "S": ["strategic force related"]
         }
     },
     "MIL_SYMBOL_2525D": {
