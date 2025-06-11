@@ -324,6 +324,9 @@ services:
         condition: service_started
       ess3:
         condition: service_started
+      postgis:
+        condition: service_healthy
+    restart: on-failure:3
 
 volumes:
   doccano-db:

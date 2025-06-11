@@ -1,0 +1,56 @@
+{
+  "UserDN": "CN=oms.apps.dev.dpaas.dodiis.mil,OU=DIA,OU=DoD,O=U.S. Government,C=US",
+  "WhitePage": {
+    "FirstName": "OMSB",
+    "SurName": "Server",
+    "Uid": "d900000",
+    "CompanyName": "",
+    "TelephoneNumber": "123-123-1234 123",
+    "IcEMail": "omsb.admin@ic.com",
+    "SiprnetEmail": "omsb.admin@sipr.com",
+    "NiprnetEmail": "omsb.admin@nipr.com"
+  },
+  "ClearanceInfo": {
+    "Clearance": [
+      "TS"
+    ],
+    "FineAccess": [
+      "SI",
+      "TK",
+      "HCS",
+      "G"
+    ],
+    "Citizenship": [
+      "USA"
+    ]
+  },
+  "AdminOrganization": {
+    "AdminOrganization": ""
+  },
+  "DutyOrganization": {
+    "DutyOrganization": "DIA"
+  },
+  "AllUserGroups": {
+    "Projects": [
+      {
+        "projectName": "OMS",
+        "groupNames": [
+          "oms_chronicle_manager"
+        ]
+      }
+    ]
+  },
+  "Entitlements": {
+    "CommunityType": "",
+    "Attributes": {
+      "Organization": "DIA",
+      "Topic": null,
+      "Region": null,
+      "isAICP": false,
+      "Groups": null
+    }
+  },
+  "OrganizationPath": {
+    "OrganizationPath": ""
+  }
+}
