@@ -1,5 +1,5 @@
 {
-  "default_provider_id": {
+  "00000000-0000-0000-0000-000000000000": {
     "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft": {
       "valid_observed_threshold_seconds": 900,
       "loiter_geohash": 5,
@@ -37,7 +37,7 @@
       "within_meters": 3000.0
     }
   },
-  "provider_1_id": {
+  "11111111-1111-1111-1111-111111111111": {
     "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft": {
       "valid_observed_threshold_seconds": 400,
       "loiter_geohash": 5,

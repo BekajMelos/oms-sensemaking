@@ -96,9 +96,14 @@ def test_geo_controller_config(
 
     # mock source creation
     source_id = uuid4()
+    source_id_2 = uuid4()
 
-    source_irrelevant_provider = SourceSource.model_construct(id=source_id, providerId="default_id")
-    source_relevant_provider = SourceSource.model_construct(id=source_id, providerId="provider_1_id")
+    source_irrelevant_provider = SourceSource.model_construct(
+        id=source_id, providerId="00000000-0000-0000-0000-000000000000"
+    )
+    source_relevant_provider = SourceSource.model_construct(
+        id=source_id_2, providerId="11111111-1111-1111-1111-111111111111"
+    )
     mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_irrelevant_provider)
 
     # mock track creation
@@ -178,6 +183,7 @@ def test_geo_controller_config(
 
     # Ensure that the default aircraft config is used
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_aircraft_config)
+    mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=source_id)
 
     # Test Aircraft with relevant provider
     mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_relevant_provider)
@@ -201,4 +207,4 @@ def test_geo_controller_config(
     instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, provider_1_aircraft_config)
 
     # Ensure provider id is fetched from most recent observation
-    mock_geo_controller.oms_crud_tool.get_source(source_id)
+    mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=source_id)

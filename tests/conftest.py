@@ -80,7 +80,7 @@ def default_aircraft_config(geo_config) -> dict:
 
 @pytest.fixture
 def provider_1_aircraft_config(geo_config) -> dict:
-    provider_1_geo_config = geo_config.get("provider_1_id", {})
+    provider_1_geo_config = geo_config.get("11111111-1111-1111-1111-111111111111", {})
     config = GeospatialSensemakerConfig(
         **provider_1_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
     )

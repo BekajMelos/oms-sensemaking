@@ -301,7 +301,7 @@ class Settings(BaseSettings):
         description="Max amount of time in seconds a track can be from earliest start time to last start time",
         examples=[86400, 604800])
     geo_sensemaker_config_default_provider_id: str = Field(
-        "default_provider_id",
+        "00000000-0000-0000-0000-000000000000",
         description="Default provider ID in geo sensemaker config file"
     )
 
