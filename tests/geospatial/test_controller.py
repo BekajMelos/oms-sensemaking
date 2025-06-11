@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 import shapely
 from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode
+from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode, SourceSource
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
@@ -77,13 +77,14 @@ def test_geo_controller_config(
     mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
-    aircraft_geo_config: dict,
-    watercraft_geo_config: dict,
+    default_aircraft_config: dict,
+    default_watercraft_config: dict,
+    provider_1_aircraft_config: dict,
 ):
     # register the sensemaker without starting the listener
     mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
 
-    # mock oms call. Set classIri to Aircraft
+    # mock node creation
     oms_node = NodeNode.model_construct(
         id=uuid4(),
         name="test",
@@ -93,9 +94,22 @@ def test_geo_controller_config(
     )
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
 
+    # mock source creation
+    source_id = uuid4()
+    source_id_2 = uuid4()
+
+    source_irrelevant_provider = SourceSource.model_construct(
+        id=source_id, providerId="00000000-0000-0000-0000-000000000000"
+    )
+    source_relevant_provider = SourceSource.model_construct(
+        id=source_id_2, providerId="11111111-1111-1111-1111-111111111111"
+    )
+    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_irrelevant_provider)
+
     # mock track creation
     track_uuid = uuid4()
     node_uuid = uuid4()
+
     # unimportant point
     points = [
         Point(
@@ -107,19 +121,19 @@ def test_geo_controller_config(
             node_version=1,
             observation_id=uuid4(),
             observation_version=1,
-            source_id=uuid4(),
+            source_id=source_id,
             observation_confidence=Confidence.HIGH,
         ),
         Point(
             acm=DEFAULT_ACM,
-            location=shapely.Point(-0.030890, 51.509420).wkt,
+            location=shapely.Point(-0.040890, 51.509420).wkt,
             altitude=None,
             detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
             node_id=node_uuid,
             node_version=1,
             observation_id=uuid4(),
             observation_version=1,
-            source_id=uuid4(),
+            source_id=source_id,
             observation_confidence=Confidence.HIGH,
         ),
     ]
@@ -133,7 +147,6 @@ def test_geo_controller_config(
     mock_api_track_client.create_oms_track = mock.MagicMock()
 
     # mock thread pool execution
-
     # Create a mock executor that returns a future with a known result
     instance = mock.MagicMock()
     mock_executor.return_value.__enter__.return_value = instance
@@ -142,15 +155,15 @@ def test_geo_controller_config(
     # mock execute function
     mock_geo_controller._registry["geo"].execute = mock.MagicMock()
 
-    # Test Aircraft
+    # Test Watercraft without relevant provider
     # call flush buffer
     mock_geo_controller.flush_buffer()
 
-    # Ensure that the aircraft config is used
-    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, watercraft_geo_config)
+    # Ensure that the default watercraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_watercraft_config)
 
-    # Test Watercraft
-    # mock oms call. Set classIri to Aircraft
+    # Test Aircraft without relevant provider
+    # mock oms call. Set classIri to aircraft
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
     # set up track buffer
@@ -160,7 +173,6 @@ def test_geo_controller_config(
     mock_api_track_client.create_oms_track = mock.MagicMock()
 
     # mock thread pool execution
-
     # Create a mock executor that returns a future with a known result
     instance = mock.MagicMock()
     mock_executor.return_value.__enter__.return_value = instance
@@ -169,5 +181,30 @@ def test_geo_controller_config(
     # call flush buffer
     mock_geo_controller.flush_buffer()
 
-    # Ensure that the watercraft config is used
-    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, aircraft_geo_config)
+    # Ensure that the default aircraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, default_aircraft_config)
+    mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=source_id)
+
+    # Test Aircraft with relevant provider
+    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_relevant_provider)
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: points}
+    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+    mock_api_track_client.create_oms_track = mock.MagicMock()
+
+    # mock thread pool execution
+    # Create a mock executor that returns a future with a known result
+    instance = mock.MagicMock()
+    mock_executor.return_value.__enter__.return_value = instance
+    mock_as_completed.return_value = []
+
+    # call flush buffer
+    mock_geo_controller.flush_buffer()
+
+    # Ensure that the provider_1 aircraft config is used
+    instance.submit.assert_called_with(mock_geo_controller._registry["geo"].execute, track, provider_1_aircraft_config)
+
+    # Ensure provider id is fetched from most recent observation
+    mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=source_id)

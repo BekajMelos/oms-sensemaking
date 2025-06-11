@@ -273,7 +273,21 @@ class GeospatialSensemakerController(SensemakerController):
                     try:
                         # temp fix to prevent UnboundLocalError on `track`
                         node = self.oms_crud_tool.get_node(track.node_id)
-                        geo_config = GeospatialSensemakerConfig(**self.config.get(node.classIri, {}))
+
+                        provider_id = None
+                        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+
+                        # Fetch source/provider id from last (can be any) point in track
+                        if len(track.points):
+                            source_id = track.points[-1].source_id
+                            source = self.oms_crud_tool.get_source(source_id=source_id)
+                            if source:
+                                provider_id = source.providerId
+
+                        provider_config = (
+                            self.config.get(provider_id, default_config) if provider_id else default_config
+                        )
+                        geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
                         with ThreadPoolExecutor() as executor:
                             futures = []

@@ -69,18 +69,30 @@ def geo_config() -> dict:
 
 
 @pytest.fixture
-def aircraft_geo_config(geo_config) -> dict:
+def default_aircraft_config(geo_config) -> dict:
+    default_geo_config = geo_config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
     config = GeospatialSensemakerConfig(
-        **geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
+        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
     )
 
     return config.model_dump()
 
 
 @pytest.fixture
-def watercraft_geo_config(geo_config) -> dict:
+def provider_1_aircraft_config(geo_config) -> dict:
+    provider_1_geo_config = geo_config.get("11111111-1111-1111-1111-111111111111", {})
     config = GeospatialSensemakerConfig(
-        **geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", {})
+        **provider_1_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft", {})
+    )
+
+    return config.model_dump()
+
+
+@pytest.fixture
+def default_watercraft_config(geo_config) -> dict:
+    default_geo_config = geo_config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+    config = GeospatialSensemakerConfig(
+        **default_geo_config.get("http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", {})
     )
 
     return config.model_dump()
