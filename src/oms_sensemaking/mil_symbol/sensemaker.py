@@ -186,7 +186,7 @@ class MilSymbolSensemaker(Sensemaker):
         :return: The starting symbol id code
         """
         if self.is_attribute(oms_object) and (
-            oms_object.attributeIri in SETTINGS.mil_symbol_settings.mil_symbol_attribute_code_iris
+            oms_object.attributeIri in SETTINGS.mil_symbol_settings.attribute_code_iris
         ):
             symbol_id_code = oms_object.attributeValue
         else:
@@ -413,11 +413,14 @@ class MilSymbolSensemaker(Sensemaker):
             return oms_object
         elif self.is_attribute(oms_object):
             LOGGER.info("Checking for MilSymbol enrichment based on Attribute input.")
-            try:
-                LOGGER.info("Getting linked Node from Attribute nodeId.")
-                return self.oms_crud_tool.get_node(oms_object.nodeId)
-            except AttributeError:
+            LOGGER.info("Getting linked Node from Attribute nodeId.")
+            if oms_object.nodeId is None:
                 LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
+                return None
+            try:
+                return self.oms_crud_tool.get_node(oms_object.nodeId)
+            except Exception as e:
+                LOGGER.warning(f"Failed to get node: {e}")
                 return None
         else:
             LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
