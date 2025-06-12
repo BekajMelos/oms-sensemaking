@@ -170,7 +170,6 @@ class Settings(BaseSettings):
     loiter_sm_label: str = Field("LOITER_SM", description="Label for loiter sensemaker data")
     inference_sm_label: str = Field("INFERENCE_SM", description="Label for inference sensemaking data")
     incursion_sm_label: str = Field("INCURSION_RULE", description="Label for incursion sensemaking data")
-    add_has_name_sm_label: str = Field("HAS_NAME_RULE", description="Label for has name sensemaking data")
     garrison_sm_label: str = Field("IN/OUT_GARRISON_RULE", description="Label for garrison sensemaking data")
     mil_sym_sm_label: str = Field("MILITARY_SYMBOL_SM", description="Label for mil sym sensemaking data")
     res_sm_label: str = Field("RESOLUTION_SM", description="Label for resolution sensemaking data")
@@ -178,7 +177,6 @@ class Settings(BaseSettings):
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
-    toggle_add_has_name_rule: bool = Field(True, description="Toggle on/off Add Has Name Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     inference_tags: list[str] = Field(
         ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
@@ -197,12 +195,6 @@ class Settings(BaseSettings):
     )
     inference_incursion_attribute_iri: str = Field(
         "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
-    )
-    inference_add_has_name_attribute_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/hasCommonName", description="IRI for Name attributes"
-    )
-    inference_add_has_name_attribute_meta_data_iri: str = Field(
-        "https://foundry.ai.mil/MIDB_GST/v1/MDN", description="IRI for generated meta data"
     )
     inference_geo_attribute_iri: str = Field(
         "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation", description="IRI for geo attribute"
