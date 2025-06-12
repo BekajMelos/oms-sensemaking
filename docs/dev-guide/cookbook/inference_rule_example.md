@@ -132,7 +132,7 @@ an attribute is created indicating that a name exists for the node.
   
   ```
 
-After adding this to `src/oms_sensemaking/inference/rules`, it would be added to the sensemaker in
+After adding this file to `src/oms_sensemaking/inference/rules`, the rule would be added to the sensemaker in
 `src/oms_sensemaking/inference/sensemakers/inference.py`:
 
   ```
