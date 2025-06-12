@@ -42,7 +42,7 @@ def to_2525b(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525B:
     # convert order of battle
     ob = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
     code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX, ob)
-    LOGGER.debug(f"Equivalent status is : {ob}, 2525b & 2525c share order of battle")
+    LOGGER.debug(f"Equivalent order of battle is : {ob}, 2525b & 2525c share order of battle")
 
     return code_2525b
 
@@ -90,7 +90,7 @@ def to_2525c_from_2525b(code_2525b: MilSymbol2525B, settings: Dict) -> MilSymbol
     # convert order of battle
     ob = code_2525b.code[MilSymbol2525B.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX, ob)
-    LOGGER.debug(f"Equivalent status is : {ob}, 2525b & 2525c share order of battle")
+    LOGGER.debug(f"Equivalent order of battle is : {ob}, 2525b & 2525c share order of battle")
 
     return code_2525c
 
