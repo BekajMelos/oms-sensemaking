@@ -104,13 +104,13 @@ class MilSymbolSettings(BaseModel):
     )
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
     affiliation_iris: list[str] = Field(
-        ["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"], description="Affiliation IRI")
+        ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")
     status_iris: list[str] = Field(["https://foundry.ai.mil/ontology/4901-001/hasCondition"], description="Status IRI")
     affiliation_controlled_by_iris: list[str] = Field(
-        ["http://schema.dia.mil/DefenseIntelligenceCoreOntology/controlledBy"],
+        ["https://foundry.ai.mil/ontology/4901-001/controlledBy"],
         description="Relationship IRIs used to search for controlling/commanding nodes")
     affiliation_controls_iris: list[str] = Field(
-        ["https://foundry.ai.mil/MIDB/V3.3/commands_or_controls"],
+        ["https://foundry.ai.mil/ontology/4901-001/controls"],
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
     attribute_code_iris: list[str] = Field(
