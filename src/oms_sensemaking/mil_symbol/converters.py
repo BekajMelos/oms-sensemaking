@@ -36,7 +36,7 @@ def to_2525b(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525B:
         if set(sym_modifier_list) & set(other_sym_modifier_list):
             code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
             code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
-            LOGGER.debug(f"Equivalent symbol modifer is : {code}, 2525c symbol modifiers are a superset of 2525b's")
+            LOGGER.debug(f"Equivalent symbol modifier is : {code}, 2525c symbol modifiers are a superset of 2525b's")
             break
 
     return code_2525b
@@ -80,7 +80,7 @@ def to_2525c_from_2525b(code_2525b: MilSymbol2525B, settings: Dict) -> MilSymbol
     sym_modifier = sym_modifier_idx_0 + sym_modifier_idx_1
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, sym_modifier_idx_0)
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, sym_modifier_idx_1)
-    LOGGER.debug(f"Equivalent symbol modifer is : {sym_modifier}, 2525b symbol modifers are a subset of 2525c's")
+    LOGGER.debug(f"Equivalent symbol modifier is : {sym_modifier}, 2525b symbol modifiers are a subset of 2525c's")
 
     return code_2525c
 
