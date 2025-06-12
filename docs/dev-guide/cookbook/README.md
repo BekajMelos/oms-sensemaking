@@ -21,5 +21,5 @@ _________                __   ___.                  __
         \/                   \/    \/                   \/
 ```
 
-A collection of How-To guides and receipes related to the OMS Sensemaking
+A collection of How-To guides and recipes related to the OMS Sensemaking
 project.
