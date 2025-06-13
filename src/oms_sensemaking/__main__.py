@@ -217,15 +217,6 @@ def run_inference() -> None:
     start_controller_and_wait(inference)
 
 
-def run_semantic() -> None:
-    """Run the semantic algorithms."""
-    # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import NoOpEventConsumer
-    from oms_sensemaking.semantic.controllers import SemanticSensemakerController
-
-    start_controller_and_wait(SemanticSensemakerController(NoOpEventConsumer()))
-
-
 def get_cli_parser() -> ArgumentParser:
     """Return a configured CLI argument parser."""
     parser: ArgumentParser = ArgumentParser(description="A utility for analysing OMS data.", prog="oms_sensemaking")
@@ -241,9 +232,6 @@ def get_cli_parser() -> ArgumentParser:
         add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
     geo_parser.set_defaults(func=run_geospatial)
-
-    semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
-    semantic_parser.set_defaults(func=lambda args: run_semantic())
 
     return parser
 

@@ -14,12 +14,11 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import about, health, nlp, rdf, semantic
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
-from oms_sensemaking.core.events import NoOpEventConsumer, RabbitMQListener
+from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
 from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
-from oms_sensemaking.semantic.controllers import SemanticSensemakerController
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -47,7 +46,6 @@ def get_controllers() -> list[SensemakerController]:
                 event_filter=MilSymbolQueueFilter(),
             )
         ),
-        SemanticSensemakerController(NoOpEventConsumer()),
     ]
 
     return controllers
