@@ -24,10 +24,10 @@ from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, Ev
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
+from oms_sensemaking.geospatial.track_weaver_factory import TrackWeaverFactory
 from oms_sensemaking.models.geo import (
     CommonSenseFilter,
     Point,
-    TimeBinTrackWeaver,
     Track,
     TrackWeaverBase,
     decompose_observation_geometry,
@@ -55,7 +55,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.track_node_buffer: dict[UUID, list[Point]] = defaultdict(list)
 
         # track weaver to call on completed Tracks before publishing
-        self.track_weaver: TrackWeaverBase = TimeBinTrackWeaver()
+        self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
         self.confidence_weight_map = SETTINGS.confidence_weight_map
 
         filter_path = SETTINGS.common_sense_filter_rules_file_path

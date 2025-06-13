@@ -305,6 +305,11 @@ class Settings(BaseSettings):
     )
 
     # Track Weaver Settings
+    track_weaver_algorithm: str = Field(
+        "naive",
+        description="The algorithm to use for making tracks",
+        examples=["naive", "time_bin_weighted_average"]
+    )
     time_bin_size_seconds: int = Field(
         60,
         description="Length of time bins in seconds for grouping Points in track weaver."
