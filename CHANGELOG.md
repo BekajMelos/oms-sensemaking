@@ -3,13 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
-- Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
 
 ### Added
 - Added two helper methods to the Resolution sensemaker and created the AttributeCombinations and Criteria helper classes for resolution sensemaker
 - RDF endpoint displays relationships to objects
+- Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
 
 ### Changed
+- Updated OMS dependency to Grimlock-INC-23
 
 ### Fixed
 - Fixed the Resolution sensemaker's inability to process multiple attributes used for identifying duplicates
