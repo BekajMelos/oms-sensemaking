@@ -8,7 +8,7 @@ pipeline {
     parameters {
         string(
             name: 'AGENT',
-            defaultValue: 'CODE',
+            defaultValue: 'JENKINSAGENT-DEV-0',
             description: 'use a specific agent(s) by label to run the build on')
         booleanParam(
             name: 'SKIP_UNIT_TESTS',
