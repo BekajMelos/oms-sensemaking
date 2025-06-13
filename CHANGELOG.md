@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.7.0] - 2025-06-13
+
+### Added
 - Added two helper methods to the Resolution sensemaker and created the AttributeCombinations and Criteria helper classes for resolution sensemaker
 - RDF endpoint displays relationships to objects
 - Mil Symbol sensemaker additionally checks for attributeIri in determining starting Mil symbol code
