@@ -33,7 +33,7 @@ def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str)
         tags=["test"],
         classIri=class_iri,
         symbolIdCode=symbol_id_code,
-        allegiance="AA",
+        allegiance="AUS",
         labels=[],
     )
     node = oms_crud_tool.create_node(create_node_input)
