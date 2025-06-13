@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.7.1] - 2025-06-13
+
+### Added
+- Track Weaver algorithm can be set through configuration
+
 ## [0.7.0] - 2025-06-13
 
 ### Added
