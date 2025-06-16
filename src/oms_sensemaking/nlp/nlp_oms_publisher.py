@@ -1,16 +1,12 @@
 import logging
 
-from oms_sdk.generated.generated_graphql_client import (
-    AttributeType,
-    Confidence,
-)
+from oms_sdk.generated.generated_graphql_client import AttributeType, Confidence, ObjectTier
 from oms_sdk.generated.generated_graphql_client.input_types import (
     CreateAttributeInput,
     CreateNodeInput,
     CreateRelationshipInput,
 )
 
-from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import OmsPublisher
