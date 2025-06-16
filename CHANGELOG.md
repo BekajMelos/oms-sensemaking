@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+### Removed
+- Unused placeholder semantic api and sensemaker
+
 ## [0.7.1] - 2025-06-13
 
 ### Added
