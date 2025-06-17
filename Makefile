@@ -85,7 +85,7 @@ psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
 
 pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
-	docker compose --profile dev up pgadmin -d
+	docker compose --profile local up pgadmin -d
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
