@@ -1,25 +1,29 @@
-from unittest import mock
-from uuid import uuid4
-
 import pytest
 from ratelimit import RateLimitException
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.rate_limiter import rate_decorator, rate_limit_methods
 
 
-@pytest.fixture
-def mock_oms_crud_tool():
-    oms_crud_tool = OmsCrudTool()
-    oms_crud_tool.oms_client = mock.MagicMock()
-    return oms_crud_tool
+@rate_limit_methods(rate_decorator)
+class MyLimitedClass:
+    def foo(self):
+        return "foo"
+
+    def bar(self):
+        return "bar"
 
 
-def test_rate_limit_only(mock_oms_crud_tool: OmsCrudTool):
-    # Hit the limit
+def test_rate_limiting_works():
+    obj = MyLimitedClass()
     for _ in range(SETTINGS.maximum_oms_api_calls):
-        mock_oms_crud_tool.get_node(uuid4())
+        assert obj.foo() == "foo"
 
-    # Next call should raise RateLimitException
     with pytest.raises(RateLimitException):
-        mock_oms_crud_tool.get_node(uuid4())
+        obj.foo()
+
+    for _ in range(SETTINGS.maximum_oms_api_calls):
+        assert obj.bar() == "bar"
+
+    with pytest.raises(RateLimitException):
+        obj.bar()
