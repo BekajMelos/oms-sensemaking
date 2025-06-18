@@ -1,11 +1,24 @@
+import logging
+import time
 from functools import wraps
 
-from ratelimit import limits
+from ratelimit import RateLimitException, limits
 
-from oms_sensemaking.config import SETTINGS
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def rate_limit_methods(rate_decorator):
+def rate_limit_methods(calls, period):
+    """
+    A function used to create a class decorator which
+    limits API calls and is used on whole classes
+
+    :param calls: The maximum amount of calls each method in the class is limited to
+    :param period: The time period for which the maximum calls can be reached
+    :return: 'class_decorator' which is a helper method used to create the decorator
+    that is used on a given class
+    """
+    rate_decorator = rate_decorator_factory(calls, period)
+
     def class_decorator(cls):
         for cls_attribute_name, cls_attribute_value in cls.__dict__.items():
             if cls_attribute_name.startswith("__"):
@@ -18,10 +31,54 @@ def rate_limit_methods(rate_decorator):
     return class_decorator
 
 
-def rate_decorator(function):
-    @limits(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period)
-    @wraps(function)
-    def wrapper(*args, **kwargs):
-        return function(*args, **kwargs)
+def rate_decorator_factory(calls, period):
+    """
+    A function used to create a rate decorator applied mass to a class' instance methods
+
+    :param calls: The maximum amount of calls the method is limited to
+    :param period: The time period for which the maximum calls can be reached
+    :return: Return a rate decorator
+    """
+
+    def rate_decorator(function):
+        """
+        A function used to return a method wrapped with a given call limit and call period
+
+        :param function: The function that is to be wrapped
+        :return: 'wrapper' which is a helper method used to aggregate the function's specific
+        arguments and call it
+        """
+
+        @sleep_and_retry_with_logs
+        @limits(calls=calls, period=period)
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return rate_decorator
+
+
+def sleep_and_retry_with_logs(func):
+    """
+    (A rewrite of the @sleep_and_retry decorator from the ratelimit library which adds logging)
+
+    Return a wrapped function that rescues rate limit exceptions, sleeping the
+    current thread until rate limit resets.
+
+    :param function func: The function to decorate.
+    :return: Decorated function.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kargs):
+        while True:
+            try:
+                return func(*args, **kargs)
+            except RateLimitException as exception:
+                sleep_time = exception.period_remaining
+                LOGGER.info(f"Rate limit hit. Sleeping for {sleep_time:.2f} seconds and retrying")
+                time.sleep(sleep_time)
 
     return wrapper

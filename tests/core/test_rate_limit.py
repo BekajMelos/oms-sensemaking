@@ -1,11 +1,9 @@
-import pytest
-from ratelimit import RateLimitException
+import time
 
-from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.rate_limiter import rate_decorator, rate_limit_methods
+from oms_sensemaking.core.rate_limiter import rate_limit_methods
 
 
-@rate_limit_methods(rate_decorator)
+@rate_limit_methods(calls=2, period=2)
 class MyLimitedClass:
     def foo(self):
         return "foo"
@@ -16,14 +14,20 @@ class MyLimitedClass:
 
 def test_rate_limiting_works():
     obj = MyLimitedClass()
-    for _ in range(SETTINGS.maximum_oms_api_calls):
+    for _ in range(2):
         assert obj.foo() == "foo"
 
-    with pytest.raises(RateLimitException):
-        obj.foo()
+    start = time.time()
+    assert obj.foo() == "foo"
+    end = time.time()
 
-    for _ in range(SETTINGS.maximum_oms_api_calls):
+    assert end - start >= 1
+
+    for _ in range(2):
         assert obj.bar() == "bar"
 
-    with pytest.raises(RateLimitException):
-        obj.bar()
+    start = time.time()
+    assert obj.bar() == "bar"
+    end = time.time()
+
+    assert end - start >= 1
