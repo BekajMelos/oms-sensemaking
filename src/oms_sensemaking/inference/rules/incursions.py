@@ -193,7 +193,7 @@ class Incursion(BaseRule):
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
+            description=self._truncate_activity_description(f"Incursion Activity by {incurring_object.name}"),
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
@@ -215,3 +215,7 @@ class Incursion(BaseRule):
         activities = oms_client.get_activities(activity_query).data
 
         return any(activity.name == "Incursion" for activity in activities)
+
+    def _truncate_activity_description(self, description: str):
+        max_descr_length = 512
+        return description[:max_descr_length]
