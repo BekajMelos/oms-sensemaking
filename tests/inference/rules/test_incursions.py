@@ -304,7 +304,7 @@ def test_new_incursion_region1(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion Activity by {incurring_object.name}",
+            description="test feature name",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],

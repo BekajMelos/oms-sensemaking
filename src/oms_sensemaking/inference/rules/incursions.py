@@ -61,21 +61,21 @@ class Incursion(BaseRule):
         obs_geo: BaseGeometry = shape(obs.geometry)
 
         # Check if observation occurred in an area of interest
-        geo_of_interest = None
+        feature_of_interest = None
         for feature in self.features:
             feature_region = shape(feature["geometry"])
             overlap = feature_region.intersection(obs_geo)
             if not overlap.is_empty:
-                geo_of_interest = feature["geometry"]
+                feature_of_interest = feature
                 break
 
-        if geo_of_interest:
+        if feature_of_interest:
             # Check for existing incursions in the relevant geo of interest
             attribute_query = AttributeQuery(
                 attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
-                geometry=GeoQuery(queryGeoJson=geo_of_interest),
+                geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
                 nodeIds=[incurring_object.id],
                 tags=SETTINGS.incursion_tags,
             )
@@ -103,7 +103,7 @@ class Incursion(BaseRule):
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
-                self._handle_new_incursion(obs, incurring_object, geo_of_interest)
+                self._handle_new_incursion(obs, incurring_object, feature_of_interest)
 
     def _update_existing_incursion(
         self,
@@ -154,7 +154,9 @@ class Incursion(BaseRule):
         )
         oms_client.update_attribute(updated_attribute_input)
 
-    def _handle_new_incursion(self, observation: ObservationObservation, incurring_object: NodeNode, geo_of_interest):
+    def _handle_new_incursion(
+        self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: dict
+    ):
         """
         Create new incursion attribute pointing to incurring_object and activity pointing to observation
         """
@@ -175,13 +177,16 @@ class Incursion(BaseRule):
                 SETTINGS.incursion_sm_label,
                 self.version_string,
             ],
-            geometry=geo_of_interest,
+            geometry=feature_of_interest["geometry"],
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
         oms_client.create_attribute(incursion_attribute)
 
         # Create new incursion activity pointing to observation
+        description = self._get_feature_name(feature_of_interest)
+        if description is None:
+            description = f"Incursion Activity by {incurring_object.name}"
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
@@ -193,7 +198,7 @@ class Incursion(BaseRule):
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=self._truncate_activity_description(f"Incursion Activity by {incurring_object.name}"),
+            description=self._truncate_activity_description(description),
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
@@ -219,3 +224,8 @@ class Incursion(BaseRule):
     def _truncate_activity_description(self, description: str):
         max_descr_length = 512
         return description[:max_descr_length]
+
+    def _get_feature_name(self, feature) -> str | None:
+        if feature and feature["properties"] and feature["properties"]["name"]:
+            return feature["properties"]["name"]
+        return None
