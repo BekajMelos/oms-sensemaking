@@ -102,8 +102,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-6-30-3-0-32-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SHSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SHSD------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SHSD-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SHSD-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -164,8 +164,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-2-5-01-4-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SSAX------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SSAX------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SSAX-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SSAX-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -221,8 +221,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-3-05-0-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SFPP------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SFPP------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SFPP-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SFPP-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -278,8 +278,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-4-05-0-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SNPP------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SNPP------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SNPP-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SNPP-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -430,8 +430,8 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symb
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-30-3-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -493,8 +493,8 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symb
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-30-3-0-32-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -554,8 +554,8 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symb
 
     assert len(findings) == 3
     assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-10-4-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUGX------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOGX------*****"
+    assert findings[1].finding_data["new_symbol_id_code"] == "SUGX-----------"
+    assert findings[2].finding_data["new_symbol_id_code"] == "SOGX-----------"
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(

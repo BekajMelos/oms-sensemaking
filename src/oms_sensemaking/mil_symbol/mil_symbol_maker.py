@@ -38,6 +38,7 @@ class MilSymbolMaker:
         if len(symbol_id_code) == MIL_SYMBOL_2525BC_LENGTH:
             # The difference between 2525B and 2525C is that B has a "O" affiliation code
             # which means 'none specificied' and this is not present in 2525C or 2525D
+            symbol_id_code = symbol_id_code.replace("*", "-")
             if (
                 symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
                 == MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE
