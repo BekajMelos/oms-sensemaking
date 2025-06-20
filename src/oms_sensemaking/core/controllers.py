@@ -124,7 +124,9 @@ class SensemakerController:
 
         try:
             # extract info from OMS via API calls
+            print('here 1')
             oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+            print('here2')
             if not oms_obj:
                 LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
                 return True
@@ -141,7 +143,15 @@ class SensemakerController:
 
                 executor.shutdown(wait=True)
         except Exception as e:
+            print('in the try except: ', e)
+            LOGGER.info("in the controller: does this print")
+
+            print("LOGGER id: ", hex(id(LOGGER)))
+            print("root logger id: ", hex(id(LOGGER.root)))
+            print(LOGGER.handlers)
+            # LOGGER.warning("bro what")
             LOGGER.exception(f"Error encountered while processing object {event.objectId}: {str(e)}")
+            print('exception excepted')
 
         return True
 

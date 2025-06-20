@@ -15,7 +15,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateSourceCreateSource,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
-from sqlalchemy.orm.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -29,7 +30,7 @@ if not SETTINGS.db_uri.endswith("_test"):
     SETTINGS.db_uri = f"{SETTINGS.db_uri}_test"
 
 # the session generator should initialized after the config hack above
-from oms_sensemaking.clients.instances import SessionLocal
+# from oms_sensemaking.clients.instances import SessionLocal
 
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
@@ -70,9 +71,22 @@ def db() -> Generator[Session, Any, None]:
     """
     print('db fixture start')
     # run database migrations
+    # command.downgrade(alembic_cfg, "base")
     command.upgrade(alembic_cfg, "head")
 
+    print("escaped_uri: ", escaped_uri)
+
+    print("SETTINGS.db_uri: ", SETTINGS.db_uri)
+    db_engine = create_engine(
+        SETTINGS.db_uri,  # type: ignore
+        pool_pre_ping=True,
+        connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
+    )
+
+    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
+
     db: Session = SessionLocal()
+    print("bind_url: ", db.bind.url)
 
     try:
         yield db
@@ -80,10 +94,9 @@ def db() -> Generator[Session, Any, None]:
         db.close()
 
     # purge database tables
-    command.downgrade(alembic_cfg, "base")
+    # command.downgrade(alembic_cfg, "base")
 
     print('db fixture end')
-
 
 
 # @pytest.fixture(scope="function")

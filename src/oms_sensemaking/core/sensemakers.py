@@ -240,5 +240,6 @@ class FindingWriter:
             findings.append(finding)
 
         with db_session() as db:
+            print("actually writing to db: ", db.bind.url)
             db.add_all(findings)
             db.commit()
