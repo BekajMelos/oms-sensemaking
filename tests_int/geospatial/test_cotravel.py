@@ -232,7 +232,7 @@ DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, det
 }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def tester_db(db: Session) -> Generator[Session, Any, None]:
     for track_uuid, rows in DATA.items():
         points: list[Point] = []
@@ -266,6 +266,8 @@ def test_cotravel_success(
 ):
     node_id = uuid4()
     track_uuid = uuid4()
+
+    print(len(tester_db.execute(select(Point)).scalars().all()))
 
     # 10 minutes behind fixture track
     p1 = Point(

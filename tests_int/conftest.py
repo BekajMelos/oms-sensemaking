@@ -11,9 +11,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import (
-    CreateSourceCreateSource,
-)
+from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
@@ -94,7 +92,7 @@ def db() -> Generator[Session, Any, None]:
         db.close()
 
     # purge database tables
-    # command.downgrade(alembic_cfg, "base")
+    command.downgrade(alembic_cfg, "base")
 
     print('db fixture end')
 

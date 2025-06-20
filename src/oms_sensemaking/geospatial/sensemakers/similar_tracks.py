@@ -12,7 +12,7 @@ from sqlalchemy import and_, desc, func, join, select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.sql import cast
 
-from oms_sensemaking.clients.instances import db_engine, db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_id_projection import GroupByTrackIdProjection
@@ -311,13 +311,13 @@ class SimilarTracksSensemaker(Sensemaker):
             start_geojson = {"type": "Point", "coordinates": first}
 
             start_query = generate_query(Point.detection_time, start_geojson)
-            LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            # LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
             res = db.execute(start_query)
             start_groups = res.all()
 
             end_geojson = {"type": "Point", "coordinates": last}
             end_query = generate_query(desc(Point.detection_time), end_geojson)
-            LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            # LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
             res = db.execute(end_query)
             end_groups = res.all()
 

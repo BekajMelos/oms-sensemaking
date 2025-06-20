@@ -48,6 +48,7 @@ DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, det
 
 @pytest.fixture
 def tester_db(db: Session) -> Generator[Session, Any, None]:
+
     for track_uuid, rows in DATA.items():
         points: list[Point] = []
         for row in rows:

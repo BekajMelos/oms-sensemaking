@@ -1,3 +1,6 @@
+"""Test Training Data Processor"""
+
+import pytest
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation
@@ -7,23 +10,29 @@ from oms_sensemaking.nlp.training_data_processor import TrainingDataProcessor
 from .mock_corenlp_client import MockCoreNlpClient
 from .mock_responses import mock_response_bunched_text_xml, mock_response_no_text_xml, mock_response_normal_text_xml
 
-mock_client = MockCoreNlpClient(
-    props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
-)
 
-mock_client.set_response(mock_response_normal_text_xml)
-
-tdp = TrainingDataProcessor(
-    annotated_filepath="",
-    save_directory="",
-    corenlp_client=mock_client,
-)
+@pytest.fixture
+def mock_corenlp_client():
+    client = MockCoreNlpClient(
+        props={"annotators": "tokenize, pos, lemma, depparse", "outputFormat": "xml"}, hostname=SETTINGS.corenlp_host
+    )
+    client.set_response(mock_response_normal_text_xml)
+    return client
 
 
-def test_process_doccano_result():
+@pytest.fixture
+def tdp(mock_corenlp_client):
+    return TrainingDataProcessor(
+        annotated_filepath="",
+        save_directory="",
+        corenlp_client=mock_corenlp_client,
+    )
+
+
+def test_process_doccano_result(mock_corenlp_client, tdp):
     """Tests when entities and relations exist."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text_xml)
+    mock_corenlp_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoEntity
     label = "Thing"
@@ -61,10 +70,10 @@ def test_process_doccano_result():
     assert len(test_processed_result.doc_token_map) == 10  # Ten because there are ten tokens in the provided sentence
 
 
-def test_process_doccano_result_no_relation():
+def test_process_doccano_result_no_relation(mock_corenlp_client, tdp):
     """Tests when there are no relations."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text_xml)
+    mock_corenlp_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoEntity
     label = "Thing"
@@ -96,10 +105,10 @@ def test_process_doccano_result_no_relation():
     assert not relations
 
 
-def test_process_doccano_result_no_entities_relations():
+def test_process_doccano_result_no_entities_relations(mock_corenlp_client, tdp):
     """Tests when entities and relations do not exist."""
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text_xml)
+    mock_corenlp_client.set_response(mock_response_normal_text_xml)
 
     # Make a test DoccanoResult
     result_id = 111
@@ -122,7 +131,7 @@ def test_process_doccano_result_no_entities_relations():
 
 
 # TODO: Mock client here
-def test_tokenize_text():
+def test_tokenize_text(mock_corenlp_client, tdp):
     """Tests different cases of text to tokenize."""
 
     text1 = "This is some sample text relating Entity1 to Entity2."
@@ -131,16 +140,16 @@ def test_tokenize_text():
     text4 = "ThisissomesampletextrelatingEntity1toEntity2."
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text_xml)
+    mock_corenlp_client.set_response(mock_response_normal_text_xml)
     tokenized1 = tdp.tokenize_text(text1)
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_no_text_xml)
+    mock_corenlp_client.set_response(mock_response_no_text_xml)
     tokenized2 = tdp.tokenize_text(text2)
     tokenized3 = tdp.tokenize_text(text3)
 
     # Set mock response for this test
-    mock_client.set_response(mock_response_bunched_text_xml)
+    mock_corenlp_client.set_response(mock_response_bunched_text_xml)
     tokenized4 = tdp.tokenize_text(text4)
 
     assert len(tokenized1) == 10
@@ -149,9 +158,9 @@ def test_tokenize_text():
     assert len(tokenized4) == 2
 
 
-def test_map_entities_to_tokens():
+def test_map_entities_to_tokens(mock_corenlp_client, tdp):
     # Set mock response for this test
-    mock_client.set_response(mock_response_normal_text_xml)
+    mock_corenlp_client.set_response(mock_response_normal_text_xml)
 
     """Tests building the mappings between entities and text tokens."""
     # Make a test DoccanoEntity

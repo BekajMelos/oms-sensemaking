@@ -12,8 +12,6 @@ from oms_sensemaking.models.logs import LogRecord
 class DatabaseHandler(logging.Handler):
     def emit(self, record):
 
-        print('this is the handler\n\n\n')
-
         if record.levelno > logging.INFO:
             print(record)
 
