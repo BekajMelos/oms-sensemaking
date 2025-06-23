@@ -63,7 +63,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limit_methods
 
 
-@rate_limit_methods(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period)
+@rate_limit_methods(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
