@@ -13,6 +13,11 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Unused placeholder semantic api and sensemaker
 
+## [0.7.2] - 2025-06-18
+
+### Fixed
+- Incursion Activity description no longer exceeds OMS max field length
+
 ## [0.7.1] - 2025-06-13
 
 ### Added
