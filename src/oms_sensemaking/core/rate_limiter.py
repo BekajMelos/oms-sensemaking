@@ -4,7 +4,45 @@ from functools import wraps
 
 from ratelimit import RateLimitException, limits
 
+from oms_sensemaking.config import SETTINGS
+
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+def low_frequency(function):
+    """
+    A function used as a decorator to set the rate multiplier of a method
+    within a class (low)
+
+    :param function: The function which this rate will be applied to
+    :return: The rate modified function
+    """
+    function.rate_multiplier = SETTINGS.low_frequency_multiplier
+    return function
+
+
+def medium_frequency(function):
+    """
+    A function used as a decorator to set the rate multiplier of a method
+    within a class (medium)
+
+    :param function: The function which this rate will be applied to
+    :return: The rate modified function
+    """
+    function.rate_multiplier = SETTINGS.medium_frequency_multiplier
+    return function
+
+
+def high_frequency(function):
+    """
+    A function used as a decorator to set the rate multiplier of a method
+    within a class (high)
+
+    :param function: The function which this rate will be applied to
+    :return: The rate modified function
+    """
+    function.rate_multiplier = SETTINGS.high_frequency_multiplier
+    return function
 
 
 def rate_limit_methods(calls, period):
@@ -17,13 +55,15 @@ def rate_limit_methods(calls, period):
     :return: 'class_decorator' which is a helper method used to create the decorator
     that is used on a given class
     """
-    rate_decorator = rate_decorator_factory(calls, period)
 
     def class_decorator(cls):
         for cls_attribute_name, cls_attribute_value in cls.__dict__.items():
             if cls_attribute_name.startswith("__"):
                 continue
             if callable(cls_attribute_value):
+                multiplier = getattr(cls_attribute_value, "rate_multiplier", 1)
+                effective_calls = calls * multiplier
+                rate_decorator = rate_decorator_factory(effective_calls, period)
                 wrapped = rate_decorator(cls_attribute_value)
                 setattr(cls, cls_attribute_name, wrapped)
         return cls
