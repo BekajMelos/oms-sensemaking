@@ -18,7 +18,6 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipRelationship,
     TimeQuery,
     UpdateActivityInput,
-    UuidQueryByList,
 )
 from pytest_mock import MockerFixture
 
@@ -344,7 +343,7 @@ def test_new_in_garrison(
     mock_get_attributes.assert_called_with(
         AttributeQuery(
             attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=UuidQueryByList(in_=[garrison_object.id]),
+            nodeIds=[garrison_object.id],
         )
     )
 
@@ -389,7 +388,7 @@ def test_new_out_garrison(
     mock_get_attributes.assert_called_with(
         AttributeQuery(
             attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=UuidQueryByList(in_=[garrison_object.id]),
+            nodeIds=[garrison_object.id],
         )
     )
 
@@ -447,7 +446,7 @@ def test_update_in_garrison(
     mock_get_attributes.assert_called_with(
         AttributeQuery(
             attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=UuidQueryByList(in_=[garrison_object.id]),
+            nodeIds=[garrison_object.id],
         )
     )
     mock_get_observations.assert_called_with(
@@ -506,7 +505,7 @@ def test_update_out_garrison(
     mock_get_attributes.assert_called_with(
         AttributeQuery(
             attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=UuidQueryByList(in_=[garrison_object.id]),
+            nodeIds=[garrison_object.id],
         )
     )
     mock_get_observations.assert_called_with(
