@@ -6,7 +6,7 @@ authors = [
 description = 'Python module used to perform analytics on OMS data.'
 license = {text = 'Copyright 2024 Black Cape, Inc. All rights reserved.'}
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.12'
 classifiers = [
     'Programming Language :: Python :: 3',
     'Operating System :: OS Independent',
