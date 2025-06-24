@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Dict
 
-from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
@@ -39,20 +38,15 @@ class MilSymbolMaker:
         if len(symbol_id_code) == MIL_SYMBOL_2525BC_LENGTH:
             # The difference between 2525B and 2525C is that B has a "O" affiliation code
             # which means 'none specificied' and this is not present in 2525C or 2525D
-            standardized_placeholder_symbol_id_code = symbol_id_code
-            for placeholder in SETTINGS.mil_symbol_settings.b_c_placeholders:
-                standardized_placeholder_symbol_id_code = standardized_placeholder_symbol_id_code.replace(
-                    placeholder, SETTINGS.mil_symbol_settings.b_c_standard_placeholder
-                )
             if (
-                standardized_placeholder_symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
+                symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
                 == MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE
             ):
                 # receive 2525B
-                return MilSymbol2525B(standardized_placeholder_symbol_id_code, settings)
+                return MilSymbol2525B(symbol_id_code, settings)
             else:
                 # receive 2525C
-                return MilSymbol2525C(standardized_placeholder_symbol_id_code, settings)
+                return MilSymbol2525C(symbol_id_code, settings)
 
         LOGGER.warning(f"Unsupported SIDC for {symbol_id_code}")
         return None

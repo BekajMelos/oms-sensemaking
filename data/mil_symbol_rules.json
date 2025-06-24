@@ -48,6 +48,7 @@
             "F": ["full to capacity"]
         },
         "SYMBOL_MODIFIER_LISTS": {
+            "**": ["null"],
             "--": ["null"],
             "-A": ["team", "crew"],
             "-B": ["squad"],
@@ -233,6 +234,7 @@
             "F": ["full to capacity"]
         },
         "SYMBOL_MODIFIER_LISTS": {
+            "**": ["null"],
             "--": ["null"],
             "-A": ["team", "crew"],
             "-B": ["squad"],

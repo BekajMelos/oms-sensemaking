@@ -116,15 +116,11 @@ class MilSymbolSettings(BaseModel):
     attribute_code_iris: list[str] = Field(
         ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
         description="Attribute Iris for full mil symbol codes")
-    b_c_placeholders: list[str] = Field(["*", "-"],
-                                description="Placeholder values for unset values in 2525B and 2525C symbol Id codes")
-    b_c_standard_placeholder: str = Field("-",
-                    description="Standardized placeholder string for unset values in 2525B and 2525C symbol Id codes")
     # War, Pending, Unknown, Present
     default_2525b_code: str = Field(
-        "SUZP-----------", description="Default 2525B code")
+        "SUZP------*****", description="Default 2525B code")
     default_2525c_code: str = Field(
-        "SUZP-----------", description="Default 2525C code")
+        "SUZP------*****", description="Default 2525C code")
     # Reality, Pending, Unknown, Present, Military
     default_2525d_code: str = Field(
        "10-0-0-00-0-0-00-000000-00-00", description="Default 2525C code")

@@ -92,8 +92,8 @@ def test_process_data(
     assert len(symbols) == 3
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
-    assert code_c.new_symbol_id_code == "SHSD-----------"
-    assert code_b.new_symbol_id_code == "SHSD-----------"
+    assert code_c.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSD------*****"
 
     # case 2
     sensemaker.get_context = mock.MagicMock(
@@ -113,8 +113,8 @@ def test_process_data(
     assert len(symbols) == 3
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
-    assert code_c.new_symbol_id_code == "SSAX-----------"
-    assert code_b.new_symbol_id_code == "SSAX-----------"
+    assert code_c.new_symbol_id_code == "SSAX------*****"
+    assert code_b.new_symbol_id_code == "SSAX------*****"
 
     # case 3
     sensemaker.get_context = mock.MagicMock(
@@ -134,8 +134,8 @@ def test_process_data(
     assert len(symbols) == 3
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-3-05-0-0-00-000000-00-00"
-    assert code_c.new_symbol_id_code == "SFPP-----------"
-    assert code_b.new_symbol_id_code == "SFPP-----------"
+    assert code_c.new_symbol_id_code == "SFPP------*****"
+    assert code_b.new_symbol_id_code == "SFPP------*****"
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
@@ -162,8 +162,8 @@ def test_correct_updates_made_when_none_specified(
     assert len(symbols) == 3
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-1-05-0-0-00-000000-00-00"
-    assert code_c.new_symbol_id_code == "SUPP-----------"
-    assert code_b.new_symbol_id_code == "SOPP-----------"
+    assert code_c.new_symbol_id_code == "SUPP------*****"
+    assert code_b.new_symbol_id_code == "SOPP------*****"
 
 
 def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
@@ -454,8 +454,8 @@ def test_dimension_enrichment(
 
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
-    assert code_c.new_symbol_id_code == "SHAD-----------"
-    assert code_b.new_symbol_id_code == "SHAD-----------"
+    assert code_c.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAD------*****"
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
@@ -486,8 +486,8 @@ def test_acms(
     assert len(symbols) == 3
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
-    assert code_c.new_symbol_id_code == "SHSD-----------"
-    assert code_b.new_symbol_id_code == "SHSD-----------"
+    assert code_c.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSD------*****"
     mock_aac_client.get_acm_rollup.assert_any_call(
         [
             {"ACM": ts_acm},
@@ -536,8 +536,8 @@ def test_controlling_affiliation_enrichment(
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
     assert len(symbols) == 3
     assert symbols[0].new_symbol_id_code == "10-0-0-01-3-0-00-000000-00-00"
-    assert symbols[1].new_symbol_id_code == "SPAD-----------"
-    assert symbols[2].new_symbol_id_code == "SPAD-----------"
+    assert symbols[1].new_symbol_id_code == "SPAD------*****"
+    assert symbols[2].new_symbol_id_code == "SPAD------*****"
     mock_oms_crud_tool.get_nodes.assert_not_called()
 
     ### Test actually checking controlling node affiliations
@@ -553,6 +553,6 @@ def test_controlling_affiliation_enrichment(
 
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
-    assert code_c.new_symbol_id_code == "SHAD-----------"
-    assert code_b.new_symbol_id_code == "SHAD-----------"
+    assert code_c.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAD------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()
