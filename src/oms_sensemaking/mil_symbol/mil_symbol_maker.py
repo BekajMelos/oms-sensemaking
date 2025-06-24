@@ -4,8 +4,8 @@ import logging
 import re
 from typing import Dict
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
-from oms_sensemaking.mil_symbol.std_2525_b_c import MilSymbol2525BandC
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
@@ -40,9 +40,9 @@ class MilSymbolMaker:
             # The difference between 2525B and 2525C is that B has a "O" affiliation code
             # which means 'none specificied' and this is not present in 2525C or 2525D
             standardized_placeholder_symbol_id_code = symbol_id_code
-            for placeholder in MilSymbol2525BandC.MIL_SYM_2525_B_C_PLACEHOLDERS:
+            for placeholder in SETTINGS.mil_symbol_settings.b_c_placeholders:
                 standardized_placeholder_symbol_id_code = standardized_placeholder_symbol_id_code.replace(
-                    placeholder, MilSymbol2525BandC.MIL_SYM_2525_B_C_STANDARD_PLACEHOLDER
+                    placeholder, SETTINGS.mil_symbol_settings.b_c_standard_placeholder
                 )
             if (
                 standardized_placeholder_symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]

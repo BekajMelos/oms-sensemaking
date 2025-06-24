@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-
+- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
 ### Changed
-
+- Mil Symbol outputs 2525B and 2525C symbol Id codes with a standardized placeholder string for unset values
 ### Fixed
+- Mil Symbol can handle incoming 2525B and 2525C codes with varying placeholder strings and no longer fails
 
 ## [0.7.2] - 2025-06-18
 

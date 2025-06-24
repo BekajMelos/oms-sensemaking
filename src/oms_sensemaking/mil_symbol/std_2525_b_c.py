@@ -28,8 +28,6 @@ class MilSymbol2525BandC(MilSymbol):
     MIL_SYM_2525_B_C_SYM_MOD_IDX_0 = 10
     MIL_SYM_2525_B_C_SYM_MOD_IDX_1 = 11
     MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX = 14
-    MIL_SYM_2525_B_C_PLACEHOLDERS = ["-", "*"]
-    MIL_SYM_2525_B_C_STANDARD_PLACEHOLDER = "-"
 
     @property
     @abstractmethod
