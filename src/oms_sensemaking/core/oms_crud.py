@@ -335,7 +335,7 @@ class OmsCrudTool:
 
         return obj_getter_mapping[object_type](object_id)
 
-    @low_frequency
+    @medium_frequency
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
         """Get the Ontology Class for a given iri
 

@@ -121,7 +121,7 @@ def sleep_and_retry_with_logs(func):
                 return func(*args, **kargs)
             except RateLimitException as exception:
                 sleep_time = exception.period_remaining
-                LOGGER.info(f"Rate limit hit. Sleeping for {sleep_time:.2f} seconds and retrying")
+                LOGGER.info(f"Rate limit hit for {func}. Sleeping for {sleep_time:.2f} seconds and retrying")
                 time.sleep(sleep_time)
 
     return wrapper
