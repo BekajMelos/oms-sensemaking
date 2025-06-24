@@ -39,6 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    'debugpy==1.8.9',
     'mypy==1.11.1',
     'pre-commit==3.7.1',
     'ruff==0.8.1',
