@@ -55,6 +55,7 @@ def rate_limit_methods(calls, period):
     :return: 'class_decorator' which is a helper method used to create the decorator
     that is used on a given class
     """
+    decorator_cache = {}
 
     def class_decorator(cls):
         for cls_attribute_name, cls_attribute_value in cls.__dict__.items():
@@ -63,7 +64,9 @@ def rate_limit_methods(calls, period):
             if callable(cls_attribute_value):
                 multiplier = getattr(cls_attribute_value, "rate_multiplier", 1)
                 effective_calls = calls * multiplier
-                rate_decorator = rate_decorator_factory(effective_calls, period)
+                if effective_calls not in decorator_cache:
+                    decorator_cache[effective_calls] = rate_decorator_factory(effective_calls, period)
+                rate_decorator = decorator_cache[effective_calls]
                 wrapped = rate_decorator(cls_attribute_value)
                 setattr(cls, cls_attribute_name, wrapped)
         return cls
