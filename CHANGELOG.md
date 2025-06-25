@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Out of Garrison location query uses the garrison id directly
 
 ### Removed
 - Unused placeholder semantic api and sensemaker
