@@ -5,8 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
+
 ### Changed
+
+### Fixed
+
+### Removed
+
+## [0.7.3] - 2025-06-24
+
+### Added
+- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
 
 ### Fixed
 - Out of Garrison location query uses the garrison id directly
