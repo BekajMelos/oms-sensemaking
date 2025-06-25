@@ -116,7 +116,6 @@ class MilSymbolSettings(BaseModel):
     attribute_code_iris: list[str] = Field(
         ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
         description="Attribute Iris for full mil symbol codes")
-
     # War, Pending, Unknown, Present
     default_2525b_code: str = Field(
         "SUZP------*****", description="Default 2525B code")

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-
+- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
 ### Changed
 
 ### Fixed
