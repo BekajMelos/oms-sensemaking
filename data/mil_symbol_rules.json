@@ -15,7 +15,9 @@
             "L": ["exercise neutral"],
             "J": ["joker"],
             "K": ["faker"],
-            "O": ["none specified"]
+            "O": ["none specified"],
+            "*": ["unknown"],
+            "-": ["unknown"]
         },
         "DIMENSION_IRIS": {
             "P": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
@@ -37,7 +39,9 @@
             "U": ["http://omsb/test/Submarine"],
             "F": [],
             "X": [],
-            "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"]
+            "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"],
+            "*": ["http://purl.obolibrary.org/obo/BFO_0000040"],
+            "-": ["http://purl.obolibrary.org/obo/BFO_0000040"]
         },
         "STATUS_LISTS": {
             "A": ["anticipated", "planned"],
@@ -45,7 +49,9 @@
             "C": ["fully capable"],
             "D": ["damaged"],
             "X": ["destroyed"],
-            "F": ["full to capacity"]
+            "F": ["full to capacity"],
+            "*": ["present"],
+            "-": ["present"]
         },
         "SYMBOL_MODIFIER_LISTS": {
             "**": ["null"],
@@ -222,7 +228,9 @@
             "D": ["exercise friend", "exercise friendly"],
             "L": ["exercise neutral"],
             "J": ["joker"],
-            "K": ["faker"]
+            "K": ["faker"],
+            "*": ["unknown"],
+            "-": ["unknown"]
         },
         "DIMENSION_IRIS": {
             "P": ["http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"],
@@ -244,7 +252,9 @@
             "U": ["http://omsb/test/Submarine"],
             "F": [],
             "X": [],
-            "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"]
+            "Z": ["http://purl.obolibrary.org/obo/BFO_0000040"],
+            "*": ["http://purl.obolibrary.org/obo/BFO_0000040"],
+            "-": ["http://purl.obolibrary.org/obo/BFO_0000040"]
         },
         "STATUS_LISTS": {
             "A": ["anticipated", "planned"],
@@ -252,7 +262,9 @@
             "C": ["fully capable"],
             "D": ["damaged"],
             "X": ["destroyed"],
-            "F": ["full to capacity"]
+            "F": ["full to capacity"],
+            "*": ["present"],
+            "-": ["present"]
         },
         "SYMBOL_MODIFIER_LISTS": {
             "**": ["null"],
