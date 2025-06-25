@@ -197,7 +197,7 @@ class Settings(BaseSettings):
         "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
     )
     inference_geo_attribute_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation", description="IRI for geo attribute"
+        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates", description="IRI for geo attribute"
     )
     inference_garrisoned_in_iri: str = Field(
         "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
