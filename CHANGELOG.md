@@ -10,6 +10,24 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+### Removed
+
+## [0.7.3] - 2025-06-24
+
+### Added
+- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
+
+### Fixed
+- Out of Garrison location query uses the garrison id directly
+
+### Removed
+- Unused placeholder semantic api and sensemaker
+
+## [0.7.2] - 2025-06-18
+
+### Fixed
+- Incursion Activity description no longer exceeds OMS max field length
+
 ## [0.7.1] - 2025-06-13
 
 ### Added

@@ -63,7 +63,7 @@ class InOrOutOfGarrison(BaseRule):
 
             # Find garrison coordinates through location attribute
             garrison_attribute_query = AttributeQuery(
-                nodeIds=UuidQueryByList(in_=[garrison_object_id]), attributeIris=[SETTINGS.inference_geo_attribute_iri]
+                nodeIds=[garrison_object_id], attributeIris=[SETTINGS.inference_geo_attribute_iri]
             )
             garrison_attribute_res = oms_client.get_attributes(garrison_attribute_query)
             if len(garrison_attribute_res.data):

@@ -10,7 +10,6 @@ from oms_sensemaking.config import SETTINGS
 # do not delete the following imports
 from oms_sensemaking.models.base import BaseORM
 from oms_sensemaking.models.geo import *
-from oms_sensemaking.models.semantic import *
 from oms_sensemaking.models.sensemaking import *
 
 # this is the Alembic Config object, which provides
