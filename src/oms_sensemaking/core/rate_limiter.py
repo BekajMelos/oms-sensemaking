@@ -12,7 +12,7 @@ def rate_limiter(calls, period):
     A function used to create a class decorator which
     limits API calls and is used on whole classes
 
-    :param calls: The maximum amount of calls each method in the class is limited to
+    :param calls: The maximum amount of calls across each method in the class
     :param period: The time period for which the maximum calls can be reached
     :return: 'class_decorator' which is a helper method used to create the decorator
     that is used on a given class
@@ -35,7 +35,7 @@ def rate_decorator_factory(calls, period):
     """
     A function used to create a rate decorator applied mass to a class' instance methods
 
-    :param calls: The maximum amount of calls the method is limited to
+    :param calls: The maximum amount of calls each method is collectively is limited to
     :param period: The time period for which the maximum calls can be reached
     :return: Return a rate decorator
     """
