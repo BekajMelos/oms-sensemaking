@@ -60,10 +60,10 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.rate_limiter import high_frequency, low_frequency, medium_frequency, rate_limit_methods
+from oms_sensemaking.core.rate_limiter import rate_limiter
 
 
-@rate_limit_methods(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
+@rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
@@ -77,7 +77,6 @@ class OmsCrudTool:
             pkcs12_password=SETTINGS.pkcs12_password,
         )
 
-    @low_frequency
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
         """
         Publish the Nodes to OMS
@@ -86,7 +85,6 @@ class OmsCrudTool:
         # 1. for each node, publish it to OMS
         return [self.oms_client.create_node(node) for node in nodes]
 
-    @medium_frequency
     def publish_relationships(
         self, relationships: list[CreateRelationshipInput]
     ) -> list[CreateRelationshipCreateRelationship]:
@@ -97,7 +95,6 @@ class OmsCrudTool:
         # 1. for each relationship, publish it to OMS
         return [self.oms_client.create_relationship(relationship) for relationship in relationships]
 
-    @medium_frequency
     def publish_attributes(self, attributes: list[CreateAttributeInput]) -> list[CreateAttributeCreateAttribute]:
         """
         Publish the attributes to oms
@@ -106,7 +103,6 @@ class OmsCrudTool:
         # 1. for each attribute, publish it to OMS
         return [self.oms_client.create_attribute(attribute) for attribute in attributes]
 
-    @high_frequency
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
         Publish the Nodes to OMS
@@ -115,14 +111,12 @@ class OmsCrudTool:
         # 1. for each node, publish it to OMS
         return self.oms_client.create_node(node_input)
 
-    @low_frequency
     def create_observation(self, observation_input: CreateObservationInput) -> CreateObservationCreateObservation:
         """
         Publish the Observations to OMS
         """
         return self.oms_client.create_observation(observation_input)
 
-    @high_frequency
     def create_relationship(self, relationship_input: CreateRelationshipInput) -> CreateRelationshipCreateRelationship:
         """
         Publish the relationship to OMS
@@ -131,7 +125,6 @@ class OmsCrudTool:
         # 1. for each relationship, publish it to OMS
         return self.oms_client.create_relationship(relationship_input)
 
-    @high_frequency
     def create_attribute(self, attribute_input: CreateAttributeInput) -> CreateAttributeCreateAttribute:
         """
         Publish the attribute to oms
@@ -140,7 +133,6 @@ class OmsCrudTool:
         # 1. for each attribute, publish it to OMS
         return self.oms_client.create_attribute(attribute_input)
 
-    @low_frequency
     def create_activity(self, activity_input: CreateActivityInput) -> CreateActivityCreateActivity:
         """
         Publish the activity to oms
@@ -149,7 +141,6 @@ class OmsCrudTool:
         # 1. for each activity, publish it to OMS
         return self.oms_client.create_activity(activity_input)
 
-    @low_frequency
     def create_source(self, source_input: CreateSourceInput) -> CreateSourceCreateSource:
         """
         Create a source in OMS
@@ -157,7 +148,6 @@ class OmsCrudTool:
         """
         return self.oms_client.create_source(source_input)
 
-    @low_frequency
     def create_provider(self, provider_input: CreateProviderInput) -> CreateProviderCreateProvider:
         """
         Create a provider in OMS
@@ -165,7 +155,6 @@ class OmsCrudTool:
         """
         return self.oms_client.create_provider(provider_input)
 
-    @low_frequency
     def create_originator(self, originator_input: CreateOriginatorInput) -> CreateOriginatorCreateOriginator:
         """
         Create an Originator in OMS
@@ -174,135 +163,110 @@ class OmsCrudTool:
         return self.oms_client.create_originator(originator_input)
 
     ### GET ###
-    @medium_frequency
     def get_activity(self, id: UUID) -> ActivityActivity:
         """Get existing Activity from OMS"""
         activity = self.oms_client.activity(IdQuery(id=id))
         return activity
 
-    @medium_frequency
     def get_attribute(self, id: UUID) -> AttributeAttribute:
         """Get existing Attribute from OMS"""
         attribute = self.oms_client.attribute(IdQuery(id=id))
         return attribute
 
-    @high_frequency
     def get_node(self, id: UUID) -> NodeNode:
         """Get existing Node from OMS"""
         node = self.oms_client.node(IdQuery(id=id))
         return node
 
-    @medium_frequency
     def get_observation(self, id: UUID) -> ObservationObservation:
         """Get existing Observation from OMS"""
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
 
-    @medium_frequency
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
         nodes = self.oms_client.nodes(query=node_info)
         return nodes
 
-    @low_frequency
     def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
         """Get existing Relationships from OMS"""
         relationships = self.oms_client.relationships(query=relationship_info)
         return relationships
 
-    @high_frequency
     def get_attributes(self, attribute_info: AttributeQuery) -> AttributesAttributes:
         """Get existing Attributes from OMS"""
         attributes = self.oms_client.attributes(query=attribute_info)
         return attributes
 
-    @medium_frequency
     def get_activities(self, activity_info: ActivityQuery) -> ActivitiesActivities:
         """Get existing Activities from OMS"""
         activities = self.oms_client.activities(query=activity_info)
         return activities
 
-    @low_frequency
     def get_observations(self, observation_info: ObservationQuery) -> ObservationsObservations:
         """Get existing Observations from OMS"""
         observations = self.oms_client.observations(query=observation_info)
         return observations
 
-    @low_frequency
     def get_source(self, source_id: str) -> SourceSource:
         """Get existing Attributes from OMS"""
         source = self.oms_client.source(query=IdQuery(id=source_id))
         return source
 
-    @low_frequency
     def get_source_by_name(self, source_name: str) -> SourcesSources:
         return self.oms_client.sources(query=SourceQuery(name=StringQuery(equals=source_name)))
 
-    @low_frequency
     def get_provider_by_name(self, provider_name: str) -> ProvidersProviders:
         """Get existing Attributes from OMS"""
         return self.oms_client.providers(query=ProviderQuery(name=StringQuery(equals=provider_name)))
 
-    @low_frequency
     def get_originator_by_name(self, originator_name: str) -> OriginatorsOriginators:
         """Get existing Attributes from OMS"""
         return self.oms_client.originators(query=OriginatorQuery(name=StringQuery(equals=originator_name)))
 
     ### UPDATE ###
-    @low_frequency
     def update_node(self, update_input: UpdateNodeInput) -> UpdateNodeUpdateNode:
         """Update node"""
         return self.oms_client.update_node(update_input)
 
-    @low_frequency
     def update_relationship(self, update_input: UpdateRelationshipInput) -> UpdateRelationshipUpdateRelationship:
         """Update relationship"""
         return self.oms_client.update_relationship(update_input)
 
-    @low_frequency
     def update_attribute(self, update_input: UpdateAttributeInput) -> UpdateAttributeUpdateAttribute:
         """Update attribute"""
         return self.oms_client.update_attribute(update_input)
 
-    @low_frequency
     def update_source(self, update_input: UpdateSourceInput) -> UpdateSourceUpdateSource:
         """Update source"""
         return self.oms_client.update_source(update_input)
 
-    @low_frequency
     def update_activity(self, update_input: UpdateActivityInput) -> UpdateActivityUpdateActivity:
         """Update activity"""
         return self.oms_client.update_activity(update_input)
 
     ### DELETE ###
-    @low_frequency
     def delete_node(self, node_id: str) -> bool:
         """Update node"""
         return self.oms_client.delete_node(DeleteByIdInput(id=node_id))
 
-    @low_frequency
     def delete_relationship(self, relationship_id: str) -> bool:
         """Update relationship"""
         return self.oms_client.delete_relationship(DeleteByIdInput(id=relationship_id))
 
-    @low_frequency
     def delete_attribute(self, attribute_id: str) -> bool:
         """Update attribute"""
         return self.oms_client.delete_attribute(DeleteByIdInput(id=attribute_id))
 
-    @low_frequency
     def delete_provider(self, provider_id: str) -> bool:
         return self.oms_client.delete_provider(DeleteByIdInput(id=provider_id))
 
-    @low_frequency
     def delete_originator(self, originator_id: str) -> bool:
         return self.oms_client.delete_originator(DeleteByIdInput(id=originator_id))
 
-    @low_frequency
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
-    @medium_frequency
     def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
         """
         Given a node id and a list of IRIs, get the attribute values from OMS
@@ -317,7 +281,6 @@ class OmsCrudTool:
             return attributes_response.data
         return []
 
-    @high_frequency
     def rehydrate_oms_obj(
         self, object_id: UUID, object_type: ObjectType
     ) -> Union[ActivityActivity, AttributeAttribute, ObservationObservation, NodeNode]:
@@ -335,7 +298,6 @@ class OmsCrudTool:
 
         return obj_getter_mapping[object_type](object_id)
 
-    @medium_frequency
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
         """Get the Ontology Class for a given iri
 
@@ -344,7 +306,6 @@ class OmsCrudTool:
         """
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
 
-    @low_frequency
     def create_test_source(
         self,
         test_originator_name: str = "nlp_test_originator",

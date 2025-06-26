@@ -1,9 +1,9 @@
 import time
 
-from oms_sensemaking.core.rate_limiter import rate_limit_methods
+from oms_sensemaking.core.rate_limiter import rate_limiter
 
 
-@rate_limit_methods(calls=2, period=2)
+@rate_limiter(calls=5, period=5)
 class MyLimitedClass:
     def foo(self):
         return "foo"
@@ -14,20 +14,14 @@ class MyLimitedClass:
 
 def test_rate_limiting_works():
     obj = MyLimitedClass()
-    for _ in range(2):
+    for _ in range(4):
         assert obj.foo() == "foo"
 
-    start = time.time()
-    assert obj.foo() == "foo"
-    end = time.time()
-
-    assert end - start >= 1
-
-    for _ in range(2):
+    for _ in range(1):
         assert obj.bar() == "bar"
 
     start = time.time()
     assert obj.bar() == "bar"
     end = time.time()
 
-    assert end - start >= 1
+    assert end - start >= 5
