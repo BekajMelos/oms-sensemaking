@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
+    GeoQueryType,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -417,7 +418,8 @@ def test_two_existing_incursions(
         ObservationQuery(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
-            endTime=TimeQuery(lt=observational_node_region1.startTime),
+            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -449,6 +451,7 @@ def test_existing_incursion_nonoverlapping_time(
     mock_get_observations,
     mock_update_attribute,
     mock_update_activity,
+    areas_of_interest,
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
@@ -466,7 +469,8 @@ def test_existing_incursion_nonoverlapping_time(
         ObservationQuery(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
-            endTime=TimeQuery(lt=observational_node_region1.startTime),
+            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
