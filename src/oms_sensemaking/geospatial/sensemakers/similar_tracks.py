@@ -311,13 +311,13 @@ class SimilarTracksSensemaker(Sensemaker):
             start_geojson = {"type": "Point", "coordinates": first}
 
             start_query = generate_query(Point.detection_time, start_geojson)
-            # LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            LOGGER.debug(f"Start bookend query {start_query.compile(db.bind, compile_kwargs={'literal_binds':True})}")
             res = db.execute(start_query)
             start_groups = res.all()
 
             end_geojson = {"type": "Point", "coordinates": last}
             end_query = generate_query(desc(Point.detection_time), end_geojson)
-            # LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            LOGGER.debug(f"End bookend query {end_query.compile(db.bind, compile_kwargs={'literal_binds':True})}")
             res = db.execute(end_query)
             end_groups = res.all()
 

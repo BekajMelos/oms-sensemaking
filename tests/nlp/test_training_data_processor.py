@@ -1,6 +1,7 @@
 """Test Training Data Processor"""
 
 import pytest
+
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.models.doccano_entity import DoccanoEntity
 from oms_sensemaking.nlp.models.doccano_relation import DoccanoRelation

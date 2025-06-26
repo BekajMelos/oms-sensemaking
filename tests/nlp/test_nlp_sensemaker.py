@@ -1,6 +1,7 @@
 """Tests for the NLP Sensemaker and Annotation Processor."""
 
 import pytest
+
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.nlp.annotation_processor import AnnotationProcessor
 from oms_sensemaking.nlp.models.submission_data import SubmissionData

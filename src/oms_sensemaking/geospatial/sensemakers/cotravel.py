@@ -316,8 +316,6 @@ class CotravelSensemaker(Sensemaker):
         """
         with db_session() as db:
 
-            assert str(db.bind.url).endswith("_test"), f"Wrong db: {db.bind.url}"
-
             query = db.execute(
                 select(Track.track_uuid, Point)
                 .select_from(

@@ -14,7 +14,6 @@ from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 from ..config import SETTINGS
 
 
-
 @contextmanager
 def db_session() -> Iterator[Session]:
     """
@@ -37,10 +36,7 @@ def db_session() -> Iterator[Session]:
 
     SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
 
-
     db = SessionLocal()
-    print("db_session SETTINGS.db_uri: ", SETTINGS.db_uri)
-    print("db_session db.bind.url: ", db.bind.url)
 
     try:
         yield db

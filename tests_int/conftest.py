@@ -67,14 +67,10 @@ def db() -> Generator[Session, Any, None]:
 
     It is intended on being used as a pytest fixture.
     """
-    print('db fixture start')
+
     # run database migrations
-    # command.downgrade(alembic_cfg, "base")
     command.upgrade(alembic_cfg, "head")
 
-    print("escaped_uri: ", escaped_uri)
-
-    print("SETTINGS.db_uri: ", SETTINGS.db_uri)
     db_engine = create_engine(
         SETTINGS.db_uri,  # type: ignore
         pool_pre_ping=True,
@@ -84,7 +80,6 @@ def db() -> Generator[Session, Any, None]:
     SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
 
     db: Session = SessionLocal()
-    print("bind_url: ", db.bind.url)
 
     try:
         yield db
@@ -93,55 +88,6 @@ def db() -> Generator[Session, Any, None]:
 
     # purge database tables
     command.downgrade(alembic_cfg, "base")
-
-    print('db fixture end')
-
-
-# @pytest.fixture(scope="function")
-# def db() -> Generator[Session, Any, None]:
-#     """
-#     Get a database session generator.
-
-#     This function:
-#       - Upgrades the database schema definition to HEAD using Alembic
-#       - Yields a database session generator
-#       - Downgrades the database schema definition to BASE using Alembic
-
-#     It is intended on being used as a pytest fixture.
-#     """
-
-#     print('db fixture start')
-
-#     from oms_sensemaking.models.base import BaseORM
-#     from oms_sensemaking.clients.instances import db_engine
-
-#     # # purge database tables
-#     # command.downgrade(alembic_cfg, "base")
-
-#     # run database migrations
-#     command.upgrade(alembic_cfg, "head")
-
-#     sess: Session = SessionLocal()
-#     print(sess.bind.url)
-
-#     # BaseORM.metadata.drop_all(bind=sess.bind)
-
-#     # for tbl in reversed(BaseORM.metadata.sorted_tables):
-#     #     sess.execute(tbl.delete())
-
-#     try:
-#         yield sess
-#     finally:
-
-#         # BaseORM.metadata.drop_all(bind=sess.bind)
-#         # for tbl in reversed(BaseORM.metadata.sorted_tables):
-#         #     sess.execute(tbl.delete())
-#         sess.close()
-
-#     # purge database tables
-#     command.downgrade(alembic_cfg, "base")
-
-#     print('db fixture end')
 
 
 @pytest.fixture

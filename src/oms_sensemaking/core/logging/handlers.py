@@ -1,7 +1,6 @@
 """Module for custom logging handlers"""
 
 import logging
-import traceback
 from datetime import datetime, timezone
 
 from oms_sensemaking.clients.instances import db_session

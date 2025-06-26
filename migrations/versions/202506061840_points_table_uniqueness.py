@@ -8,13 +8,8 @@ Create Date: 2025-06-06 18:40:27.859394
 
 from typing import Sequence, Union
 
-import geoalchemy2
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
-
-import oms_sensemaking
-
 
 # revision identifiers, used by Alembic.
 revision: str = "202506061840"

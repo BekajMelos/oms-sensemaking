@@ -21,7 +21,8 @@ class DummyRabbitMQListener(BaseRabbitMQListener):
 
 
 @mock.patch("oms_sensemaking.core.events.BlockingConnection")
-def test_rmq_listeners(mock_connection: mock.MagicMock):
+@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
+def test_rmq_listeners(mock_database_logger, mock_connection: mock.MagicMock):
     """Test exception handling with rabbit mq connections"""
     mock_connection.side_effect = [socket.gaierror]
     listener = DummyRabbitMQListener("test", "test-queue", None, None)

@@ -17,6 +17,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.logging.handlers import DatabaseHandler
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 
@@ -65,8 +66,13 @@ def create_attribute(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) 
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
 def test_process_data(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_database_logger: DatabaseHandler,
+    mock_get_acm: AacClient,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    mil_symbol_rules: Dict
 ):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
@@ -378,8 +384,13 @@ def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: Node
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
 def test_dimension_enrichment(
-    mock_get_acm: mock.MagicMock, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_database_logger: DatabaseHandler,
+    mock_get_acm: mock.MagicMock,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    mil_symbol_rules: Dict
 ):
     """Test that the dimension is updated based on the parent IRIs"""
 
@@ -459,7 +470,9 @@ def test_dimension_enrichment(
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
+@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
 def test_acms(
+    mock_database_logger: DatabaseHandler,
     mock_aac_client: mock.MagicMock,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
@@ -499,8 +512,13 @@ def test_acms(
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
 def test_controlling_affiliation_enrichment(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_database_logger: DatabaseHandler,
+    mock_get_acm: AacClient,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    mil_symbol_rules: Dict
 ):
     """Test that the affiliation is updated based on the parent controlling nodes"""
 
