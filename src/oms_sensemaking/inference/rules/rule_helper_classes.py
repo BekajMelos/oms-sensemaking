@@ -1,5 +1,6 @@
 from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import (
+    GeoQuery,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -33,6 +34,7 @@ class GenericNodeTimeframe:
         self,
         node_object: NodeNode,
         observation: ObservationObservation,
+        geo_query: GeoQuery = None,
     ) -> bool:
         """
         Check to see if an observation occurred in the time separating the generic nodes's timeframe and
@@ -47,15 +49,17 @@ class GenericNodeTimeframe:
             # Check for observations between current observation end time and generic node start time
             observation_query = ObservationQuery(
                 nodeId=[node_object.id],
-                startTime=TimeQuery(gt=observation.endTime),
+                startTime=TimeQuery(gte=observation.endTime),
                 endTime=TimeQuery(lt=self.start_time.isoformat()),
+                geometry=geo_query,
             )
         else:
             # Check for observations between generic end time and current observation start time
             observation_query = ObservationQuery(
                 nodeId=[node_object.id],
                 startTime=TimeQuery(gt=self.end_time.isoformat()),
-                endTime=TimeQuery(lt=observation.startTime),
+                endTime=TimeQuery(lte=observation.startTime),
+                geometry=geo_query,
             )
         observation_response = oms_client.get_observations(observation_query)
         part_of_existing_generic_node = bool(not observation_response.data)

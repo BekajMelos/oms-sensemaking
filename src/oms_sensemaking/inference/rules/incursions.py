@@ -6,6 +6,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
+    GeoQueryType,
     NodeNode,
     NodesNodesData,
     ObservationObservation,
@@ -46,7 +47,7 @@ class Incursion(BaseRule):
         if rule_context.observation:
             obs = rule_context.observation
 
-        return rule_context.observation and obs.nodeId and obs.geometry
+        return rule_context.observation and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
     def action(self, rule_context: RuleContext):
         """
@@ -92,8 +93,9 @@ class Incursion(BaseRule):
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
+                geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
                 if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
-                    incurring_object, obs
+                    incurring_object, obs, geo_query
                 ):
                     # Update existing incursion with union of observation and incursion time intervals
                     inc_attr.update_generic_node_times_with_observation(incursion_obs)

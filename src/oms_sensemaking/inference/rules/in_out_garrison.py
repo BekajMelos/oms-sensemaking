@@ -38,7 +38,7 @@ class InOrOutOfGarrison(BaseRule):
         if rule_context.observation:
             obs = rule_context.observation
 
-        return rule_context.observation and obs.nodeId and obs.geometry
+        return rule_context.observation and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
     def action(self, rule_context: RuleContext):
         """
