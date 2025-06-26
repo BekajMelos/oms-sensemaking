@@ -1,10 +1,13 @@
 import logging
+import threading
 import time
 from functools import wraps
 
 from ratelimit import RateLimitException, limits
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+_rate_limit_lock = threading.Lock()
 
 
 def rate_limiter(calls, period):
@@ -48,7 +51,8 @@ def rate_decorator_factory(calls, period):
     def rate_decorator(function):
         @wraps(function)
         def wrapper(*args, **kwargs):
-            token_bucket()
+            with _rate_limit_lock:
+                token_bucket()
             return function(*args, **kwargs)
 
         return wrapper
