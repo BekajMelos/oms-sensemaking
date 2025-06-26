@@ -163,7 +163,7 @@ class Settings(BaseSettings):
     # Request Rate Settings
     maximum_oms_api_calls: int = Field(500,
                                        description="Maximum amount of requests made to the OMS API per time period")
-    oms_api_call_period_seconds: int = Field(120,
+    oms_api_call_period_seconds: int = Field(30,
                                              description="Alloted amount of time for maximum OMS API calls to be made")
 
     # Labels
