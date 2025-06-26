@@ -134,3 +134,5 @@
 | `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
 | `MIL_SYMBOL_SETTINGS__RULES_FILE_PATH`              | `./data/mil_symbol_rules.json`                                                                    | Path to the Mil Symbol Rules config file                       | No             |
 | `MIL_SYMBOL_SETTINGS__ATTRIBUTE_CODE_IRIS`                    | `'["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"]'`                     | Attribute Iris for full mil symbol codes                       | No             |
+| `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
+| `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
