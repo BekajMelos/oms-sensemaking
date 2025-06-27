@@ -585,14 +585,14 @@ def get_track(db: Session, track_uuid: str | uuid.UUID) -> Track:
 
 
 def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[TimedCoords]:
-    if oms_obs.geometry["type"] == "Point":
+    if oms_obs.geometry["type"] == "Point" and oms_obs.startTime is not None:
         return [
             {
                 "detection_time": isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc),
                 "coordinates": oms_obs.geometry["coordinates"],
             }
         ]
-    if oms_obs.geometry["type"] == "LineString":
+    if oms_obs.geometry["type"] == "LineString" and oms_obs.startTime is not None and oms_obs.endTime is not None:
         start_time = isoparse(oms_obs.startTime).replace(tzinfo=timezone.utc)
         end_time = isoparse(oms_obs.endTime).replace(tzinfo=timezone.utc)
         # Always remember to convert lon/lat to lat/lon to use geopy distance calc
@@ -649,4 +649,5 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         # Eliminate rounding errors on final coordinate time
         timed_coords[-1]["detection_time"] = end_time
         return timed_coords
+    LOGGER.info(f"Observation <{oms_obs.id}> does not meet certain criteria and will be ignored.")
     return []
