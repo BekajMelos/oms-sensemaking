@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Limit queue messages being actively processed
 
 ### Changed
+- Updated Garrison rule to use the Facility's goemetry to determine whether new points are part of existing or new Garrison Activity
 
 ### Fixed
 
