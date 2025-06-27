@@ -64,7 +64,8 @@ class AacClient:
         else:
             LOGGER.warning("AAC Cache is enabled")
             storage = hishel.InMemoryStorage(capacity=64)
-            self.client = hishel.CacheClient(verify=verify, timeout=30, storage=storage)
+            controller = hishel.Controller(cacheable_methods=["GET", "POST"])
+            self.client = hishel.CacheClient(verify=verify, timeout=30, storage=storage, controller=controller)
 
     def __del__(self):
         """
