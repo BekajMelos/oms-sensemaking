@@ -21,7 +21,7 @@ from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
+from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
@@ -44,10 +44,12 @@ class Incursion(BaseRule):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if rule_context.observation:
-            obs = rule_context.observation
+        if not rule_context.observation:
+            return False
 
-        return rule_context.observation and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
+        obs = rule_context.observation
+
+        return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
     def action(self, rule_context: RuleContext):
         """

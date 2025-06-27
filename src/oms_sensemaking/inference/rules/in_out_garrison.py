@@ -1,9 +1,13 @@
+"""Module for calculating whether a node observation is in or out of garrison"""
+
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
     AttributeQuery,
     CreateActivityInput,
+    GeoQuery,
+    GeoQueryType,
     NodeNode,
     ObservationObservation,
     RelationshipNodeQuery,
@@ -15,6 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
@@ -35,10 +40,13 @@ class InOrOutOfGarrison(BaseRule):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if rule_context.observation:
-            obs = rule_context.observation
 
-        return rule_context.observation and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
+        if not rule_context.observation:
+            return False
+
+        obs = rule_context.observation
+
+        return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
     def action(self, rule_context: RuleContext):
         """
@@ -75,18 +83,30 @@ class InOrOutOfGarrison(BaseRule):
                 garrison_object_coordinates = [garrison_object_coordinates[1], garrison_object_coordinates[0]]
                 distance = geodesic(object_coordinates, garrison_object_coordinates).kilometers
                 in_garrison = distance < SETTINGS.garrison_distance_kilometers
+                garrison_buffer_points = generate_circle_points_geographical(
+                    garrison_object_coordinates[0],
+                    garrison_object_coordinates[1],
+                    SETTINGS.garrison_distance_kilometers)
 
-                self._create_or_update_garrison_activity(obs, node_object, in_garrison)
+                garrison_buffer_geojson = {
+                    "type": "Polygon",
+                    "coordinates": garrison_buffer_points
+                }
+
+                self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
 
     def _create_or_update_garrison_activity(
-        self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool
+        self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
             activity_state = SETTINGS.inference_in_garrison_activity_state
+            geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT)
+
         else:
             activity_name = SETTINGS.inference_out_of_garrison_activity_name
             activity_state = SETTINGS.inference_out_of_garrison_activity_state
+            geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
 
         activity_query = ActivityQuery(
             name=StringQuery(equals=activity_name),
@@ -104,8 +124,11 @@ class InOrOutOfGarrison(BaseRule):
             # Update existing activity if times overlap or if node_object stayed in/out of
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
-            if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(
-                node_object, obs
+            if (time_overlap or
+                enhanced_activity.object_observed_between_generic_node_and_observation_times(
+                    node_object,
+                    obs,
+                    geo_query)
             ):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
