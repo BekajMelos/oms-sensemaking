@@ -360,6 +360,7 @@ class Settings(BaseSettings):
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
     rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
     rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
+    rabbitmq_prefetch_count: int = Field(200, description="RabbitMQ prefetch count")
 
     rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
     rmq_geo_queue_name: str = Field(
