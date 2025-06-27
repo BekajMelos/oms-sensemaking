@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New rate limit decorator functions for OMS crud tool to throttle OMS API requests
+- AAC requests are cached
 
 ### Changed
 

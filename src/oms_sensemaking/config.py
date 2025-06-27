@@ -427,6 +427,7 @@ class Settings(BaseSettings):
         `False` will disable verification""",
         examples=[True, False]
     )
+    aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 

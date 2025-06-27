@@ -72,6 +72,7 @@
 | `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
 | `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `AAC_VERIFICATION_MODE`  | `True`                                             | Verify CA bundle of AAC   | No             |
+| `AAC_CACHE_ENABLED`      | `True`                                             | Cache AAC Requests        | No             |
 
 ##### Sensemaker Settings
 
