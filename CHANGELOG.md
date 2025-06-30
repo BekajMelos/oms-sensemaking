@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Listed ES as ASOMS dependency
 - AAC Cache handles acm rollup requests
 
 ### Removed
