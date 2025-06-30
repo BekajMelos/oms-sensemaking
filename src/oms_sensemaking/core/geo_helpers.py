@@ -1,4 +1,5 @@
 """Module with geo helper functions"""
+
 import json
 
 from geopy.distance import geodesic

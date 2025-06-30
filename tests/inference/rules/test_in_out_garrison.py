@@ -455,17 +455,15 @@ def test_update_in_garrison(
     garrison_buffer_points = generate_circle_points_geographical(
         geo_attribute1.geometry["coordinates"][1],
         geo_attribute1.geometry["coordinates"][0],
-        SETTINGS.garrison_distance_kilometers)
-    garrison_buffer_geojson = {
-        "type": "Polygon",
-        "coordinates": garrison_buffer_points
-    }
+        SETTINGS.garrison_distance_kilometers,
+    )
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
             startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
             endTime=TimeQuery(lte="2025-01-01T00:00:00+00:00"),
-            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT)
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_activity.assert_called_with(
@@ -523,18 +521,16 @@ def test_update_out_garrison(
     garrison_buffer_points = generate_circle_points_geographical(
         geo_attribute1.geometry["coordinates"][1],
         geo_attribute1.geometry["coordinates"][0],
-        SETTINGS.garrison_distance_kilometers)
-    garrison_buffer_geojson = {
-        "type": "Polygon",
-        "coordinates": garrison_buffer_points
-    }
+        SETTINGS.garrison_distance_kilometers,
+    )
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
 
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
             startTime=TimeQuery(gte="2024-01-01T00:00:00+00:00"),
             endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
-            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS),
         )
     )
     mock_update_activity.assert_called_with(

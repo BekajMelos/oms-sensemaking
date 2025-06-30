@@ -44,7 +44,11 @@ class Incursion(BaseRule):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if not rule_context.observation:
+        if (
+            not rule_context.observation
+            or rule_context.observation.startTime is None
+            or rule_context.observation.endTime is None
+        ):
             return False
 
         obs = rule_context.observation
