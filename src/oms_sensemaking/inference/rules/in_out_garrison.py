@@ -41,7 +41,11 @@ class InOrOutOfGarrison(BaseRule):
         :param rule_context: Rule context object containing the observation to evaluate
         """
 
-        if not rule_context.observation:
+        if (
+            not rule_context.observation
+            or rule_context.observation.startTime is None
+            or rule_context.observation.endTime is None
+        ):
             return False
 
         obs = rule_context.observation
@@ -86,12 +90,10 @@ class InOrOutOfGarrison(BaseRule):
                 garrison_buffer_points = generate_circle_points_geographical(
                     garrison_object_coordinates[0],
                     garrison_object_coordinates[1],
-                    SETTINGS.garrison_distance_kilometers)
+                    SETTINGS.garrison_distance_kilometers,
+                )
 
-                garrison_buffer_geojson = {
-                    "type": "Polygon",
-                    "coordinates": garrison_buffer_points
-                }
+                garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
 
                 self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
 
@@ -124,11 +126,8 @@ class InOrOutOfGarrison(BaseRule):
             # Update existing activity if times overlap or if node_object stayed in/out of
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
-            if (time_overlap or
-                enhanced_activity.object_observed_between_generic_node_and_observation_times(
-                    node_object,
-                    obs,
-                    geo_query)
+            if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(
+                node_object, obs, geo_query
             ):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
