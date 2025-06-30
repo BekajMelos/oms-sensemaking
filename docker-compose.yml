@@ -64,7 +64,7 @@ services:
 
   pgadmin:
     profiles:
-      - local
+      - dev
     image: dpage/pgadmin4:8
     volumes:
       - ./docker/postgis/servers.json:/pgadmin4/servers.json
