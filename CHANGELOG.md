@@ -12,6 +12,16 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## [0.7.4] - 2025-06-26
+
+### Added
+- New rate limit decorator functions for OMS crud tool to throttle OMS API requests
+- AAC requests are cached
+- Limit queue messages being actively processed
+
+### Changed
+- Updated Garrison rule to use the Facility's goemetry to determine whether new points are part of existing or new Garrison Activity
+
 ## [0.7.3] - 2025-06-24
 
 ### Added

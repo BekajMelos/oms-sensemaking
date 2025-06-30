@@ -10,6 +10,8 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
     Confidence,
     CreateActivityInput,
+    GeoQuery,
+    GeoQueryType,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -22,6 +24,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
@@ -449,11 +452,20 @@ def test_update_in_garrison(
             nodeIds=[garrison_object.id],
         )
     )
+    garrison_buffer_points = generate_circle_points_geographical(
+        geo_attribute1.geometry["coordinates"][1],
+        geo_attribute1.geometry["coordinates"][0],
+        SETTINGS.garrison_distance_kilometers)
+    garrison_buffer_geojson = {
+        "type": "Polygon",
+        "coordinates": garrison_buffer_points
+    }
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
             startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
-            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
+            endTime=TimeQuery(lte="2025-01-01T00:00:00+00:00"),
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT)
         )
     )
     mock_update_activity.assert_called_with(
@@ -508,11 +520,21 @@ def test_update_out_garrison(
             nodeIds=[garrison_object.id],
         )
     )
+    garrison_buffer_points = generate_circle_points_geographical(
+        geo_attribute1.geometry["coordinates"][1],
+        geo_attribute1.geometry["coordinates"][0],
+        SETTINGS.garrison_distance_kilometers)
+    garrison_buffer_geojson = {
+        "type": "Polygon",
+        "coordinates": garrison_buffer_points
+    }
+
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
-            startTime=TimeQuery(gt="2024-01-01T00:00:00+00:00"),
+            startTime=TimeQuery(gte="2024-01-01T00:00:00+00:00"),
             endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
         )
     )
     mock_update_activity.assert_called_with(

@@ -2,6 +2,7 @@ import logging
 import ssl
 from typing import List, Optional, Union
 
+import hishel
 import httpx
 
 from oms_sensemaking.config import SETTINGS
@@ -38,26 +39,32 @@ class AacClient:
         """
 
         if ca_cert_path is None or ca_cert_path == "":
-            LOGGER.debug("AAC Client CA_CERT_PATH not detected")
+            LOGGER.warning("AAC Client CA_CERT_PATH not detected")
         self._ctx = ssl.create_default_context(cafile=ca_cert_path)
 
         if cert_path and key_path:
-            LOGGER.debug("AAC Client cert_path and key_path detected")
+            LOGGER.warning("AAC Client cert_path and key_path detected")
             self._ctx.load_cert_chain(f"{cert_path}", f"{key_path}")
         elif cert_path:
-            LOGGER.debug("AAC Client cert_path detected")
+            LOGGER.warning("AAC Client cert_path detected")
             self._ctx.load_cert_chain(f"{cert_path}")
         else:
-            LOGGER.debug("AAC Client certs not detected")
+            LOGGER.warning("AAC Client certs not detected")
 
         verify: Union[bool, ssl.SSLContext] = False
         if verification_mode:
-            LOGGER.debug("AAC Client verification enabled")
+            LOGGER.warning("AAC Client verification enabled")
             verify = self._ctx
         else:
-            LOGGER.debug("AAC Client verification disabled")
+            LOGGER.warning("AAC Client verification disabled")
 
-        self.client = httpx.Client(verify=verify, timeout=30)
+        if not SETTINGS.aac_cache_enabled:
+            LOGGER.warning("AAC Cache is disabled")
+            self.client = httpx.Client(verify=verify, timeout=30)
+        else:
+            LOGGER.warning("AAC Cache is enabled")
+            storage = hishel.InMemoryStorage(capacity=64)
+            self.client = hishel.CacheClient(verify=verify, timeout=30, storage=storage)
 
     def __del__(self):
         """

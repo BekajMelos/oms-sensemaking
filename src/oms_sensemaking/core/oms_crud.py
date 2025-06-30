@@ -60,8 +60,10 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.rate_limiter import rate_limiter
 
 
+@rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
