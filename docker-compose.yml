@@ -245,6 +245,8 @@ services:
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
     restart: always
+    profiles:
+      - local
 
   ess3:
     container_name: ess3
@@ -305,6 +307,8 @@ services:
     depends_on:
       - aac2
       - elasticsearch8
+    profiles:
+      - local
 
   ess-indexer-service:
     image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
@@ -327,6 +331,8 @@ services:
       postgis:
         condition: service_healthy
     restart: on-failure:3
+    profiles:
+      - local
 
 volumes:
   doccano-db:
