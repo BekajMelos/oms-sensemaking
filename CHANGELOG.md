@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
 
 ### Changed
 
 ### Fixed
+- Listed ES as ASOMS dependency
+- No longer incorrectly throw errors when dealing with observations with no start time/end time
 
 ### Removed
 
