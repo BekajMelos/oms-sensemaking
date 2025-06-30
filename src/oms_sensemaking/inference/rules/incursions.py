@@ -6,6 +6,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
+    GeoQueryType,
     NodeNode,
     NodesNodesData,
     ObservationObservation,
@@ -20,7 +21,7 @@ from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
+from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
@@ -43,10 +44,12 @@ class Incursion(BaseRule):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if rule_context.observation:
-            obs = rule_context.observation
+        if not rule_context.observation:
+            return False
 
-        return rule_context.observation and obs.nodeId and obs.geometry
+        obs = rule_context.observation
+
+        return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
     def action(self, rule_context: RuleContext):
         """
@@ -61,21 +64,21 @@ class Incursion(BaseRule):
         obs_geo: BaseGeometry = shape(obs.geometry)
 
         # Check if observation occurred in an area of interest
-        geo_of_interest = None
+        feature_of_interest = None
         for feature in self.features:
             feature_region = shape(feature["geometry"])
             overlap = feature_region.intersection(obs_geo)
             if not overlap.is_empty:
-                geo_of_interest = feature["geometry"]
+                feature_of_interest = feature
                 break
 
-        if geo_of_interest:
+        if feature_of_interest:
             # Check for existing incursions in the relevant geo of interest
             attribute_query = AttributeQuery(
                 attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
-                geometry=GeoQuery(queryGeoJson=geo_of_interest),
+                geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
                 nodeIds=[incurring_object.id],
                 tags=SETTINGS.incursion_tags,
             )
@@ -92,8 +95,9 @@ class Incursion(BaseRule):
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
+                geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
                 if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
-                    incurring_object, obs
+                    incurring_object, obs, geo_query
                 ):
                     # Update existing incursion with union of observation and incursion time intervals
                     inc_attr.update_generic_node_times_with_observation(incursion_obs)
@@ -103,7 +107,7 @@ class Incursion(BaseRule):
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
-                self._handle_new_incursion(obs, incurring_object, geo_of_interest)
+                self._handle_new_incursion(obs, incurring_object, feature_of_interest)
 
     def _update_existing_incursion(
         self,
@@ -154,7 +158,9 @@ class Incursion(BaseRule):
         )
         oms_client.update_attribute(updated_attribute_input)
 
-    def _handle_new_incursion(self, observation: ObservationObservation, incurring_object: NodeNode, geo_of_interest):
+    def _handle_new_incursion(
+        self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: dict
+    ):
         """
         Create new incursion attribute pointing to incurring_object and activity pointing to observation
         """
@@ -175,13 +181,16 @@ class Incursion(BaseRule):
                 SETTINGS.incursion_sm_label,
                 self.version_string,
             ],
-            geometry=geo_of_interest,
+            geometry=feature_of_interest["geometry"],
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
         oms_client.create_attribute(incursion_attribute)
 
         # Create new incursion activity pointing to observation
+        description = self._get_feature_name(feature_of_interest)
+        if description is None:
+            description = f"Incursion Activity by {incurring_object.name}"
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
@@ -193,7 +202,7 @@ class Incursion(BaseRule):
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion detected into {geo_of_interest}",  # edit based on actual geo of interests format
+            description=self._truncate_activity_description(description),
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
@@ -215,3 +224,12 @@ class Incursion(BaseRule):
         activities = oms_client.get_activities(activity_query).data
 
         return any(activity.name == "Incursion" for activity in activities)
+
+    def _truncate_activity_description(self, description: str):
+        max_descr_length = 512
+        return description[:max_descr_length]
+
+    def _get_feature_name(self, feature) -> str | None:
+        if feature and feature["properties"] and feature["properties"]["name"]:
+            return feature["properties"]["name"]
+        return None

@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
+    GeoQueryType,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -22,7 +23,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.inference.data.areas_of_interest.areas_of_interest import features_list_from_geojson
+from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
@@ -304,7 +305,7 @@ def test_new_incursion_region1(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion detected into {areas_of_interest[0]}",
+            description="test feature name",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
@@ -370,7 +371,7 @@ def test_new_incursion_region2(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion detected into {areas_of_interest[1]}",
+            description=f"Incursion Activity by {incurring_object.name}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
@@ -417,7 +418,8 @@ def test_two_existing_incursions(
         ObservationQuery(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
-            endTime=TimeQuery(lt=observational_node_region1.startTime),
+            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -449,6 +451,7 @@ def test_existing_incursion_nonoverlapping_time(
     mock_get_observations,
     mock_update_attribute,
     mock_update_activity,
+    areas_of_interest,
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
@@ -466,7 +469,8 @@ def test_existing_incursion_nonoverlapping_time(
         ObservationQuery(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
-            endTime=TimeQuery(lt=observational_node_region1.startTime),
+            endTime=TimeQuery(lte=observational_node_region1.startTime),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(

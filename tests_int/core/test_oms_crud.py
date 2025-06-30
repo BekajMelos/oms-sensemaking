@@ -7,6 +7,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateNodeInput,
     CreateRelationshipInput,
     NodeQuery,
+    ObjectTier,
     RelationshipQuery,
     StringQuery,
     UpdateAttributeInput,
@@ -15,7 +16,6 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateSourceInput,
 )
 
-from oms_sensemaking.api.schemas.oms import ObjectTier
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 

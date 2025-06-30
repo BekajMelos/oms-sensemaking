@@ -72,6 +72,7 @@
 | `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
 | `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `AAC_VERIFICATION_MODE`  | `True`                                             | Verify CA bundle of AAC   | No             |
+| `AAC_CACHE_ENABLED`      | `True`                                             | Cache AAC Requests        | No             |
 
 ##### Sensemaker Settings
 
@@ -114,7 +115,7 @@
 | `INFERENCE_INCURSION_CLASS_IRI`                     | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri to apply for the Incursion Activity class                  | No             |
 | `INFERENCE_INCURSION_ACTIVITY_STATE`                | `UNKNOWN`                                                                                         | Incursion Activity State                                       | No             |
 | `INFERENCE_INCURSION_AREAS_OF_INTEREST_PATH`        | `./data/areas_of_interest.json`                                                                   | Path to areas_of_interest.json file in oms-sensemaking         | No             |
-| `INFERENCE_GEO_ATTRIBUTE_IRI`                       | `http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation`                       | Iri for geo attribute                                          | No             |
+| `INFERENCE_GEO_ATTRIBUTE_IRI`                       | `https://foundry.ai.mil/ontology/4901-001/hasCoordinates`                                         | Iri for geo attribute                                          | No             |
 | `INFERENCE_GARRISONED_IN_IRI`                       | `https://foundry.ai.mil/ontology/4901-001/garrisonedIn`                                           | Iri for relationship between an object and its garrison        | No             |
 | `INFERENCE_GARRISON_CLASS_IRI`                      | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri for garrison activity class                                | No             |
 | `INFERENCE_IN_GARRISON_ACTIVITY_NAME`               | `In Garrison`                                                                                     | Name for In Garrison activities                                | No             |
@@ -134,3 +135,5 @@
 | `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
 | `MIL_SYMBOL_SETTINGS__RULES_FILE_PATH`              | `./data/mil_symbol_rules.json`                                                                    | Path to the Mil Symbol Rules config file                       | No             |
 | `MIL_SYMBOL_SETTINGS__ATTRIBUTE_CODE_IRIS`                    | `'["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"]'`                     | Attribute Iris for full mil symbol codes                       | No             |
+| `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
+| `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |

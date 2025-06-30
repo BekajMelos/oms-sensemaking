@@ -6,7 +6,7 @@ authors = [
 description = 'Python module used to perform analytics on OMS data.'
 license = {text = 'Copyright 2024 Black Cape, Inc. All rights reserved.'}
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.12'
 classifiers = [
     'Programming Language :: Python :: 3',
     'Operating System :: OS Independent',
@@ -22,6 +22,7 @@ dependencies = [
     'geoalchemy2==0.15.2',
     'geolib==1.0.7',
     'geopy==2.4.1',
+    'hishel==0.1.2',
     'numpy==1.26.4',
     'oms_sdk==5.1.0',
     'pandas==2.2.2',
@@ -31,6 +32,7 @@ dependencies = [
     'pydantic-settings==2.4.0',
     'python-dotenv==1.0.1',
     'pyyaml~=6.0.1',
+    'ratelimit==2.2.1',
     'rdflib~=7.0.0',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
@@ -39,6 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    'debugpy==1.8.9',
     'mypy==1.11.1',
     'pre-commit==3.7.1',
     'ruff==0.8.1',

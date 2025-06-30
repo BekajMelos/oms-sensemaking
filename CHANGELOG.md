@@ -9,6 +9,35 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Listed ES as ASOMS dependency
+
+### Removed
+
+## [0.7.4] - 2025-06-26
+
+### Added
+- New rate limit decorator functions for OMS crud tool to throttle OMS API requests
+- AAC requests are cached
+- Limit queue messages being actively processed
+
+### Changed
+- Updated Garrison rule to use the Facility's goemetry to determine whether new points are part of existing or new Garrison Activity
+
+## [0.7.3] - 2025-06-24
+
+### Added
+- Mil Symbol sensemaker can now handle symbol modifier codes for 2525B and 2525C
+
+### Fixed
+- Out of Garrison location query uses the garrison id directly
+
+### Removed
+- Unused placeholder semantic api and sensemaker
+
+## [0.7.2] - 2025-06-18
+
+### Fixed
+- Incursion Activity description no longer exceeds OMS max field length
 
 ## [0.7.1] - 2025-06-13
 

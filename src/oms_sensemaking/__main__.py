@@ -3,7 +3,7 @@ Provides a CLI for oms-sensemaking.
 
 ```
 $ python -m oms_sensemaking -h
-usage: oms_sensemaking [-h] [-V] {geo,semantic} ...
+usage: oms_sensemaking [-h] [-V] {geo} ...
 
 A utility for analysing OMS data.
 
@@ -14,9 +14,8 @@ options:
 commands:
   Run 'python -m oms_sensemaking COMMAND -h' for more information.
 
-  {geo,semantic}
+  {geo}
     geo               Run geospatial analytics.
-    semantic          Run semantic workflow.
 ```
 
 Geospatial CLI
@@ -52,20 +51,6 @@ Examples
 Run and listen for events from rmq:
 
     $ python -m oms_sensemaking geo
-
-
-Semantic CLI
-============
-
-| **WARNING**: Not fully implemented
-
-```
-$python -m oms_sensemaking semantic -h
-usage: oms_sensemaking semantic [-h]
-
-options:
-  -h, --help  show this help message and exit
-```
 """
 
 import logging
@@ -217,15 +202,6 @@ def run_inference() -> None:
     start_controller_and_wait(inference)
 
 
-def run_semantic() -> None:
-    """Run the semantic algorithms."""
-    # lazy load controller to allow CLI args to override app config
-    from oms_sensemaking.core.events import NoOpEventConsumer
-    from oms_sensemaking.semantic.controllers import SemanticSensemakerController
-
-    start_controller_and_wait(SemanticSensemakerController(NoOpEventConsumer()))
-
-
 def get_cli_parser() -> ArgumentParser:
     """Return a configured CLI argument parser."""
     parser: ArgumentParser = ArgumentParser(description="A utility for analysing OMS data.", prog="oms_sensemaking")
@@ -241,9 +217,6 @@ def get_cli_parser() -> ArgumentParser:
         add_db_cli_args(subparsers.add_parser("geo", help="Run geospatial analytics."))
     )
     geo_parser.set_defaults(func=run_geospatial)
-
-    semantic_parser: ArgumentParser = subparsers.add_parser("semantic", help="Run semantic workflow.")
-    semantic_parser.set_defaults(func=lambda args: run_semantic())
 
     return parser
 
