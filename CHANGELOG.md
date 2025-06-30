@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
 
 ### Changed
 
