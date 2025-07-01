@@ -28,6 +28,7 @@ class MilSymbol2525BandC(MilSymbol):
     MIL_SYM_2525_B_C_SYM_MOD_IDX_0 = 10
     MIL_SYM_2525_B_C_SYM_MOD_IDX_1 = 11
     MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX = 14
+    MIL_SYM_2525_B_C_PLACEHOLDERS = ["-", "*"]
 
     @property
     @abstractmethod
@@ -140,10 +141,23 @@ class MilSymbol2525BandC(MilSymbol):
         :param echelon_attr: Attribute for echelon
         :return: None
         """
+        current_placeholder = None
+        pre_enriched_sym_mod = (
+            self.formatted_code[self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0]
+            + self.formatted_code[self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1]
+        )
+        for placeholder in self.MIL_SYM_2525_B_C_PLACEHOLDERS:
+            if placeholder in pre_enriched_sym_mod:
+                current_placeholder = placeholder
+                break
         if echelon_attr:
             echelon = echelon_attr.attributeValue
             for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"].items():
                 if echelon.lower() in echelon_list:
+                    if current_placeholder and any(c in code for c in self.MIL_SYM_2525_B_C_PLACEHOLDERS):
+                        code = "".join(
+                            current_placeholder if char in self.MIL_SYM_2525_B_C_PLACEHOLDERS else char for char in code
+                        )
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
                     self.source_ids.put((3, echelon_attr.sourceId))

@@ -54,8 +54,8 @@
             "-": ["present"]
         },
         "SYMBOL_MODIFIER_LISTS": {
-            "**": ["null"],
-            "--": ["null"],
+            "**": ["null", "unknown"],
+            "--": ["null", "unknown"],
             "*A": ["team", "crew"],
             "-A": ["team", "crew"],
             "*B": ["squad"],
@@ -80,8 +80,8 @@
             "-K": ["army"],
             "*L": ["army group", "front"],
             "-L": ["army group", "front"],
-            "*M": ["region"],
-            "-M": ["region"],
+            "*M": ["region", "theater"],
+            "-M": ["region", "theater"],
             "A*": ["headquarters"],
             "A-": ["headquarters"],
             "AA": ["hq team", "hq crew"],
@@ -267,8 +267,8 @@
             "-": ["present"]
         },
         "SYMBOL_MODIFIER_LISTS": {
-            "**": ["null"],
-            "--": ["null"],
+            "**": ["null", "unknown"],
+            "--": ["null", "unknown"],
             "*A": ["team", "crew"],
             "-A": ["team", "crew"],
             "*B": ["squad"],
@@ -293,8 +293,8 @@
             "-K": ["army"],
             "*L": ["army group", "front"],
             "-L": ["army group", "front"],
-            "*M": ["region"],
-            "-M": ["region"],
+            "*M": ["region", "theater"],
+            "-M": ["region", "theater"],
             "*N": ["command"],
             "-N": ["command"],
             "A*": ["headquarters"],
@@ -496,7 +496,7 @@
             "5": ["full to capacity"]
         },
         "AMPLIFIER_LISTS": {
-            "00": ["unknown"],
+            "00": ["unknown", "null"],
             "11": ["team", "crew"],
             "12": ["squad"],
             "13": ["section"],
