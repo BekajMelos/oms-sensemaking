@@ -138,10 +138,11 @@ class MilSymbolSensemaker(Sensemaker):
         affiliation_attr = self.get_affiliation(oms_node)
         status_attr = self.get_status(oms_node)
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
+        echelon_attr = self.get_echelon(oms_node)
 
         code_2525d.enrich(context_attr, affiliation_attr, oms_node, ancestor_iris, status_attr)
-        code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr)
-        code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr)
+        code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
+        code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
 
         LOGGER.info(f"Enriched 2525B: {code_2525b.formatted_code}")
         LOGGER.info(f"Enriched 2525C: {code_2525c.formatted_code}")
@@ -340,6 +341,22 @@ class MilSymbolSensemaker(Sensemaker):
             current_iri = parent_iri
 
         return iris
+
+    def get_echelon(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
+        """
+        Get echelon for this node.
+
+        :param oms_node: Node to get the echelon
+        :return: The node's echelon
+        """
+        echelon_attr: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+            oms_node.id, SETTINGS.mil_symbol_settings.echelon_iris
+        )
+
+        if echelon_attr:
+            return echelon_attr[0]
+
+        return None
 
     def publish_attributes(
         self, oms_node: NodeNode, symbol_code_updates: List[SymbolCodeUpdate], source_id: uuid.UUID

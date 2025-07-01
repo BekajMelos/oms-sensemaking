@@ -47,6 +47,7 @@ class MilSymbol2525BandC(MilSymbol):
         oms_node: NodeNode,
         ancestor_iris: List[str],
         status_attr: Optional[AttributeAttribute],
+        echelon_attr: Optional[AttributeAttribute],
     ) -> None:
         """Enrich the code given node attribute data
 
@@ -59,6 +60,7 @@ class MilSymbol2525BandC(MilSymbol):
         self.enrich_affiliation(affiliation_attr)
         self.enrich_dimension(oms_node, ancestor_iris)
         self.enrich_status(status_attr)
+        self.enrich_echelon(echelon_attr)
 
     def enrich_affiliation(self, affiliation_attr: Optional[AttributeAttribute]) -> None:
         """Update Affilation
@@ -129,4 +131,22 @@ class MilSymbol2525BandC(MilSymbol):
                     self.source_ids.put((2, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
                     LOGGER.debug(f"Updated status: {code} b/c {status}")
+                    break
+
+    def enrich_echelon(self, echelon_attr: Optional[AttributeAttribute]) -> None:
+        """
+        Update echelon (symbol modifer)
+
+        :param echelon_attr: Attribute for echelon
+        :return: None
+        """
+        if echelon_attr:
+            echelon = echelon_attr.attributeValue
+            for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"]:
+                if echelon.lower() in echelon_list:
+                    self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
+                    self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
+                    self.source_ids.put((3, echelon_attr.sourceId))
+                    self.acms.append(echelon_attr.acm)
+                    LOGGER.debug(f"Updated echelon: {code} b/c {echelon}")
                     break

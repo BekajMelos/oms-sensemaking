@@ -106,6 +106,7 @@ class MilSymbolSettings(BaseModel):
     affiliation_iris: list[str] = Field(
         ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")
     status_iris: list[str] = Field(["https://foundry.ai.mil/ontology/4901-001/hasCondition"], description="Status IRI")
+    echelon_iris: list[str] = Field(["https://oms.dodiis.ic.gov/ontology/p-0000000029"], description="Echelon IRI")
     affiliation_controlled_by_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controlledBy"],
         description="Relationship IRIs used to search for controlling/commanding nodes")
