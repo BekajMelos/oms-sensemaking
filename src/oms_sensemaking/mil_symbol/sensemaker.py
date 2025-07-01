@@ -140,7 +140,7 @@ class MilSymbolSensemaker(Sensemaker):
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
         echelon_attr = self.get_echelon(oms_node)
 
-        code_2525d.enrich(context_attr, affiliation_attr, oms_node, ancestor_iris, status_attr)
+        code_2525d.enrich(context_attr, affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
 

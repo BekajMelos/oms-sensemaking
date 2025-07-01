@@ -142,7 +142,7 @@ class MilSymbol2525BandC(MilSymbol):
         """
         if echelon_attr:
             echelon = echelon_attr.attributeValue
-            for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"]:
+            for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"].items():
                 if echelon.lower() in echelon_list:
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
