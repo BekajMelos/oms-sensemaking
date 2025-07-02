@@ -14,10 +14,10 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
-# class GeospatialObservableSensemaker:
+# class IWGeospatialSensemaker:
 
 #     def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
-#         """Create a new instance of GeospatialObservableSensemaker."""
+#         """Create a new instance of IWGeospatialSensemaker."""
 #         super().__init__()
 #         self.version = (0, 0, 1)
 #         self.oms_crud_tool = oms_crud_tool
@@ -62,8 +62,7 @@ if __name__ == "__main__":
         )
     )
 
-    # TODO: fix this logic: actually need to check the number of objects observed
-    num_observed = len(set([o.id for o in observations.data]))
+    num_observed = len(set([o.nodeId for o in observations.data]))
 
     updated_status = None  # TODO: maybe instead, get the existing_status attribute and update it directly
     if num_observed == 0:
