@@ -138,6 +138,27 @@ class MilSymbolSettings(BaseModel):
 
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
+# IW Settings
+class IWSettings(BaseModel):
+    """Settings for I&W"""
+    observable_statuses: dict = Field({
+        "unknown": "Unknown",
+        "not_observed": "Not Observed",
+        "partially_observed": "Partially Observed",
+        "observed": "Observed"
+    }, description="Status options for the observable")
+
+    observable_status_attribute_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/hasOperationalStatus",
+        description="Status attribute used to indicate the status of an observable")
+
+    observable_location_attribute_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000140",
+        description="Location attribute used to identify the boundary of an observable")
+
+    observable_associated_with_relationship_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000034",
+        description="Relationship used to associate an observable with an object")
 
 class Settings(BaseSettings):
     """Settings class."""
@@ -394,6 +415,7 @@ class Settings(BaseSettings):
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
+    iw_settings: IWSettings = IWSettings()
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
