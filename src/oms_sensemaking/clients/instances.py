@@ -34,24 +34,8 @@ def db_session() -> Iterator[Session]:
         connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
     )
 
-    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
+    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
 
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_db_session() -> Iterator[Session]:
-    """
-    Get a database session generator.
-
-    This function yields a database session and automatically closes the
-    session when processing is complete. This can be used as a dependency
-    injected database session in FastAPI.
-    """
     db = SessionLocal()
 
     try:

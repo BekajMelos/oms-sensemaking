@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from oms_sdk import DEFAULT_ACM
 from pytest_mock import MockerFixture
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.core.sensemakers import FindingBase, FindingWriter, SensemakerMetaData
@@ -22,13 +22,6 @@ class FindingHelper(FindingBase):
 
 
 def test_save_findings(mocker: MockerFixture, db: Session):
-
-    print('initial: ', len(db.execute(select(Finding)).scalars().all()))
-
-    db.execute(delete(Finding))
-
-    print('initial finding count: ', len(db.execute(select(Finding)).scalars().all()))
-
     finding_writer = FindingWriter()
 
     alg_meta_data = mocker.MagicMock(spec=SensemakerMetaData)

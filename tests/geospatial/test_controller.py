@@ -34,8 +34,8 @@ def mock_geo_controller(mock_oms_client):
     controller.autoflush_enabled = False
     return controller
 
-@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
-def test_node_version_attribute_error(mock_database_logger, mocker: MockerFixture, mock_geo_controller, caplog):
+
+def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller, caplog):
     # This is what we want returned from get_oms_observation. We only need the nodeId
     mock_observation = mock.Mock()
     mock_observation.nodeId = uuid4()

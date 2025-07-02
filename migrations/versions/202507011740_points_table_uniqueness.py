@@ -1,7 +1,7 @@
 """Points table uniqueness
 
-Revision ID: 202506061840
-Revises: 202504171216
+Revision ID: 202507011740
+Revises: 202506161854
 Create Date: 2025-06-06 18:40:27.859394
 
 """
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "202506061840"
-down_revision: Union[str, None] = "202504171216"
+revision: str = "202507011740"
+down_revision: Union[str, None] = "202506161854"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

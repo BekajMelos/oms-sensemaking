@@ -27,9 +27,6 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 if not SETTINGS.db_uri.endswith("_test"):
     SETTINGS.db_uri = f"{SETTINGS.db_uri}_test"
 
-# the session generator should initialized after the config hack above
-# from oms_sensemaking.clients.instances import SessionLocal
-
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
 alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "migrations")))
@@ -56,7 +53,7 @@ SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 
 @pytest.fixture(scope="function")
-def db() -> Generator[Session, Any, None]:
+def session_local():
     """
     Get a database session generator.
 
@@ -77,17 +74,23 @@ def db() -> Generator[Session, Any, None]:
         connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
     )
 
-    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))
+    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
 
-    db: Session = SessionLocal()
+    yield SessionLocal
+
+    # purge database tables
+    command.downgrade(alembic_cfg, "base")
+
+
+@pytest.fixture(scope="function")
+def db(session_local) -> Generator[Session, Any, None]:
+
+    db: Session = session_local()
 
     try:
         yield db
     finally:
         db.close()
-
-    # purge database tables
-    command.downgrade(alembic_cfg, "base")
 
 
 @pytest.fixture

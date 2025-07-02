@@ -48,7 +48,6 @@ DATA = {  # Latitude, Longitude, Altitude (m), Description, Node ID, Obs ID, det
 
 @pytest.fixture
 def tester_db(db: Session) -> Generator[Session, Any, None]:
-
     for track_uuid, rows in DATA.items():
         points: list[Point] = []
         for row in rows:
@@ -76,7 +75,6 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
 
 
 def test_points_2d_and_3d(tester_db: Session):
-
     count: int = tester_db.scalar(select(func.count()).select_from(Point))
 
     # ensure all data made it into the database

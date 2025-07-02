@@ -299,7 +299,6 @@ class GeospatialSensemakerController(SensemakerController):
                             for future in as_completed(futures):
                                 _ = future.result()
                     except Exception as e:
-                        print('this is the exception')
                         LOGGER.error("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
                     finally:
                         self.track_times[track_uuid] = None  # mark for removal

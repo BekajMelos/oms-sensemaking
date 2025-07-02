@@ -1,7 +1,7 @@
 """Added LogRecord table.
 
-Revision ID: 202506091140
-Revises: 202506061840
+Revision ID: 202507011818
+Revises: 202507011740
 Create Date: 2025-06-09 11:40:52.794843
 
 """
@@ -15,8 +15,8 @@ from sqlalchemy.dialects import postgresql
 import oms_sensemaking
 
 # revision identifiers, used by Alembic.
-revision: str = "202506091140"
-down_revision: Union[str, None] = "202506061840"
+revision: str = "202507011818"
+down_revision: Union[str, None] = "202507011740"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

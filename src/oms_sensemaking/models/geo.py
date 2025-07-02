@@ -147,7 +147,6 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
         nullable=False,
         primary_key=True,
         init=False,
-        # unique=True,
         comment="The unique ID of the Sensemaking Point.",
     )
     weight: Mapped[float] = mapped_column(

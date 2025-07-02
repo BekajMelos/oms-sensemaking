@@ -1,12 +1,9 @@
 """Tests for PubSub."""
 
-from unittest import mock
-
 from oms_sensemaking.core.pubsub import PubSub
 
 
-@mock.patch("oms_sensemaking.core.logging.handlers.DatabaseHandler.emit")
-def test_pubsub(mock_database_logger):
+def test_pubsub():
     pubsub: PubSub = PubSub()
     test_val: bool = False
 

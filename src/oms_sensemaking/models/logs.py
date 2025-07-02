@@ -28,8 +28,6 @@ class LogLevel(enum.Enum):
 
 class LogRecord(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
 
-    __tablename__: str = "log_record"
-
     log_id: Mapped[int] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
@@ -49,3 +47,5 @@ class LogRecord(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
     module_name: Mapped[str] = mapped_column(String, nullable=False, comment="Name of the producing thread")
     message: Mapped[str] = mapped_column(TEXT, nullable=False, comment="Log message")
     exc_text: Mapped[str] = mapped_column(TEXT, nullable=True, comment="Exception text")
+
+    __tablename__: str = "log_record"
