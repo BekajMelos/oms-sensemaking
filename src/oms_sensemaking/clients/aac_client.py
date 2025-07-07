@@ -1,3 +1,4 @@
+import json
 import logging
 import ssl
 from typing import List, Optional, Union
@@ -60,14 +61,14 @@ class AacClient:
         else:
             LOGGER.warning("AAC Client verification disabled")
 
-        transport = httpx.HTTPTransport()
+        transport: httpx.BaseTransport = httpx.HTTPTransport()
         if SETTINGS.aac_cache_enabled:
             LOGGER.warning("AAC Cache is enabled")
             storage = hishel.InMemoryStorage()
             controller = hishel.Controller(
                 cacheable_methods=["GET", "POST"],
                 force_cache=True,
-                key_generator=custom_key_generator,  # type: ignore[arg-type]
+                key_generator=self._custom_key_generator,  # type: ignore[arg-type]
             )
             transport = hishel.CacheTransport(transport=httpx.HTTPTransport(), storage=storage, controller=controller)
         else:
@@ -85,11 +86,18 @@ class AacClient:
         """Use AAC to rollup a list of ACMs"""
         LOGGER.debug("Getting ACM Rollup")
 
-        response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
+        response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": self._dedup_acms(acms)})
         return response.json()["RollupACM"]
 
+    def _dedup_acms(self, acms: List[dict]):
+        json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
+        deduped = set(json_acms)
+        return [json.loads(dedup) for dedup in deduped]
 
-def custom_key_generator(request: httpcore.Request, body: bytes):
-    key = generate_key(request, body)
-    host = request.url.host.decode()
-    return f"{host}|{key}"
+    def _custom_key_generator(self, request: httpcore.Request, body: bytes):
+        """
+        Create a cache key based on the request body, for our case, it is a list of acms
+        """
+        key = generate_key(request, body)
+        host = request.url.host.decode()
+        return f"{host}|{key}"
