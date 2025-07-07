@@ -3,7 +3,9 @@ import ssl
 from typing import List, Optional, Union
 
 import hishel
+import httpcore
 import httpx
+from hishel._utils import generate_key
 
 from oms_sensemaking.config import SETTINGS
 
@@ -64,7 +66,11 @@ class AacClient:
         else:
             LOGGER.warning("AAC Cache is enabled")
             storage = hishel.InMemoryStorage(capacity=64)
-            controller = hishel.Controller(cacheable_methods=["GET", "POST"])
+            controller = hishel.Controller(
+                cacheable_methods=["GET", "POST"],
+                force_cache=True,
+                key_generator=custom_key_generator,  # type: ignore[arg-type]
+            )
             self.client = hishel.CacheClient(verify=verify, timeout=30, storage=storage, controller=controller)
 
     def __del__(self):
@@ -79,3 +85,9 @@ class AacClient:
 
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
         return response.json()["RollupACM"]
+
+
+def custom_key_generator(request: httpcore.Request, body: bytes):
+    key = generate_key(request, body)
+    host = request.url.host.decode()
+    return f"{host}|{key}"
