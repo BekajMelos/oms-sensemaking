@@ -65,7 +65,7 @@ class AacClient:
             self.client = httpx.Client(verify=verify, timeout=30)
         else:
             LOGGER.warning("AAC Cache is enabled")
-            storage = hishel.InMemoryStorage(capacity=64)
+            storage = hishel.InMemoryStorage()
             controller = hishel.Controller(
                 cacheable_methods=["GET", "POST"],
                 force_cache=True,
