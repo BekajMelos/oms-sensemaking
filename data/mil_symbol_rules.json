@@ -452,7 +452,7 @@
         },
         "DIMENSION_IRIS": {
             "00": ["http://purl.obolibrary.org/obo/BFO_0000040"],
-            "01": [
+            "010": [
                 "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
                 "http://omsb/test/Plane",
                 "http://omsb/test/Helicopter",
