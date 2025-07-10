@@ -1,8 +1,8 @@
 """Added AuditLogError Table.
 
-Revision ID: 202507092319
+Revision ID: 202507101506
 Revises: 202507011740
-Create Date: 2025-07-09 23:19:02.354369
+Create Date: 2025-07-10 15:06:34.621630
 
 """
 
@@ -15,7 +15,7 @@ from sqlalchemy.dialects import postgresql
 import oms_sensemaking
 
 # revision identifiers, used by Alembic.
-revision: str = "202507092319"
+revision: str = "202507101506"
 down_revision: Union[str, None] = "202507011740"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

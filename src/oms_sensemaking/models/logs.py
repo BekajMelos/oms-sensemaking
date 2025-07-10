@@ -38,6 +38,6 @@ class AuditLogError(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
         comment="They type of event (e.g. create, update, or delete).")
     module_name: Mapped[str] = mapped_column(String, nullable=False, comment="Name of the producing thread")
     message: Mapped[str] = mapped_column(TEXT, nullable=False, comment="Log message")
-    exc_text: Mapped[str] = mapped_column(TEXT, nullable=True, comment="Exception text")
+    exc_text: Mapped[str | None] = mapped_column(TEXT, nullable=True, comment="Exception text")
 
     __tablename__: str = "audit_log_error"
