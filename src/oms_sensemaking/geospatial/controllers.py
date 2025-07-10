@@ -251,7 +251,7 @@ class GeospatialSensemakerController(SensemakerController):
         :return: Created Track object
         """
 
-        track: Track
+        track = None
 
         points = self.track_node_buffer[track_uuid]
         points.sort(key=attrgetter("detection_time"))
@@ -315,7 +315,6 @@ class GeospatialSensemakerController(SensemakerController):
         if not track:
             raise ValueError("Not enough points for track.")
 
-        # TODO I think this should be a list of tracks???
         return track
 
     def get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
