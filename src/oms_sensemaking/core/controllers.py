@@ -1,12 +1,18 @@
 """Sensemaker Controllers."""
 
 import logging
+import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
+from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
+
+from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.models.logs import AuditLogError
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -110,6 +116,15 @@ class SensemakerController:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
+    def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
+        """
+        Given an OMS data object's ID, get the object we'll pass to the sensemaker
+
+        :param event: the object whose creation, update, or deletion we need to process
+        :return: None if no object exists, or the OMS Object if it's a type we handle
+        """
+        return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -124,11 +139,18 @@ class SensemakerController:
 
         try:
             # extract info from OMS via API calls
-            oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
-            if not oms_obj:
-                LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
-                return True
+            oms_obj = self.get_oms_data(event)
+        except Exception:
+            message = f"Error connecting to omsb {event.objectId}: {event.objectId}"
+            LOGGER.exception(message)
+            self.log_error(event, message, SETTINGS.highest_classification, traceback.format_exc())
+            return True
 
+        if not oms_obj:
+            LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
+            return True
+
+        try:
             with ThreadPoolExecutor() as executor:
                 futures = []
                 for sensemaker in self._registry.values():
@@ -141,9 +163,35 @@ class SensemakerController:
 
                 executor.shutdown(wait=True)
         except Exception as e:
-            LOGGER.exception(f"Error encountered while processing object {event.objectId}: {str(e)}")
+            message = f"Error encountered while processing object {event.objectId}: {str(e)}"
+            LOGGER.exception(message)
+            self.log_error(event, message, oms_obj.acm, traceback.format_exc())
 
         return True
+
+    def log_error(self, event: AuditLogEvent, message: str, acm: dict, exc_text: None | str = None) -> None:
+        """Log errors with AuditLogEvent to the database.
+
+        :param event: AuditLogEvent object being processed when the error occurred
+        :param message: Log message for the error
+        :param acm: Classification for the event
+        :param exc_text: Optional exception text for the error
+        :return: None
+        """
+
+        log_record = AuditLogError(
+            object_id=event.objectId,
+            object_type=event.objectType,
+            event_type=event.action,
+            module_name=__name__,
+            message=message,
+            acm=acm,
+            exc_text=exc_text,
+        )
+        # id, object type, action type, audit log info
+        with db_session() as db:
+            db.add(log_record)
+            db.commit()
 
 
 def run_controller(controller: SensemakerController) -> None:

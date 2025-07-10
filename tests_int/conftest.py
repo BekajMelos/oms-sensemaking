@@ -68,6 +68,7 @@ def session_local():
     # run database migrations
     command.upgrade(alembic_cfg, "head")
 
+    # TODO reuse from instances.py?
     db_engine = create_engine(
         SETTINGS.db_uri,  # type: ignore
         pool_pre_ping=True,
@@ -136,3 +137,22 @@ def aircraft_geo_config() -> dict:
     )
 
     return geo_config.model_dump()
+
+
+@pytest.fixture
+def ts_acm():
+    acm = {
+        "classif": "TS",
+        "classif_type": "US",
+        "owner_prod": ["USA"],
+        "sci_ctrls": ["TK"],
+        "dissem_ctrls": ["NF"],
+        "rsrc_elem": False,
+        "ex_from_rollup": False,
+        "portion": "TS//TK//NF",
+        "banner": "TOP SECRET//TK//NOFORN",
+        "dissem_countries": ["USA"],
+        "f_clearance": ["ts"],
+        "f_sci_ctrls": ["tk"],
+    }
+    return acm

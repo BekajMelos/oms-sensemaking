@@ -152,7 +152,6 @@ class MilSymbolSensemaker(Sensemaker):
             new_symbol_id_code=code_2525d.formatted_code,
             acm=code_2525d.get_acm(),
         )
-
         symbol_code_update_c = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525c.formatted_code,
@@ -371,6 +370,7 @@ class MilSymbolSensemaker(Sensemaker):
                     self.oms_crud_tool.update_attribute(update_attribute_input)
             except ValueError:
                 LOGGER.exception("Unable to update Icon Attributes.")
+                raise
         else:
             for symbol_code_update in symbol_code_updates:
                 attribute: CreateAttributeInput = CreateAttributeInput(
@@ -417,11 +417,8 @@ class MilSymbolSensemaker(Sensemaker):
             if oms_object.nodeId is None:
                 LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
                 return None
-            try:
-                return self.oms_crud_tool.get_node(oms_object.nodeId)
-            except Exception as e:
-                LOGGER.warning(f"Failed to get node: {e}")
-                return None
+
+            return self.oms_crud_tool.get_node(oms_object.nodeId)
         else:
             LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
             return None

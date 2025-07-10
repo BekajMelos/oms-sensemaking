@@ -6,7 +6,7 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
+from oms_sensemaking.core.events import AuditLogEvent, EventFilter
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.sensemakers.inference import InferenceSensemaker
 
@@ -28,32 +28,6 @@ class InferenceSensemakerController(SensemakerController):
 
         super().start()
 
-    def handle_event(self, event: AuditLogEvent) -> bool:
-        """
-        Handle inbound OMS event.
-
-        :param event: The event to process.
-        :return: True if the audit log event was successfully processed, False otherwise.
-        """
-        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
-
-        if isinstance(self.event_consumer, AuditLogEventConsumer):
-            # extract info from OMS via API calls
-            oms_data = self.get_oms_data(event)
-
-            # skip if we can't rehydrate the data
-            if not oms_data:
-                return True
-
-            for sensemaker in self._registry.values():
-                sensemaker.execute(oms_data)
-            return True
-
-        else:
-            LOGGER.warning("No AuditLogEventConsumer found.")
-
-        return False
-
     def get_oms_data(self, event: AuditLogEvent) -> RuleContext | None:
         """
         Given an OMS data object's ID, get the object we'll pass to the sensemaker
@@ -62,15 +36,14 @@ class InferenceSensemakerController(SensemakerController):
         :return: None if no object exists, or the OMS Object if it's a type we handle
         """
 
+        oms_obj = super().get_oms_data(event)
+
         if event.objectType == ObjectType.ATTRIBUTE:
-            attribute = self.oms_crud_tool.get_attribute(event.objectId)
-            return RuleContext(attribute=attribute) if attribute else None
-        elif event.objectType == ObjectType.OBSERVATION:
-            observation = self.oms_crud_tool.get_observation(event.objectId)
-            return RuleContext(observation=observation) if observation else None
-        elif event.objectType == ObjectType.ACTIVITY:
-            activity = self.oms_crud_tool.get_activity(event.objectId)
-            return RuleContext(activity=activity) if activity else None
+            return RuleContext(attribute=oms_obj) if oms_obj else None
+        if event.objectType == ObjectType.OBSERVATION:
+            return RuleContext(observation=oms_obj) if oms_obj else None
+        if event.objectType == ObjectType.ACTIVITY:
+            return RuleContext(activity=oms_obj) if oms_obj else None
         return None
 
 

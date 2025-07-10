@@ -315,7 +315,6 @@ class CotravelSensemaker(Sensemaker):
 
         """
         with db_session() as db:
-
             query = db.execute(
                 select(Track.track_uuid, Point)
                 .select_from(

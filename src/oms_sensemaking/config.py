@@ -1,4 +1,5 @@
 """Application configuration."""
+import json
 import os
 from pathlib import Path
 from typing import Any
@@ -31,10 +32,6 @@ class LogConfig(BaseSettings):
             "formatter": "custom",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stderr"
-        },
-        "db_handler": {
-            "formatter": "custom",
-            "class": "oms_sensemaking.core.logging.handlers.DatabaseHandler"
         }
     }
 
@@ -66,7 +63,7 @@ class LogConfig(BaseSettings):
         """Compute loggers field based on other parameters (e.g. logger_name and log_level)."""
         return {
             "": {  # root logger
-                "handlers": ["default", "db_handler"],
+                "handlers": ["default"],
                 "level": self.log_level,
                 "propagate": False,
             },
@@ -435,6 +432,17 @@ class Settings(BaseSettings):
     aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
+
+    highest_classification_json_file_path: str = Field(
+        "./data/highest_classification.json",
+        description="Path to the highest classification file")
+
+    @computed_field  # type: ignore
+    @property
+    def highest_classification(self) -> dict[str, str]:
+        """Return classification as json from highest_classification_json_file_path"""
+        with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
+            return json.load(fd)
 
     @computed_field  # type: ignore
     @property

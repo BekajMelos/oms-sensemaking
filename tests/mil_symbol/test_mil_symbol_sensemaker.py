@@ -9,6 +9,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributeQuery,
+    AttributesAttributes,
     NodeNode,
     NodesNodes,
     ObjectTier,
@@ -88,6 +89,7 @@ def test_process_data(
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
     )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
@@ -451,6 +453,7 @@ def test_dimension_enrichment(
             "http://purl.obolibrary.org/obo/BFO_0000040",
         ]
     )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
     oms_node.symbolIdCode = None
     oms_node.classIri = "http://omsb/test/UnknownHelicopter"
 
@@ -485,6 +488,7 @@ def test_acms(
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
     )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
@@ -539,6 +543,7 @@ def test_controlling_affiliation_enrichment(
             "http://purl.obolibrary.org/obo/BFO_0000040",
         ]
     )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
 
     ### Test non-derivative node doesn't get checked
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
