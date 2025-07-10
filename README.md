@@ -1,82 +1,80 @@
 # OMS Sensemaking
 
-Microservice that provides analytics for OMS data.
+**oms-sensemaking** is a microservice that provides analytics for OMS data.
 
-## Before You Begin
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+- [Usage](#usage)
+- [References](#references)
 
-1. Install [Git] and [Git LFS]
+## Prerequisites
 
-   If you are using a Mac, consider installing Git LFS with Homebrew: `brew
-   install git-lfs`
+- [Docker](https://docs.docker.com/desktop/setup/install/mac-install/)
+- [pyenv](https://formulae.brew.sh/formula/pyenv)
+- [Git](https://formulae.brew.sh/formula/git)
+- [Git LFS](https://formulae.brew.sh/formula/git-lfs)
 
-2. Install Docker
+## Setup
 
-   See the [Install Docker Engine] section of the Docker Manual for platform
-   specific installation instructions.
+### Certificates
 
-3. Install Python
+Decrypt certificates with transcrypt:
 
-   It is recommended that you use [pyenv] to install the version of Python
-   defined by the projects `.python-version` file.
+```bash
+bin/transcrypt -c aes-256-cbc -p <password>
+```
 
-   ```
-   $ pyenv install
-   ```
+- Ask a teammate for the password.
 
-## Quickstart
+### Environment Variables
 
-> ***TIP***: The [Setting up an OMS Sensemaking Development Environment]
-> section of the *OMS Development Guide* covers development environment setup
-> in more detail. This file can also be found locally: `docs/dev-guide/dev.md`.
+Generate `.env` with the local template:
 
-1. Ensure you are using the correct version of Python
+```bash
+cp .env.template .env
+```
 
-   ```
-   $ pyenv install
-   ```
+- Ask a teammate for guidance on setting `PIP_INDEX` and `DOCKER_REGISTRY`.
 
-2. Create a virtual environment using Python's built-in venv module
+### Python
 
-   ```
-   $ pyenv exec python -m venv --prompt sensemaking .venv  # create the virtual environment
-   $ source .venv/bin/activate                  # activate the virtual environment
-   ```
+Install according to `.python-version`:
 
-> ***TIP***: After activating the virtual environment, run `which python3` to verify it's looking
-> at `<path_to_oms-sensemaking>/.venv/bin/python3` and run `python -V` to verify the version matches what's
-> in `.python-version`
+```bash
+pyenv install
+```
 
-3. Configure pip to use a private PyPI
+Create and activate the virtual environment:
 
-   Ask a teammate for guidance
+```bash
+pyenv exec python -m venv .venv
+source .venv/bin/activate
+```
 
-4. Upgrade pip and wheel | Install Project Dependencies
+Verify installation:
 
-   ```
-   $ make install
-   ```
+```text
+which python3       # should point to .venv/bin/python3
+python -V           # should match .python-version
+```
 
-5. Decrypt Certs
+Install dependencies:
 
-   Run `bin/transcrypt` with the following options to decrypt secrets:
+```bash
+make install
+```
 
-    - Encryption: `aes-256-cbc`
-    - Generate Password: `no`
-    - Password: *ask a team member for the password*
+## Usage
 
-The project documentation includes a development guide that covers development
-environment configuration, application configuration, and packaging as well as a
-dynamically generated API reference and OMS Sensemaking quickstart guide. Once
-you have a development environment installed, you can host a local copy of the
-project documentation with `mkdocs serve`, which will host the project at
-http://localhost:4000 or build a static copy with `mkdocs build` (the resulting
-static site will be located in the `site` directory).
+- Run services: `make up`
+- Stop services: `make down`
+- Remove volumes: `make nuke`
 
-## Build Docker Image and Test in Tex
+## References
 
-Ask a teammate for guidance.
+Supplemental references are available. Ask a teammate for guidance.
 
-
-## Relevant links
-
-Ask a teammate for guidance.
+- [Docs](docs)
+  - [Development Guide](docs/dev-guide)
+  - [Track Weaving](docs/track-weaving)
+  - [Project Index](docs/index.md)
