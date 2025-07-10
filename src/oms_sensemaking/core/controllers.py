@@ -193,6 +193,8 @@ class SensemakerController:
             db.add(log_record)
             db.commit()
 
+        LOGGER.info("Created AuditLogError for %s", event.objectId)
+
 
 def run_controller(controller: SensemakerController) -> None:
     """
