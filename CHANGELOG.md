@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Listed ES as ASOMS dependency
 - No longer incorrectly throw errors when dealing with observations with no start time/end time
+- AAC Cache handles acm rollup requests
 
 ### Removed
 

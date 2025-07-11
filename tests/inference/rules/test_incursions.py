@@ -29,7 +29,7 @@ from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 @pytest.fixture
 def areas_of_interest():
-    aoi_dict = [
+    test_aoi_array = [
         {
             "coordinates": [
                 [
@@ -56,7 +56,7 @@ def areas_of_interest():
             "type": "Polygon",
         },
     ]
-    return aoi_dict
+    return test_aoi_array
 
 
 # Mocked nodes

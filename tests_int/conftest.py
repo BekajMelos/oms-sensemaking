@@ -125,3 +125,18 @@ def aircraft_geo_config() -> dict:
     )
 
     return geo_config.model_dump()
+
+
+@pytest.fixture
+def ts_acm() -> dict:
+    return {
+        "classif": "TS",
+        "classif_type": "US",
+        "sci_ctrls": ["TK"],
+        "dissem_ctrls": ["NF"],
+        "portion": "TS//TK//NF",
+        "banner": "TOP SECRET//TK//NOFORN",
+        "dissem_countries": ["USA"],
+        "f_clearance": ["ts"],
+        "f_sci_ctrls": ["tk"],
+    }
