@@ -23,15 +23,40 @@ from oms_sdk.generated.generated_graphql_client import (
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
 @pytest.fixture
 def areas_of_interest():
-    features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
-    return [feature["geometry"] for feature in features]
+    aoi_dict = [
+        {
+            "coordinates": [
+                [
+                    [-155.6657274286173, 19.71703656089376],
+                    [-155.6657274286173, 19.673451401822902],
+                    [-155.59775864959937, 19.673451401822902],
+                    [-155.59775864959937, 19.71703656089376],
+                    [-155.6657274286173, 19.71703656089376],
+                ]
+            ],
+            "type": "Polygon",
+        },
+        {
+            "coordinates": [
+                [
+                    [-156.19229072532144, 24.338544507346953],
+                    [-152.43376021905146, 22.514930523906514],
+                    [-150.83351500170227, 24.4483909792978],
+                    [-150.21168983360798, 24.521497296097493],
+                    [-156.07464876773713, 24.429751739042956],
+                    [-156.19229072532144, 24.338544507346953],
+                ]
+            ],
+            "type": "Polygon",
+        },
+    ]
+    return aoi_dict
 
 
 # Mocked nodes
