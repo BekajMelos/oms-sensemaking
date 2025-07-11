@@ -74,7 +74,20 @@ make install
 
 Supplemental references are available. Ask a teammate for guidance.
 
-- [Docs](docs)
-  - [Development Guide](docs/dev-guide)
-  - [Track Weaving](docs/track-weaving)
-  - [Project Index](docs/index.md)
+### Docs
+
+- [Development Guide](docs/dev-guide)
+- [Track Weaving](docs/track-weaving)
+- [Project Index](docs/index.md)
+
+Serve project documentation locally at `http://localhost:4000`:
+
+```bash
+mkdocs serve
+```
+
+or build a static copy in the `site` directory:
+
+```bash
+mkdocs build
+```
