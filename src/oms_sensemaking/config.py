@@ -193,7 +193,7 @@ class Settings(BaseSettings):
         "UNKNOWN", description="String Incursion Activity State"
     )
     inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest.json", description="Path to areas of interest file"
+        "./data/areas_of_interest", description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
         "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
