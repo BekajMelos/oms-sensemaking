@@ -21,7 +21,7 @@ from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import features_list_from_geojson
+from oms_sensemaking.core.geo_helpers import gather_area_of_interest_data
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
@@ -36,7 +36,7 @@ class Incursion(BaseRule):
     def __init__(self, name: str):
         self.name = name
         self.version = (1, 0, 0)
-        self.features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
+        self.features = gather_area_of_interest_data(SETTINGS.inference_incursion_areas_of_interest_path)
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """

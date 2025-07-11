@@ -1,16 +1,30 @@
 """Module with geo helper functions"""
 
 import json
+import os
 
 from geopy.distance import geodesic
 from geopy.point import Point
 
 
-def features_list_from_geojson(path_to_geojson_file: str):
-    """Load features from a geojson file"""
-    with open(path_to_geojson_file, "r") as file:
-        features = json.load(file)["features"]
-    return features
+def gather_area_of_interest_data(path_to_aoi_data: str):
+    """
+    A function that gathers all of the data from the individual
+    geoJSON files found in the specified directory.
+
+    :return: An array containing a list of dictionarys
+    """
+    areas_of_interest = []
+
+    for file in os.listdir(path_to_aoi_data):
+        file_path = os.path.join(path_to_aoi_data, file)
+
+        if os.path.isfile(file_path) and file.lower().endswith(".json"):
+            with open(file_path, "r") as f:
+                data = json.load(f)
+                areas_of_interest.append(data)
+
+    return areas_of_interest
 
 
 def generate_circle_points_geographical(center_lat, center_lon, radius_km, num_points=100):
