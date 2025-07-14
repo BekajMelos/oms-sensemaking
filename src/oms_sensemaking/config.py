@@ -148,6 +148,10 @@ class IWSettings(BaseModel):
         "observed": "Observed"
     }, description="Status options for the observable")
 
+    observable_config_attribute_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        description="Config attribute used to read the settings of an observable query")
+
     observable_status_attribute_iri: str = Field(
         "https://foundry.ai.mil/ontology/4901-001/hasOperationalStatus",
         description="Status attribute used to indicate the status of an observable")
