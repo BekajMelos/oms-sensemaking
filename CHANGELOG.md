@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
-
+- Added the ability for the Mil Symbol sensemaker to enrich echelon in symbol Id codes
 ### Changed
 
 ### Fixed
