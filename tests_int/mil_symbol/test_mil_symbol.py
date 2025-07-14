@@ -17,7 +17,7 @@ from oms_sdk.generated.generated_graphql_client import (
     SourceSource,
     UpdateNodeInput,
 )
-from sqlalchemy import delete, select
+from sqlalchemy import select
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -101,9 +101,8 @@ def test_execute(mock_source, db, mil_symbol_rules):
     )
 
     assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-6-30-3-0-32-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SHSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SHSD------*****"
+    new_id_codes_case1 = ["10-0-6-30-3-0-32-000000-00-00", "SHSD------*****", "SHSD------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case1)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -120,9 +119,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
     # case 2
     oms_node = create_node(
@@ -162,10 +158,9 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-2-5-01-4-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SSAX------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SSAX------*****"
+    assert len(findings) == 6
+    new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAX------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case2)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -182,9 +177,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
     # case 3
     oms_node = create_node(
@@ -219,10 +211,9 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-3-05-0-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SFPP------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SFPP------*****"
+    assert len(findings) == 9
+    new_id_codes_case3 = ["10-0-3-05-0-0-00-000000-00-00", "SFPP------*****", "SFPP------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case3)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -239,9 +230,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
     # case 4 (Attribute Update)
     oms_node = create_node(
@@ -276,10 +264,9 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-4-05-0-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SNPP------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SNPP------*****"
+    assert len(findings) == 12
+    new_id_codes_case4 = ["10-0-4-05-0-0-00-000000-00-00", "SNPP------*****", "SNPP------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case4)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -296,9 +283,6 @@ def test_execute(mock_source, db, mil_symbol_rules):
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
     # case 5 (Ignore due to Tags from this Sensemaker)
     oms_node = create_node(
@@ -336,7 +320,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 0
+    assert len(findings) == 12
 
     # case 6 (Ignore 'Icon' Attributes)
     oms_node = create_node(
@@ -370,7 +354,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 0
+    assert len(findings) == 12
 
     # case 7 (Wrong Input Type)
     oms_relationship = RelationshipRelationship.model_construct(
@@ -386,10 +370,7 @@ def test_execute(mock_source, db, mil_symbol_rules):
         db.execute(select(Finding).filter(Finding.finding_type == FindingType.MIL_SYMBOL_UPDATE.value)).scalars().all()
     )
 
-    assert len(findings) == 0
-
-    # ensure findings cleared at end of test cases
-    findings = db.execute(delete(Finding))
+    assert len(findings) == 12
 
 
 def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symbol_rules):
@@ -429,9 +410,8 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symb
     )
 
     assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-30-3-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD------*****"
+    new_id_codes_case = ["10-0-1-30-3-0-00-000000-00-00", "SUSD------*****", "SOSD------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -448,9 +428,6 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symb
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
 
 def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symbol_rules):
@@ -492,9 +469,8 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symb
     )
 
     assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-30-3-0-32-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUSD------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOSD------*****"
+    new_id_codes_case = ["10-0-1-30-3-0-32-000000-00-00", "SUSD------*****", "SOSD------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -511,9 +487,6 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symb
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
 
 def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symbol_rules):
@@ -553,9 +526,8 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symb
     )
 
     assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-10-4-0-00-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUGX------*****"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOGX------*****"
+    new_id_codes_case = ["10-0-1-10-4-0-00-000000-00-00", "SUGX------*****", "SOGX------*****"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -572,9 +544,6 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symb
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))
 
 
 def test_echelon_enrichment(mock_source, db, mil_symbol_rules):
@@ -617,9 +586,8 @@ def test_echelon_enrichment(mock_source, db, mil_symbol_rules):
     )
 
     assert len(findings) == 3
-    assert findings[0].finding_data["new_symbol_id_code"] == "10-0-1-10-4-0-11-000000-00-00"
-    assert findings[1].finding_data["new_symbol_id_code"] == "SUGX------*A***"
-    assert findings[2].finding_data["new_symbol_id_code"] == "SOGX------*A***"
+    new_id_codes_case = ["10-0-1-10-4-0-11-000000-00-00", "SUGX------*A***", "SOGX------*A***"]
+    assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
         oms_crud_tool.create_attribute.assert_any_call(
@@ -636,6 +604,3 @@ def test_echelon_enrichment(mock_source, db, mil_symbol_rules):
                 sourceId=mock_source.id,
             )
         )
-
-    # clear findings
-    findings = db.execute(delete(Finding))

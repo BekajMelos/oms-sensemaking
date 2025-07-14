@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 
 LOGGER = logging.getLogger(__name__)
@@ -28,7 +29,10 @@ class MilSymbol2525BandC(MilSymbol):
     MIL_SYM_2525_B_C_SYM_MOD_IDX_0 = 10
     MIL_SYM_2525_B_C_SYM_MOD_IDX_1 = 11
     MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX = 14
-    MIL_SYM_2525_B_C_PLACEHOLDERS = ["-", "*"]
+
+    AFFILIATION_SOURCE_PRIORITY = 1
+    STATUS_SOURCE_PRIORITY = 2
+    ECHELON_SOURCE_PRIORITY = 3
 
     @property
     @abstractmethod
@@ -76,7 +80,7 @@ class MilSymbol2525BandC(MilSymbol):
             for code, standard_identity_list in self.settings[self.code_type_config]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
-                    self.source_ids.put((1, affiliation_attr.sourceId))
+                    self.source_ids.put((self.AFFILIATION_SOURCE_PRIORITY, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
                     LOGGER.debug(f"Updated std identity: {code} b/c {node_standard_identity}")
                     break
@@ -129,7 +133,7 @@ class MilSymbol2525BandC(MilSymbol):
             for code, status_list in self.settings[self.code_type_config]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525_B_C_STATUS_IDX, code)
-                    self.source_ids.put((2, status_attr.sourceId))
+                    self.source_ids.put((self.STATUS_SOURCE_PRIORITY, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
                     LOGGER.debug(f"Updated status: {code} b/c {status}")
                     break
@@ -146,7 +150,7 @@ class MilSymbol2525BandC(MilSymbol):
             self.formatted_code[self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0]
             + self.formatted_code[self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1]
         )
-        for placeholder in self.MIL_SYM_2525_B_C_PLACEHOLDERS:
+        for placeholder in SETTINGS.mil_symbol_settings.b_c_placeholders:
             if placeholder in pre_enriched_sym_mod:
                 current_placeholder = placeholder
                 break
@@ -154,13 +158,14 @@ class MilSymbol2525BandC(MilSymbol):
             echelon = echelon_attr.attributeValue
             for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"].items():
                 if echelon.lower() in echelon_list:
-                    if current_placeholder and any(c in code for c in self.MIL_SYM_2525_B_C_PLACEHOLDERS):
+                    if current_placeholder and any(c in code for c in SETTINGS.mil_symbol_settings.b_c_placeholders):
                         code = "".join(
-                            current_placeholder if char in self.MIL_SYM_2525_B_C_PLACEHOLDERS else char for char in code
+                            current_placeholder if char in SETTINGS.mil_symbol_settings.b_c_placeholders else char
+                            for char in code
                         )
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
-                    self.source_ids.put((3, echelon_attr.sourceId))
+                    self.source_ids.put((self.ECHELON_SOURCE_PRIORITY, echelon_attr.sourceId))
                     self.acms.append(echelon_attr.acm)
                     LOGGER.debug(f"Updated echelon: {code} b/c {echelon}")
                     break
