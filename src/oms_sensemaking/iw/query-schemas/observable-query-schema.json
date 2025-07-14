@@ -1,0 +1,84 @@
+{
+  "title": "Observable Query Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "queryType": {
+      "type": "string",
+      "enum": ["geofence", "minDistance", "status", "search"]
+    },
+    "timeBounds": {
+      "description": "Time bounds on observations. Can either be sinceLastQuery (real-time) or set manually with startTime and endTime",
+      "type": "object",
+      "properties": {
+        "sinceLastQuery": {
+          "type": "boolean"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["sinceLastQuery"],
+      "if": {
+        "properties": { "sinceLastQuery": { "const": false } }
+      },
+      "then": {
+        "required": ["startTime", "endTime"]
+      },
+      "additionalProperties": false
+    },
+    "classIRIs": {
+      "description": "IRIs of objects to check",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "noneObservedCount": { "type": "integer" },
+    "partiallyObservedCount": { "type": "integer" },
+    "fullyObservedCount": { "type": "integer" },
+    "noneObservedPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "partiallyObservedPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "fullyObservedPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": ["queryType", "timeBounds"],
+  "anyOf": [
+    { "required": ["fullyObservedCount"] },
+    { "required": ["fullyObservedPercentage"] }
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "geofence" } } },
+      "then": { "$ref": "geofence-query-schema.json" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "minDistance" } } },
+      "then": { "$ref": "min-distance-query-schema.json" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "status" } } },
+      "then": { "$ref": "status-query-schema.json" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "search" } } },
+      "then": { "$ref": "search-query-schema.json" }
+    }
+  ]
+}

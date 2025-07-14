@@ -1,0 +1,29 @@
+{
+  "title": "Search Query Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "queryType": { "const": "search" },
+    "criteria": {
+      "description": "An array of attibute IRIs and corresponding triggering values",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attributeIRI": {
+            "description": "IRI of attribute to watch",
+            "type": "string"
+          },
+          "triggeringValues": {
+            "description": "Values which count towards observed thresholds for a specific attribute",
+            "type": "array",
+            "items": {},
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["queryType", "statuses"]
+}

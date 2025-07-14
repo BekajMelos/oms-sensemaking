@@ -1,0 +1,29 @@
+{
+  "title": "Status Query Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "queryType": { "const": "status" },
+    "statuses": {
+      "description": "An array of attibute types and corresponding triggering values",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attributeIRI": {
+            "description": "IRI of attribute to watch",
+            "type": "string"
+          },
+          "triggeringValues": {
+            "description": "Values which count towards observed thresholds for a specific attribute",
+            "type": "array",
+            "items": {},
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["queryType", "statuses"]
+}

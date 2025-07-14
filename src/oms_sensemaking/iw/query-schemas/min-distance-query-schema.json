@@ -1,0 +1,15 @@
+{
+  "title": "Minimum Distance Query Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "queryType": { "const": "minDistance" },
+    "location": {
+      "type": "object",
+      "description": "GeoJSON Point",
+      "$ref": "https://geojson.org/schema/Point.json"
+    },
+    "minDistance": { "type": "number" }
+  },
+  "required": ["queryType", "location", "minDistance"]
+}
