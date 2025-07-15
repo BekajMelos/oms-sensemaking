@@ -106,6 +106,7 @@ class MilSymbolSettings(BaseModel):
     affiliation_iris: list[str] = Field(
         ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")
     status_iris: list[str] = Field(["https://foundry.ai.mil/ontology/4901-001/hasCondition"], description="Status IRI")
+    echelon_iris: list[str] = Field(["https://oms.dodiis.ic.gov/ontology/p-0000000029"], description="Echelon IRI")
     affiliation_controlled_by_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controlledBy"],
         description="Relationship IRIs used to search for controlling/commanding nodes")
@@ -116,6 +117,13 @@ class MilSymbolSettings(BaseModel):
     attribute_code_iris: list[str] = Field(
         ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
         description="Attribute Iris for full mil symbol codes")
+
+    # 2525B and 2525C placeholders
+    b_c_placeholders: list[str] = Field(
+        ["-", "*"],
+        description="Possible placeholder values for 2525B and 2525C codes"
+        )
+
     # War, Pending, Unknown, Present
     default_2525b_code: str = Field(
         "SUZP------*****", description="Default 2525B code")
