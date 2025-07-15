@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated OMS dependency to Grimlock-INC-25
 
 ### Fixed
 
