@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
+from pprint import pprint
 from typing import List, Literal
+from zoneinfo import ZoneInfo
 
 from oms_sdk.generated.generated_graphql_client import (
-    GeoQuery,
-    GeoQueryType,
     ObservationQuery,
     TimeQuery,
 )
@@ -36,44 +36,65 @@ class GeofenceObservable(BaseObservable):
         related_ids = self.get_related_object_ids()
         related_ids = related_ids if related_ids else []
         total = len(set(related_ids))
+        print("rel ids")
+        pprint(related_ids)
+        print()
 
         if total == 0:
             print(f"No related objects found for observable {self.id}")
             return
 
+        def format_rfc3339(dt: datetime) -> str:
+            return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
         # determine time query parameters
         if self.time_bounds.since_last_query:
             # TODO: query observable history DB for last query time
             # for now, just check last 15 minutes
-            start_time = (datetime.now() - timedelta(minutes=15)).isoformat()
-            end_time = datetime.now().isoformat()
+            now = datetime.now(ZoneInfo("UTC"))
+            start_time = format_rfc3339(now - timedelta(minutes=50))
+            end_time = format_rfc3339(now)
         else:
-            start_time = self.time_bounds.start_time.isoformat()   # pyright: ignore [reportOptionalMemberAccess]
-            end_time = self.time_bounds.end_time.isoformat()   # pyright: ignore [reportOptionalMemberAccess]
+            start_time = self.time_bounds.start_time  # pyright: ignore [reportOptionalMemberAccess]
+            end_time = self.time_bounds.end_time  # pyright: ignore [reportOptionalMemberAccess]
 
         # get geometry
         try:
-            self.geometry = json.loads(self.oms_client.get_attributes(   # pyright: ignore [reportOptionalMemberAccess]
-                AttributeQuery(
-                    nodeIds=[self.id], attributeIris=[SETTINGS.iw_settings.observable_config_attribute_iri]
+            # config_attributes =
+            # av = json.loads(config_attributes.data[0].attributeValue)
+            self.location = json.loads(
+                self.oms_client.get_attributes(
+                    AttributeQuery(
+                        nodeIds=[self.id], attributeIris=[SETTINGS.iw_settings.observable_config_attribute_iri]
+                    )
                 )
-            ).data[0].attributeValue)
-        except:
-            print(f"Unable to load geometry for observable {self.id}")
+                .data[0]
+                .attributeValue
+            )["location"]
+            print("loc")
+            pprint(self.location)
+            print()
+
+        except Exception as e:
+            print(f"Unable to load geometry for observable {self.id}: {e}")
             return
 
         # query observations
         observations = self.oms_client.get_observations(
             ObservationQuery(
                 nodeIds={"in": related_ids},
-                startTime=TimeQuery(gt=start_time),
+                startTime=TimeQuery(gte=start_time),
                 endTime=TimeQuery(lte=end_time),
-                geometry=GeoQuery(queryGeoJson=self.location.dict(), queryType=GeoQueryType.INTERSECTS),
+                # geometry=GeoQuery(queryGeoJson=self.location, queryType=GeoQueryType.INTERSECTS),
             )
         )
 
+        # [print(o) for o in observations.data]
+
         # count unique observations
         num_observed = len(set([o.nodeId for o in observations.data])) if observations.data else 0
+        print(f"num observed {num_observed}")
+        print()
 
         # update status
         self.update_status(num_observed, total)

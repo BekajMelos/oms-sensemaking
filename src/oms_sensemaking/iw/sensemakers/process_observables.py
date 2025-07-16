@@ -1,11 +1,7 @@
 import json
 from pprint import pprint
 
-from oms_sdk.generated.generated_graphql_client import (
-    AttributeQuery,
-    NodeQuery,
-    PageParams
-)
+from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, PageParams
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -21,16 +17,15 @@ QUERY_CLASS_MAP = {
     "search": SearchObservable,
 }
 
+
 def process_observables():
     """Main function to process all observables."""
     oms_client = OmsCrudTool()
 
-    print("1!!!!!")
-
     # fetch all observables
     observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
     observables_result = oms_client.get_nodes(observable_query)
-    print('or d')
+    print("or d")
     pprint(observables_result.data)
     print()
 
@@ -39,7 +34,6 @@ def process_observables():
         return
 
     for observable_node in observables_result.data:
-
         # get Config attribute
         config_attributes = oms_client.get_attributes(
             AttributeQuery(
@@ -53,8 +47,12 @@ def process_observables():
 
         # determine observable type and create appropriate instance
         try:
+            print("av")
+            print(config_attributes.data[0].attributeValue)
+            print()
+
             config_data = json.loads(config_attributes.data[0].attributeValue)
-            print('cg')
+            print("cg")
             pprint(config_data)
             print()
 
@@ -73,14 +71,8 @@ def process_observables():
             observable.update_data()
 
         except Exception as e:
-            print(f"Error processing observable {observable_node.id}: {e}")
+            print(f"Error processing observable {observable_node.id}: {e}")  # : {e if e else ""}")
 
 
 if __name__ == "__main__":
-    oms_client = OmsCrudTool()
-    print("1!!!!!!!")
-    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
-    print("2!!!!!!!")
-    observables = oms_client.get_nodes(observable_query)
-    print("3!!!!!!!")
-    # process_observables()
+    process_observables()
