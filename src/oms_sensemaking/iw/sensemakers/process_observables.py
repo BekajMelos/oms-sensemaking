@@ -1,5 +1,5 @@
 import json
-from pprint import pprint
+import logging
 
 from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, PageParams
 
@@ -9,6 +9,8 @@ from oms_sensemaking.iw.sensemakers.geofence_observable import GeofenceObservabl
 from oms_sensemaking.iw.sensemakers.min_distance_observable import MinDistanceObservable
 from oms_sensemaking.iw.sensemakers.search_observable import SearchObservable
 from oms_sensemaking.iw.sensemakers.status_observable import StatusObservable
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 QUERY_CLASS_MAP = {
     "geofence": GeofenceObservable,
@@ -25,12 +27,9 @@ def process_observables():
     # fetch all observables
     observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
     observables_result = oms_client.get_nodes(observable_query)
-    print("or d")
-    pprint(observables_result.data)
-    print()
 
     if not observables_result.data:
-        print("No observables found")
+        LOGGER.info("No observables found")
         return
 
     for observable_node in observables_result.data:
@@ -42,26 +41,18 @@ def process_observables():
         )
 
         if not config_attributes.data:
-            print(f"No config found for observable {observable_node.id}")
+            LOGGER.error(f"No config found for observable {observable_node.id}")
             continue
 
         # determine observable type and create appropriate instance
         try:
-            print("av")
-            print(config_attributes.data[0].attributeValue)
-            print()
-
             config_data = json.loads(config_attributes.data[0].attributeValue)
-            print("cg")
-            pprint(config_data)
-            print()
-
             query_type = config_data.get("queryType")
 
             if query_type in QUERY_CLASS_MAP:
                 observable = QUERY_CLASS_MAP[query_type](**config_data)
             else:
-                print(f"Unspuported query type: {query_type}")
+                LOGGER.error(f"Unsupported query type for observable {observable_node.id}: {query_type}")
                 continue
 
             # set instance properties
@@ -71,7 +62,7 @@ def process_observables():
             observable.update_data()
 
         except Exception as e:
-            print(f"Error processing observable {observable_node.id}: {e}")  # : {e if e else ""}")
+            LOGGER.error(f"Error processing observable {observable_node.id}: {e}")
 
 
 if __name__ == "__main__":

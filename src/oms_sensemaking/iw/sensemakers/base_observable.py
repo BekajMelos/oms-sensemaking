@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional
@@ -15,8 +16,10 @@ from pydantic import BaseModel, Field, model_validator
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
-class QueryType(str, Enum):
+
+class ObservableQueryType(str, Enum):
     GEOFENCE = "geofence"
     MIN_DISTANCE = "minDistance"
     STATUS = "status"
@@ -48,7 +51,7 @@ class StatusCriteria(BaseModel):
 
 
 class BaseObservable(BaseModel):
-    query_type: QueryType = Field(..., alias="queryType")
+    query_type: ObservableQueryType = Field(..., alias="queryType")
     time_bounds: TimeBounds = Field(..., alias="timeBounds")
     class_iris: Optional[List[str]] = Field(None, alias="classIRIs")
 
@@ -70,7 +73,6 @@ class BaseObservable(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
-
     def initialize(self, id: str, oms_client: OmsCrudTool) -> "BaseObservable":
         """Initialize the observable with required runtime properties."""
         self.id = id
@@ -89,7 +91,6 @@ class BaseObservable(BaseModel):
 
         return self
 
-
     def update_data(self):
         """Base method to be implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement update_data()")
@@ -97,7 +98,7 @@ class BaseObservable(BaseModel):
     def get_status_attr(self):
         """Get the status attribute for this observable."""
         self.ensure_initialized()
-        status_attr = self.oms_client.get_attributes(
+        status_attr = self.oms_client.get_attributes(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             AttributeQuery(nodeIds=[self.id], attributeIris=[SETTINGS.iw_settings.observable_status_attribute_iri])
         )
         if status_attr.data:
@@ -108,7 +109,7 @@ class BaseObservable(BaseModel):
     def get_related_object_ids(self):
         """Get related object IDs for this observable."""
         self.ensure_initialized()
-        relationships = self.oms_client.get_relationships(
+        relationships = self.oms_client.get_relationships(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             RelationshipQuery(
                 nodes=RelationshipNodeQuery(nodeIds=[self.id]),
                 objectPropertyIris=[SETTINGS.iw_settings.observable_associated_with_relationship_iri],
@@ -151,8 +152,10 @@ class BaseObservable(BaseModel):
 
         percentage_observed = num_observed / total
 
+        LOGGER.info(f"Observed {num_observed} related objects of {total} for observation {self.id}")
+
         prev_status = self.get_status_attr()
-        new_status = prev_status if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]
+        new_status = prev_status.attributeValue if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]
 
         # priority of checking can be adjusted here
 
@@ -174,7 +177,9 @@ class BaseObservable(BaseModel):
         ):
             new_status = SETTINGS.iw_settings.observable_statuses["not_observed"]
 
-        self.oms_client.update_attribute(
+        LOGGER.info(f"Updating status from {prev_status} to {new_status} for observation {self.id}")
+
+        self.oms_client.update_attribute(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             UpdateAttributeInput(
                 id=self.status_attribute_id,
                 attributeValue=new_status,
@@ -184,3 +189,5 @@ class BaseObservable(BaseModel):
                 labels=[SETTINGS.sm_inferenced_label],
             )
         )
+
+        LOGGER.info(f"Updated status from {prev_status} to {new_status} for observation {self.id}")
