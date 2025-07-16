@@ -153,7 +153,7 @@ class IWSettings(BaseModel):
         "unknown": "Unknown",
         "not_observed": "Not Observed",
         "partially_observed": "Partially Observed",
-        "observed": "Observed"
+        "fully_observed": "Observed"
     }, description="Status options for the observable")
 
     observable_config_attribute_iri: str = Field(

@@ -1,8 +1,10 @@
 import json
+from pprint import pprint
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeQuery,
     NodeQuery,
+    PageParams
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -19,21 +21,26 @@ QUERY_CLASS_MAP = {
     "search": SearchObservable,
 }
 
-
 def process_observables():
     """Main function to process all observables."""
     oms_client = OmsCrudTool()
 
+    print("1!!!!!")
+
     # fetch all observables
-    observable_query = NodeQuery(tags=["observable"])
+    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
     observables_result = oms_client.get_nodes(observable_query)
+    print('or d')
+    pprint(observables_result.data)
+    print()
 
     if not observables_result.data:
         print("No observables found")
         return
 
     for observable_node in observables_result.data:
-        # Get Config attribute
+
+        # get Config attribute
         config_attributes = oms_client.get_attributes(
             AttributeQuery(
                 nodeIds=[observable_node.id], attributeIris=[SETTINGS.iw_settings.observable_config_attribute_iri]
@@ -47,6 +54,10 @@ def process_observables():
         # determine observable type and create appropriate instance
         try:
             config_data = json.loads(config_attributes.data[0].attributeValue)
+            print('cg')
+            pprint(config_data)
+            print()
+
             query_type = config_data.get("queryType")
 
             if query_type in QUERY_CLASS_MAP:
@@ -66,4 +77,10 @@ def process_observables():
 
 
 if __name__ == "__main__":
-    process_observables()
+    oms_client = OmsCrudTool()
+    print("1!!!!!!!")
+    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
+    print("2!!!!!!!")
+    observables = oms_client.get_nodes(observable_query)
+    print("3!!!!!!!")
+    # process_observables()

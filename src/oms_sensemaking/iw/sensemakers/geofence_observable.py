@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 from typing import List, Literal
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -7,8 +8,10 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationQuery,
     TimeQuery,
 )
+from oms_sdk.generated.generated_graphql_client.input_types import AttributeQuery
 from pydantic import BaseModel
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.iw.sensemakers.base_observable import BaseObservable
 
 
@@ -45,8 +48,19 @@ class GeofenceObservable(BaseObservable):
             start_time = (datetime.now() - timedelta(minutes=15)).isoformat()
             end_time = datetime.now().isoformat()
         else:
-            start_time = self.time_bounds.start_time.isoformat()
-            end_time = self.time_bounds.end_time.isoformat()
+            start_time = self.time_bounds.start_time.isoformat()   # pyright: ignore [reportOptionalMemberAccess]
+            end_time = self.time_bounds.end_time.isoformat()   # pyright: ignore [reportOptionalMemberAccess]
+
+        # get geometry
+        try:
+            self.geometry = json.loads(self.oms_client.get_attributes(   # pyright: ignore [reportOptionalMemberAccess]
+                AttributeQuery(
+                    nodeIds=[self.id], attributeIris=[SETTINGS.iw_settings.observable_config_attribute_iri]
+                )
+            ).data[0].attributeValue)
+        except:
+            print(f"Unable to load geometry for observable {self.id}")
+            return
 
         # query observations
         observations = self.oms_client.get_observations(

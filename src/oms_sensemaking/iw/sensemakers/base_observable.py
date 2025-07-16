@@ -36,7 +36,7 @@ class TimeBounds(BaseModel):
         return self
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class StatusCriteria(BaseModel):
@@ -44,7 +44,7 @@ class StatusCriteria(BaseModel):
     triggering_values: List[Any] = Field(..., alias="triggeringValues")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class BaseObservable(BaseModel):
@@ -66,6 +66,11 @@ class BaseObservable(BaseModel):
     related_object_ids: Optional[List[str]] = None
     oms_client: Optional[OmsCrudTool] = None
 
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+
     def initialize(self, id: str, oms_client: OmsCrudTool) -> "BaseObservable":
         """Initialize the observable with required runtime properties."""
         self.id = id
@@ -84,8 +89,6 @@ class BaseObservable(BaseModel):
 
         return self
 
-    class Config:  # pydantic
-        allow_population_by_field_name = True
 
     def update_data(self):
         """Base method to be implemented by subclasses."""
@@ -148,15 +151,16 @@ class BaseObservable(BaseModel):
 
         percentage_observed = num_observed / total
 
-        # priority of checking can be adjusted here
         prev_status = self.get_status_attr()
         new_status = prev_status if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]
+
+        # priority of checking can be adjusted here
 
         # check fully observed threshold
         if (self.fully_observed_count is not None and num_observed >= self.fully_observed_count) or (
             self.fully_observed_percentage is not None and percentage_observed >= self.fully_observed_percentage
         ):
-            new_status = SETTINGS.iw_settings.observable_statuses["observed"]
+            new_status = SETTINGS.iw_settings.observable_statuses["fully_observed"]
 
         # check partially observed threshold
         elif (self.partially_observed_count is not None and num_observed >= self.partially_observed_count) or (
