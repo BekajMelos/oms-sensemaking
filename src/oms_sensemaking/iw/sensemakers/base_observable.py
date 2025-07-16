@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
+from zoneinfo import ZoneInfo
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeQuery,
@@ -26,15 +27,26 @@ class ObservableQueryType(str, Enum):
     SEARCH = "search"
 
 
+def format_rfc3339(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
 class TimeBounds(BaseModel):
     since_last_query: bool = Field(..., alias="sinceLastQuery")
-    start_time: Optional[datetime] = Field(None, alias="startTime")
-    end_time: Optional[datetime] = Field(None, alias="endTime")
+    start_time: Optional[Union[datetime, str]] = Field(None, alias="startTime")
+    end_time: Optional[Union[datetime, str]] = Field(None, alias="endTime")
 
     @model_validator(mode="after")
     def validate_time_bounds(self) -> "TimeBounds":
-        if not self.since_last_query and (self.start_time is None or self.end_time is None):
-            raise ValueError("startTime and endTime are required when sinceLastQuery is False")
+        if not self.since_last_query:
+            if self.start_time is None or self.end_time is None:
+                raise ValueError("startTime and endTime are required when sinceLastQuery is False")
+        else:
+            now = datetime.now(ZoneInfo("UTC"))
+            self.start_time = format_rfc3339(now - timedelta(minutes=15))
+            # TODO: query observable history DB for last query time
+            # for now, just check last 15 minutes
+            self.end_time = format_rfc3339(now)
 
         return self
 
@@ -153,6 +165,7 @@ class BaseObservable(BaseModel):
         percentage_observed = num_observed / total
 
         LOGGER.info(f"Observed {num_observed} related objects of {total} for observation {self.id}")
+        print(f"Observed {num_observed} related objects of {total} for observation {self.id}")
 
         prev_status = self.get_status_attr()
         new_status = prev_status.attributeValue if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]

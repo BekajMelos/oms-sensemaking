@@ -1,8 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta
 from typing import List, Literal
-from zoneinfo import ZoneInfo
 
 from oms_sdk.generated.generated_graphql_client import GeoQuery, GeoQueryType, ObservationQuery, TimeQuery
 from oms_sdk.generated.generated_graphql_client.input_types import AttributeQuery
@@ -43,20 +41,6 @@ class GeofenceObservable(BaseObservable):
             LOGGER.info(f"No related objects found for observable {self.id}")
             return
 
-        def format_rfc3339(dt: datetime) -> str:
-            return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-
-        # determine time query parameters
-        if self.time_bounds.since_last_query:
-            # TODO: query observable history DB for last query time
-            # for now, just check last 15 minutes
-            now = datetime.now(ZoneInfo("UTC"))
-            start_time = format_rfc3339(now - timedelta(minutes=50))
-            end_time = format_rfc3339(now)
-        else:
-            start_time = self.time_bounds.start_time
-            end_time = self.time_bounds.end_time
-
         # get geometry
         try:
             self.location = json.loads(
@@ -74,11 +58,12 @@ class GeofenceObservable(BaseObservable):
             return
 
         # query observations
+        print(f"start time: {self.time_bounds.start_time} et: {self.time_bounds.end_time}")
         observations = self.oms_client.get_observations(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             ObservationQuery(
                 nodeIds={"in": related_ids},  # TODO: find out how to represent this in a typesafe way
-                startTime=TimeQuery(gte=start_time),
-                endTime=TimeQuery(lte=end_time),
+                startTime=TimeQuery(gte=self.time_bounds.start_time),
+                endTime=TimeQuery(lte=self.time_bounds.end_time),
                 geometry=GeoQuery(queryGeoJson=self.location, queryType=GeoQueryType.INTERSECTS),
             )
         )
