@@ -35,8 +35,8 @@ class GeofenceObservable(BaseObservable):
 
         # get related object IDs
         related_ids = self.get_related_object_ids()
-        related_ids = related_ids if related_ids else []
-        total = len(set(related_ids))
+        related_ids = set(related_ids) if related_ids else []
+        total = len(related_ids)
 
         if total == 0:
             LOGGER.info(f"No related objects found for observable {self.id}")
@@ -58,18 +58,24 @@ class GeofenceObservable(BaseObservable):
             LOGGER.error(f"Unable to load geometry for observable {self.id}: {e}")
             return
 
-        # query observations
-        observations = self.oms_client.get_observations(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
-            ObservationQuery(
-                nodeIds={"in": related_ids},  # TODO: find out how to represent this in a typesafe way
-                startTime=TimeQuery(gte=self.time_bounds.start_time),
-                endTime=TimeQuery(lte=self.time_bounds.end_time),
-                geometry=GeoQuery(queryGeoJson=self.location, queryType=GeoQueryType.INTERSECTS),
+        # get number of objects observed within bounds
+        num_objects_observed = sum(
+            len(
+                self.oms_client.get_observations(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
+                    ObservationQuery(
+                        nodeIds={"in": [o_id]},
+                        startTime=TimeQuery(gte=self.time_bounds.start_time),
+                        endTime=TimeQuery(lte=self.time_bounds.end_time),
+                        geometry=GeoQuery(queryGeoJson=self.location, queryType=GeoQueryType.INTERSECTS),
+                    )
+                ).data
             )
+            > 0
+            for o_id in related_ids
         )
 
         # count unique observations
-        num_observed = len(set([o.nodeId for o in observations.data])) if observations.data else 0
+        # num_observed = len(set([o.nodeId for o in observations.data])) if observations.data else 0
 
         # update status
-        self.update_status(num_observed, total)
+        self.update_status(num_objects_observed, total)

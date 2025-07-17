@@ -141,7 +141,7 @@ class BaseObservable(BaseModel):
         if (self.fully_observed_count is not None and num_observed >= self.fully_observed_count) or (
             self.fully_observed_percentage is not None and percentage_observed >= self.fully_observed_percentage
         ):
-            return SETTINGS.iw_settings.observable_statuses["observed"]
+            return SETTINGS.iw_settings.observable_statuses["fully_observed"]
 
         # check partially observed threshold
         if (self.partially_observed_count is not None and num_observed >= self.partially_observed_count) or (
@@ -150,44 +150,17 @@ class BaseObservable(BaseModel):
             return SETTINGS.iw_settings.observable_statuses["partially_observed"]
 
         # check none observed threshold
-        if (self.none_observed_count is not None and num_observed <= self.none_observed_count) or (
-            self.none_observed_percentage is not None and percentage_observed <= self.none_observed_percentage
-        ):
+        else:
             return SETTINGS.iw_settings.observable_statuses["not_observed"]
-
-        # default case
-        return SETTINGS.iw_settings.observable_statuses["unknown"]
 
     def update_status(self, num_observed, total):
         """Update the status attribute based on observation counts."""
         self.ensure_initialized()
 
-        percentage_observed = num_observed / total
-
-        LOGGER.info(f"Observed {num_observed} related objects of {total} for observation {self.id}")
+        LOGGER.info(f"Observed {num_observed} of {total} objects which met criteria for observation {self.id}")
 
         prev_status = self.get_status_attr()
-        new_status = prev_status.attributeValue if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]
-
-        # priority of checking can be adjusted here
-
-        # check fully observed threshold
-        if (self.fully_observed_count is not None and num_observed >= self.fully_observed_count) or (
-            self.fully_observed_percentage is not None and percentage_observed >= self.fully_observed_percentage
-        ):
-            new_status = SETTINGS.iw_settings.observable_statuses["fully_observed"]
-
-        # check partially observed threshold
-        elif (self.partially_observed_count is not None and num_observed >= self.partially_observed_count) or (
-            self.partially_observed_percentage is not None and percentage_observed >= self.partially_observed_percentage
-        ):
-            new_status = SETTINGS.iw_settings.observable_statuses["partially_observed"]
-
-        # check none observed threshold
-        elif (self.none_observed_count is not None and num_observed <= self.none_observed_count) or (
-            self.none_observed_percentage is not None and percentage_observed <= self.none_observed_percentage
-        ):
-            new_status = SETTINGS.iw_settings.observable_statuses["not_observed"]
+        new_status = self.determine_status(num_observed, total)
 
         self.oms_client.update_attribute(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             UpdateAttributeInput(
