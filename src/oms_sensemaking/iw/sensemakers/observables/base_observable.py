@@ -43,9 +43,9 @@ class TimeBounds(BaseModel):
                 raise ValueError("startTime and endTime are required when sinceLastQuery is False")
         else:
             now = datetime.now(ZoneInfo("UTC"))
-            self.start_time = format_rfc3339(now - timedelta(minutes=15))
             # TODO: query observable history DB for last query time
             # for now, just check last 15 minutes
+            self.start_time = format_rfc3339(now - timedelta(minutes=15))
             self.end_time = format_rfc3339(now)
 
         return self
@@ -165,7 +165,6 @@ class BaseObservable(BaseModel):
         percentage_observed = num_observed / total
 
         LOGGER.info(f"Observed {num_observed} related objects of {total} for observation {self.id}")
-        print(f"Observed {num_observed} related objects of {total} for observation {self.id}")
 
         prev_status = self.get_status_attr()
         new_status = prev_status.attributeValue if prev_status else SETTINGS.iw_settings.observable_statuses["unknown"]
@@ -190,8 +189,6 @@ class BaseObservable(BaseModel):
         ):
             new_status = SETTINGS.iw_settings.observable_statuses["not_observed"]
 
-        LOGGER.info(f"Updating status from {prev_status} to {new_status} for observation {self.id}")
-
         self.oms_client.update_attribute(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             UpdateAttributeInput(
                 id=self.status_attribute_id,
@@ -203,4 +200,7 @@ class BaseObservable(BaseModel):
             )
         )
 
-        LOGGER.info(f"Updated status from {prev_status} to {new_status} for observation {self.id}")
+        LOGGER.info(
+            f"Updated status{" from " + prev_status.attributeValue if prev_status  else ""}"
+            f" to {new_status} for observation {self.id}"
+        )

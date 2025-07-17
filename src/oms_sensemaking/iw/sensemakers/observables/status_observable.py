@@ -1,6 +1,6 @@
 from typing import List
 
-from oms_sensemaking.iw.sensemakers.base_observable import BaseObservable, StatusCriteria
+from .base_observable import BaseObservable, StatusCriteria
 
 
 class StatusObservable(BaseObservable):

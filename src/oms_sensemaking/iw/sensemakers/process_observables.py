@@ -5,10 +5,8 @@ from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.iw.sensemakers.geofence_observable import GeofenceObservable
-from oms_sensemaking.iw.sensemakers.min_distance_observable import MinDistanceObservable
-from oms_sensemaking.iw.sensemakers.search_observable import SearchObservable
-from oms_sensemaking.iw.sensemakers.status_observable import StatusObservable
+
+from . import GeofenceObservable, MinDistanceObservable, SearchObservable, StatusObservable
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

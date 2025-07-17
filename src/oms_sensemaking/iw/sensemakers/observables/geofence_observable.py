@@ -7,7 +7,8 @@ from oms_sdk.generated.generated_graphql_client.input_types import AttributeQuer
 from pydantic import BaseModel
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.iw.sensemakers.base_observable import BaseObservable
+
+from .base_observable import BaseObservable
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -58,7 +59,6 @@ class GeofenceObservable(BaseObservable):
             return
 
         # query observations
-        print(f"start time: {self.time_bounds.start_time} et: {self.time_bounds.end_time}")
         observations = self.oms_client.get_observations(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
             ObservationQuery(
                 nodeIds={"in": related_ids},  # TODO: find out how to represent this in a typesafe way

@@ -2,7 +2,7 @@ from typing import List, Literal
 
 from pydantic import BaseModel, Field
 
-from oms_sensemaking.iw.sensemakers.base_observable import BaseObservable
+from .base_observable import BaseObservable
 
 
 class GeoJSONPoint(BaseModel):
