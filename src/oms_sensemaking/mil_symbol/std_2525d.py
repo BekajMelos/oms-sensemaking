@@ -24,6 +24,13 @@ class MilSymbol2525D(MilSymbol):
     MIL_SYM_2525D_DIMENSION_IDX_0 = 4
     MIL_SYM_2525D_DIMENSION_IDX_1 = 5
     MIL_SYM_2525D_STATUS_IDX = 6
+    MIL_SYM_2525D_AMPLIFIER_IDX_0 = 8
+    MIL_SYM_2525D_AMPLIFIER_IDX_1 = 9
+
+    CONTEXT_SOURCE_PRIORITY = 3
+    AFFILIATION_SOURCE_PRIORITY = 1
+    STATUS_SOURCE_PRIORITY = 2
+    ECHELON_SOURCE_PRIORITY = 4
 
     def __init__(self, code: str, settings: Dict) -> None:
         super().__init__(code, settings)
@@ -45,6 +52,7 @@ class MilSymbol2525D(MilSymbol):
         oms_node: NodeNode,
         ancestor_iris: List[str],
         status_attr: Optional[AttributeAttribute],
+        echelon_attr: Optional[AttributeAttribute],
     ) -> None:
         """Enrich the code given node attribute data
 
@@ -59,6 +67,7 @@ class MilSymbol2525D(MilSymbol):
         self.enrich_affiliation(affiliation_attr)
         self.enrich_dimension(oms_node, ancestor_iris)
         self.enrich_status(status_attr)
+        self.enrich_echelon(echelon_attr)
 
     def enrich_context(self, context_attr: Optional[AttributeAttribute]) -> None:
         """Update Context
@@ -73,7 +82,7 @@ class MilSymbol2525D(MilSymbol):
                 # TODO ignore case?
                 if context in context_list:
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
-                    self.source_ids.put((3, context_attr.sourceId))
+                    self.source_ids.put((self.CONTEXT_SOURCE_PRIORITY, context_attr.sourceId))
                     self.acms.append(context_attr.acm)
                     LOGGER.debug(f"Updated context: {code} b/c {context}")
                     break
@@ -90,7 +99,7 @@ class MilSymbol2525D(MilSymbol):
             for code, standard_identity_list in self.settings["MIL_SYMBOL_2525D"]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
-                    self.source_ids.put((1, affiliation_attr.sourceId))
+                    self.source_ids.put((self.AFFILIATION_SOURCE_PRIORITY, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
                     LOGGER.debug(f"Updated std identity: {code} b/c {node_standard_identity}")
                     break
@@ -145,7 +154,26 @@ class MilSymbol2525D(MilSymbol):
             for code, status_list in self.settings["MIL_SYMBOL_2525D"]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
-                    self.source_ids.put((2, status_attr.sourceId))
+                    self.source_ids.put((self.STATUS_SOURCE_PRIORITY, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
                     LOGGER.debug(f"Updated status: {code} b/c {status}")
+                    break
+
+    def enrich_echelon(self, echelon_attr: Optional[AttributeAttribute]) -> None:
+        """
+        Update echelon
+
+        :param echelon_attr: Attribute for the echelon
+        :return: None
+        """
+
+        if echelon_attr:
+            echelon = echelon_attr.attributeValue
+            for code, echelon_list in self.settings["MIL_SYMBOL_2525D"]["AMPLIFIER_LISTS"].items():
+                if echelon.lower() in echelon_list:
+                    self.update_code(self.MIL_SYM_2525D_AMPLIFIER_IDX_0, code[0])
+                    self.update_code(self.MIL_SYM_2525D_AMPLIFIER_IDX_1, code[1])
+                    self.source_ids.put((self.ECHELON_SOURCE_PRIORITY, echelon_attr.sourceId))
+                    self.acms.append(echelon_attr.acm)
+                    LOGGER.debug(f"Updated echelon: {code} b/c {echelon}")
                     break
