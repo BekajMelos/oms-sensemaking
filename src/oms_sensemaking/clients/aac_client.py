@@ -61,6 +61,7 @@ class AacClient:
         else:
             LOGGER.warning("AAC Client verification disabled")
 
+        transport: httpx.BaseTransport = httpx.HTTPTransport(verify=verify)
         if SETTINGS.aac_cache_enabled:
             LOGGER.warning("AAC Cache is enabled")
             storage = hishel.InMemoryStorage()
@@ -72,10 +73,10 @@ class AacClient:
             transport = hishel.CacheTransport(
                 transport=httpx.HTTPTransport(verify=verify), storage=storage, controller=controller
             )
-            self.client = httpx.Client(verify=verify, timeout=30, transport=transport)
         else:
             LOGGER.warning("AAC Cache is disabled")
-            self.client = httpx.Client(verify=verify, timeout=30)
+
+        self.client = httpx.Client(verify=verify, timeout=30, transport=transport)
 
     def __del__(self):
         """
