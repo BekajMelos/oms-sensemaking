@@ -7,7 +7,18 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+
+### Fixed
+
+### Removed
+
+## [0.8.1] - 2025-07-16
+
+### Added
+
+### Changed
 - Updated OMS dependency to Grimlock-INC-25
+- Use separate clients for AAC caching
 
 ### Fixed
 
