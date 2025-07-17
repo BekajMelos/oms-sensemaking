@@ -69,7 +69,9 @@ class AacClient:
                 force_cache=True,
                 key_generator=self._custom_key_generator,  # type: ignore[arg-type]
             )
-            transport = hishel.CacheTransport(transport=httpx.HTTPTransport(), storage=storage, controller=controller)
+            transport = hishel.CacheTransport(
+                transport=httpx.HTTPTransport(verify=verify), storage=storage, controller=controller
+            )
             self.client = httpx.Client(verify=verify, timeout=30, transport=transport)
         else:
             LOGGER.warning("AAC Cache is disabled")
