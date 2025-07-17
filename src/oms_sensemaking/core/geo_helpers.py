@@ -6,6 +6,8 @@ import os
 from geopy.distance import geodesic
 from geopy.point import Point
 
+from oms_sensemaking.core.kml_reader import KMLReader
+
 
 def gather_area_of_interest_data(path_to_aoi_data: str):
     """
@@ -15,14 +17,23 @@ def gather_area_of_interest_data(path_to_aoi_data: str):
     :return: An array containing a list of dictionarys
     """
     areas_of_interest = []
+    kml_reader = KMLReader()
 
     for file in os.listdir(path_to_aoi_data):
         file_path = os.path.join(path_to_aoi_data, file)
 
-        if os.path.isfile(file_path) and file.lower().endswith(".json"):
-            with open(file_path, "r") as f:
-                data = json.load(f)
-                areas_of_interest.append(data)
+        if os.path.isfile(file_path):
+            file_lower = file.lower()
+            if file_lower.endswith(".json"):
+                with open(file_path, "r") as f:
+                    data = json.load(f)
+                    areas_of_interest.append(data)
+            elif file_lower.endswith(".kml"):
+                features = kml_reader.parse_kml_file(file_path)
+                areas_of_interest.extend(features)
+            elif file_lower.endswith(".kmz"):
+                features = kml_reader.parse_kmz_file(file_path)
+                areas_of_interest.extend(features)
 
     return areas_of_interest
 
