@@ -86,6 +86,7 @@ To cut new release:
     The format for the git tag is `vMAJOR.MINOR.PATCH`.
 
         git checkout main
+        git pull
         git tag -a -m 'Release 1.2.3 (Galadriel-INC-1)' v1.2.3
         git push origin tag v1.2.3
 
