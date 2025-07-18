@@ -17,6 +17,7 @@ from oms_sensemaking.core.controllers import SensemakerController, run_controlle
 from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
+from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
 from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
 
@@ -46,6 +47,7 @@ def get_controllers() -> list[SensemakerController]:
                 event_filter=MilSymbolQueueFilter(),
             )
         ),
+        ObservableSensemakerController(),
     ]
 
     return controllers
@@ -65,6 +67,7 @@ async def lifespan(application: FastAPI):
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
+        LOGGER.info("starting " + str(ctrlr.__class__))
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
         controller_thread.start()
         controllers.append((ctrlr, controller_thread))

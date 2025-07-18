@@ -74,8 +74,5 @@ class GeofenceObservable(BaseObservable):
             for o_id in related_ids
         )
 
-        # count unique observations
-        # num_observed = len(set([o.nodeId for o in observations.data])) if observations.data else 0
-
         # update status
         self.update_status(num_objects_observed, total)
