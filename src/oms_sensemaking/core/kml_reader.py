@@ -1,7 +1,8 @@
 import zipfile
 
 from fastkml import kml
-from fastkml.kml import Document, Folder, Placemark
+from fastkml.kml import Placemark
+from fastkml.utils import find_all
 from shapely.geometry import mapping
 
 
@@ -10,7 +11,7 @@ class KMLReader:
     Helper class used to read .kml and .kmz type files for areas of interest
     """
 
-    def extract_placemarks(self, feature):
+    def extract_placemarks(self, kml_obj):
         """
         Recursive helper function to extract geo data to then be extracted into geoJSON type objects
 
@@ -18,19 +19,15 @@ class KMLReader:
         :return: extracted geo data
         """
         extracted = []
-        if isinstance(feature, Placemark):
-            geom = feature.geometry
+        placemarks = list(find_all(kml_obj, of_type=Placemark))
+        for placemark in placemarks:
+            geom = placemark.geometry
             geojson_feature = {
                 "type": "Feature",
                 "geometry": mapping(geom),
-                "properties": {"name": feature.name, "description": feature.description},
+                "properties": {"name": placemark.name, "description": placemark.description},
             }
             extracted.append(geojson_feature)
-
-        elif isinstance(feature, (Document, Folder)):
-            for sub_feature in feature.features:
-                extracted.extend(self.extract_placemarks(sub_feature))
-
         return extracted
 
     def parse_kml_file(self, file_path: str):
@@ -40,17 +37,9 @@ class KMLReader:
         :param file_path: The file path of a file which is being parsed to extract data
         :return: geojson type features
         """
-        with open(file_path, "rb") as f:
-            doc = f.read()
 
-        k = kml.KML()
-        k.from_string(doc.decode("utf-8"))
-        features = []
-
-        for feature in k.features:
-            features.extend(self.extract_placemarks(feature))
-
-        return features
+        k = kml.KML.parse(file_path)
+        return self.extract_placemarks(k)
 
     def parse_kmz_file(self, file_path: str):
         """
@@ -66,13 +55,6 @@ class KMLReader:
                 raise ValueError("No KML file found inside KMZ archive")
 
             with zf.open(kml_filename) as kml_file:
-                doc = kml_file.read()
+                k = kml.KML.parse(kml_file)
 
-        k = kml.KML()
-        k.from_string(doc.decode("utf-8"))
-        features = []
-
-        for feature in k.features:
-            features.extend(self.extract_placemarks(feature))
-
-        return features
+        return self.extract_placemarks(k)
