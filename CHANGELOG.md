@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- AAC Cache transport missing ssl context
 
 ### Removed
 
