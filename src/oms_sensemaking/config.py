@@ -1,6 +1,7 @@
 """Application configuration."""
 import json
 import os
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
@@ -438,7 +439,7 @@ class Settings(BaseSettings):
         description="Path to the highest classification file")
 
     @computed_field  # type: ignore
-    @property
+    @cached_property
     def highest_classification(self) -> dict[str, str]:
         """Return classification as json from highest_classification_json_file_path"""
         with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:

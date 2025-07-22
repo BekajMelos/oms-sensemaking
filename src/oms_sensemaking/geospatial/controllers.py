@@ -210,14 +210,14 @@ class GeospatialSensemakerController(SensemakerController):
 
                     try:
                         try:
-                            track = self.generate_track(track_uuid)
+                            track = self._generate_track(track_uuid)
                         except (ValueError, IndexError):
                             LOGGER.exception(("Track doesn't have enough points. Ignore and remove from buffer until "
                                               "it gets more points"))
                             self.track_times[track_uuid] = None
                             continue
 
-                        geo_config = self.get_geo_config(track)
+                        geo_config = self._get_geo_config(track)
 
                         with ThreadPoolExecutor() as executor:
                             futures = []
@@ -243,7 +243,7 @@ class GeospatialSensemakerController(SensemakerController):
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
 
-    def generate_track(self, track_uuid: UUID) -> Track:
+    def _generate_track(self, track_uuid: UUID) -> Track:
         """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
         Then runs the common sense filters and track weaver.
 
@@ -317,7 +317,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         return track
 
-    def get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
+    def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
         """Get the geo config for this track based on the provider and node type
 
         :param track: Track to process

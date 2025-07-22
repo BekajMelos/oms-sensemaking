@@ -188,7 +188,7 @@ class SensemakerController:
             acm=acm,
             exc_text=exc_text,
         )
-        # id, object type, action type, audit log info
+
         with db_session() as db:
             db.add(log_record)
             db.commit()
