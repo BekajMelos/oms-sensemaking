@@ -382,6 +382,15 @@ def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: Node
     ]
 
 
+def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+
+    sensemaker.get_echelon(oms_node)
+    mock_oms_crud_tool.oms_client.attributes.assert_called_with(
+        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.echelon_iris, nodeIds=[oms_node.id])
+    )
+
+
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_dimension_enrichment(
     mock_get_acm: mock.MagicMock,
@@ -528,7 +537,7 @@ def test_controlling_affiliation_enrichment(
         return_value=NodesNodes.model_construct(data=[NodeNode.model_construct(id=uuid4())])
     )
 
-    mock_oms_crud_tool.get_node_attribute_by_iri = mock.MagicMock(side_effect=[[]])
+    mock_oms_crud_tool.get_node_attribute_by_iri = mock.MagicMock(side_effect=[[], []])
 
     sensemaker.get_context = mock.MagicMock(
         return_value=create_attribute(
@@ -558,7 +567,7 @@ def test_controlling_affiliation_enrichment(
     oms_node.tier = ObjectTier.DERIVATIVE
 
     # set no affiliation for the node but hostile for the parent node
-    mock_oms_crud_tool.get_node_attribute_by_iri.side_effect = [[], [create_attribute(attribute_value="hostile")]]
+    mock_oms_crud_tool.get_node_attribute_by_iri.side_effect = [[], [create_attribute(attribute_value="hostile")], []]
 
     oms_node.symbolIdCode = "10-0-0-00-0-0-00-000000-00-00"
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)

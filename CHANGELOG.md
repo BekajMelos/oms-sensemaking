@@ -5,14 +5,38 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.8.1] - 2025-07-16
+
+### Added
+
+### Changed
+- Updated OMS dependency to Grimlock-INC-25
+- Use separate clients for AAC caching
+
+### Fixed
+
+### Removed
+
+## [0.8.0] - 2025-07-14
+
+### Added
 - Added AuditLogError database table to store errors
+- Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
+- Added the ability for the Mil Symbol sensemaker to enrich echelon in symbol Id codes
 
 ### Changed
 
 ### Fixed
 - Listed ES as ASOMS dependency
 - No longer incorrectly throw errors when dealing with observations with no start time/end time
+- AAC Cache handles acm rollup requests
 
 ### Removed
 

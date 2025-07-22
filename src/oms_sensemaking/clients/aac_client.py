@@ -1,9 +1,12 @@
+import json
 import logging
 import ssl
 from typing import List, Optional, Union
 
 import hishel
+import httpcore
 import httpx
+from hishel._utils import generate_key
 
 from oms_sensemaking.config import SETTINGS
 
@@ -58,13 +61,19 @@ class AacClient:
         else:
             LOGGER.warning("AAC Client verification disabled")
 
-        if not SETTINGS.aac_cache_enabled:
+        if SETTINGS.aac_cache_enabled:
+            LOGGER.warning("AAC Cache is enabled")
+            storage = hishel.InMemoryStorage()
+            controller = hishel.Controller(
+                cacheable_methods=["GET", "POST"],
+                force_cache=True,
+                key_generator=self._custom_key_generator,  # type: ignore[arg-type]
+            )
+            transport = hishel.CacheTransport(transport=httpx.HTTPTransport(), storage=storage, controller=controller)
+            self.client = httpx.Client(verify=verify, timeout=30, transport=transport)
+        else:
             LOGGER.warning("AAC Cache is disabled")
             self.client = httpx.Client(verify=verify, timeout=30)
-        else:
-            LOGGER.warning("AAC Cache is enabled")
-            storage = hishel.InMemoryStorage(capacity=64)
-            self.client = hishel.CacheClient(verify=verify, timeout=30, storage=storage)
 
     def __del__(self):
         """
@@ -76,5 +85,18 @@ class AacClient:
         """Use AAC to rollup a list of ACMs"""
         LOGGER.debug("Getting ACM Rollup")
 
-        response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": acms})
+        response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": self._dedup_acms(acms)})
         return response.json()["RollupACM"]
+
+    def _dedup_acms(self, acms: List[dict]):
+        json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
+        deduped = set(json_acms)
+        return [json.loads(dedup) for dedup in deduped]
+
+    def _custom_key_generator(self, request: httpcore.Request, body: bytes):
+        """
+        Create a cache key based on the request body, for our case, it is a list of acms
+        """
+        key = generate_key(request, body)
+        host = request.url.host.decode()
+        return f"{host}|{key}"
