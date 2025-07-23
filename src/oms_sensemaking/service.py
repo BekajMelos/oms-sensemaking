@@ -14,7 +14,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import about, health, nlp, rdf
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
-from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
@@ -47,7 +47,7 @@ def get_controllers() -> list[SensemakerController]:
                 event_filter=MilSymbolQueueFilter(),
             )
         ),
-        ObservableSensemakerController(),
+        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_frequency)),
     ]
 
     return controllers

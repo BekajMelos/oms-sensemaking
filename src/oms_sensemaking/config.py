@@ -1,5 +1,6 @@
 """Application configuration."""
 import os
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
@@ -150,7 +151,10 @@ class MilSymbolSettings(BaseModel):
 class IWSettings(BaseModel):
     """Settings for I&W"""
 
-    observable_query_frequency: int = Field( 0.2, description="Minutes between each observable query")
+    observable_query_frequency: timedelta = Field(
+        timedelta(seconds=15),
+        description="Minutes between each observable query"
+    )
 
     observable_statuses: dict = Field({
         "unknown": "Unknown",
