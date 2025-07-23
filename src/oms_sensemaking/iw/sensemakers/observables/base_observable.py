@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, List, Optional, Union
 from zoneinfo import ZoneInfo
@@ -44,8 +44,8 @@ class TimeBounds(BaseModel):
         else:
             now = datetime.now(ZoneInfo("UTC"))
             # TODO: query observable history DB for last query time
-            # for now, just check last 15 minutes
-            self.start_time = format_rfc3339(now - timedelta(minutes=15))
+            # for now, just check according query frequency
+            self.start_time = format_rfc3339(now - SETTINGS.iw_settings.observable_query_frequency)
             self.end_time = format_rfc3339(now)
 
         return self
@@ -157,7 +157,7 @@ class BaseObservable(BaseModel):
         """Update the status attribute based on observation counts."""
         self.ensure_initialized()
 
-        LOGGER.info(f"Observed {num_observed} of {total} objects which met criteria for observation {self.id}")
+        LOGGER.info(f"Observed {num_observed} of {total} objects which met criteria for observable {self.id}")
 
         prev_status = self.get_status_attr()
         new_status = self.determine_status(num_observed, total)
@@ -175,5 +175,5 @@ class BaseObservable(BaseModel):
 
         LOGGER.info(
             f"Updated status{" from " + prev_status.attributeValue if prev_status  else ""}"
-            f" to {new_status} for observation {self.id}"
+            f" to {new_status} for observable {self.id}"
         )
