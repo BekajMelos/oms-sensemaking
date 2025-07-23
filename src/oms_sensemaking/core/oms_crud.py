@@ -67,10 +67,10 @@ from oms_sensemaking.core.rate_limiter import rate_limiter
 class OmsCrudTool:
     """Tool for using OMS_SDK CRUD operations"""
 
-    def __init__(self) -> None:
+    def __init__(self, user_dn: str | None = None) -> None:
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,
-            user_dn=SETTINGS.user_dn,
+            user_dn=user_dn or SETTINGS.user_dn,
             cert_path=SETTINGS.cert_path,
             key_path=SETTINGS.key_path,
             pkcs12_path=SETTINGS.pkcs12_path,
