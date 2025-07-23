@@ -10,6 +10,8 @@ router: APIRouter = APIRouter()
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+USER_DN = "user_dn"
+
 
 @router.get("/{obj_id:path}")
 @router.get("/{obj_id:path}.{format}")
@@ -25,7 +27,7 @@ def rdf_resolver(obj_id: str, request: Request, format: RDFFormat = RDFFormat.tu
     Returns:
         Response: A FastAPI Response object containing the serialized RDF data.
     """
-    request_user_dn = request.headers.get("user_dn")
+    request_user_dn = request.headers.get(USER_DN)
     if not request_user_dn:
         raise HTTPException(status_code=401, detail="Missing user_dn.")
     oms_crud_tool = OmsCrudTool(user_dn=request_user_dn)
