@@ -156,7 +156,6 @@ class IWSettings(BaseModel):
         description="Minutes between each observable query"
     )
 
-
     observable_statuses: dict = Field({
         "unknown": "Unknown",
         "not_observed": "Not Observed",
@@ -436,6 +435,7 @@ class Settings(BaseSettings):
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
     iw_settings: IWSettings = IWSettings()
+    observables: bool = Field(True, description="Toggle on/off Observable updates")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
