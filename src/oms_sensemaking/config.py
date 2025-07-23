@@ -153,7 +153,7 @@ class IWSettings(BaseModel):
 
     observable_query_frequency: timedelta = Field(
         timedelta(seconds=15),
-        description="Minutes between each observable query"
+        description="Timedelta between each observable query"
     )
 
     observable_statuses: dict = Field({
