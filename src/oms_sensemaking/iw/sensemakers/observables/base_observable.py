@@ -44,8 +44,8 @@ class TimeBounds(BaseModel):
         else:
             now = datetime.now(ZoneInfo("UTC"))
             # TODO: query observable history DB for last query time
-            # for now, just check according query frequency
-            self.start_time = format_rfc3339(now - SETTINGS.iw_settings.observable_query_frequency)
+            # for now, just check according to settings query interval
+            self.start_time = format_rfc3339(now - SETTINGS.iw_settings.observable_query_interval)
             self.end_time = format_rfc3339(now)
 
         return self
