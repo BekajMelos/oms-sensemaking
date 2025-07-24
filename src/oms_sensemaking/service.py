@@ -47,7 +47,7 @@ def get_controllers() -> list[SensemakerController]:
                 event_filter=MilSymbolQueueFilter(),
             )
         ),
-        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_frequency)),
+        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval)),
     ]
 
     return controllers
