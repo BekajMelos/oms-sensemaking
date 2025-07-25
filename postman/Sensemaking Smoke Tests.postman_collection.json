@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "09b644b2-606a-45e5-9fbc-16ece4639a63",
-		"name": "Sensemaking Smoke Tests Copy",
+		"_postman_id": "34e17d98-f1e1-421d-921e-619bc95da9cb",
+		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33276171"
+		"_exporter_id": "33407642"
 	},
 	"item": [
 		{
@@ -5807,8 +5807,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"attribute value\"\n            attributeDisplayValue: \"display value\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: GEOSPATIAL\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            confidence: HIGH,\n            tags: [\"T1\", \"T2\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isUserEntered: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{HAS_COORDINATES_IRI}}\",\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{facilityNodeId}}\"\n}"
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n    $sourceId: UUID!\n    $nodeId: UUID!\n    $testTag: String!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"attribute value\"\n            attributeDisplayValue: \"display value\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: GEOSPATIAL\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            confidence: HIGH,\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isUserEntered: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{HAS_COORDINATES_IRI}}\",\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{facilityNodeId}}\",\n    \"testTag\": \"{{TEST_TAG}}\"\n}"
 									}
 								},
 								"url": {
@@ -5856,7 +5856,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Garrison Unit Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{MILITARY_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -5898,8 +5898,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $startNodeId: UUID!\n    $endNodeId: UUID!\n    $sourceId: UUID!\n){\n\tcreateRelationship(\n        input: {\n            tags: [\"T1\", \"T2\"]\n            labels: [\"SM_ENRICHED\"]\n            name: \"name\"\n            startNodeId: $startNodeId\n            endNodeId: $endNodeId\n            sourceId: $sourceId\n            acm: $acm\n            confidence: HIGH\n            objectPropertyIri: $iri\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GARRISONED_AT_IRI}}\",\n    \"startNodeId\": {{nodeId}},\n    \"endNodeId\": \"{{facilityNodeId}}\",\n    \"sourceId\": \"{{sourceId}}\"\n}"
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $startNodeId: UUID!\n    $endNodeId: UUID!\n    $sourceId: UUID!\n){\n\tcreateRelationship(\n        input: {\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            name: \"name\"\n            startNodeId: $startNodeId\n            endNodeId: $endNodeId\n            sourceId: $sourceId\n            acm: $acm\n            confidence: HIGH\n            objectPropertyIri: $iri\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GARRISONED_AT_IRI}}\",\n    \"startNodeId\": {{nodeId}},\n    \"endNodeId\": \"{{facilityNodeId}}\",\n    \"sourceId\": \"{{sourceId}}\"\n}"
 									}
 								},
 								"url": {
