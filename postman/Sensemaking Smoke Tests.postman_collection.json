@@ -25,7 +25,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -34,7 +35,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -43,14 +45,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -1293,7 +1295,8 @@
 											"var jsonData = JSON.parse(pm.response.text());",
 											"pm.test(\"Data Cleaned Up\", function () {",
 											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-											"});"
+											"});",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1305,15 +1308,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -1344,7 +1347,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -1353,7 +1357,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1362,13 +1367,13 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
 										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
 									}
 								},
@@ -3088,7 +3093,8 @@
 											"var jsonData = JSON.parse(pm.response.text());",
 											"pm.test(\"Data Cleaned Up\", function () {",
 											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-											"});"
+											"});",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3100,15 +3106,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -3139,7 +3145,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -3148,7 +3155,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -3157,14 +3165,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -4562,15 +4570,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -4606,7 +4614,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -4615,7 +4624,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -4624,14 +4634,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -5511,15 +5521,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -5550,7 +5560,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -5559,7 +5570,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -5568,14 +5580,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -6470,15 +6482,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -6514,7 +6526,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -6523,7 +6536,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -6532,14 +6546,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7240,15 +7254,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7279,7 +7293,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -7288,7 +7303,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -7297,14 +7313,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -8170,15 +8186,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -8209,7 +8225,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -8218,7 +8235,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -8227,14 +8245,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -8822,15 +8840,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -8861,7 +8879,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -8870,7 +8889,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -8879,14 +8899,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -9474,15 +9494,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
