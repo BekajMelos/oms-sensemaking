@@ -94,7 +94,7 @@ class InOrOutOfGarrison(BaseRule):
                     SETTINGS.garrison_distance_kilometers,
                 )
 
-                garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
+                garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
                 self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
 

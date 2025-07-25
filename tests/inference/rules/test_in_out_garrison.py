@@ -457,7 +457,7 @@ def test_update_in_garrison(
         geo_attribute1.geometry["coordinates"][0],
         SETTINGS.garrison_distance_kilometers,
     )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
@@ -523,7 +523,7 @@ def test_update_out_garrison(
         geo_attribute1.geometry["coordinates"][0],
         SETTINGS.garrison_distance_kilometers,
     )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
     mock_get_observations.assert_called_with(
         ObservationQuery(
