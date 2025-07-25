@@ -1,6 +1,9 @@
+"""AAC Client"""
+import contextlib
 import json
 import logging
 import ssl
+from copy import deepcopy
 from typing import List, Optional, Union
 
 import hishel
@@ -62,16 +65,18 @@ class AacClient:
             LOGGER.warning("AAC Client verification disabled")
 
         transport: httpx.BaseTransport = httpx.HTTPTransport(verify=verify)
+        self.cache_storage: hishel.InMemoryStorage | None = None
+
         if SETTINGS.aac_cache_enabled:
             LOGGER.warning("AAC Cache is enabled")
-            storage = hishel.InMemoryStorage()
+            self.cache_storage = hishel.InMemoryStorage(ttl=SETTINGS.aac_cache_storage_ttl_seconds)
             controller = hishel.Controller(
                 cacheable_methods=["GET", "POST"],
                 force_cache=True,
                 key_generator=self._custom_key_generator,  # type: ignore[arg-type]
             )
             transport = hishel.CacheTransport(
-                transport=httpx.HTTPTransport(verify=verify), storage=storage, controller=controller
+                transport=httpx.HTTPTransport(verify=verify), storage=self.cache_storage, controller=controller
             )
         else:
             LOGGER.warning("AAC Cache is disabled")
@@ -90,6 +95,19 @@ class AacClient:
 
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": self._dedup_acms(acms)})
         return response.json()["RollupACM"]
+
+    def clear_cache(self) -> None:
+        """Admin endpoint to clear the local aac_cache."""
+        if SETTINGS.aac_cache_enabled and self.cache_storage:
+
+            # copy since cache contents can change during this function
+            cache_copy = deepcopy(self.cache_storage._cache)  # pylint: disable=protected-access
+            for key in cache_copy:
+                with contextlib.suppress(KeyError):
+                    # ignore if key no longer exists after copy
+                    self.cache_storage.remove(key)
+        else:
+            LOGGER.info("Cache not enabled. Unable to clear cache.")
 
     def _dedup_acms(self, acms: List[dict]):
         json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
