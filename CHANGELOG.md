@@ -9,6 +9,17 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+
+### Removed
+
+## [0.9.0] - 2025-07-28
+
+### Added
+- Out of Garrison automated smoke test
+
+### Changed
+
+### Fixed
 - RDF Endpoint requires `user_dn` passed in requests
 - AAC Cache transport missing ssl context
 
