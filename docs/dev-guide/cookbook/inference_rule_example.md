@@ -25,7 +25,7 @@ an attribute is created indicating that a name exists for the node.
       StringQuery,
   )
 
-  from oms_sensemaking.clients.instances import oms_client
+  from oms_sensemaking.clients.instances import oms_crud_tool
   from oms_sensemaking.config import SETTINGS
   from oms_sensemaking.core.sensemakers import FindingBase
   from oms_sensemaking.inference.rules.base_rule import BaseRule
@@ -94,7 +94,7 @@ an attribute is created indicating that a name exists for the node.
               ],
           )
 
-          response = oms_client.create_attribute(attribute)
+          response = oms_crud_tool.create_attribute(attribute)
 
           finding = AddHasNameFinding(attr.acm, response.id)
           self._finding_writer.save_findings([finding], self)
@@ -126,7 +126,7 @@ an attribute is created indicating that a name exists for the node.
               ],
           )
 
-          res = oms_client.get_attributes(attribute_query)
+          res = oms_crud_tool.get_attributes(attribute_query)
 
           return len(res.data) > 0
   

@@ -113,7 +113,7 @@ services:
       - ./docker/omsb/omsb.env
     volumes:
       - ./etc/pki:/opt/oms-bridge/pki
-      - ./etc/whitelist.txt:/opt/oms-bridge/etc/whitelist.txt
+      - ./etc/whitelist.txt:/opt/oms-bridge/etc/config/external/Whitelist.txt
       - ./docker/omsb/LocalCollectionStatusThresholds.yaml:/opt/oms-bridge/etc/collectionstatus/CollectionStatusThresholds.yaml
       - ./docker/omsb/SystemLabels.yaml:/opt/oms-bridge/etc/config/external/SystemLabels.yaml
     ports:
