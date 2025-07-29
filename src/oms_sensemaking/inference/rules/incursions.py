@@ -75,39 +75,47 @@ class Incursion(BaseRule):
             if not overlap.is_empty:
                 feature_of_interest = feature
                 break
-
+        matching_incursion_attribute_found = False
         if feature_of_interest:
             # Check for existing incursions in the relevant geo of interest
-            attribute_query = AttributeQuery(
-                attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-                attributeValue=StringQuery(equals="Incursion"),
-                attributeType={"is": AttributeType.GEOSPATIAL},
-                geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
-                nodeIds=[incurring_object.id],
-                tags=SETTINGS.incursion_tags,
+            activity_query = ActivityQuery(
+                name=StringQuery(equals="Incursion"),
+                nodeIds=UuidQueryByList(in_=[incurring_object.id]),
             )
-            attr_response = oms_crud_tool.get_attributes(attribute_query)
-            existing_incursion_attributes = attr_response.data
+            activity_response = oms_crud_tool.get_activities(activity_query)
+            existing_incursion_activity = activity_response.data[0] if activity_response.data else None
 
-            matching_incursion_attribute_found = False
-
-            incursion_obs = TimeParsedObservation(obs)
-            for existing_incursion_attribute in existing_incursion_attributes:
-                inc_attr = GenericNodeTimeframe(
-                    existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
+            if existing_incursion_activity:
+                attribute_query = AttributeQuery(
+                    attributeIris=[SETTINGS.inference_incursion_attribute_iri],
+                    attributeValue=StringQuery(equals="Incursion"),
+                    attributeType={"is": AttributeType.GEOSPATIAL},
+                    geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
+                    nodeIds=[existing_incursion_activity.id],
+                    tags=SETTINGS.incursion_tags,
                 )
-                # Update existing incursion if times overlap or if object stayed in area of
-                # interest in the time between the observation and incursion
-                time_overlap = inc_attr.does_observation_overlap(incursion_obs)
-                geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
-                if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
-                    incurring_object, obs, geo_query
-                ):
-                    # Update existing incursion with union of observation and incursion time intervals
-                    inc_attr.update_generic_node_times_with_observation(incursion_obs)
-                    self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
-                    matching_incursion_attribute_found = True
-                    break
+                attr_response = oms_crud_tool.get_attributes(attribute_query)
+                existing_incursion_attributes = attr_response.data
+
+                # matching_incursion_attribute_found = False
+
+                incursion_obs = TimeParsedObservation(obs)
+                for existing_incursion_attribute in existing_incursion_attributes:
+                    inc_attr = GenericNodeTimeframe(
+                        existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
+                    )
+                    # Update existing incursion if times overlap or if object stayed in area of
+                    # interest in the time between the observation and incursion
+                    time_overlap = inc_attr.does_observation_overlap(incursion_obs)
+                    geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
+                    if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
+                        incurring_object, obs, geo_query
+                    ):
+                        # Update existing incursion with union of observation and incursion time intervals
+                        inc_attr.update_generic_node_times_with_observation(incursion_obs)
+                        self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
+                        matching_incursion_attribute_found = True
+                        break
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
@@ -169,28 +177,6 @@ class Incursion(BaseRule):
         Create new incursion attribute pointing to incurring_object and activity pointing to observation
         """
 
-        # Create new incursion attribute pointing to incurring_object
-        incursion_attribute = CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
-            attributeValue="Incursion",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=observation.confidence,
-            sourceId=observation.sourceId,
-            nodeId=incurring_object.id,
-            acm=observation.acm,
-            tags=SETTINGS.incursion_tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.inference_sm_label,
-                SETTINGS.incursion_sm_label,
-                self.version_string,
-            ],
-            geometry=feature_of_interest["geometry"],
-            valueStart=observation.startTime,
-            valueEnd=observation.endTime,
-        )
-        oms_crud_tool.create_attribute(incursion_attribute)
-
         # Create new incursion activity pointing to observation
         description = self._get_feature_name(feature_of_interest)
         if description is None:
@@ -214,6 +200,36 @@ class Incursion(BaseRule):
             endTime=observation.endTime,
         )
         oms_crud_tool.create_activity(incursion_activity)
+        activity_query = ActivityQuery(
+            name=StringQuery(equals="Incursion"),
+            nodeIds=UuidQueryByList(in_=[observation.nodeId]),
+            startTime=TimeQuery(gte=observation.startTime),
+            endTime=TimeQuery(lte=observation.endTime),
+        )
+        activity_response = oms_crud_tool.get_activities(activity_query)
+        new_incursion_activity = activity_response.data[0]
+
+        # Create new incursion attribute pointing to activity describing incurring object
+        incursion_attribute = CreateAttributeInput(
+            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeValue="Incursion",
+            attributeType=AttributeType.GEOSPATIAL,
+            confidence=observation.confidence,
+            sourceId=observation.sourceId,
+            activityId=new_incursion_activity.id,
+            acm=observation.acm,
+            tags=SETTINGS.incursion_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                self.version_string,
+            ],
+            geometry=feature_of_interest["geometry"],
+            valueStart=observation.startTime,
+            valueEnd=observation.endTime,
+        )
+        oms_crud_tool.create_attribute(incursion_attribute)
 
     def has_action_already_ran(self, rule_context: RuleContext):
         """
