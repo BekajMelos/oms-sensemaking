@@ -75,7 +75,7 @@ class Incursion(BaseRule):
             if not overlap.is_empty:
                 feature_of_interest = feature
                 break
-        matching_incursion_attribute_found = False
+
         if feature_of_interest:
             # Check for existing incursions in the relevant geo of interest
             activity_query = ActivityQuery(
@@ -83,15 +83,17 @@ class Incursion(BaseRule):
                 nodeIds=UuidQueryByList(in_=[incurring_object.id]),
             )
             activity_response = oms_crud_tool.get_activities(activity_query)
-            existing_incursion_activity = activity_response.data[0] if activity_response.data else None
-
-            if existing_incursion_activity:
+            existing_incursion_activities = activity_response.data
+            matching_incursion_attribute_found = False
+            for existing_incursion_activity in existing_incursion_activities:
+                if matching_incursion_attribute_found:
+                    break
                 attribute_query = AttributeQuery(
                     attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                     attributeValue=StringQuery(equals="Incursion"),
                     attributeType={"is": AttributeType.GEOSPATIAL},
                     geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
-                    nodeIds=[existing_incursion_activity.id],
+                    activityIds=[existing_incursion_activity.id],
                     tags=SETTINGS.incursion_tags,
                 )
                 attr_response = oms_crud_tool.get_attributes(attribute_query)
