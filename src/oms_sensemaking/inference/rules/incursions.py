@@ -21,7 +21,8 @@ from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_client
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import gather_area_of_interest_data
+from oms_sensemaking.domain.area_of_interest.aoi import AreaOfInterest
+from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
@@ -33,10 +34,11 @@ class Incursion(BaseRule):
     with and make the appropriate attribute/activity updates
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, aoi_extractor: AOIExtractor):
         self.name = name
         self.version = (1, 0, 0)
-        self.features = gather_area_of_interest_data(SETTINGS.inference_incursion_areas_of_interest_path)
+        self.features = aoi_extractor.get_areas_of_interest()
+        self.aoi = AreaOfInterest()
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -70,9 +72,9 @@ class Incursion(BaseRule):
         # Check if observation occurred in an area of interest
         feature_of_interest = None
         for feature in self.features:
-            feature_region = shape(feature["geometry"])
-            overlap = feature_region.intersection(obs_geo)
-            if not overlap.is_empty:
+            feature_region = self.aoi.get_geometry_shape(feature)
+            overlap = self.aoi.has_overlap(feature_region, obs_geo)
+            if overlap:
                 feature_of_interest = feature
                 break
 
@@ -82,7 +84,7 @@ class Incursion(BaseRule):
                 attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                 attributeValue=StringQuery(equals="Incursion"),
                 attributeType={"is": AttributeType.GEOSPATIAL},
-                geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
+                geometry=GeoQuery(queryGeoJson=self.aoi.get_geometry_dict(feature_of_interest)),
                 nodeIds=[incurring_object.id],
                 tags=SETTINGS.incursion_tags,
             )
@@ -99,7 +101,9 @@ class Incursion(BaseRule):
                 # Update existing incursion if times overlap or if object stayed in area of
                 # interest in the time between the observation and incursion
                 time_overlap = inc_attr.does_observation_overlap(incursion_obs)
-                geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
+                geo_query = GeoQuery(
+                    queryGeoJson=self.aoi.get_geometry_dict(feature_of_interest), queryType=GeoQueryType.DISJOINT
+                )
                 if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
                     incurring_object, obs, geo_query
                 ):
@@ -185,7 +189,7 @@ class Incursion(BaseRule):
                 SETTINGS.incursion_sm_label,
                 self.version_string,
             ],
-            geometry=feature_of_interest["geometry"],
+            geometry=self.aoi.get_geometry_dict(feature_of_interest),
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
