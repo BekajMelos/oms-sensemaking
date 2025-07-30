@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated Inference Sensemaker to only accept Observation Audit Log Events
 
 ### Fixed
 
