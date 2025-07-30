@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "34e17d98-f1e1-421d-921e-619bc95da9cb",
+		"_postman_id": "6f032f34-f2fa-4ded-8aa4-569d54f68c70",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33407642"
+		"_exporter_id": "41174150"
 	},
 	"item": [
 		{
@@ -5253,6 +5253,100 @@
 							"response": []
 						},
 						{
+							"name": "Get Incursion Activity Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var response = pm.response.json();",
+											"let isValidResponse = response.data && ",
+											"                      response.data.activities && ",
+											"                      response.data.activities.data && ",
+											"                      response.data.activities.data.length > 0 && ",
+											"                      response.data.activities.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });}",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"incursionactid\", response.data.activities.data[0].id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
+										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Incursion Activity Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Activity Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $activityid: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityid\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Confirm Incursion is made",
 							"event": [
 								{
@@ -5339,8 +5433,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
+										"query": "query (\n    $activityIds: [UUID!]\n){\n    attributes(\n        query: {\n            activityIds: $activityIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
+										"variables": "{\n    \"activitiyIds\": \"{{incursionactid}}\"\n}"
 									}
 								},
 								"url": {
@@ -5383,100 +5477,6 @@
 									"graphql": {
 										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Incursion Activity Id",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.activities && ",
-											"                      response.data.activities.data && ",
-											"                      response.data.activities.data.length > 0 && ",
-											"                      response.data.activities.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"incursionactid\", response.data.activities.data[0].id);"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
-										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Incursion Activity Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Incursion Activity Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"incursionactid\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $activityid: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityid\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
 									}
 								},
 								"url": {

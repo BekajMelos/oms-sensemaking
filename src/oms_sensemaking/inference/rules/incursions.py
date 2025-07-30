@@ -76,6 +76,7 @@ class Incursion(BaseRule):
                 break
 
         if feature_of_interest:
+            incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
             activity_query = ActivityQuery(
                 name=StringQuery(equals="Incursion"),
@@ -98,22 +99,24 @@ class Incursion(BaseRule):
                 attr_response = oms_crud_tool.get_attributes(attribute_query)
                 existing_incursion_attributes = attr_response.data
 
-                incursion_obs = Timeframe(obs)
                 for existing_incursion_attribute in existing_incursion_attributes:
-                    inc_attr = GeoTimeframe(
+                    inc_attr_geo_timeframe = GeoTimeframe(
                         existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
                     )
                     # Update existing incursion if times overlap or if object stayed in area of
                     # interest in the time between the observation and incursion
-                    time_overlap = inc_attr.does_observation_overlap(incursion_obs)
+                    time_overlap = inc_attr_geo_timeframe.does_observation_overlap(incursion_obs_timeframe)
                     geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
-                    if time_overlap or inc_attr.object_observed_between_generic_node_and_observation_times(
-                        incurring_object, obs, geo_query
+                    if (
+                        time_overlap
+                        or inc_attr_geo_timeframe.object_observed_between_generic_node_and_observation_times(
+                            incurring_object, obs, geo_query
+                        )
                     ):
                         # Update existing incursion with union of observation and incursion time intervals
-                        inc_attr.update_generic_node_times_with_observation(incursion_obs)
+                        inc_attr_geo_timeframe.update_generic_node_times_with_observation(incursion_obs_timeframe)
                         self._update_existing_incursion(
-                            obs, existing_incursion_activity, existing_incursion_attribute, inc_attr
+                            obs, existing_incursion_activity, existing_incursion_attribute, inc_attr_geo_timeframe
                         )
                         matching_incursion_attribute_found = True
                         break
@@ -127,7 +130,7 @@ class Incursion(BaseRule):
         observation: ObservationObservation,
         existing_incursion_activity: ActivitiesActivitiesData,
         existing_incursion_attribute: AttributesAttributesData,
-        inc_attr: GeoTimeframe,
+        inc_attr_geo_timeframe: GeoTimeframe,
     ):
         """
         Update an existing incursion attribute and corresponding activity
@@ -141,8 +144,8 @@ class Incursion(BaseRule):
         activity_labels.append(SETTINGS.sm_enriched_label)
         updated_activity_input = UpdateActivityInput(
             id=existing_incursion_activity.id,
-            startTime=inc_attr.start_time.isoformat(),
-            endTime=inc_attr.end_time.isoformat(),
+            startTime=inc_attr_geo_timeframe.start_time.isoformat(),
+            endTime=inc_attr_geo_timeframe.end_time.isoformat(),
             addObservationIds=[observation.id],
             labels=activity_labels,
         )
@@ -155,8 +158,8 @@ class Incursion(BaseRule):
         attribute_labels.append(SETTINGS.sm_enriched_label)
         updated_attribute_input = UpdateAttributeInput(
             id=existing_incursion_attribute.id,
-            valueStart=inc_attr.start_time.isoformat(),
-            valueEnd=inc_attr.end_time.isoformat(),
+            valueStart=inc_attr_geo_timeframe.start_time.isoformat(),
+            valueEnd=inc_attr_geo_timeframe.end_time.isoformat(),
             labels=attribute_labels,
         )
         oms_crud_tool.update_attribute(updated_attribute_input)
