@@ -12,7 +12,7 @@ router: APIRouter = APIRouter()
 
 
 @router.post("/clear")
-def clear_aac_cache():
+def clear_aac_cache() -> Response:
     """Clear Local AAC Cache"""
     LOGGER.info("Clearing Local AAC Cache")
     if SETTINGS.aac_cache_enabled:
