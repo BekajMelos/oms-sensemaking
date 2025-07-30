@@ -222,8 +222,9 @@ def mock_get_activities(mocker: MockerFixture):
 
 
 @pytest.fixture
-def mock_create_activity(mocker: MockerFixture):
+def mock_create_activity(mocker: MockerFixture, activity1):
     mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_activity")
+    mock_create_activity.return_value = activity1
     return mock_create_activity
 
 

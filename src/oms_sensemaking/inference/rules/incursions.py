@@ -1,4 +1,5 @@
 from oms_sdk.generated.generated_graphql_client import (
+    ActivitiesActivitiesData,
     ActivityQuery,
     AttributeQuery,
     AttributesAttributesData,
@@ -8,10 +9,8 @@ from oms_sdk.generated.generated_graphql_client import (
     GeoQuery,
     GeoQueryType,
     NodeNode,
-    NodesNodesData,
     ObservationObservation,
     StringQuery,
-    TimeQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
     UuidQueryByList,
@@ -24,7 +23,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
+from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
 
 
 class Incursion(BaseRule):
@@ -99,11 +98,9 @@ class Incursion(BaseRule):
                 attr_response = oms_crud_tool.get_attributes(attribute_query)
                 existing_incursion_attributes = attr_response.data
 
-                # matching_incursion_attribute_found = False
-
-                incursion_obs = TimeParsedObservation(obs)
+                incursion_obs = Timeframe(obs)
                 for existing_incursion_attribute in existing_incursion_attributes:
-                    inc_attr = GenericNodeTimeframe(
+                    inc_attr = GeoTimeframe(
                         existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
                     )
                     # Update existing incursion if times overlap or if object stayed in area of
@@ -115,7 +112,9 @@ class Incursion(BaseRule):
                     ):
                         # Update existing incursion with union of observation and incursion time intervals
                         inc_attr.update_generic_node_times_with_observation(incursion_obs)
-                        self._update_existing_incursion(obs, incurring_object, existing_incursion_attribute, inc_attr)
+                        self._update_existing_incursion(
+                            obs, existing_incursion_activity, existing_incursion_attribute, inc_attr
+                        )
                         matching_incursion_attribute_found = True
                         break
 
@@ -126,32 +125,22 @@ class Incursion(BaseRule):
     def _update_existing_incursion(
         self,
         observation: ObservationObservation,
-        incurring_object: NodesNodesData,
+        existing_incursion_activity: ActivitiesActivitiesData,
         existing_incursion_attribute: AttributesAttributesData,
-        inc_attr: GenericNodeTimeframe,
+        inc_attr: GeoTimeframe,
     ):
         """
         Update an existing incursion attribute and corresponding activity
         with updated start/end times
         """
 
-        # Fetch corresponding incursion activity
-        activity_query = ActivityQuery(
-            name=StringQuery(equals="Incursion"),
-            nodeIds=UuidQueryByList(in_=[incurring_object.id]),
-            startTime=TimeQuery(gte=existing_incursion_attribute.valueStart),
-            endTime=TimeQuery(lte=existing_incursion_attribute.valueEnd),
-        )
-        activity_response = oms_crud_tool.get_activities(activity_query)
-        incursion_activity = activity_response.data[0]
-
         # Update start/end times and add observation to incursion activity
-        activity_labels = incursion_activity.labels
+        activity_labels = existing_incursion_activity.labels
         if activity_labels is None:
             activity_labels = []
         activity_labels.append(SETTINGS.sm_enriched_label)
         updated_activity_input = UpdateActivityInput(
-            id=incursion_activity.id,
+            id=existing_incursion_activity.id,
             startTime=inc_attr.start_time.isoformat(),
             endTime=inc_attr.end_time.isoformat(),
             addObservationIds=[observation.id],
@@ -201,15 +190,7 @@ class Incursion(BaseRule):
             startTime=observation.startTime,
             endTime=observation.endTime,
         )
-        oms_crud_tool.create_activity(incursion_activity)
-        activity_query = ActivityQuery(
-            name=StringQuery(equals="Incursion"),
-            nodeIds=UuidQueryByList(in_=[observation.nodeId]),
-            startTime=TimeQuery(gte=observation.startTime),
-            endTime=TimeQuery(lte=observation.endTime),
-        )
-        activity_response = oms_crud_tool.get_activities(activity_query)
-        new_incursion_activity = activity_response.data[0]
+        new_incursion_activity = oms_crud_tool.create_activity(incursion_activity)
 
         # Create new incursion attribute pointing to activity describing incurring object
         incursion_attribute = CreateAttributeInput(
