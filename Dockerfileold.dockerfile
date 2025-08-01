@@ -44,16 +44,16 @@
 #   for how to handle this difference are not clear.
 
 # The name of the Docker image.
-ARG IMAGE_NAME="python-312"
+ARG IMAGE_NAME="python"
 
 # The version of Python to use.
-ARG IMAGE_BASE="ubi8"
+ARG PYTHON_VERSION="3.12.10"
 
 # The docker image prefix.
-ARG IMAGE_PROXY="registry.access.redhat.com"
+ARG DOCKER_PROXY="docker.io/library"
 
 # The paramterized base image.
-FROM ${IMAGE_PROXY}/${IMAGE_BASE}/${IMAGE_NAME} AS python-base
+FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
@@ -72,8 +72,6 @@ LABEL maintainer="OMS Team <oms@blackcape.io>"
 
 WORKDIR ${APP_HOME}
 
-USER root
-
 RUN <<EOF
 set -e
 
@@ -87,17 +85,20 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-dnf -y update && \
-dnf install -y \
+apt-get update
+apt-get install -y --no-install-recommends \
   ca-certificates \
   curl \
   gzip \
-  tar
+  tar \
+  lsb-release
 
-rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG && \
-dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
-dnf -qy module disable postgresql && \
-dnf install -y postgresql16
+install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+apt-get update
+apt-get install -y --no-install-recommends postgresql-client-16
 
 # prepare file system
 mkdir -p $APP_HOME
@@ -105,7 +106,10 @@ chown $USER_NAME:$GROUP_NAME $APP_HOME
 chmod 774 $APP_HOME
 
 # clean up os packages
-dnf clean all
+apt-get purge -y curl
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
 
@@ -173,30 +177,24 @@ find /app -type d -exec chmod 755 {} \;
 
 # use the provided ca certificate bundle if available
 if [ -f /root/ca-certificate.crt ]; then
-  cp /root/ca-certificate.crt /etc/pki/ca-trust/source/anchors/my-ca.crt
-  update-ca-trust extract
+  cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
 # configure package manager
-dnf -y update
+apt-get update
 
 # update core Python packaging tools
-export PIP_NO_INPUT=1
 python3 -m pip install --upgrade pip wheel
 
 # install application's system dependencies
-dnf install -y \
+apt-get install -y --no-install-recommends \
   curl \
   git \
-  jq \
-  gcc \
-  python3-devel \
-  procps-ng
+  jq
 
-dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
-dnf config-manager --set-enabled epel && \
-dnf install -y geos-devel && \
-dnf clean all
+# prepare build dependencies
+BUILD_DEPS="gcc libgeos-dev python3-dev"
+apt-get install -y --no-install-recommends $BUILD_DEPS procps
 
 # install app
 pip install .
@@ -207,9 +205,10 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3-devel geos-devel && \
-dnf autoremove -y && \
-dnf clean all
+apt-get purge -y $BUILD_DEPS
+apt-get clean -y
+apt-get autoclean -y
+apt-get autoremove -y
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
