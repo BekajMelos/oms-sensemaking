@@ -43,9 +43,6 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-# The name of the Docker image.
-ARG IMAGE_NAME="python-312"
-
 # The version of Python to use.
 ARG IMAGE_BASE="ubi8"
 
@@ -53,7 +50,7 @@ ARG IMAGE_BASE="ubi8"
 ARG IMAGE_PROXY="registry.access.redhat.com"
 
 # The paramterized base image.
-FROM ${IMAGE_PROXY}/${IMAGE_BASE}/${IMAGE_NAME} AS python-base
+FROM ${IMAGE_PROXY}/${IMAGE_BASE} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
@@ -71,6 +68,8 @@ ENV LANG=C.UTF-8
 LABEL maintainer="OMS Team <oms@blackcape.io>"
 
 WORKDIR ${APP_HOME}
+
+ENV PYTHON_VERSION="3.12.10"
 
 USER root
 
@@ -94,9 +93,17 @@ dnf install -y \
   gzip \
   tar
 
+dnf install -y python3.12 && \
+curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+python3.12 get-pip.py && \
+alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.12 1 && \
+rm get-pip.py
+
 rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG && \
 dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
 dnf -qy module disable postgresql && \
+dnf -y update && \
 dnf install -y postgresql16
 
 # prepare file system
@@ -164,6 +171,7 @@ COPY --chmod=644 docker/banner.txt /etc/motd
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
 #       for a private PyPI to be used to define a dependency on the oms_sdk
 #       project.
+USER root
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
   --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e

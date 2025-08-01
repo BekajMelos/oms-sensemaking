@@ -1,5 +1,5 @@
 services:
-  oms_sensemaking_ubi8:
+  oms_sensemaking:
     build:
       context: .
       secrets:
@@ -35,43 +35,6 @@ services:
     restart: on-failure
     depends_on:
       - postgis
-
-  # oms_sensemaking:
-  #   build:
-  #     context: .
-  #     secrets:
-  #       - mynetrc
-  #     args:
-  #       PIP_EXTRA_INDEX_URL: ${PIP_INDEX}
-  #   ports:
-  #     - 5001:${UVICORN_PORT:-8443}
-  #   environment:
-  #     # database config
-  #     DB_HOST: postgis
-  #     DB_USER: ${DB_USER:-${PGUSER:-appuser}}
-  #     DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
-  #     DB_SSL: ${DB_SSL:-true}
-  #     PGHOST: postgis
-  #     UVICORN_PORT: ${UVICORN_PORT:-8443}
-  #     UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE}
-  #     UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE}
-  #     UVICORN_SSL_CERT_REQS: ${UVICORN_SSL_CERT_REQS:-0}  # set this to 1 to request client certs
-  #     UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL:-info}
-
-  #     # misc.
-  #     APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
-  #     RELOAD_APP: ${RELOAD_APP:-1}
-  #   volumes:
-  #     - .:/app
-  #     - ./etc/pki:/opt/common/pki
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "/healthcheck.sh"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   restart: on-failure
-  #   depends_on:
-  #     - postgis
 
   postgis:
     image: postgis/postgis:16-3.4-alpine
