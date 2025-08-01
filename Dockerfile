@@ -104,7 +104,11 @@ rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG && \
 dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
 dnf -qy module disable postgresql && \
 dnf -y update && \
-dnf install -y postgresql16
+dnf clean all && \
+dnf makecache && \
+dnf install -y postgresql16 postgresql16-devel && \
+which psql && \
+psql --version
 
 # prepare file system
 mkdir -p $APP_HOME
