@@ -7,7 +7,7 @@ from oms_sdk.generated.generated_graphql_client import (
     TimeQuery,
 )
 
-from oms_sensemaking.clients.instances import oms_client
+from oms_sensemaking.clients.instances import oms_crud_tool
 
 
 class TimeParsedObservation:
@@ -61,7 +61,7 @@ class GenericNodeTimeframe:
                 endTime=TimeQuery(lte=observation.startTime),
                 geometry=geo_query,
             )
-        observation_response = oms_client.get_observations(observation_query)
+        observation_response = oms_crud_tool.get_observations(observation_query)
         part_of_existing_generic_node = bool(not observation_response.data)
 
         return part_of_existing_generic_node
