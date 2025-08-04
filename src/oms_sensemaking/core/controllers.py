@@ -141,8 +141,7 @@ class SensemakerController:
             # extract info from OMS via API calls
             oms_obj = self.get_oms_data(event)
         except Exception:
-            message = f"Error connecting to omsb {event.objectId}: {event.objectId}"
-            LOGGER.exception(message)
+            message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
             self.log_error(event, message, SETTINGS.highest_classification, traceback.format_exc())
             return True
 
@@ -164,13 +163,12 @@ class SensemakerController:
                 executor.shutdown(wait=True)
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
-            LOGGER.exception(message)
             self.log_error(event, message, oms_obj.acm, traceback.format_exc())
 
         return True
 
     def log_error(self, event: AuditLogEvent, message: str, acm: dict, exc_text: None | str = None) -> None:
-        """Log errors with AuditLogEvent to the database.
+        """Log errors with AuditLogEvent to the database. This method should be called within an exception handler.
 
         :param event: AuditLogEvent object being processed when the error occurred
         :param message: Log message for the error
@@ -178,6 +176,8 @@ class SensemakerController:
         :param exc_text: Optional exception text for the error
         :return: None
         """
+
+        LOGGER.exception(message)
 
         log_record = AuditLogError(
             object_id=event.objectId,

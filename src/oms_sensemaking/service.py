@@ -121,4 +121,9 @@ def create_app(config: Settings) -> FastAPI:
     return application
 
 
+def initialize_settings() -> None:
+    SETTINGS.load_highest_classif()
+
+
+initialize_settings()
 app: FastAPI = create_app(SETTINGS)

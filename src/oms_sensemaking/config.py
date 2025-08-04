@@ -1,5 +1,6 @@
 """Application configuration."""
 import json
+import logging
 import os
 from functools import cached_property
 from pathlib import Path
@@ -12,6 +13,8 @@ from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_fie
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
+
+LOGGER = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -26,7 +29,7 @@ class LogConfig(BaseSettings):
     log_format: str = "{asctime:<20s}{levelname:<8s}{threadName:<32s} {name}: {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
-    log_level: str = Field("WARNING", alias='app_log_level')
+    log_level: str = Field("INFO", alias='app_log_level')
 
     handlers: dict[str, dict] = {
         "default": {
@@ -450,8 +453,18 @@ class Settings(BaseSettings):
     @cached_property
     def highest_classification(self) -> dict[str, str]:
         """Return classification as json from highest_classification_json_file_path"""
-        with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
-            return json.load(fd)
+        try:
+            with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
+                return json.load(fd)
+        except (FileNotFoundError, OSError, json.JSONDecodeError):
+            LOGGER.error("Unable to find file %s", self.highest_classification_json_file_path)
+
+    def load_highest_classif(self):
+        """Load highest classification from file
+        This should be done on startup to ensure file exists
+        """
+        if SETTINGS.highest_classification:
+            LOGGER.info("Loaded highest classification")
 
     @computed_field  # type: ignore
     @property

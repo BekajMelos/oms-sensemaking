@@ -21,6 +21,7 @@ from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
+from oms_sensemaking.core.exceptions import SensemakingError
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
@@ -34,6 +35,12 @@ from oms_sensemaking.models.geo import (
 )
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+class TrackLengthError(SensemakingError):
+    """
+    Tracks must have at least two points
+    """
 
 
 class GeospatialSensemakerController(SensemakerController):
@@ -211,7 +218,7 @@ class GeospatialSensemakerController(SensemakerController):
                     try:
                         try:
                             track = self._generate_track(track_uuid)
-                        except (ValueError, IndexError):
+                        except TrackLengthError:
                             LOGGER.exception(("Track doesn't have enough points. Ignore and remove from buffer until "
                                               "it gets more points"))
                             self.track_times[track_uuid] = None
@@ -257,7 +264,11 @@ class GeospatialSensemakerController(SensemakerController):
         points.sort(key=attrgetter("detection_time"))
 
         # Get the IRI hierarchy for the node
-        oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+        try:
+            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+        except IndexError as e:
+            raise TrackLengthError(e) from e
+
         ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
 
         time_bins = self.bin_points_for_track(points)
@@ -313,7 +324,7 @@ class GeospatialSensemakerController(SensemakerController):
             self.log_track_comparison(points=binned_points, track=track)
 
         if not track:
-            raise ValueError("Not enough points for track.")
+            raise TrackLengthError("Not enough points for track.") from None
 
         return track
 
