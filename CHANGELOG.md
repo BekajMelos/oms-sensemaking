@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
+the "incurring" node.
 
 ### Fixed
 

@@ -226,7 +226,7 @@ class OmsCrudTool:
         """Get existing Attributes from OMS"""
         return self.oms_client.originators(query=OriginatorQuery(name=StringQuery(equals=originator_name)))
 
-    def get_pages_of_activities(self, name: str, node: NodeNode, pagesize: int = 25) -> list[ActivitiesActivities]:
+    def get_pages_of_activities(self, name: str, node: NodeNode, pagesize: int = 200) -> list[ActivitiesActivities]:
         activities: list[ActivitiesActivities] = []
         page = 1
         while True:
