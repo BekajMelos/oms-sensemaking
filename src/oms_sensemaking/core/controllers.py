@@ -7,6 +7,7 @@ from threading import Event, Lock, Thread
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
 
+from oms_sensemaking import __version__
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
@@ -187,6 +188,7 @@ class SensemakerController:
             message=message,
             acm=acm,
             exc_text=exc_text,
+            version=__version__,
         )
 
         with db_session() as db:

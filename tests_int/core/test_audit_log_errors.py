@@ -1,4 +1,5 @@
 """Test DB Logging"""
+
 import uuid
 from unittest import mock
 
@@ -6,6 +7,7 @@ from oms_sdk.generated.generated_graphql_client import GraphQLClientError, NodeN
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
+from oms_sensemaking import __version__
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer
@@ -37,21 +39,12 @@ def test_db_logging(db: Session, session_local: Session):
     controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(side_effect=GraphQLClientError)
 
     node_id = str(uuid.uuid4())
-    event = AuditLogEvent(
-        objectId=node_id,
-        userId="user",
-        objectType="NODE",
-        action="CREATE"
-    )
+    event = AuditLogEvent(objectId=node_id, userId="user", objectType="NODE", action="CREATE")
 
     controller.handle_event(event)
 
     # check that AuditLogErrors were created
-    logs = (
-        db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at)))
-        .scalars()
-        .all()
-    )
+    logs = db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at))).scalars().all()
 
     assert len(logs) == 1, "Error should be found when failing to rehydrate node"
     log = logs[0]
@@ -59,7 +52,8 @@ def test_db_logging(db: Session, session_local: Session):
     assert node_id in log.message
     assert "GraphQLClientError" in log.exc_text
     assert log.module_name == "oms_sensemaking.core.controllers"
-    assert log.acm == SETTINGS.highest_classification
+    assert log.acm is not None and log.acm == SETTINGS.highest_classification
+    assert log.version == __version__
 
 
 def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_tool, ts_acm):
@@ -70,12 +64,7 @@ def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_
     controller.register("dummy", sensemaker)
 
     node_id = str(uuid.uuid4())
-    event = AuditLogEvent(
-        objectId=node_id,
-        userId="user",
-        objectType="NODE",
-        action="CREATE"
-    )
+    event = AuditLogEvent(objectId=node_id, userId="user", objectType="NODE", action="CREATE")
     mock_node = NodeNode.model_construct(id=node_id, acm=ts_acm)
     controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(return_value=mock_node)
     sensemaker.process_data = mock.MagicMock(side_effect=TypeError("sensemaker failed"))
@@ -83,11 +72,7 @@ def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_
     controller.handle_event(event)
 
     # check that AuditLogErrors were created
-    logs = (
-        db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at)))
-        .scalars()
-        .all()
-    )
+    logs = db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at))).scalars().all()
 
     assert len(logs) == 1, "Error should be found when TypeError occurs during process_data"
     log = logs[0]
@@ -96,3 +81,4 @@ def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_
     assert "sensemaker failed" in log.exc_text
     assert log.module_name == "oms_sensemaking.core.controllers"
     assert log.acm == ts_acm
+    assert log.version == __version__

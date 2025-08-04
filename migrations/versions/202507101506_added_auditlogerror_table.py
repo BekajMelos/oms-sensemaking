@@ -58,6 +58,7 @@ def upgrade() -> None:
         sa.Column("module_name", sa.String(), nullable=False, comment="Name of the producing thread"),
         sa.Column("message", sa.TEXT(), nullable=False, comment="Log message"),
         sa.Column("exc_text", sa.TEXT(), nullable=True, comment="Exception text"),
+        sa.Column("version", sa.String(), nullable=False, comment="Version of sensemaking"),
         sa.Column(
             "acm",
             postgresql.JSONB(astext_type=sa.Text()),
@@ -93,14 +94,9 @@ def downgrade() -> None:
         "OBJECT_LIST",
         "USER_PREFERENCES",
         "BASEBALL_CARD",
-        name="objecttype").drop(op.get_bind())
-    sa.Enum(
-        "CREATE",
-        "UPDATE",
-        "DELETE",
-        "RESTORE",
-        "VERIFY",
-        "MERGE_SOURCE",
-        "MERGE_TARGET",
-        name="action").drop(op.get_bind())
+        name="objecttype",
+    ).drop(op.get_bind())
+    sa.Enum("CREATE", "UPDATE", "DELETE", "RESTORE", "VERIFY", "MERGE_SOURCE", "MERGE_TARGET", name="action").drop(
+        op.get_bind()
+    )
     # ### end Alembic commands ###
