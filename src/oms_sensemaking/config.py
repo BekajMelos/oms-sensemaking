@@ -438,6 +438,7 @@ class Settings(BaseSettings):
         examples=[True, False]
     )
     aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
+    aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 

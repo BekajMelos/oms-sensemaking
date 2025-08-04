@@ -1,3 +1,4 @@
+"""AAC Client"""
 import json
 import logging
 import ssl
@@ -11,6 +12,8 @@ from hishel._utils import generate_key
 from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+HTTPX_TIMEOUT = 30
 
 
 class AacClient:
@@ -54,7 +57,7 @@ class AacClient:
         else:
             LOGGER.warning("AAC Client certs not detected")
 
-        verify: Union[bool, ssl.SSLContext] = False
+        self.verify: Union[bool, ssl.SSLContext] = False
         if verification_mode:
             LOGGER.warning("AAC Client verification enabled")
             verify = self._ctx
@@ -62,21 +65,25 @@ class AacClient:
             LOGGER.warning("AAC Client verification disabled")
 
         transport: httpx.BaseTransport = httpx.HTTPTransport(verify=verify)
+
         if SETTINGS.aac_cache_enabled:
             LOGGER.warning("AAC Cache is enabled")
-            storage = hishel.InMemoryStorage()
-            controller = hishel.Controller(
-                cacheable_methods=["GET", "POST"],
-                force_cache=True,
-                key_generator=self._custom_key_generator,  # type: ignore[arg-type]
-            )
-            transport = hishel.CacheTransport(
-                transport=httpx.HTTPTransport(verify=verify), storage=storage, controller=controller
-            )
+            transport = self._get_new_caching_transport()
         else:
             LOGGER.warning("AAC Cache is disabled")
 
-        self.client = httpx.Client(verify=verify, timeout=30, transport=transport)
+        self.client = httpx.Client(verify=verify, timeout=HTTPX_TIMEOUT, transport=transport)
+
+    def _get_new_caching_transport(self) -> httpx.BaseTransport:
+        cache_storage = hishel.InMemoryStorage(ttl=SETTINGS.aac_cache_storage_ttl_seconds)
+        controller = hishel.Controller(
+            cacheable_methods=["GET", "POST"],
+            force_cache=True,
+            key_generator=self._custom_key_generator,  # type: ignore[arg-type]
+        )
+        return hishel.CacheTransport(
+            transport=httpx.HTTPTransport(verify=self.verify), storage=cache_storage, controller=controller
+        )
 
     def __del__(self):
         """
@@ -90,6 +97,14 @@ class AacClient:
 
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": self._dedup_acms(acms)})
         return response.json()["RollupACM"]
+
+    def clear_cache(self) -> None:
+        """Admin endpoint to clear the local aac_cache."""
+        if SETTINGS.aac_cache_enabled:
+            transport = self._get_new_caching_transport()
+            self.client = httpx.Client(verify=self.verify, timeout=HTTPX_TIMEOUT, transport=transport)
+        else:
+            LOGGER.info("Cache not enabled. Unable to clear cache.")
 
     def _dedup_acms(self, acms: List[dict]):
         json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
