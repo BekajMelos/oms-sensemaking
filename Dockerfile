@@ -118,7 +118,7 @@ chmod 774 $APP_HOME
 # clean up os packages
 dnf clean all
 EOF
-
+ENV PATH="/usr/pgsql-16/bin:${PATH}"
 
 FROM python-base AS app
 

@@ -55,7 +55,7 @@ build-docker:  ## Build docker image
           --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 		  --build-arg PIP_INDEX_URL=${PIP_INDEX} \
           --no-cache \
-          -t oms_sensemaking:latest \
+          -t oms-sensemaking:latest-test \
           --secret id=mynetrc,src=$${HOME}/.netrc \
           --platform linux/amd64,linux/arm64 \
           .
