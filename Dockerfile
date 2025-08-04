@@ -72,7 +72,6 @@ WORKDIR ${APP_HOME}
 ENV PYTHON_VERSION="3.12.10"
 
 USER root
-
 RUN <<EOF
 set -e
 
@@ -100,15 +99,16 @@ alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
 alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.12 1 && \
 rm get-pip.py
 
-rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG && \
-dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
-dnf -qy module disable postgresql && \
-dnf -y update && \
-dnf clean all && \
-dnf makecache && \
-dnf install -y postgresql16 postgresql16-devel && \
-which psql && \
-psql --version
+ARCH=$(uname -m) && \
+if [ "$ARCH" = "aarch64" ]; then \
+    dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-aarch64/pgdg-redhat-repo-latest.noarch.rpm; \
+elif [ "$ARCH" = "x86_64" ]; then \
+    dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm; \
+else \
+    echo "Unsupported architecture: $ARCH" && exit 1; \
+fi && \
+dnf -qy module disable postgresql || true && \
+dnf -y install postgresql16
 
 # prepare file system
 mkdir -p $APP_HOME
