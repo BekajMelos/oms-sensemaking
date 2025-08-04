@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
+    ActivityActivity,
     AttributeAttribute,
     AttributeQuery,
     AttributeType,
@@ -74,7 +75,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.nodeId = "incurring_object_id"
+    attr.activityId = "incActi1"
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
@@ -96,7 +97,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.nodeId = "incurring_object_id"
+    attr.activityId = "incActi2"
     attr.geometry = areas_of_interest[0]
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
@@ -188,17 +189,33 @@ def incurring_object(mocker: MockerFixture):
     return node
 
 
+@pytest.fixture
+def activity1(mocker: MockerFixture):
+    acti = mocker.Mock(spec=ActivityActivity)
+    acti.id = "incActi1"
+    acti.acm = DEFAULT_ACM
+    acti.classIri = SETTINGS.inference_incursion_class_iri
+    acti.name = "Incursion"
+    acti.state = SETTINGS.inference_incursion_activity_state
+    acti.nodeId = "incurring_object_id"
+    acti.observationIds = ["obs_id"]
+    acti.startTime = "2024-01-01T00:00:00+00:00"
+    acti.endTime = "2025-01-01T00:00:00+00:00"
+
+    return acti
+
+
 # Mock methods
 @pytest.fixture
 def mock_get_node(mocker: MockerFixture, incurring_object):
-    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_node")
+    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_node")
     mock_get_node.return_value = incurring_object
     return mock_get_node
 
 
 @pytest.fixture
 def mock_get_attributes(mocker: MockerFixture):
-    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_attributes")
+    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_attributes")
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = []
     mock_get_attributes.return_value = mock_attribute_response
@@ -207,22 +224,22 @@ def mock_get_attributes(mocker: MockerFixture):
 
 @pytest.fixture
 def mock_create_attribute(mocker: MockerFixture):
-    mock_create_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_attribute")
+    mock_create_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_attribute")
     return mock_create_attribute
 
 
 @pytest.fixture
 def mock_update_attribute(mocker: MockerFixture):
-    mock_update_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_client.update_attribute")
+    mock_update_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_attribute")
     return mock_update_attribute
 
 
 @pytest.fixture
 def mock_get_activities(mocker: MockerFixture):
-    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_activities")
+    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_activities")
     mock_activity_response = MagicMock()
     mock_activity = MagicMock()
-    mock_activity.id = "activity_id"
+    mock_activity.id = "incActi1"
     mock_activity.labels = []
     mock_activity_response.data = [mock_activity]
     mock_get_activities.return_value = mock_activity_response
@@ -230,20 +247,21 @@ def mock_get_activities(mocker: MockerFixture):
 
 
 @pytest.fixture
-def mock_create_activity(mocker: MockerFixture):
-    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_activity")
+def mock_create_activity(mocker: MockerFixture, activity1):
+    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_activity")
+    mock_create_activity.return_value = activity1
     return mock_create_activity
 
 
 @pytest.fixture
 def mock_update_activity(mocker: MockerFixture):
-    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.update_activity")
+    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_activity")
     return mock_update_activity
 
 
 @pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node_region1):
-    mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_observations")
+    mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_observations")
     mock_observation_response = MagicMock()
     mock_observation_response.data = [observational_node_region1]
     mock_get_observations.return_value = mock_observation_response
@@ -275,9 +293,11 @@ def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_acti
 
 
 def test_new_incursion_region1(
+    activity1,
     observational_node_region1,
     incurring_object,
     mock_get_node,
+    mock_get_activities,
     mock_get_attributes,
     mock_create_activity,
     mock_create_attribute,
@@ -293,7 +313,7 @@ def test_new_incursion_region1(
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
-            nodeIds=[incurring_object.id],
+            activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
     )
@@ -304,7 +324,7 @@ def test_new_incursion_region1(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region1.confidence,
             sourceId=observational_node_region1.sourceId,  # change to config value
-            nodeId=incurring_object.id,
+            activityId=activity1.id,
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
             labels=[
@@ -341,9 +361,11 @@ def test_new_incursion_region1(
 
 
 def test_new_incursion_region2(
+    activity1,
     observational_node_region2,
     incurring_object,
     mock_get_node,
+    mock_get_activities,
     mock_get_attributes,
     mock_create_activity,
     mock_create_attribute,
@@ -359,7 +381,7 @@ def test_new_incursion_region2(
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
-            nodeIds=[incurring_object.id],
+            activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
     )
@@ -370,7 +392,7 @@ def test_new_incursion_region2(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region2.confidence,
             sourceId=observational_node_region2.sourceId,
-            nodeId=incurring_object.id,
+            activityId=activity1.id,
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
             labels=[
@@ -407,6 +429,7 @@ def test_new_incursion_region2(
 
 
 def test_two_existing_incursions(
+    activity1,
     observational_node_region1,
     incurring_object,
     attribute1,
@@ -434,7 +457,7 @@ def test_two_existing_incursions(
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
-            nodeIds=[incurring_object.id],
+            activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
     )
@@ -457,7 +480,7 @@ def test_two_existing_incursions(
     )
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
-            id="activity_id",
+            id="incActi1",
             addObservationIds=[observational_node_region1.id],
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
@@ -510,7 +533,7 @@ def test_existing_incursion_nonoverlapping_time(
     )
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
-            id="activity_id",
+            id="incActi1",
             addObservationIds=[observational_node_region1.id],
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,

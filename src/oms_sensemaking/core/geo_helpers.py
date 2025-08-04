@@ -58,5 +58,7 @@ def generate_circle_points_geographical(center_lat, center_lon, radius_km, num_p
     for i in range(num_points):
         bearing = 360 * i / num_points  # Bearing in degrees
         destination = geodesic(kilometers=radius_km).destination(center_point, bearing)
-        points.append((destination.longitude, destination.latitude))
+        points.append([destination.longitude, destination.latitude])
+    if points:
+        points.append(points[0])  # close the ring for a polygon
     return points

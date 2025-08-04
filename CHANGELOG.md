@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Endpoint to clear Local AAC Cache
+
+### Changed
+- Updated Inference Sensemaker to only accept Observation Audit Log Events
+- Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
+the "incurring" node.
+
+### Fixed
+
+### Removed
+
+## [0.9.0] - 2025-07-28
+
+### Added
+- Out of Garrison automated smoke test
 
 ### Changed
 

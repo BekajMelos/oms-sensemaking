@@ -173,46 +173,6 @@
             "arguments": {},
             "destination": "infer-sensemaker-trigger",
             "destination_type": "queue",
-            "routing_key": "audit.ACTIVITY.CREATE",
-            "source": "oms.audits.exchange",
-            "vhost": "/"
-        },
-        {
-            "arguments": {},
-            "destination": "infer-sensemaker-trigger",
-            "destination_type": "queue",
-            "routing_key": "audit.ACTIVITY.RESTORE",
-            "source": "oms.audits.exchange",
-            "vhost": "/"
-        },
-        {
-            "arguments": {},
-            "destination": "infer-sensemaker-trigger",
-            "destination_type": "queue",
-            "routing_key": "audit.ATTRIBUTE.CREATE",
-            "source": "oms.audits.exchange",
-            "vhost": "/"
-        },
-        {
-            "arguments": {},
-            "destination": "infer-sensemaker-trigger",
-            "destination_type": "queue",
-            "routing_key": "audit.ATTRIBUTE.RESTORE",
-            "source": "oms.audits.exchange",
-            "vhost": "/"
-        },
-        {
-            "arguments": {},
-            "destination": "infer-sensemaker-trigger",
-            "destination_type": "queue",
-            "routing_key": "audit.ACTIVITY.CREATE",
-            "source": "oms.audits.exchange",
-            "vhost": "/"
-        },
-        {
-            "arguments": {},
-            "destination": "infer-sensemaker-trigger",
-            "destination_type": "queue",
             "routing_key": "audit.OBSERVATION.CREATE",
             "source": "oms.audits.exchange",
             "vhost": "/"

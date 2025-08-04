@@ -258,14 +258,14 @@ def out_garrison_activity2(mocker: MockerFixture):
 # Mock methods
 @pytest.fixture
 def mock_get_node(mocker: MockerFixture, initial_object):
-    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_node")
+    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_node")
     mock_get_node.return_value = initial_object
     return mock_get_node
 
 
 @pytest.fixture
 def mock_get_attributes(mocker: MockerFixture):
-    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_attributes")
+    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_attributes")
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = []
     mock_get_attributes.return_value = mock_attribute_response
@@ -274,7 +274,7 @@ def mock_get_attributes(mocker: MockerFixture):
 
 @pytest.fixture
 def mock_get_activities(mocker: MockerFixture):
-    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_activities")
+    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_activities")
     mock_activity_response = MagicMock()
     mock_activity_response.data = []
     mock_get_activities.return_value = mock_activity_response
@@ -283,7 +283,7 @@ def mock_get_activities(mocker: MockerFixture):
 
 @pytest.fixture
 def mock_get_relationships(mocker: MockerFixture, garrison_relationship):
-    mock_get_relationships = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_relationships")
+    mock_get_relationships = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_relationships")
     mock_relationship_response = MagicMock()
     mock_relationship_response.data = [garrison_relationship]
     mock_get_relationships.return_value = mock_relationship_response
@@ -292,19 +292,19 @@ def mock_get_relationships(mocker: MockerFixture, garrison_relationship):
 
 @pytest.fixture
 def mock_create_activity(mocker: MockerFixture):
-    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.create_activity")
+    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_activity")
     return mock_create_activity
 
 
 @pytest.fixture
 def mock_update_activity(mocker: MockerFixture):
-    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_client.update_activity")
+    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_activity")
     return mock_update_activity
 
 
 @pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node2):
-    mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_client.get_observations")
+    mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_observations")
     mock_observation_response = MagicMock()
     mock_observation_response.data = [observational_node2]
     mock_get_observations.return_value = mock_observation_response
@@ -457,7 +457,7 @@ def test_update_in_garrison(
         geo_attribute1.geometry["coordinates"][0],
         SETTINGS.garrison_distance_kilometers,
     )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeId=["initial_object_id"],
@@ -523,7 +523,7 @@ def test_update_out_garrison(
         geo_attribute1.geometry["coordinates"][0],
         SETTINGS.garrison_distance_kilometers,
     )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": garrison_buffer_points}
+    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
     mock_get_observations.assert_called_with(
         ObservationQuery(

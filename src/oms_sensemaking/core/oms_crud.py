@@ -39,6 +39,7 @@ from oms_sdk.generated.generated_graphql_client import (
     OntologyClassOntologyClass,
     OriginatorQuery,
     OriginatorsOriginators,
+    PageParams,
     ProviderQuery,
     ProvidersProviders,
     RelationshipQuery,
@@ -57,6 +58,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateRelationshipUpdateRelationship,
     UpdateSourceInput,
     UpdateSourceUpdateSource,
+    UuidQueryByList,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -223,6 +225,25 @@ class OmsCrudTool:
     def get_originator_by_name(self, originator_name: str) -> OriginatorsOriginators:
         """Get existing Attributes from OMS"""
         return self.oms_client.originators(query=OriginatorQuery(name=StringQuery(equals=originator_name)))
+
+    def get_pages_of_activities(self, name: str, node: NodeNode, pagesize: int = 200) -> list[ActivitiesActivities]:
+        activities: list[ActivitiesActivities] = []
+        page = 1
+        while True:
+            activity_query = ActivityQuery(
+                name=StringQuery(equals=name),
+                nodeIds=UuidQueryByList(in_=[node.id]),
+                pageParams=PageParams(page=page, pageSize=pagesize),
+            )
+            activity_response = self.get_activities(activity_query)
+            activities_page = activity_response.data
+            if not activities_page:
+                break
+            activities.extend(activities_page)
+            if len(activities_page) < pagesize:
+                break
+            page += 1
+        return activities
 
     ### UPDATE ###
     def update_node(self, update_input: UpdateNodeInput) -> UpdateNodeUpdateNode:
