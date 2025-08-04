@@ -10,11 +10,9 @@ from oms_sdk.generated.generated_graphql_client import (
     GeoQueryType,
     NodeNode,
     ObservationObservation,
-    PageParams,
     StringQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
-    UuidQueryByList,
 )
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
@@ -79,23 +77,7 @@ class Incursion(BaseRule):
         if feature_of_interest:
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
-            existing_incursion_activities = []
-            page = 1
-            pagesize = 25
-            while True:
-                activity_query = ActivityQuery(
-                    name=StringQuery(equals="Incursion"),
-                    nodeIds=UuidQueryByList(in_=[incurring_object.id]),
-                    pageParams=PageParams(page=page, pageSize=pagesize),
-                )
-                activity_response = oms_crud_tool.get_activities(activity_query)
-                activities_page = activity_response.data
-                if not activities_page:
-                    break
-                existing_incursion_activities.extend(activities_page)
-                if len(activities_page) < pagesize:
-                    break
-                page += 1
+            existing_incursion_activities = oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
             matching_incursion_attribute_found = False
             for existing_incursion_activity in existing_incursion_activities:
                 if matching_incursion_attribute_found:
