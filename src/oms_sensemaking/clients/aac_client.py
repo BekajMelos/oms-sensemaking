@@ -1,4 +1,5 @@
 """AAC Client"""
+
 import json
 import logging
 import ssl
