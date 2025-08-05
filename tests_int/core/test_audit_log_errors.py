@@ -3,6 +3,7 @@
 import uuid
 from unittest import mock
 
+import pytest
 from oms_sdk.generated.generated_graphql_client import GraphQLClientError, NodeNode
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
@@ -10,6 +11,7 @@ from sqlalchemy.orm import Session
 from oms_sensemaking import __version__
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
@@ -31,17 +33,21 @@ class DummySensemaker(Sensemaker):
         return []
 
 
-def test_db_logging(db: Session, session_local: Session):
+@pytest.fixture
+def mock_controller() -> SensemakerController:
+    return SensemakerController(DummyAuditLogEventConsumer(), RethrowErrorLogger(ErrorLogger()))
+
+
+def test_db_logging(mock_controller: SensemakerController, db: Session, session_local: Session):
     """Test that errors are logged to DB"""
 
-    dummy_consumer = DummyAuditLogEventConsumer()
-    controller = SensemakerController(dummy_consumer)
-    controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(side_effect=GraphQLClientError)
+    mock_controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(side_effect=GraphQLClientError)
 
     node_id = str(uuid.uuid4())
     event = AuditLogEvent(objectId=node_id, userId="user", objectType="NODE", action="CREATE")
 
-    controller.handle_event(event)
+    with pytest.raises(GraphQLClientError):
+        mock_controller.handle_event(event)
 
     # check that AuditLogErrors were created
     logs = db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at))).scalars().all()
@@ -51,25 +57,27 @@ def test_db_logging(db: Session, session_local: Session):
     assert log.message
     assert node_id in log.message
     assert "GraphQLClientError" in log.exc_text
-    assert log.module_name == "oms_sensemaking.core.controllers"
+    assert log.module_name == "oms_sensemaking.core.error_loggers"
     assert log.acm is not None and log.acm == SETTINGS.highest_classification
     assert log.version == __version__
 
 
-def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_tool, ts_acm):
+def test_db_logging_within_sensemaker(
+    mock_controller: SensemakerController, db: Session, session_local, mock_oms_crud_tool, ts_acm
+):
     """Test that errors are logged to DB"""
 
-    controller = SensemakerController(DummyAuditLogEventConsumer())
     sensemaker = DummySensemaker(mock_oms_crud_tool)
-    controller.register("dummy", sensemaker)
+    mock_controller.register("dummy", sensemaker)
 
     node_id = str(uuid.uuid4())
     event = AuditLogEvent(objectId=node_id, userId="user", objectType="NODE", action="CREATE")
     mock_node = NodeNode.model_construct(id=node_id, acm=ts_acm)
-    controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(return_value=mock_node)
+    mock_controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(return_value=mock_node)
     sensemaker.process_data = mock.MagicMock(side_effect=TypeError("sensemaker failed"))
 
-    controller.handle_event(event)
+    with pytest.raises(TypeError):
+        mock_controller.handle_event(event)
 
     # check that AuditLogErrors were created
     logs = db.execute(select(AuditLogError).order_by(desc(AuditLogError.created_at))).scalars().all()
@@ -79,6 +87,6 @@ def test_db_logging_within_sensemaker(db: Session, session_local, mock_oms_crud_
     assert log.message
     assert node_id in log.message
     assert "sensemaker failed" in log.exc_text
-    assert log.module_name == "oms_sensemaking.core.controllers"
+    assert log.module_name == "oms_sensemaking.core.error_loggers"  # TODO is this always error_loggers now?
     assert log.acm == ts_acm
     assert log.version == __version__

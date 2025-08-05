@@ -7,13 +7,11 @@ from threading import Event, Lock, Thread
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
 
-from oms_sensemaking import __version__
-from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.models.logs import AuditLogError
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class SensemakerController:
     """Base class for sensemaker controllers."""
 
-    def __init__(self, event_consumer: AuditLogEventConsumer, *args, **kwargs) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, *args, **kwargs) -> None:
         """
         Create a new instance of the SensemakerController.
 
@@ -58,6 +56,8 @@ class SensemakerController:
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
         self.oms_crud_tool: OmsCrudTool = OmsCrudTool()
+
+        self.err_logger = err_logger
 
         self.stopped.set()  # start off in the "stopped" state
 
@@ -143,7 +143,7 @@ class SensemakerController:
             oms_obj = self.get_oms_data(event)
         except Exception:
             message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
-            self.log_error(event, message, SETTINGS.highest_classification, traceback.format_exc())
+            self.err_logger.log_error(event, message, SETTINGS.highest_classification, traceback.format_exc())
             return True
 
         if not oms_obj:
@@ -164,38 +164,9 @@ class SensemakerController:
                 executor.shutdown(wait=True)
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
-            self.log_error(event, message, oms_obj.acm, traceback.format_exc())
+            self.err_logger.log_error(event, message, oms_obj.acm, traceback.format_exc())
 
         return True
-
-    def log_error(self, event: AuditLogEvent, message: str, acm: dict, exc_text: None | str = None) -> None:
-        """Log errors with AuditLogEvent to the database. This method should be called within an exception handler.
-
-        :param event: AuditLogEvent object being processed when the error occurred
-        :param message: Log message for the error
-        :param acm: Classification for the event
-        :param exc_text: Optional exception text for the error
-        :return: None
-        """
-
-        LOGGER.exception(message)
-
-        log_record = AuditLogError(
-            object_id=event.objectId,
-            object_type=event.objectType,
-            event_type=event.action,
-            module_name=__name__,
-            message=message,
-            acm=acm,
-            exc_text=exc_text,
-            version=__version__,
-        )
-
-        with db_session() as db:
-            db.add(log_record)
-            db.commit()
-
-        LOGGER.info("Created AuditLogError for %s", event.objectId)
 
 
 def run_controller(controller: SensemakerController) -> None:

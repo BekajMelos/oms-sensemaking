@@ -15,6 +15,7 @@ from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.dao.track import APITrack
@@ -26,7 +27,8 @@ from oms_sensemaking.models.geo import Point, Track
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
-        RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
+        RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()),
+        RethrowErrorLogger(ErrorLogger()),
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
 
@@ -66,18 +68,14 @@ def test_node_version_attribute_error(mocker: MockerFixture, mock_geo_controller
 @pytest.fixture
 def source1() -> SourceSource:
     source_id = uuid4()
-    source1 = SourceSource.model_construct(
-        id=source_id, providerId="00000000-0000-0000-0000-000000000000"
-    )
+    source1 = SourceSource.model_construct(id=source_id, providerId="00000000-0000-0000-0000-000000000000")
     return source1
 
 
 @pytest.fixture
 def source2() -> SourceSource:
     source_id_2 = uuid4()
-    source2 = SourceSource.model_construct(
-        id=source_id_2, providerId="11111111-1111-1111-1111-111111111111"
-    )
+    source2 = SourceSource.model_construct(id=source_id_2, providerId="11111111-1111-1111-1111-111111111111")
     return source2
 
 
@@ -94,7 +92,6 @@ def oms_node(source1) -> NodeNode:
 
 @pytest.fixture
 def track_points(source1) -> list[Point]:
-
     node_uuid = uuid4()
 
     # unimportant point
@@ -226,7 +223,6 @@ def test_geo_controller_config(
     mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=str(source_irrelevant_provider.id))
 
 
-
 @mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
 @mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
@@ -265,7 +261,8 @@ def test_track_too_short1(
     # call flush buffer
     mock_geo_controller.flush_buffer()
     assert caplog.records[-1].message == (
-        "Track doesn't have enough points. Ignore and remove from buffer until it gets more points")
+        "Track doesn't have enough points. Ignore and remove from buffer until it gets more points"
+    )
 
 
 @mock.patch("oms_sensemaking.geospatial.controllers.aac_client")

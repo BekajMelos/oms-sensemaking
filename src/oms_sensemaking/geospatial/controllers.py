@@ -20,6 +20,7 @@ from shapely import LineString
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.core.exceptions import SensemakingError
 from oms_sensemaking.dao.track import APITrack
@@ -50,9 +51,9 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: AuditLogEventConsumer) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
         """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer)
+        super().__init__(event_consumer, err_logger)
 
         # initialize buffer
         self.track_times: dict[UUID, datetime | None] = {}
@@ -219,8 +220,12 @@ class GeospatialSensemakerController(SensemakerController):
                         try:
                             track = self._generate_track(track_uuid)
                         except TrackLengthError:
-                            LOGGER.exception(("Track doesn't have enough points. Ignore and remove from buffer until "
-                                              "it gets more points"))
+                            LOGGER.exception(
+                                (
+                                    "Track doesn't have enough points. Ignore and remove from buffer until "
+                                    "it gets more points"
+                                )
+                            )
                             self.track_times[track_uuid] = None
                             continue
 
@@ -305,9 +310,7 @@ class GeospatialSensemakerController(SensemakerController):
                 "node_id": weaved_track.node_id,
                 "algorithm": weaved_track.algorithm,
                 "observation_ids": weaved_track.observation_ids,
-                "acm": aac_client.get_acm_rollup(
-                    [{"ACM": point.acm} for point in weaved_track.points]
-                ),
+                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
             }
 
             with db_session() as db:
@@ -347,12 +350,9 @@ class GeospatialSensemakerController(SensemakerController):
             if source:
                 provider_id = source.providerId
 
-        provider_config = (
-            self.config.get(provider_id, default_config) if provider_id else default_config
-        )
+        provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
 
         return GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
-
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """

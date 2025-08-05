@@ -449,15 +449,14 @@ class Settings(BaseSettings):
         "./data/highest_classification.json",
         description="Path to the highest classification file")
 
+    rethrow_errors_enabled: bool = Field(True, description="Whether to use rethrow sensemaking errors")
+
     @computed_field  # type: ignore
     @cached_property
     def highest_classification(self) -> dict[str, str]:
         """Return classification as json from highest_classification_json_file_path"""
-        try:
-            with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
-                return json.load(fd)
-        except (FileNotFoundError, OSError, json.JSONDecodeError):
-            LOGGER.error("Unable to find file %s", self.highest_classification_json_file_path)
+        with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
+            return json.load(fd)
 
     def load_highest_classif(self):
         """Load highest classification from file
