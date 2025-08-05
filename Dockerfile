@@ -43,14 +43,12 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-# The version of Python to use.
+ARG PUBLISHER="redhat"
+
 ARG IMAGE_BASE="ubi8"
 
-# The docker image prefix.
-ARG IMAGE_PROXY="registry.access.redhat.com"
-
 # The paramterized base image.
-FROM ${IMAGE_PROXY}/${IMAGE_BASE} AS python-base
+FROM ${PUBLISHER}/${IMAGE_BASE} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
@@ -60,6 +58,8 @@ ARG USER_NAME=appuser
 ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
+
+ARG POSTGRES_REPOSITORY="https://download.postgresql.org/pub/repos/yum"
 
 ENV APP_HOME=/app
 
@@ -101,9 +101,9 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 
 ARCH=$(uname -m) && \
 if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-aarch64/pgdg-redhat-repo-latest.noarch.rpm; \
+    dnf -y install ${POSTGRES_REPOSITORY}/reporpms/EL-8-aarch64/pgdg-redhat-repo-latest.noarch.rpm; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm; \
+    dnf -y install ${POSTGRES_REPOSITORY}/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
@@ -140,6 +140,8 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
+
+ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -205,7 +207,14 @@ dnf install -y \
   python3-devel \
   procps-ng
 
-dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
+ARCH=$(uname -m) && \
+if [ "$ARCH" = "aarch64" ]; then \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+elif [ "$ARCH" = "x86_64" ]; then \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+else \
+    echo "Unsupported architecture: $ARCH" && exit 1; \
+fi && \
 dnf config-manager --set-enabled epel && \
 dnf install -y geos-devel && \
 dnf clean all
