@@ -165,6 +165,7 @@ class CreatedAuditMixin(MappedAsDataclass):
         init=False,
     )
 
+
 class UpdatedAuditMixin(MappedAsDataclass):
     """Declare update autdit attributes."""
 

@@ -67,10 +67,7 @@ def create_attribute(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_process_data(
-    mock_get_acm: AacClient,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
 ):
     sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
 
@@ -393,10 +390,7 @@ def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_sy
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_dimension_enrichment(
-    mock_get_acm: mock.MagicMock,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict
+    mock_get_acm: mock.MagicMock, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
 ):
     """Test that the dimension is updated based on the parent IRIs"""
 
@@ -519,10 +513,7 @@ def test_acms(
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_controlling_affiliation_enrichment(
-    mock_get_acm: AacClient,
-    mock_oms_crud_tool: OmsCrudTool,
-    oms_node: NodeNode,
-    mil_symbol_rules: Dict
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
 ):
     """Test that the affiliation is updated based on the parent controlling nodes"""
 

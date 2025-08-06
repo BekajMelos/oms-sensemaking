@@ -139,4 +139,6 @@
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
 | `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
-| `HIGHEST_CLASSIFICATION_JSON_FILE_PATH`                    | `./data/highest_classification.json`                     | Highest classification to set as default for Audit Log Errors                       | No             |
+| `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
+| `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
+| `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |

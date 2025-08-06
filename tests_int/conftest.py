@@ -85,7 +85,6 @@ def session_local():
 
 @pytest.fixture(scope="function")
 def db(session_local) -> Generator[Session, Any, None]:
-
     db: Session = session_local()
 
     try:

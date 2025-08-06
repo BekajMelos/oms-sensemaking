@@ -445,25 +445,27 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
-    highest_classification_json_file_path: str = Field(
-        "./data/highest_classification.json",
-        description="Path to the highest classification file")
+    enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
+    audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
+    audit_log_error_json_file_path: str = Field(
+        "./data/audit_log_error.json",
+        description="Path to the audit event log error classification file")
 
-    rethrow_errors_enabled: bool = Field(True, description="Whether to use rethrow sensemaking errors")
+    rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
 
     @computed_field  # type: ignore
     @cached_property
-    def highest_classification(self) -> dict[str, str]:
-        """Return classification as json from highest_classification_json_file_path"""
-        with open(self.highest_classification_json_file_path, encoding="utf-8") as fd:
+    def audit_log_error_acm(self) -> dict[str, str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(self.audit_log_error_json_file_path, encoding="utf-8") as fd:
             return json.load(fd)
 
-    def load_highest_classif(self):
-        """Load highest classification from file
+    def load_audit_log_event_error_acm(self):
+        """Load audit event log error classification from file
         This should be done on startup to ensure file exists
         """
-        if SETTINGS.highest_classification:
-            LOGGER.info("Loaded highest classification")
+        if SETTINGS.audit_log_error_acm:
+            LOGGER.info("Loaded audit log error classification")
 
     @computed_field  # type: ignore
     @property

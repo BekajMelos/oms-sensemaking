@@ -37,7 +37,7 @@ def upgrade() -> None:
         source_table="track_points",
         referent_table="points",
         local_cols=["point_id"],
-        remote_cols=["point_id"]
+        remote_cols=["point_id"],
     )
     op.alter_column(
         "tracks",

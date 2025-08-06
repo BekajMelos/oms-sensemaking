@@ -13,6 +13,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer
+from oms_sensemaking.core.exceptions import SensemakingError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.models.logs import AuditLogError
@@ -54,11 +55,17 @@ def test_db_logging(mock_controller: SensemakerController, db: Session, session_
 
     assert len(logs) == 1, "Error should be found when failing to rehydrate node"
     log = logs[0]
-    assert log.message
-    assert node_id in log.message
-    assert "GraphQLClientError" in log.exc_text
-    assert log.module_name == "oms_sensemaking.core.error_loggers"
-    assert log.acm is not None and log.acm == SETTINGS.highest_classification
+    assert log.object_id == uuid.UUID(node_id)
+    assert log.object_type == "NODE"
+    assert log.event_type == "CREATE"
+    assert log.function_name == "get_oms_data"
+    assert log.line_no == 125
+    assert log.code == "return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)"
+    assert log.exception_name == "GraphQLClientError"
+    assert log.message is None
+    assert log.exc_text is None
+    assert log.module_name.endswith("oms_sensemaking/core/controllers.py")
+    assert log.acm is not None and log.acm == SETTINGS.audit_log_error_acm
     assert log.version == __version__
 
 
@@ -74,9 +81,9 @@ def test_db_logging_within_sensemaker(
     event = AuditLogEvent(objectId=node_id, userId="user", objectType="NODE", action="CREATE")
     mock_node = NodeNode.model_construct(id=node_id, acm=ts_acm)
     mock_controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(return_value=mock_node)
-    sensemaker.process_data = mock.MagicMock(side_effect=TypeError("sensemaker failed"))
+    sensemaker.process_data = mock.MagicMock(side_effect=SensemakingError("sensemaker failed"))
 
-    with pytest.raises(TypeError):
+    with pytest.raises(SensemakingError):
         mock_controller.handle_event(event)
 
     # check that AuditLogErrors were created
@@ -84,9 +91,15 @@ def test_db_logging_within_sensemaker(
 
     assert len(logs) == 1, "Error should be found when TypeError occurs during process_data"
     log = logs[0]
-    assert log.message
+    assert log.object_id == uuid.UUID(node_id)
+    assert log.object_type == "NODE"
+    assert log.event_type == "CREATE"
+    assert log.function_name == "execute"  # execute since process_data is in this tests_int dir
+    assert log.line_no == 186
+    assert log.code == "results: Any = self.process_data(*data)"
     assert node_id in log.message
     assert "sensemaker failed" in log.exc_text
-    assert log.module_name == "oms_sensemaking.core.error_loggers"  # TODO is this always error_loggers now?
-    assert log.acm == ts_acm
+    assert log.exception_name == "SensemakingError"
+    assert log.module_name.endswith("oms_sensemaking/core/sensemakers.py")
+    assert log.acm is not None and log.acm == ts_acm
     assert log.version == __version__

@@ -1,13 +1,11 @@
 """Sensemaker Controllers."""
 
 import logging
-import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
 
-from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -141,9 +139,9 @@ class SensemakerController:
         try:
             # extract info from OMS via API calls
             oms_obj = self.get_oms_data(event)
-        except Exception:
+        except Exception as e:
             message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
-            self.err_logger.log_error(event, message, SETTINGS.highest_classification, traceback.format_exc())
+            self.err_logger.log_error(event, message, __name__, e, None)
             return True
 
         if not oms_obj:
@@ -164,7 +162,13 @@ class SensemakerController:
                 executor.shutdown(wait=True)
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
-            self.err_logger.log_error(event, message, oms_obj.acm, traceback.format_exc())
+            self.err_logger.log_error(
+                event,
+                message,
+                __name__,
+                e,
+                oms_obj.acm,
+            )
 
         return True
 

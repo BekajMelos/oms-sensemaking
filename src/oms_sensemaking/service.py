@@ -137,9 +137,9 @@ def create_app(config: Settings) -> FastAPI:
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
-        SETTINGS.load_highest_classif()
+        SETTINGS.load_audit_log_event_error_acm()
     except (FileNotFoundError, OSError, json.JSONDecodeError):
-        LOGGER.error("Unable to find file %s", SETTINGS.highest_classification_json_file_path)
+        LOGGER.error("Unable to find file %s", SETTINGS.audit_log_error_json_file_path)
         sys.exit("An error occurred during initialization.")
 
 
