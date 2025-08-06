@@ -27,6 +27,11 @@ pipeline {
         PYTHON_VERSION = sh(script: 'cat .python-version', returnStdout: true).trim()
 
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
+
+        REDHAT_BASE_IMAGE="${artDockerUrl}/dpaas/ubi8/latest"
+
+        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote-cache"
+        EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote-cache"
     }
 
     stages {
@@ -37,10 +42,10 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/python:${PYTHON_VERSION}-slim'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/dpaas/ubi8/latest'
                     args '''
                         -e HOME=/tmp \
-                        -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
+                        -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/pki/ca-trust/source/anchors/my-ca.crt
                     '''
                 }
             }
@@ -107,10 +112,13 @@ pipeline {
                             docker build \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:v${APP_VERSION%%+*} \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
+                                --build-arg REDHAT_BASE_IMAGE=${REDHAT_BASE_IMAGE} \
                                 --build-arg APP_VERSION=${APP_VERSION} \
                                 --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                                 --build-arg VCS_REF=$(git rev-parse HEAD) \
                                 --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
+                                --build-arg POSTGRES_REPOSITORY=${POSTGRES_REPOSITORY} \
+                                --build-arg EPEL_REPOSITORY=${EPEL_REPOSITORY} \
                                 --secret id=mynetrc,src=.netrc \
                                 --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
                                 .

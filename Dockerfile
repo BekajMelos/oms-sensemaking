@@ -1,18 +1,14 @@
 # syntax=docker/dockerfile:1
 #
-# This Dockerfile provides a multi-stage build for a Debian based image with
-# Python 3. The first build stage sets up Debian and Python 3, while the second
+# This Dockerfile provides a multi-stage build for a UBI8 based image with
+# Python 3.12. The first build stage sets up UBI8 and Python 3.12, while the second
 # build stage installs the application and it's dependencies.
 #
 # The base image can be configured through the following build arguments:
 #
-#   IMAGE_NAME:      The image name of the base image. Defaults to "python".
+#   PUBLISHER:       The publisher of the image. Redhat
 #
-#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.10".
-#
-#   DOCKER_PROXY:    The prefix for the docker repository where the base image is
-#                    hosted. This should end in a forward slash. Defaults to
-#                    "docker.io/library".
+#   IMAGE_BASE:      The image base. UBI8
 #
 # The application is installed in $APP_HOME, which defaults to /app. A virtual
 # environment will be created for the application in /opt/virtualenvs/app. This
@@ -43,12 +39,10 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-ARG PUBLISHER="redhat"
-
-ARG IMAGE_BASE="ubi8"
+ARG REDHAT_BASE_IMAGE="redhat/ubi8"
 
 # The paramterized base image.
-FROM ${PUBLISHER}/${IMAGE_BASE} AS python-base
+FROM ${REDHAT_BASE_IMAGE} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
