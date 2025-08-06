@@ -142,3 +142,4 @@
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
 | `AAC_CACHE_ENABLED`       | `True`                     | Boolean to enable Local AAC Caching                | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`       | `300`                     | How long for responses to persist in Local AAC Cache before expiring                | No             |
+| `SM_TEST_TAGS`            | `["SM_TEST_TAG"] | Tag to apply to data created during tests | No |
