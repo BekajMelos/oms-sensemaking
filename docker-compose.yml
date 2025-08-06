@@ -42,20 +42,28 @@ services:
     ports:
       - "${POSTGRES_PORT:-}:5432"
     environment:
-      # PostgreSQL/PostGIS variables
+      # Admin user for psql
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD:
 
-      # psql variables
-      PGUSER: ${PGUSER:-${POSTGRES_USER:-postgres}}
-      PGPASSWORD: ${PGPASSWORD:-$POSTGRES_PASSWORD}
-      PGDATABASE: ${PGDATABASE:-oms_sensemaking}
+      # Application DB user
+      DB_USER: ${DB_USER:-appuser}
+      DB_PASSWORD: ${DB_PASSWORD:-$POSTGRES_PASSWORD}
+
+      # Database names
+      DB_NAME: ${PGDATABASE:-oms_sensemaking}
+      DB_NAME_OMSB: ${DB_NAME_OMSB:-omsb_db}
+      DB_TEMPLATE: template_postgis
+
+      # SSL certs
+      HOST_TLS_CERT_FILE: /opt/common/pki/server.public
+      HOST_TLS_KEY_FILE: /opt/common/pki/server.private
     volumes:
       - postgis:/var/lib/postgresql/data
       - ./etc/pki:/opt/common/pki:rw
-      - ./docker/postgis/initdb.d/20_oms-sensemaking.sql:/docker-entrypoint-initdb.d/20_oms-sensemaking.sql
+      - ./docker/postgis/initdb.d/20_oms-sensemaking.sh:/docker-entrypoint-initdb.d/20_oms-sensemaking.sh
       - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
-      - ./docker/postgis/initdb.d/40_init.sql:/docker-entrypoint-initdb.d/40_init.sql
+      - ./docker/postgis/initdb.d/40_enable-hstore.sh:/docker-entrypoint-initdb.d/40_enable-hstore.sh
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
