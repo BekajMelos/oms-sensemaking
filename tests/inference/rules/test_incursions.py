@@ -26,38 +26,14 @@ from pytest_mock import MockerFixture
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+from tests.domain.area_of_interest.test_aoi_extractor import TestAOIExtractor
 
 
 @pytest.fixture
 def areas_of_interest():
-    test_aoi_array = [
-        {
-            "coordinates": [
-                [
-                    [-155.6657274286173, 19.71703656089376],
-                    [-155.6657274286173, 19.673451401822902],
-                    [-155.59775864959937, 19.673451401822902],
-                    [-155.59775864959937, 19.71703656089376],
-                    [-155.6657274286173, 19.71703656089376],
-                ]
-            ],
-            "type": "Polygon",
-        },
-        {
-            "coordinates": [
-                [
-                    [-156.19229072532144, 24.338544507346953],
-                    [-152.43376021905146, 22.514930523906514],
-                    [-150.83351500170227, 24.4483909792978],
-                    [-150.21168983360798, 24.521497296097493],
-                    [-156.07464876773713, 24.429751739042956],
-                    [-156.19229072532144, 24.338544507346953],
-                ]
-            ],
-            "type": "Polygon",
-        },
-    ]
-    return test_aoi_array
+    extractor = TestAOIExtractor()
+    aois = extractor.get_areas_of_interest()
+    return aois
 
 
 # Mocked nodes
@@ -76,7 +52,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi1"
-    attr.geometry = areas_of_interest[0]
+    attr.geometry = areas_of_interest[1].geometry_dict
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     attr.labels = []
@@ -98,7 +74,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi2"
-    attr.geometry = areas_of_interest[0]
+    attr.geometry = areas_of_interest[1].geometry_dict
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     attr.labels = []
@@ -271,7 +247,7 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 # Tests
 def test_evaluate_input(observational_node_region1):
     """Test to verify valid inputs are recognized as such"""
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     # Rule should only be ran against observations
     assert not rule.evaluate(RuleContext()), "should only run for observations"
@@ -285,7 +261,7 @@ def test_evaluate_input(observational_node_region1):
 
 def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_activity, mock_update_activity):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=no_inc_observational_node))
     mock_create_activity.assert_not_called()
@@ -304,7 +280,7 @@ def test_new_incursion_region1(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region1
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_attributes.assert_called_with(
@@ -312,7 +288,7 @@ def test_new_incursion_region1(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -333,7 +309,7 @@ def test_new_incursion_region1(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[0],
+            geometry=areas_of_interest[1].geometry_dict,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
@@ -372,7 +348,7 @@ def test_new_incursion_region2(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region2))
     mock_get_attributes.assert_called_with(
@@ -380,7 +356,7 @@ def test_new_incursion_region2(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -401,7 +377,7 @@ def test_new_incursion_region2(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[1],
+            geometry=areas_of_interest[0].geometry_dict,
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
@@ -445,7 +421,7 @@ def test_two_existing_incursions(
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2, attribute1]
     mock_get_attributes.return_value = mock_attribute_response
@@ -456,7 +432,7 @@ def test_two_existing_incursions(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -467,7 +443,7 @@ def test_two_existing_incursions(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -503,7 +479,7 @@ def test_existing_incursion_nonoverlapping_time(
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
@@ -518,7 +494,7 @@ def test_existing_incursion_nonoverlapping_time(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
