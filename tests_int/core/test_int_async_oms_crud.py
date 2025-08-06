@@ -1,6 +1,7 @@
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_async_graphql_client import (
+    CreateActivityInput,
     CreateNodeCreateNode,
     CreateNodeInput,
     CreateObservationInput,
@@ -70,6 +71,7 @@ def cleanup_data(inject_tags, sync_oms_crud_tool):
 
     sync_oms_crud_tool.delete_observations_by_tags(tags)
     sync_oms_crud_tool.delete_observations_by_node_tags(tags)
+    sync_oms_crud_tool.delete_activities_by_tags(tags)
     sync_oms_crud_tool.delete_nodes_by_tags(tags)
     sync_oms_crud_tool.delete_sources_by_tags(tags)
     sync_oms_crud_tool.delete_providers_by_tags(tags)
@@ -151,3 +153,23 @@ async def test_create_observation(oms_crud_tool, starter_graph):
         obs = await oms_crud_tool.create_observation(obs_input)
 
         assert obs.id
+
+
+@pytest.mark.asyncio
+async def test_create_activity(oms_crud_tool, starter_graph):
+    async for graph in starter_graph:
+        activity_input = CreateActivityInput(
+            name="test activity",
+            acm=DEFAULT_ACM,
+            sourceId=graph.source.id,
+            tags=SETTINGS.sm_test_tags,
+            startTime="2004-05-23T00:00:00-04:00",
+            endTime="2004-05-23T00:00:00-04:00",
+            classIri="https://foundry.ai.mil/ontology/4901-001/MilitaryExercise",
+            nodeId=graph.node.id,
+            state="UNKNOWN",
+        )
+
+        activity = await oms_crud_tool.create_activity(activity_input)
+
+        assert activity.id

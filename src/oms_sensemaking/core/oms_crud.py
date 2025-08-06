@@ -446,6 +446,9 @@ class OmsCrudTool:
             if len(sources) == 0:
                 break
 
+    def delete_activity(self, activity_id) -> bool:
+        return self.oms_client.delete_activity(DeleteByIdInput(id=activity_id))
+
     def delete_observation(self, observation_id) -> bool:
         return self.oms_client.delete_observation(DeleteByIdInput(id=observation_id))
 
@@ -489,4 +492,15 @@ class OmsCrudTool:
             for observation in observations:
                 self.delete_observation(observation.id)
             if len(observations) == 0:
+                break
+
+    def delete_activities_by_tags(self, tags: list[str]):
+        """Delete Activities that match the given tags"""
+        query = ActivityQuery(tags=tags)
+        while True:
+            response = self.oms_client.activities(query)
+            activities = response and response.data
+            for activity in activities:
+                self.delete_activity(activity.id)
+            if len(activities) == 0:
                 break
