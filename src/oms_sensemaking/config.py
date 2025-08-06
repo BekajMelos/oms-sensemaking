@@ -212,7 +212,8 @@ class Settings(BaseSettings):
         "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
     )
     inference_incursion_attribute_iri: str = Field(
-        "https://blackcape.io/PLACEHOLDER/Incursion", description="IRI for incursion attribute (placeholder)"
+        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+        description="IRI for incursion attribute"
     )
     inference_geo_attribute_iri: str = Field(
         "https://foundry.ai.mil/ontology/4901-001/hasCoordinates", description="IRI for geo attribute"
@@ -442,6 +443,7 @@ class Settings(BaseSettings):
         examples=[True, False]
     )
     aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
+    aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 

@@ -7,10 +7,10 @@ from oms_sdk.generated.generated_graphql_client import (
     TimeQuery,
 )
 
-from oms_sensemaking.clients.instances import oms_client
+from oms_sensemaking.clients.instances import oms_crud_tool
 
 
-class TimeParsedObservation:
+class Timeframe:
     def __init__(self, obs: ObservationObservation):
         self._obs = obs
 
@@ -18,15 +18,15 @@ class TimeParsedObservation:
         self.end_time = isoparse(obs.endTime)
 
 
-class GenericNodeTimeframe:
+class GeoTimeframe:
     def __init__(self, start_time, end_time):
         self.start_time = isoparse(start_time)
         self.end_time = isoparse(end_time)
 
-    def does_observation_overlap(self, obs: TimeParsedObservation) -> bool:
+    def does_observation_overlap(self, obs: Timeframe) -> bool:
         return obs.end_time >= self.start_time and self.end_time >= obs.start_time
 
-    def update_generic_node_times_with_observation(self, obs: TimeParsedObservation):
+    def update_generic_node_times_with_observation(self, obs: Timeframe):
         self.start_time = min(obs.start_time, self.start_time)
         self.end_time = max(obs.end_time, self.end_time)
 
@@ -61,7 +61,7 @@ class GenericNodeTimeframe:
                 endTime=TimeQuery(lte=observation.startTime),
                 geometry=geo_query,
             )
-        observation_response = oms_client.get_observations(observation_query)
+        observation_response = oms_crud_tool.get_observations(observation_query)
         part_of_existing_generic_node = bool(not observation_response.data)
 
         return part_of_existing_generic_node

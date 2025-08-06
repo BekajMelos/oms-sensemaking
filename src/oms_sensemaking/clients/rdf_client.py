@@ -31,7 +31,7 @@ class RDFClient:
             node_query = NodeQuery(guideIds=[obj_id])
             node = oms_crud_tool.get_nodes(node_query)
             if not node.data:
-                raise HTTPException(status_code=404, detail=f"No node found with guideId '{obj_id}'")
+                raise HTTPException(status_code=404, detail=f"Unable to retreive data for node with guideId '{obj_id}'")
             relationship_node_query = RelationshipNodeQuery(nodeIds=[node.data[0].id])
             relationships_query = RelationshipQuery(nodes=relationship_node_query)
             relationships = oms_crud_tool.get_relationships(relationships_query)

@@ -4,7 +4,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateObservationInput,
 )
 
-from oms_sensemaking.clients.instances import oms_client
+from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.geo import Track
 
@@ -17,7 +17,7 @@ class APITrack:
 
     def create_oms_track(self) -> CreateObservationCreateObservation:
         # if self.oms_id is None: # fix, not initialized is != None
-        return oms_client.create_observation(self._create_observation_input())
+        return oms_crud_tool.create_observation(self._create_observation_input())
 
     def _create_observation_input(self) -> CreateObservationInput:
         return CreateObservationInput(

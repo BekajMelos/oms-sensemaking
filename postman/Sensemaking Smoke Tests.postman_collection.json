@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ea1b9f37-d621-4d8a-ae42-09537433463a",
+		"_postman_id": "6f032f34-f2fa-4ded-8aa4-569d54f68c70",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "41174150"
@@ -25,7 +25,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -34,7 +35,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -43,14 +45,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -1293,7 +1295,8 @@
 											"var jsonData = JSON.parse(pm.response.text());",
 											"pm.test(\"Data Cleaned Up\", function () {",
 											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-											"});"
+											"});",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1305,15 +1308,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -1344,7 +1347,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -1353,7 +1357,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1362,13 +1367,13 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
 										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
 									}
 								},
@@ -3088,7 +3093,8 @@
 											"var jsonData = JSON.parse(pm.response.text());",
 											"pm.test(\"Data Cleaned Up\", function () {",
 											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-											"});"
+											"});",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -3100,15 +3106,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -3139,7 +3145,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -3148,7 +3155,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -3157,14 +3165,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -4562,15 +4570,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -4606,7 +4614,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -4615,7 +4624,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -4624,14 +4634,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -5243,149 +5253,6 @@
 							"response": []
 						},
 						{
-							"name": "Confirm Incursion is made",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
-											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.attributes && ",
-											"                      response.data.attributes.data && ",
-											"                      response.data.attributes.data.length > 0 && ",
-											"                      response.data.attributes.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    pm.collectionVariables.set(\"incursionattrid\", response.data.attributes.data[0].id);",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
-											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 15000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": {{nodeId}}\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Incursion Attr Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Incursion Attr Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "Get Incursion Activity Id",
 							"event": [
 								{
@@ -5480,6 +5347,149 @@
 							"response": []
 						},
 						{
+							"name": "Confirm Incursion is made",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.attributes && ",
+											"                      response.data.attributes.data && ",
+											"                      response.data.attributes.data.length > 0 && ",
+											"                      response.data.attributes.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    pm.collectionVariables.set(\"incursionattrid\", response.data.attributes.data[0].id);",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 15000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $activityIds: [UUID!]\n){\n    attributes(\n        query: {\n            activityIds: $activityIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
+										"variables": "{\n    \"activitiyIds\": \"{{incursionactid}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Incursion Attr Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Attr Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Cleanup Incursion Data",
 							"event": [
 								{
@@ -5511,6 +5521,720 @@
 								"header": [
 									{
 										"key": "user_dn",
+										"value": "{{WHITELIST_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "In/Out of Garrison",
+					"item": [
+						{
+							"name": "Cleanup Test Data Before",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{WHITELIST_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Originator",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Originator created\", function () {",
+											"    pm.expect(json.data.createOriginator.id).to.exist;",
+											"});",
+											"// Set the originator ID",
+											"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Provider",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Provider created\", function () {",
+											"    pm.expect(json.data.createProvider.id).to.exist;",
+											"});",
+											"// Set the provider ID",
+											"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Source",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Facility",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"facilityNodeId\", json.data.createNode.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Out of Garrison Facility Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{FACILITY_IRI}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Facility Location",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"facilityLocationId\", json.data.createAttribute.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n    $sourceId: UUID!\n    $nodeId: UUID!\n    $testTag: String!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"attribute value\"\n            attributeDisplayValue: \"display value\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: GEOSPATIAL\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            confidence: HIGH,\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isUserEntered: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{HAS_COORDINATES_IRI}}\",\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{facilityNodeId}}\",\n    \"testTag\": \"{{TEST_TAG}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Node",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"",
+											"",
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Node created\", function () {",
+											"    pm.expect(json.data.createNode.id).to.exist;",
+											"});",
+											"// Set the node ID",
+											"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Garrison Unit Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{MILITARY_IRI}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Garrisoned Relationship",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"",
+											"// Set the relationship ID",
+											"pm.collectionVariables.set(\"relationshipId\", json.data.createRelationship.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $startNodeId: UUID!\n    $endNodeId: UUID!\n    $sourceId: UUID!\n){\n\tcreateRelationship(\n        input: {\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            name: \"name\"\n            startNodeId: $startNodeId\n            endNodeId: $endNodeId\n            sourceId: $sourceId\n            acm: $acm\n            confidence: HIGH\n            objectPropertyIri: $iri\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GARRISONED_AT_IRI}}\",\n    \"startNodeId\": {{nodeId}},\n    \"endNodeId\": \"{{facilityNodeId}}\",\n    \"sourceId\": \"{{sourceId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create In Garrison Obs 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 1 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"inGarrisonObservationId\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            startTime: \"2024-03-15T18:00:32.000Z\"\n            endTime: \"2024-03-15T18:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create In Garrison Obs 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 1 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"inGarrisonObservationId\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            startTime: \"2024-03-15T18:05:32.000Z\"\n            endTime: \"2024-03-15T18:05:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Out of Garrison Obs 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 2 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"outOfGarrisonObservationId\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    2,\n                    2\n                ]\n            }\n            startTime: \"2024-03-15T18:06:32.000Z\"\n            endTime: \"2024-03-15T18:06:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Out of Garrison Obs 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 2 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"outOfGarrisonObservationId\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    2,\n                    2\n                ]\n            }\n            startTime: \"2024-03-15T18:10:32.000Z\"\n            endTime: \"2024-03-15T18:10:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get In Garrison Activity Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.activities && ",
+											"                      response.data.activities.data && ",
+											"                      response.data.activities.data.length > 0 && ",
+											"                      response.data.activities.totalSize > 0;",
+											"",
+											"",
+											"if (isValidResponse && response.data.activities.data[0].observationIds.length == 2) {",
+											"",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"        // Set the activity ID",
+											"        pm.collectionVariables.set(\"garrisonActivityId\", response.data.activities.data[0].id);",
+											"    });",
+											"",
+											"    pm.test(\"Activity includes both observations\", function () {",
+											"        const numObs = response.data.activities.data[0].observationIds.length;",
+											"        pm.expect(numObs).to.equal(2);  // always true b/c of above if statement",
+											"        pm.expect(response.data.activities.data[0].startTime).to.equal(\"2024-03-15T18:00:32.000Z\");",
+											"        pm.expect(response.data.activities.data[0].endTime).to.equal(\"2024-03-15T18:05:32.000Z\");",
+											"    });",
+											"",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 30000);",
+											"",
+											"        // Step 6: Retry request",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    pm.execution.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
 										"value": "{{TS_USER_DN}}",
 										"type": "text"
 									}
@@ -5518,8 +6242,255 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"In Garrison\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
+										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update In Garrison Activity Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Garrison Activity Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"garrisonActivityId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"garrisonActivityId\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $activityId: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityId\": \"{{garrisonActivityId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Out of Garrison Activity Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.activities && ",
+											"                      response.data.activities.data && ",
+											"                      response.data.activities.data.length > 0 && ",
+											"                      response.data.activities.totalSize > 0;",
+											"",
+											"if (isValidResponse && response.data.activities.data[0].observationIds.length == 2) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"        // Set the activity ID",
+											"        pm.collectionVariables.set(\"nonGarrisonActivityId\", response.data.activities.data[0].id);",
+											"    });",
+											"",
+											"    pm.test(\"Activity includes both observations\", function () {",
+											"        const numObs = response.data.activities.data[0].observationIds.length;",
+											"        pm.expect(numObs).to.equal(2);  // always true b/c of above if statement",
+											"        pm.expect(response.data.activities.data[0].startTime).to.equal(\"2024-03-15T18:06:32.000Z\");",
+											"        pm.expect(response.data.activities.data[0].endTime).to.equal(\"2024-03-15T18:10:32.000Z\");",
+											"    });",
+											"",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 30000);",
+											"",
+											"        // Step 6: Retry request",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    pm.execution.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $filter: UuidQueryByList!\n){\n    activities(\n        query: {\n            nodeIds: $filter\n            name: {\n                contains: \"Out of Garrison\"\n            }\n        }\n    ) {\n        ... activityFullPageFragment\n    }\n}\n\n{{activityFullPageFragment}}",
+										"variables": "{\n  \"filter\": {\n    \"in\": [{{nodeId}}]\n  }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Out of Garrison Activity Tag",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Non Garrison Activity Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"nonGarrisonActivityId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"nonGarrisonActivityId\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $activityId: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityId\": \"{{nonGarrisonActivityId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cleanup Data",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(pm.response.text());",
+											"pm.test(\"Data Cleaned Up\", function () {",
+											"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{WHITELIST_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -5555,7 +6526,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -5564,7 +6536,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -5573,14 +6546,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -6281,15 +7254,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -6320,7 +7293,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -6329,7 +7303,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -6338,14 +7313,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7211,15 +8186,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7250,7 +8225,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -7259,7 +8235,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -7268,14 +8245,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7863,15 +8840,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -7902,7 +8879,8 @@
 											"});",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -7911,7 +8889,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -7920,14 +8899,14 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
+										"value": "{{WHITELIST_USER_DN}}"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -8515,15 +9494,15 @@
 								"header": [
 									{
 										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
+										"value": "{{WHITELIST_USER_DN}}",
 										"type": "text"
 									}
 								],
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation ($secret: String!) {\n\tcleanUpSmokeTestData(\n        input: {\n            secret: $secret\n        }\n    )\n}",
-										"variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+										"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+										"variables": ""
 									}
 								},
 								"url": {
@@ -9208,6 +10187,38 @@
 		},
 		{
 			"key": "resolutionrelationshipid2",
+			"value": ""
+		},
+		{
+			"key": "facilityNodeId",
+			"value": ""
+		},
+		{
+			"key": "facilityLocationId",
+			"value": ""
+		},
+		{
+			"key": "outOfGarrisonObservationId1",
+			"value": ""
+		},
+		{
+			"key": "garrisonActId",
+			"value": ""
+		},
+		{
+			"key": "garrisonActivityId",
+			"value": ""
+		},
+		{
+			"key": "inGarrisonObservationId",
+			"value": ""
+		},
+		{
+			"key": "outOfGarrisonObservationId",
+			"value": ""
+		},
+		{
+			"key": "nonGarrisonActivityId",
 			"value": ""
 		}
 	]

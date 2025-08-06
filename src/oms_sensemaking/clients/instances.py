@@ -45,7 +45,7 @@ def db_session() -> Iterator[Session]:
 
 
 aac_client = AacClient(SETTINGS.cert_path, SETTINGS.key_path, SETTINGS.cacert_path, SETTINGS.aac_verification_mode)
-oms_client = OmsCrudTool()
+
 oms_crud_tool = OmsCrudTool()
 
 corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
