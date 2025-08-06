@@ -442,6 +442,8 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
+    sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
+
     @computed_field  # type: ignore
     @property
     def confidence_weight_map(self) -> dict[Confidence, float]:
