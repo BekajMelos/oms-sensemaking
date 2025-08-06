@@ -22,7 +22,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from oms_sensemaking.inference.rules.rule_helper_classes import GenericNodeTimeframe, TimeParsedObservation
+from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
 
 
 class InOrOutOfGarrison(BaseRule):
@@ -121,9 +121,9 @@ class InOrOutOfGarrison(BaseRule):
 
         matching_activity_found = False
 
-        enhanced_obs = TimeParsedObservation(obs)
+        enhanced_obs = Timeframe(obs)
         for existing_activity in existing_activities:
-            enhanced_activity = GenericNodeTimeframe(existing_activity.startTime, existing_activity.endTime)
+            enhanced_activity = GeoTimeframe(existing_activity.startTime, existing_activity.endTime)
             # Update existing activity if times overlap or if node_object stayed in/out of
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
@@ -144,7 +144,7 @@ class InOrOutOfGarrison(BaseRule):
         self,
         observation: ObservationObservation,
         existing_activity: ActivitiesActivitiesData,
-        enhanced_activity: GenericNodeTimeframe,
+        enhanced_activity: GeoTimeframe,
     ):
         """
         Update an existing activity with updated start/end times
