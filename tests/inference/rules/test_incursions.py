@@ -22,6 +22,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
 )
 from pytest_mock import MockerFixture
+from shapely.geometry import shape
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.incursions import Incursion
@@ -30,10 +31,18 @@ from tests.domain.area_of_interest.test_aoi_extractor import TestAOIExtractor
 
 
 @pytest.fixture
-def areas_of_interest():
+def areas_of_interest(observational_node_region1):
+    # Done this way since there is no way to tell which AOI will be what index
+    # We just grab the folder as a whole
     extractor = TestAOIExtractor()
     aois = extractor.get_areas_of_interest()
-    return aois
+    test_aois = [None, None]
+    for aoi in aois:
+        if aoi.has_overlap(shape(observational_node_region1.geometry)):
+            test_aois[0] = aoi
+        else:
+            test_aois[1] = aoi
+    return test_aois
 
 
 # Mocked nodes
@@ -52,7 +61,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi1"
-    attr.geometry = areas_of_interest[1].geometry_dict
+    attr.geometry = areas_of_interest[0].geometry_dict
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     attr.labels = []
@@ -74,7 +83,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi2"
-    attr.geometry = areas_of_interest[1].geometry_dict
+    attr.geometry = areas_of_interest[0].geometry_dict
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     attr.labels = []
@@ -288,7 +297,7 @@ def test_new_incursion_region1(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -309,7 +318,7 @@ def test_new_incursion_region1(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[1].geometry_dict,
+            geometry=areas_of_interest[0].geometry_dict,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
@@ -356,7 +365,7 @@ def test_new_incursion_region2(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -377,7 +386,7 @@ def test_new_incursion_region2(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[0].geometry_dict,
+            geometry=areas_of_interest[1].geometry_dict,
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
@@ -432,7 +441,7 @@ def test_two_existing_incursions(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -443,7 +452,7 @@ def test_two_existing_incursions(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict, queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -494,7 +503,7 @@ def test_existing_incursion_nonoverlapping_time(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict, queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
