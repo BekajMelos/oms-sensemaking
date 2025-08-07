@@ -4,4 +4,4 @@ from .observables.min_distance_observable import MinDistanceObservable
 from .observables.search_observable import SearchObservable
 from .observables.status_observable import StatusObservable
 
-__all__ = [BaseObservable, GeofenceObservable, MinDistanceObservable, SearchObservable, StatusObservable]
+__all__ = ["BaseObservable", "GeofenceObservable", "MinDistanceObservable", "SearchObservable", "StatusObservable"]
