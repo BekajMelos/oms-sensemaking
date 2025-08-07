@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
 - Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
 the "incurring" node.
+- Updated `docker/postgis/initdb.d` scripts to use environment variables rather than hard-coded values. Refactored `.sql` scripts to `.sh` scripts. 
 
 ### Fixed
 
