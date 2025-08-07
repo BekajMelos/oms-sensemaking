@@ -28,7 +28,8 @@ pipeline {
 
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
-        REDHAT_BASE_IMAGE="${artDockerUrl}/ubi8/latest"
+        IMAGE_NAME="ubi8"
+        IMAGE_VERSION="latest"
 
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote-cache"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote-cache"
@@ -42,7 +43,7 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/ubi8/latest'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/${IMAGE_NAME}:${IMAGE_VERSION}'
                     args '''
                         -e HOME=/tmp \
                         -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
@@ -112,7 +113,9 @@ pipeline {
                             docker build \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:v${APP_VERSION%%+*} \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
-                                --build-arg REDHAT_BASE_IMAGE=${REDHAT_BASE_IMAGE} \
+                                --build-arg NAMESPACE=${artDockerUrl} \
+                                --build-arg IMAGE_NAME=${IMAGE_NAME} \
+                                --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
                                 --build-arg APP_VERSION=${APP_VERSION} \
                                 --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                                 --build-arg VCS_REF=$(git rev-parse HEAD) \

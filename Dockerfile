@@ -39,10 +39,14 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-ARG REDHAT_BASE_IMAGE="redhat/ubi8"
+ARG NAMESPACE="redhat"
+
+ARG IMAGE_NAME="ubi8"
+
+ARG IMAGE_VERSION="latest"
 
 # The paramterized base image.
-FROM ${REDHAT_BASE_IMAGE} AS python-base
+FROM ${NAMESPACE}/${IMAGE_NAME}:${IMAGE_VERSION} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
