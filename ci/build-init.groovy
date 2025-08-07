@@ -28,7 +28,7 @@ pipeline {
 
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
-        REDHAT_BASE_IMAGE="${artDockerUrl}/dpaas/ubi8/latest"
+        REDHAT_BASE_IMAGE="${artDockerUrl}/ubi8/latest"
 
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote-cache"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote-cache"
@@ -42,10 +42,10 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/dpaas/ubi8/latest'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/ubi8/latest'
                     args '''
                         -e HOME=/tmp \
-                        -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/pki/ca-trust/source/anchors/my-ca.crt
+                        -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
                     '''
                 }
             }

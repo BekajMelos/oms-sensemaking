@@ -181,8 +181,7 @@ find /app -type d -exec chmod 755 {} \;
 
 # use the provided ca certificate bundle if available
 if [ -f /root/ca-certificate.crt ]; then
-  cp /root/ca-certificate.crt /etc/pki/ca-trust/source/anchors/my-ca.crt
-  update-ca-trust extract
+  cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
 # configure package manager
