@@ -83,12 +83,12 @@ To cut new release:
 
 1. Create a Git tag with the semantic version number
 
-    The format for the git tag is `vMAJOR.MINOR.PATCH`.
+    The format for the git tag is `MAJOR.MINOR.PATCH`.
 
         git checkout main
         git pull
-        git tag -a -m 'Release 1.2.3 (Galadriel-INC-1)' v1.2.3
-        git push origin tag v1.2.3
+        git tag -a -m 'Release 1.2.3 (Galadriel-INC-1)' 1.2.3
+        git push origin tag 1.2.3
 
 2. (optional) Create build artifacts
 
@@ -99,7 +99,7 @@ To cut new release:
     - Checkout the Git tag for the release
 
         ```
-        git checkout v1.2.3
+        git checkout 1.2.3
         ```
 
     - Build the project
