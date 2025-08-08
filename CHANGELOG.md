@@ -15,6 +15,7 @@ the "incurring" node.
   - docs/dev-guide/packaging.md
   - .gitea/workflows/build.yml
   - ci/build-init.groovy
+- Changed Sensemaking Docker image to a UBI8/RHEL8 based image
 
 ### Fixed
 
