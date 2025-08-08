@@ -32,7 +32,7 @@ def format_rfc3339(dt: datetime) -> str:
 
 
 class TimeBounds(BaseModel):
-    since_last_query: Optional[bool] = Field(..., alias="sinceLastQuery")
+    since_last_query: Optional[bool] = Field(None, alias="sinceLastQuery")
     start_time: Optional[Union[datetime, str]] = Field(None, alias="startTime")
     end_time: Optional[Union[datetime, str]] = Field(None, alias="endTime")
 
@@ -71,9 +71,9 @@ class BaseObservable(BaseModel):
     none_observed_count: Optional[int] = Field(None, alias="noneObservedCount")
     partially_observed_count: Optional[int] = Field(None, alias="partiallyObservedCount")
     fully_observed_count: Optional[int] = Field(None, alias="fullyObservedCount")
-    none_observed_percentage: Optional[float] = Field(None, alias="noneObservedPercentage", ge=0.0, le=1.0)
-    partially_observed_percentage: Optional[float] = Field(None, alias="partiallyObservedPercentage", ge=0.0, le=1.0)
-    fully_observed_percentage: Optional[float] = Field(None, alias="fullyObservedPercentage", ge=0.0, le=1.0)
+    none_observed_percentage: Optional[float] = Field(None, alias="noneObservedPercentage", ge=0.0, le=100.0)
+    partially_observed_percentage: Optional[float] = Field(None, alias="partiallyObservedPercentage", ge=0.0, le=100.0)
+    fully_observed_percentage: Optional[float] = Field(None, alias="fullyObservedPercentage", ge=0.0, le=100.0)
 
     # object properties for instance use
     id: Optional[str] = None
@@ -133,7 +133,7 @@ class BaseObservable(BaseModel):
     def determine_status(self, num_observed, total):
         """Determine status based on configured thresholds."""
 
-        percentage_observed = num_observed / total
+        percentage_observed = num_observed / total * 100
 
         # priority of checking can be adjusted here
 
