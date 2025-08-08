@@ -23,8 +23,14 @@ def process_observables():
     oms_client = OmsCrudTool()
 
     # fetch all observables
-    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=1))
-    observables_result = oms_client.get_nodes(observable_query)
+    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=500))
+    observables_result = None
+    try:
+        observables_result = oms_client.get_nodes(observable_query)
+    except Exception as e:
+        LOGGER.error("Failed to fetch observables")
+        LOGGER.error(e)
+        return
 
     if not observables_result.data:
         LOGGER.info("No observables found")

@@ -32,7 +32,7 @@ def format_rfc3339(dt: datetime) -> str:
 
 
 class TimeBounds(BaseModel):
-    since_last_query: bool = Field(..., alias="sinceLastQuery")
+    since_last_query: Optional[bool] = Field(..., alias="sinceLastQuery")
     start_time: Optional[Union[datetime, str]] = Field(None, alias="startTime")
     end_time: Optional[Union[datetime, str]] = Field(None, alias="endTime")
 
