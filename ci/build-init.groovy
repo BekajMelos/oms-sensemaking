@@ -28,8 +28,7 @@ pipeline {
 
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
-        IMAGE_REPOSITORY="dpaas"
-        IMAGE_NAME="ubi8-ccp"
+        IMAGE_NAME="dpaas/ubi8-ccp"
         IMAGE_VERSION="8.10-1262"
 
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote-cache"
@@ -44,7 +43,7 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/${IMAGE_REPOSITORY}/${IMAGE_NAME}:${IMAGE_VERSION}'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/{IMAGE_NAME}:${IMAGE_VERSION}'
                     args '''
                         -e HOME=/tmp \
                         -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
@@ -114,7 +113,7 @@ pipeline {
                             docker build \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:v${APP_VERSION%%+*} \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
-                                --build-arg NAMESPACE=${artDockerUrl}/${IMAGE_REPOSITORY} \
+                                --build-arg NAMESPACE=${artDockerUrl} \
                                 --build-arg IMAGE_NAME=${IMAGE_NAME} \
                                 --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
                                 --build-arg APP_VERSION=${APP_VERSION} \
