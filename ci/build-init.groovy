@@ -111,7 +111,7 @@ pipeline {
                             echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
 
                             docker build \
-                                -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:v${APP_VERSION%%+*} \
+                                -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
                                 --build-arg NAMESPACE=${artDockerUrl} \
                                 --build-arg IMAGE_NAME=${IMAGE_NAME} \

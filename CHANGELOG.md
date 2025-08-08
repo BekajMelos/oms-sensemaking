@@ -5,8 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Endpoint to clear Local AAC Cache
 
 ### Changed
+- Updated Inference Sensemaker to only accept Observation Audit Log Events
+- Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
+the "incurring" node.
+- Removed the V prefix from:
+  - docs/dev-guide/packaging.md
+  - .gitea/workflows/build.yml
+  - ci/build-init.groovy
+- Changed Sensemaking Docker image to a UBI8/RHEL8 based image
 
 ### Fixed
 
