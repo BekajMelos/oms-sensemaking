@@ -70,10 +70,10 @@ def test_rethrow_db_error_logging(mock_db_session: Session, ts_acm):
     last_mock = mock.MagicMock()
     db_mock.return_value = last_mock
 
+    # limit to 100 chars since the paths won't be accurate in build job
+    SETTINGS.audit_log_error_max_tb_chars = 100
     truncated_expected_exc_text = (
-        'OMS/oms-sensemaking/tests/core/test_error_loggers.py", line 101,'
-        " in test_rethrow_db_error_logging\n    _ = foo.fake_attr\n        "
-        "^^^^^^^^^^^^^\nAttributeError: 'Foo' object has no attribute 'fake_attr'\n"
+        "  _ = foo.fake_attr\n        " "^^^^^^^^^^^^^\nAttributeError: 'Foo' object has no attribute 'fake_attr'\n"
     )
 
     expected_audit_event = AuditLogError(
@@ -82,7 +82,7 @@ def test_rethrow_db_error_logging(mock_db_session: Session, ts_acm):
         object_type="NODE",
         event_type="CREATE",
         module_name=__file__,
-        line_no=101,  # from the line above in test_error
+        line_no=103,  # from the line above in test_error
         function_name="test_rethrow_db_error_logging",
         code="_ = foo.fake_attr",
         exception_name="AttributeError",
