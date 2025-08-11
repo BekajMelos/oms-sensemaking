@@ -442,6 +442,14 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
+    # Telemetry settings
+    enable_telemetry: bool = Field(
+        default=True, description="Enable OpenTelemetry metrics collection"
+    )
+    telemetry_log_level: str = Field(
+        default="INFO", description="Log level for telemetry messages"
+    )
+
     @computed_field  # type: ignore
     @property
     def confidence_weight_map(self) -> dict[Confidence, float]:
