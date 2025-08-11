@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Endpoint to clear Local AAC Cache
+- Script to create transfer bundles
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events

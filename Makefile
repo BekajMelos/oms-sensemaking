@@ -48,6 +48,9 @@ fix:  ## Run linter and apply fixes
 format:  ## Run the formatter
 	ruff format
 
+bundle:
+	scripts/bundle.sh
+
 build-docker:  ## Build docker image
 	docker build \
           --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) \

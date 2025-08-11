@@ -144,6 +144,8 @@ To cut new release:
     - Check Artifactory for the image
     - Check Sonarqube for the scans to have run on the images
 
+## Packaging the Sensemaking Repo for transfer
+1. `make bundle`
 
 [setuptools-scm]: https://setuptools-scm.readthedocs.io
 [Development Environment]: dev.md
