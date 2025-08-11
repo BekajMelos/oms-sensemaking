@@ -38,9 +38,9 @@ class GeofenceObservable(BaseObservable):
         related_ids = set(related_ids) if related_ids else []
         total = len(related_ids)
 
-        if total == 0:
-            LOGGER.info(f"No related objects found for observable {self.id}")
-            return
+        # if total == 0:
+        #     LOGGER.info(f"No related objects found for observable {self.id}")
+        #     return
 
         # get geometry
         try:

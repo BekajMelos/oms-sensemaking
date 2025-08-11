@@ -33,7 +33,8 @@ def process_observables():
         return
 
     if not observables_result.data:
-        observables_result.data = []
+        LOGGER.info("No observables found")
+        return
 
     for observable_node in observables_result.data:
         # get Config attribute
