@@ -162,18 +162,22 @@ class BaseObservable(BaseModel):
         prev_status = self.get_status_attr()
         new_status = self.determine_status(num_observed, total)
 
-        self.oms_client.update_attribute(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
-            UpdateAttributeInput(
-                id=self.status_attribute_id,
-                attributeValue=new_status,
-                attributeDisplayValue=new_status,
-                attributeNormalizedValue=new_status,
-                isUserEntered=False,
-                labels=[SETTINGS.sm_inferenced_label],
+        if prev_status != new_status:
+            self.oms_client.update_attribute(  # pyright: ignore[reportOptionalMemberAccess] - ensure_initialized has been called
+                UpdateAttributeInput(
+                    id=self.status_attribute_id,
+                    attributeValue=new_status,
+                    attributeDisplayValue=new_status,
+                    attributeNormalizedValue=new_status,
+                    isUserEntered=False,
+                    labels=[SETTINGS.sm_inferenced_label],
+                )
             )
-        )
 
-        LOGGER.info(
-            f"Updated status{" from " + prev_status.attributeValue if prev_status  else ""}"
-            f" to {new_status} for observable {self.id}"
-        )
+            LOGGER.info(
+                f"Updated status{" from " + prev_status.attributeValue if prev_status  else ""}"
+                f" to {new_status} for observable {self.id}"
+            )
+
+        else:
+            LOGGER.info(f"Status for observable {self.id} remained as {prev_status}")
