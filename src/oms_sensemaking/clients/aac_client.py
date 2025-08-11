@@ -1,4 +1,5 @@
 """AAC Client"""
+
 import json
 import logging
 import ssl
@@ -60,11 +61,11 @@ class AacClient:
         self.verify: Union[bool, ssl.SSLContext] = False
         if verification_mode:
             LOGGER.warning("AAC Client verification enabled")
-            verify = self._ctx
+            self.verify = self._ctx
         else:
             LOGGER.warning("AAC Client verification disabled")
 
-        transport: httpx.BaseTransport = httpx.HTTPTransport(verify=verify)
+        transport: httpx.BaseTransport = httpx.HTTPTransport(verify=self.verify)
 
         if SETTINGS.aac_cache_enabled:
             LOGGER.warning("AAC Cache is enabled")
@@ -72,7 +73,7 @@ class AacClient:
         else:
             LOGGER.warning("AAC Cache is disabled")
 
-        self.client = httpx.Client(verify=verify, timeout=HTTPX_TIMEOUT, transport=transport)
+        self.client = httpx.Client(verify=self.verify, timeout=HTTPX_TIMEOUT, transport=transport)
 
     def _get_new_caching_transport(self) -> httpx.BaseTransport:
         cache_storage = hishel.InMemoryStorage(ttl=SETTINGS.aac_cache_storage_ttl_seconds)

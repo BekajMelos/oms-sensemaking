@@ -1,4 +1,5 @@
 """Rest Endpoints for AAC Management"""
+
 import logging
 
 from fastapi import APIRouter, HTTPException, Response
