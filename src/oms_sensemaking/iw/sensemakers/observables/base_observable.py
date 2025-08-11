@@ -133,7 +133,7 @@ class BaseObservable(BaseModel):
     def determine_status(self, num_observed, total):
         """Determine status based on configured thresholds."""
 
-        percentage_observed = num_observed / total * 100
+        percentage_observed = 0 if total == 0 else num_observed / total * 100
 
         # priority of checking can be adjusted here
 
