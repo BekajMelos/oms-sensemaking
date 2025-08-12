@@ -5,15 +5,29 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Endpoint to clear Local AAC Cache
 - Async OMS Client
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.10.0] - 2025-08-11
+
+### Added
+- Endpoint to clear Local AAC Cache
+- Script to create transfer bundles
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
 - Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
 the "incurring" node.
+- Removed the "v" prefix from version identifiers
+- Changed Sensemaking Docker image to a UBI8/RHEL8 based image
 
 ### Fixed
+- SSL issues with AAC cache transport
 
 ### Removed
 
