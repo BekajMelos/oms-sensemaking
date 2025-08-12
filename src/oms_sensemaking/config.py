@@ -446,9 +446,6 @@ class Settings(BaseSettings):
     enable_telemetry: bool = Field(
         default=True, description="Enable OpenTelemetry metrics collection"
     )
-    telemetry_log_level: str = Field(
-        default="INFO", description="Log level for telemetry messages"
-    )
 
     @computed_field  # type: ignore
     @property
