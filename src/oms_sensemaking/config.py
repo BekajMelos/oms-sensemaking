@@ -450,7 +450,7 @@ class Settings(BaseSettings):
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
     audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
     audit_log_error_json_file_path: str = Field(
-        "./data/audit_log_error.json",
+        "./data/audit_log_error_acm.json",
         description="Path to the audit event log error classification file")
 
     rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")

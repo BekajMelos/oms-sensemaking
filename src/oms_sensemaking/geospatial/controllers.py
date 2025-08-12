@@ -22,7 +22,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
-from oms_sensemaking.core.exceptions import SensemakingError
+from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
@@ -36,12 +36,6 @@ from oms_sensemaking.models.geo import (
 )
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class TrackLengthError(SensemakingError):
-    """
-    Tracks must have at least two points
-    """
 
 
 class GeospatialSensemakerController(SensemakerController):

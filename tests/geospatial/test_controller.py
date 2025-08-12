@@ -17,9 +17,10 @@ from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.dao.track import APITrack
-from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController, TrackLengthError
+from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.models.geo import Point, Track
 
