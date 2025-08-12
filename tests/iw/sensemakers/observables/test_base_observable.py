@@ -240,22 +240,41 @@ class TestBaseObservable:
         assert result == SETTINGS.iw_settings.observable_statuses["not_observed"]
 
     @patch.object(TestableBaseObservable, "get_status_attr")
-    def test_update_status(self, mock_get_status_attr, base_observable, mock_oms_client):
-        """test update_status method"""
+    def test_update_status_no_change(self, mock_get_status_attr, base_observable, mock_oms_client):
+        """test update_status method when status doesn't change"""
         # setup
         base_observable.initialize("test-id", mock_oms_client)
         base_observable.status_attribute_id = "status-attr-id"
         base_observable.fully_observed_count = 5
 
-        # mock get_status_attr
+        # mock get_status_attr to return the same status that would be determined
+        mock_prev_attr = MagicMock()
+        mock_prev_attr.attributeValue = SETTINGS.iw_settings.observable_statuses["fully_observed"]
+        mock_get_status_attr.return_value = mock_prev_attr
+
+        # execute with values that would result in "fully_observed" status
+        base_observable.update_status(6, 10)
+
+        # verify that update_attribute was NOT called since status didn't change
+        mock_oms_client.update_attribute.assert_not_called()
+
+    @patch.object(TestableBaseObservable, "get_status_attr")
+    def test_update_status_with_change(self, mock_get_status_attr, base_observable, mock_oms_client):
+        """test update_status method when status changes"""
+        # setup
+        base_observable.initialize("test-id", mock_oms_client)
+        base_observable.status_attribute_id = "status-attr-id"
+        base_observable.fully_observed_count = 5
+
+        # mock get_status_attr to return different status than what will be determined
         mock_prev_attr = MagicMock()
         mock_prev_attr.attributeValue = "not_observed"
         mock_get_status_attr.return_value = mock_prev_attr
 
-        # execute
+        # execute with values that would result in "fully_observed" status
         base_observable.update_status(6, 10)
 
-        # verify
+        # verify that update_attribute WAS called since status changed
         mock_oms_client.update_attribute.assert_called_once_with(
             UpdateAttributeInput(
                 id="status-attr-id",

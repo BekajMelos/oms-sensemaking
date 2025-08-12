@@ -16,6 +16,23 @@ class DummyObservable:
         pass
 
 
+def test_get_nodes_exception_handling(caplog):
+    """test error handling when get_nodes raises exception"""
+    import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
+
+    proc_obs_mod.LOGGER.setLevel("ERROR")
+    with patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class:
+        mock_oms_client = MagicMock()
+        mock_oms_client.get_nodes.side_effect = Exception("Database connection failed")
+        mock_oms_client_class.return_value = mock_oms_client
+
+        with caplog.at_level("ERROR", logger=proc_obs_mod.LOGGER.name):
+            process_observables()
+
+        assert "Failed to fetch observables" in caplog.text
+        assert "Database connection failed" in caplog.text
+
+
 def test_no_observables_found(caplog):
     import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
 
