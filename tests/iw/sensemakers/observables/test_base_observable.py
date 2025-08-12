@@ -115,14 +115,14 @@ class TestBaseObservable:
         """test percentage validation"""
         # valid percentage
         observable = TestableBaseObservable(
-            queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=0.8
+            queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=80
         )
-        assert observable.fully_observed_percentage == 0.8
+        assert observable.fully_observed_percentage == 80
 
-        # invalid percentage > 1.0
+        # invalid percentage > 100
         with pytest.raises(ValueError):
             TestableBaseObservable(
-                queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=1.5
+                queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=150
             )
 
     def test_initialize(self, base_observable, mock_oms_client):
