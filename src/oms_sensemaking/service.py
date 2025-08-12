@@ -67,7 +67,6 @@ async def lifespan(application: FastAPI):
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
-        LOGGER.info("starting " + str(ctrlr.__class__))
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
         controller_thread.start()
         controllers.append((ctrlr, controller_thread))
