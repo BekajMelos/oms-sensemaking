@@ -1,18 +1,14 @@
 # syntax=docker/dockerfile:1
 #
-# This Dockerfile provides a multi-stage build for a Debian based image with
-# Python 3. The first build stage sets up Debian and Python 3, while the second
+# This Dockerfile provides a multi-stage build for a UBI8 based image with
+# Python 3.12. The first build stage sets up UBI8 and Python 3.12, while the second
 # build stage installs the application and it's dependencies.
 #
 # The base image can be configured through the following build arguments:
 #
-#   IMAGE_NAME:      The image name of the base image. Defaults to "python".
+#   PUBLISHER:       The publisher of the image. Redhat
 #
-#   PYTHON_VERSION:  The version of Python to use. Defaults to "3.12.10".
-#
-#   DOCKER_PROXY:    The prefix for the docker repository where the base image is
-#                    hosted. This should end in a forward slash. Defaults to
-#                    "docker.io/library".
+#   IMAGE_BASE:      The image base. UBI8
 #
 # The application is installed in $APP_HOME, which defaults to /app. A virtual
 # environment will be created for the application in /opt/virtualenvs/app. This
@@ -43,17 +39,14 @@
 # - oms_sdk dependency is handled differently in Tex vs AIDE, but the details
 #   for how to handle this difference are not clear.
 
-# The name of the Docker image.
-ARG IMAGE_NAME="python"
+ARG NAMESPACE="redhat"
 
-# The version of Python to use.
-ARG PYTHON_VERSION="3.12.10"
+ARG IMAGE_NAME="ubi8"
 
-# The docker image prefix.
-ARG DOCKER_PROXY="docker.io/library"
+ARG IMAGE_VERSION="latest"
 
 # The paramterized base image.
-FROM ${DOCKER_PROXY}/${IMAGE_NAME}:${PYTHON_VERSION}-slim AS python-base
+FROM ${NAMESPACE}/${IMAGE_NAME}:${IMAGE_VERSION} AS python-base
 
 # NOTE: Permissions are handled at the group level. The user created here is
 #       used as a default, but in production the actual user id may vary and
@@ -64,6 +57,8 @@ ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
+ARG POSTGRES_REPOSITORY="https://download.postgresql.org/pub/repos/yum"
+
 ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
@@ -72,6 +67,9 @@ LABEL maintainer="OMS Team <oms@blackcape.io>"
 
 WORKDIR ${APP_HOME}
 
+ENV PYTHON_VERSION="3.12.10"
+
+USER root
 RUN <<EOF
 set -e
 
@@ -85,20 +83,32 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-apt-get update
-apt-get install -y --no-install-recommends \
+dnf -y update && \
+dnf install -y \
   ca-certificates \
   curl \
   gzip \
-  tar \
-  lsb-release
+  tar
 
-install -d /usr/share/postgresql-common/pgdg
-curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
-echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+dnf install -y python3.12 python3.12-pip
+rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
+alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
+&& alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 100 \
+&& alternatives --set python3 /usr/bin/python3.12 \
+&& alternatives --set pip /usr/bin/pip3.12
 
-apt-get update
-apt-get install -y --no-install-recommends postgresql-client-16
+ARCH=$(uname -m) && \
+if [ "$ARCH" = "aarch64" ]; then \
+    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-libs-16.4-1PGDG.rhel8.aarch64.rpm && \
+    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-16.4-1PGDG.rhel8.aarch64.rpm; \
+elif [ "$ARCH" = "x86_64" ]; then \
+    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
+    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
+else \
+    echo "Unsupported architecture: $ARCH" && exit 1; \
+fi && \
+dnf -qy module disable postgresql || true && \
+dnf -y install postgresql16
 
 # prepare file system
 mkdir -p $APP_HOME
@@ -106,12 +116,9 @@ chown $USER_NAME:$GROUP_NAME $APP_HOME
 chmod 774 $APP_HOME
 
 # clean up os packages
-apt-get purge -y curl
-apt-get clean -y
-apt-get autoclean -y
-apt-get autoremove -y
+dnf clean all
 EOF
-
+ENV PATH="/usr/pgsql-16/bin:${PATH}"
 
 FROM python-base AS app
 
@@ -133,6 +140,8 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
+
+ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -168,6 +177,7 @@ COPY --chmod=644 docker/banner.txt /etc/motd
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
 #       for a private PyPI to be used to define a dependency on the oms_sdk
 #       project.
+USER root
 RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
   --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
@@ -181,20 +191,32 @@ if [ -f /root/ca-certificate.crt ]; then
 fi
 
 # configure package manager
-apt-get update
+dnf -y update
 
 # update core Python packaging tools
+export PIP_NO_INPUT=1
 python3 -m pip install --upgrade pip wheel
 
 # install application's system dependencies
-apt-get install -y --no-install-recommends \
+dnf install -y \
   curl \
   git \
-  jq
+  jq \
+  gcc \
+  python3-devel \
+  procps-ng
 
-# prepare build dependencies
-BUILD_DEPS="gcc libgeos-dev python3-dev"
-apt-get install -y --no-install-recommends $BUILD_DEPS procps
+ARCH=$(uname -m) && \
+if [ "$ARCH" = "aarch64" ]; then \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+elif [ "$ARCH" = "x86_64" ]; then \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+else \
+    echo "Unsupported architecture: $ARCH" && exit 1; \
+fi && \
+dnf config-manager --set-enabled epel && \
+dnf install -y geos-devel && \
+dnf clean all
 
 # install app
 pip install .
@@ -205,10 +227,9 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-apt-get purge -y $BUILD_DEPS
-apt-get clean -y
-apt-get autoclean -y
-apt-get autoremove -y
+dnf remove -y gcc python3-devel geos-devel && \
+dnf autoremove -y && \
+dnf clean all
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
