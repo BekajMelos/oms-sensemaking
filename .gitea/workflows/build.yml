@@ -4,7 +4,7 @@ run-name: ${{ gitea.actor }} is building oms_sensemaking
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+"
     branches:
       - "main"
 
