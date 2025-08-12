@@ -42,11 +42,11 @@ services:
     ports:
       - "${POSTGRES_PORT:-}:5432"
     environment:
-      # Admin user for psql
+      # Admin user
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD:
 
-      # Application DB user
+      # Application user
       DB_USER: ${DB_USER:-appuser}
       DB_PASSWORD: ${DB_PASSWORD:-$POSTGRES_PASSWORD}
 
