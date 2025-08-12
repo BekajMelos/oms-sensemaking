@@ -22,7 +22,7 @@ class AuditLogError(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
         primary_key=True,
         init=False,
         comment="The unique ID of the Log.",
-        default=uuid.uuid4,
+        insert_default=uuid.uuid4,
     )
     object_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), nullable=False, comment="The unique id of the object in OMS."
