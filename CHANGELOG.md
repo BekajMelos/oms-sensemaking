@@ -26,6 +26,7 @@ the "incurring" node.
 - Changed Sensemaking Docker image to a UBI8/RHEL8 based image
 
 ### Fixed
+- SSL issues with AAC cache transport
 
 ### Removed
 
