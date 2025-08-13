@@ -11,11 +11,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import (
-    CreateSourceCreateSource,
-)
+from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
 from oms_sdk.generated.generated_graphql_client.client import Client
-from sqlalchemy.orm.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -27,9 +26,6 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 # reconfigure database for testing before importing app
 if not SETTINGS.db_uri.endswith("_test"):
     SETTINGS.db_uri = f"{SETTINGS.db_uri}_test"
-
-# the session generator should initialized after the config hack above
-from oms_sensemaking.clients.instances import SessionLocal
 
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
@@ -57,7 +53,7 @@ SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 
 @pytest.fixture(scope="function")
-def db() -> Generator[Session, Any, None]:
+def session_local():
     """
     Get a database session generator.
 
@@ -68,18 +64,33 @@ def db() -> Generator[Session, Any, None]:
 
     It is intended on being used as a pytest fixture.
     """
+
     # run database migrations
     command.upgrade(alembic_cfg, "head")
 
-    db: Session = SessionLocal()
+    # TODO reuse from instances.py?
+    db_engine = create_engine(
+        SETTINGS.db_uri,  # type: ignore
+        pool_pre_ping=True,
+        connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
+    )
+
+    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
+
+    yield SessionLocal
+
+    # purge database tables
+    command.downgrade(alembic_cfg, "base")
+
+
+@pytest.fixture(scope="function")
+def db(session_local) -> Generator[Session, Any, None]:
+    db: Session = session_local()
 
     try:
         yield db
     finally:
         db.close()
-
-    # purge database tables
-    command.downgrade(alembic_cfg, "base")
 
 
 @pytest.fixture

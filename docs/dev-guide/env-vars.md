@@ -139,6 +139,11 @@
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
+| `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
+| `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
 | `AAC_CACHE_ENABLED`       | `True`                     | Boolean to enable Local AAC Caching                | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`       | `300`                     | How long for responses to persist in Local AAC Cache before expiring                | No             |
+| `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
+| `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
+| `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |

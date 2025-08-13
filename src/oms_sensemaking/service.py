@@ -1,6 +1,8 @@
 """oms-sensemaking microservice."""
 
+import json
 import logging
+import sys
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
 from threading import Thread
@@ -14,6 +16,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
@@ -28,26 +31,36 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 
 def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
+
+    err_logger: ErrorLogger | RethrowErrorLogger = ErrorLogger()
+    if SETTINGS.rethrow_errors_enabled:
+        err_logger = RethrowErrorLogger(err_logger)
+
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(
-            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
+            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()), err_logger
         ),
         InferenceSensemakerController(
             RabbitMQListener(
                 "InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter()
-            )
+            ),
+            err_logger,
         ),
         ResolutionSensemakerController(
-            RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter())
+            RabbitMQListener(
+                "ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter()
+            ),
+            err_logger,
         ),
         MilSymbolSensemakerController(
             RabbitMQListener(
                 "MilSymbolRMQListener",
                 SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
                 event_filter=MilSymbolQueueFilter(),
-            )
+            ),
+            err_logger,
         ),
-        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval)),
+        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 
     return controllers
@@ -124,4 +137,14 @@ def create_app(config: Settings) -> FastAPI:
     return application
 
 
+def initialize_settings() -> None:
+    """Initialize Settings"""
+    try:
+        SETTINGS.load_audit_log_event_error_acm()
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        LOGGER.error("Unable to find file %s", SETTINGS.audit_log_error_json_file_path)
+        sys.exit("An error occurred during initialization.")
+
+
+initialize_settings()
 app: FastAPI = create_app(SETTINGS)

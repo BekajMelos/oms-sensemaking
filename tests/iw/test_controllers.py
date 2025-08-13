@@ -13,8 +13,9 @@ def test_observable_sensemaker_controller_handle_event(mock_process_observables:
     # Mock the event consumer required by the parent class
     mock_event_consumer = mock.MagicMock()
     mock_event_consumer.handle_event = None  # This will be set by the controller
+    mock_err_logger = mock.MagicMock()
 
-    controller = ObservableSensemakerController(mock_event_consumer)
+    controller = ObservableSensemakerController(mock_event_consumer, mock_err_logger)
 
     # Create a test event
     event = AuditLogEvent(userId="test-user", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE, action=Action.CREATE)

@@ -1,6 +1,9 @@
 """Application configuration."""
+import json
+import logging
 import os
 from datetime import timedelta
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
@@ -11,6 +14,8 @@ from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_fie
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
+
+LOGGER = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -25,7 +30,7 @@ class LogConfig(BaseSettings):
     log_format: str = "{asctime:<20s}{levelname:<8s}{threadName:<32s} {name}: {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
-    log_level: str = Field("WARNING", alias='app_log_level')
+    log_level: str = Field("INFO", alias='app_log_level')
 
     handlers: dict[str, dict] = {
         "default": {
@@ -475,6 +480,28 @@ class Settings(BaseSettings):
     aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
+
+    enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
+    audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
+    audit_log_error_json_file_path: str = Field(
+        "./data/audit_log_error_acm.json",
+        description="Path to the audit event log error classification file")
+
+    rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
+
+    @computed_field  # type: ignore
+    @cached_property
+    def audit_log_error_acm(self) -> dict[str, str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(self.audit_log_error_json_file_path, encoding="utf-8") as fd:
+            return json.load(fd)
+
+    def load_audit_log_event_error_acm(self):
+        """Load audit event log error classification from file
+        This should be done on startup to ensure file exists
+        """
+        if SETTINGS.audit_log_error_acm:
+            LOGGER.info("Loaded audit log error classification")
 
     @computed_field  # type: ignore
     @property

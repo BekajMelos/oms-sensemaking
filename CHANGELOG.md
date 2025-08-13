@@ -58,6 +58,7 @@ the "incurring" node.
 ## [0.8.0] - 2025-07-14
 
 ### Added
+- Added AuditLogError database table to store errors
 - Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
 - Added the ability for the Mil Symbol sensemaker to enrich echelon in symbol Id codes
 
