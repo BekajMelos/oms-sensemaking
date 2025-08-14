@@ -2,8 +2,9 @@ import logging
 from typing import Optional
 
 from opentelemetry import metrics
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 
 from oms_sensemaking.config import SETTINGS
 
@@ -18,15 +19,22 @@ class TelemetryManager:
             self.queue_processing_time = None
             self.events_processed = None
             self.events_failed = None
+            self.hello_world_counter = None
             return
 
         self._setup_opentelemetry()
         self._create_metrics()
+        try:
+            if self.hello_world_counter:
+                self.hello_world_counter.add(1)
+                LOGGER.info("Hello world metric incremented")
+        except Exception as exc:
+            LOGGER.error(f"Failed to increment hello world metric: {exc}")
 
     def _setup_opentelemetry(self):
         try:
-            reader = InMemoryMetricReader()
-
+            exporter = OTLPMetricExporter(endpoint="http://prometheus:9090/api/v1/otlp/v1/metrics")
+            reader = PeriodicExportingMetricReader(exporter)
             provider = MeterProvider(metric_readers=[reader])
 
             metrics.set_meter_provider(provider)
@@ -39,6 +47,12 @@ class TelemetryManager:
     def _create_metrics(self):
         try:
             self.meter = metrics.get_meter(__name__)
+
+            self.hello_world_counter = self.meter.create_counter(
+                name="hello_world",
+                description="Simple hello world metric",
+                unit="1",
+            )
 
             self.queue_processing_time = self.meter.create_histogram(
                 name="queue_processing_time_seconds",
@@ -59,6 +73,7 @@ class TelemetryManager:
         except Exception as e:
             LOGGER.error(f"Failed to create telemetry metrics: {e}")
             self.meter = None
+            self.hello_world_counter = None
             self.queue_processing_time = None
             self.events_processed = None
             self.events_failed = None

@@ -9,6 +9,7 @@ from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi_offline import FastAPIOffline
+from prometheus_client import make_asgi_app
 
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
@@ -119,6 +120,8 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
+
+    application.mount("/metrics", make_asgi_app())
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
