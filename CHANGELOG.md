@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Endpoint to clear Local AAC Cache
+- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events

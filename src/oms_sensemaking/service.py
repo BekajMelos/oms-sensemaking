@@ -15,6 +15,7 @@ from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.telemetry import initialize_telemetry
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
@@ -23,6 +24,9 @@ from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, Resolu
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 dictConfig(LogConfig().model_dump())  # initialize logging
+
+# Initialize telemetry system
+initialize_telemetry()
 
 
 def get_controllers() -> list[SensemakerController]:

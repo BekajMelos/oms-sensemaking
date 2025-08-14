@@ -7,7 +7,7 @@ import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Event, Thread
-from time import sleep
+from time import sleep, time
 from typing import Protocol
 from uuid import UUID, uuid4
 
@@ -20,6 +20,7 @@ from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.telemetry import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -209,6 +210,7 @@ class RabbitMQListener(BaseRabbitMQListener):
             return
 
         object_id = None
+        start_time = time()  # Record when we start processing
 
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
@@ -226,12 +228,23 @@ class RabbitMQListener(BaseRabbitMQListener):
             if self.handle_event and self.handle_event(audit_log):
                 LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
+
+                # Record successful processing metrics
+                record_processing_success(self._queue_name, start_time)
+
             else:
                 LOGGER.warning(f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+                # Record failed processing metrics
+                record_processing_failure(self._queue_name, start_time)
+
         except Exception:
             LOGGER.error(f"{self._name} Error processing message (Object ID: {object_id}): {traceback.format_exc()}")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+            # Record failed processing metrics
+            record_processing_failure(self._queue_name, start_time)
 
     def process_audit_log_events(self) -> None:
         """Process audit log events from RabbitMQ."""

@@ -3,10 +3,12 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
+from time import time
 
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.core.telemetry import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -119,12 +121,16 @@ class SensemakerController:
 
         :param event: The event to process.
         """
+        start_time = time()  # Record when we start processing in the controller
+        queue_name = getattr(self.event_consumer, "_queue_name", "unknown")
 
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         # extract info from OMS via API calls
         oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
         if not oms_obj:
+            # Record failed processing due to no OMS object
+            record_processing_failure(queue_name, start_time)
             return True
 
         try:
@@ -139,8 +145,15 @@ class SensemakerController:
                     _ = future.result()
 
                 executor.shutdown(wait=True)
+
+                # Record successful processing
+                record_processing_success(queue_name, start_time)
+
         except Exception:
             LOGGER.exception(f"Error encountered while processing object {event.objectId}")
+
+            # Record failed processing
+            record_processing_failure(queue_name, start_time)
 
         return True
 
