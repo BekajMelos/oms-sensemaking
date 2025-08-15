@@ -280,6 +280,12 @@ class CronEventEmitter(AuditLogEventConsumer):
     """Emits an event repeatedly on a set time interval."""
 
     def __init__(self, interval: timedelta, handle_event: EVENT_HANDLER | None = None):
+        """
+        Create a new instance of CronEventEmitter.
+
+        :param interval: The time interval between emitted events.
+        :param handle_event: The event handler to call for each emitted event.
+        """
         super().__init__(handle_event)
         self.interval = interval
 
@@ -296,14 +302,6 @@ class CronEventEmitter(AuditLogEventConsumer):
 
             # sleep for the interval or until stopped
             self.stopped.wait(timeout=self.interval.total_seconds())
-
-    def start(self) -> None:
-        """Start emitting events."""
-        super().start()
-
-    def stop(self) -> None:
-        """Stop emitting events."""
-        super().stop()
 
 
 class DummyAuditLogEventConsumer(AuditLogEventConsumer):
