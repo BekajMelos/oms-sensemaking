@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+from datetime import timedelta
 from functools import cached_property
 from pathlib import Path
 from typing import Any
@@ -151,6 +152,39 @@ class MilSymbolSettings(BaseModel):
 
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
+# IW Settings
+class IWSettings(BaseModel):
+    """Settings for I&W"""
+
+    max_observables_to_process: int = Field(500, description="Max page size to limit observations query")
+
+    observable_query_interval: timedelta = Field(
+        timedelta(minutes=15),
+        description="Minutes between each observable query"
+    )
+
+    observable_statuses: dict = Field({
+        "unknown": "Unknown",
+        "not_observed": "Not Observed",
+        "partially_observed": "Partially Observed",
+        "fully_observed": "Observed"
+    }, description="Status options for the observable")
+
+    observable_config_attribute_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        description="Config attribute used to read the settings of an observable query")
+
+    observable_status_attribute_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/hasOperationalStatus",
+        description="Status attribute used to indicate the status of an observable")
+
+    observable_location_attribute_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000140",
+        description="Location attribute used to identify the boundary of an observable")
+
+    observable_associated_with_relationship_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000034",
+        description="Relationship used to associate an observable with an object")
 
 class Settings(BaseSettings):
     """Settings class."""
@@ -408,6 +442,8 @@ class Settings(BaseSettings):
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
+    iw_settings: IWSettings = IWSettings()
+    observables: bool = Field(True, description="Toggle on/off Observable updates")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
