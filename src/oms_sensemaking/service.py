@@ -3,11 +3,12 @@
 import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
+from pathlib import Path
 from threading import Thread
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
@@ -103,8 +104,17 @@ def create_app(config: Settings) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
         root_path=config.root_path,
-        docs_url="/",
+        docs_url=None,
     )
+
+    @application.get("/", response_class=HTMLResponse)
+    async def custom_swagger_ui():
+        """Serve custom Swagger UI with DoD warning."""
+        template_path = Path(__file__).parent / "templates" / "custom_swagger.html"
+        if template_path.exists():
+            return HTMLResponse(content=template_path.read_text(), media_type="text/html")
+        else:
+            return HTMLResponse(content="<h1>Template not found</h1>", media_type="text/html")
 
     # initialize gzip middleware
     application.add_middleware(GZipMiddleware, minimum_size=config.gzip_minimum_size)

@@ -160,6 +160,7 @@ ENV UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-}
 COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
 COPY --chown=appuser:appuser src ${APP_HOME}/src
 COPY --chown=appuser:appuser data ${APP_HOME}/data
+COPY --chown=appuser:appuser src/oms_sensemaking/templates ${APP_HOME}/src/oms_sensemaking/templates
 COPY --chown=appuser:appuser --chmod=644 alembic.ini pyproject.toml README.md ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 prestart.sh ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 docker/start.sh docker/healthcheck.sh /
