@@ -11,6 +11,7 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, ObjectType
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
@@ -22,7 +23,8 @@ from oms_sensemaking.resolution.controllers import (
 @pytest.fixture
 def mock_res_controller():
     controller = ResolutionSensemakerController(
-        RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter())
+        RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter()),
+        RethrowErrorLogger(ErrorLogger()),
     )
     return controller
 

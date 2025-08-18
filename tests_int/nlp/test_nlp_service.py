@@ -27,12 +27,23 @@ sample_text = (
     " said on Wednesday consumers should buy sheepmeat from countries other than Britain until the "
     "scientific advice was clearer."
 )
-reader = NlpStringReader(text=sample_text, document_id=doc_id)
 
-mock_corenlp_client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
-mock_corenlp_client.set_response(mock_response_long_text_str)
 
-mock_findings = service.run_nlp(nlp_reader=reader, corenlp_client=mock_corenlp_client)
+@pytest.fixture
+def reader():
+    return NlpStringReader(text=sample_text, document_id=doc_id)
+
+
+@pytest.fixture
+def mock_corenlp_client():
+    client = MockCoreNlpClient({}, SETTINGS.corenlp_host)
+    client.set_response(mock_response_long_text_str)
+    return client
+
+
+@pytest.fixture
+def mock_findings(reader, mock_corenlp_client):
+    return service.run_nlp(nlp_reader=reader, corenlp_client=mock_corenlp_client)
 
 
 @pytest.fixture
@@ -40,14 +51,14 @@ def mock_db(db: Session) -> Iterator[Session]:
     yield db
 
 
-def test_run_service(mock_db, mock_source):
+def test_run_service(mock_db, mock_source, reader, mock_corenlp_client):
     request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
 
     result = service.run_service(request=request, nlp_reader=reader, corenlp_client=mock_corenlp_client)
     assert result
 
 
-def test_run_nlp(mock_db):
+def test_run_nlp(mock_db, mock_findings):
     """Tests just running the business logic"""
     assert mock_findings["ner_entities"]
     assert mock_findings["document_entity"]
@@ -57,7 +68,7 @@ def test_run_nlp(mock_db):
     assert mock_findings["document_entity"]["document_id"] == doc_id
 
 
-def test_submit_findings_to_postgis(mock_db):
+def test_submit_findings_to_postgis(mock_db, mock_findings):
     """Tests submitting mocked findings to postgis"""
     acm = DEFAULT_ACM
     execution_time = utcnow_with_timezone()
@@ -71,7 +82,7 @@ def test_submit_findings_to_postgis(mock_db):
         assert finding.finding_data == mock_findings
 
 
-def test_submit_findings_to_oms(mock_db, mock_source):
+def test_submit_findings_to_oms(mock_db, mock_source, mock_findings):
     """Tests submitting findings to OMS"""
     request = NlpRequest(source_id=mock_source.id, text=sample_text, acm=DEFAULT_ACM)
 
