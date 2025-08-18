@@ -3,8 +3,8 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, PageParams
 
+from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 from . import GeofenceObservable, MinDistanceObservable, SearchObservable, StatusObservable
 
@@ -20,13 +20,14 @@ QUERY_CLASS_MAP = {
 
 def process_observables():
     """Main function to process all observables."""
-    oms_client = OmsCrudTool()
 
     # fetch all observables
-    observable_query = NodeQuery(tags=["observable"], pageParams=PageParams(pageSize=500))
+    observable_query = NodeQuery(
+        tags=["observable"], pageParams=PageParams(pageSize=SETTINGS.iw_settings.max_observables_to_process)
+    )
     observables_result = None
     try:
-        observables_result = oms_client.get_nodes(observable_query)
+        observables_result = oms_crud_tool.get_nodes(observable_query)
     except Exception as e:
         LOGGER.error("Failed to fetch observables")
         LOGGER.error(e)
@@ -38,7 +39,7 @@ def process_observables():
 
     for observable_node in observables_result.data:
         # get Config attribute
-        config_attributes = oms_client.get_attributes(
+        config_attributes = oms_crud_tool.get_attributes(
             AttributeQuery(
                 nodeIds=[observable_node.id], attributeIris=[SETTINGS.iw_settings.observable_config_attribute_iri]
             )
@@ -60,7 +61,7 @@ def process_observables():
                 continue
 
             # set instance properties
-            observable.initialize(observable_node.id, oms_client)
+            observable.initialize(observable_node.id, oms_crud_tool)
 
             # process the observable
             observable.update_data()

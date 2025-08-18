@@ -156,6 +156,8 @@ class MilSymbolSettings(BaseModel):
 class IWSettings(BaseModel):
     """Settings for I&W"""
 
+    max_observables_to_process: int = Field(500, description="Max page size to limit observations query")
+
     observable_query_interval: timedelta = Field(
         timedelta(minutes=15),
         description="Minutes between each observable query"

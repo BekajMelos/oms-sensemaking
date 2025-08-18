@@ -21,10 +21,8 @@ def test_get_nodes_exception_handling(caplog):
     import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
 
     proc_obs_mod.LOGGER.setLevel("ERROR")
-    with patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class:
-        mock_oms_client = MagicMock()
+    with patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client:
         mock_oms_client.get_nodes.side_effect = Exception("Database connection failed")
-        mock_oms_client_class.return_value = mock_oms_client
 
         with caplog.at_level("ERROR", logger=proc_obs_mod.LOGGER.name):
             process_observables()
@@ -37,10 +35,8 @@ def test_no_observables_found(caplog):
     import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
 
     proc_obs_mod.LOGGER.setLevel("INFO")
-    with patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class:
-        mock_oms_client = MagicMock()
+    with patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client:
         mock_oms_client.get_nodes.return_value.data = []
-        mock_oms_client_class.return_value = mock_oms_client
 
         with caplog.at_level("INFO", logger=proc_obs_mod.LOGGER.name):
             process_observables()
@@ -49,13 +45,11 @@ def test_no_observables_found(caplog):
 
 def test_observable_missing_config(caplog):
     """test when observable has no config attribute"""
-    with patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class:
-        mock_oms_client = MagicMock()
+    with patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client:
         observable_node = MagicMock()
         observable_node.id = "obs1"
         mock_oms_client.get_nodes.return_value.data = [observable_node]
         mock_oms_client.get_attributes.return_value.data = []
-        mock_oms_client_class.return_value = mock_oms_client
 
         process_observables()
         assert "No config found for observable obs1" in caplog.text
@@ -64,17 +58,15 @@ def test_observable_missing_config(caplog):
 def test_observable_unsupported_type(caplog):
     """test when observable has unsupported queryType"""
     with (
-        patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class,
+        patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client,
         patch("oms_sensemaking.iw.sensemakers.process_observables.QUERY_CLASS_MAP", {"dummy": DummyObservable}),
     ):
-        mock_oms_client = MagicMock()
         observable_node = MagicMock()
         observable_node.id = "obs2"
         mock_oms_client.get_nodes.return_value.data = [observable_node]
         config_attr = MagicMock()
         config_attr.attributeValue = '{"queryType": "not_supported"}'
         mock_oms_client.get_attributes.return_value.data = [config_attr]
-        mock_oms_client_class.return_value = mock_oms_client
 
         process_observables()
         assert "Unsupported query type for observable obs2: not_supported" in caplog.text
@@ -85,10 +77,9 @@ def test_observable_supported_type_calls_update_data():
     import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
 
     with (
-        patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class,
+        patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client,
         patch("oms_sensemaking.iw.sensemakers.process_observables.GeofenceObservable") as mock_geofence_class,
     ):
-        mock_oms_client = MagicMock()
         observable_node = MagicMock()
         observable_node.id = "obs3"
         mock_oms_client.get_nodes.return_value.data = [observable_node]
@@ -99,7 +90,6 @@ def test_observable_supported_type_calls_update_data():
             + '"startTime": "2024-01-01T00:00:00Z", "endTime": "2024-01-01T01:00:00Z"}}'
         )
         mock_oms_client.get_attributes.return_value.data = [config_attr]
-        mock_oms_client_class.return_value = mock_oms_client
 
         mock_geofence_instance = MagicMock()
         mock_geofence_instance.initialize = MagicMock(return_value=mock_geofence_instance)
@@ -119,8 +109,7 @@ def test_observable_exception_handling(caplog):
     import oms_sensemaking.iw.sensemakers.process_observables as proc_obs_mod
 
     proc_obs_mod.LOGGER.setLevel("ERROR")
-    with patch("oms_sensemaking.iw.sensemakers.process_observables.OmsCrudTool") as mock_oms_client_class:
-        mock_oms_client = MagicMock()
+    with patch("oms_sensemaking.iw.sensemakers.process_observables.oms_crud_tool") as mock_oms_client:
         observable_node = MagicMock()
         observable_node.id = "obs4"
         mock_oms_client.get_nodes.return_value.data = [observable_node]
@@ -131,7 +120,6 @@ def test_observable_exception_handling(caplog):
             + '{"sinceLastQuery": false, "startTime": "2024-01-01T00:00:00Z", "endTime": "2024-01-01T01:00:00Z"}}'
         )
         mock_oms_client.get_attributes.return_value.data = [config_attr]
-        mock_oms_client_class.return_value = mock_oms_client
 
         class RaiseException:
             def __init__(self, *a, **kw):
