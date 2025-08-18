@@ -3,8 +3,8 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import AttributeQuery, NodeQuery, PageParams
 
+from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
-from src.oms_sensemaking.clients.instances import oms_crud_tool
 
 from . import GeofenceObservable, MinDistanceObservable, SearchObservable, StatusObservable
 
