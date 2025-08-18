@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 the "incurring" node.
 - Removed the "v" prefix from version identifiers
 - Changed Sensemaking Docker image to a UBI8/RHEL8 based image
+- Updated `docker/postgis/initdb.d` scripts to use environment variables rather than hard-coded values. Refactored `.sql` scripts to `.sh` scripts.
 
 ### Fixed
 - SSL issues with AAC cache transport

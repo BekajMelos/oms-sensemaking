@@ -21,8 +21,8 @@
         # ----------------------------------------
         # Sensemaker Database
         # ----------------------------------------
+        POSTGRES_USER=postgres
         POSTGRES_PASSWORD=password
-        PGPASSWORD=password
 
         # ----------------------------------------
         # OMS SDK Settings
