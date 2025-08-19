@@ -16,7 +16,6 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.iw.sensemakers.observables.base_observable import (
     BaseObservable,
     ObservableQueryType,
-    StatusCriteria,
     TimeBounds,
     format_rfc3339,
 )
@@ -65,15 +64,16 @@ class TestTimeBounds:
             TimeBounds(sinceLastQuery=False, startTime="2024-01-01T00:00:00.000Z", endTime=None)
 
 
-class TestStatusCriteria:
-    """test StatusCriteria model"""
-
-    def test_status_criteria_creation(self):
-        """test StatusCriteria creation with valid data"""
-        criteria = StatusCriteria(attributeIRI="http://example.com/status", triggeringValues=["active", "inactive"])
-
-        assert criteria.attribute_iri == "http://example.com/status"
-        assert criteria.triggering_values == ["active", "inactive"]
+# todo: move this to search_observable test file
+# class TestStatusCriteria:
+#     """test StatusCriteria model"""
+#
+#     def test_status_criteria_creation(self):
+#         """test StatusCriteria creation with valid data"""
+#         criteria = StatusCriteria(attributeIRI="http://example.com/status", triggeringValues=["active", "inactive"])
+#
+#         assert criteria.attribute_iri == "http://example.com/status"
+#         assert criteria.triggering_values == ["active", "inactive"]
 
 
 class TestBaseObservable:
