@@ -20,7 +20,9 @@ from shapely import LineString
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
+from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
@@ -43,9 +45,9 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: AuditLogEventConsumer) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
         """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer)
+        super().__init__(event_consumer, err_logger)
 
         # initialize buffer
         self.track_times: dict[UUID, datetime | None] = {}
@@ -207,87 +209,21 @@ class GeospatialSensemakerController(SensemakerController):
                 LOGGER.debug("Checking buffer for %s", track_uuid)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
-                    with db_session() as db:
-                        db.expire_on_commit = False
+
+                    try:
                         try:
-                            points = self.track_node_buffer[track_uuid]
-                            points.sort(key=attrgetter("detection_time"))
-
-                            # Get the IRI hierarchy for the node
-                            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
-                            ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
-
-                            time_bins = self.bin_points_for_track(points)
-
-                            for binned_points in time_bins.values():
-                                # since we split the track points into bins, each bin needs an id
-                                sub_track_id = uuid4()
-                                LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
-
-                                for csf in self.common_sense_filters:
-                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                        LOGGER.debug(
-                                            "Running common sense filter %s on single points in track %s",
-                                            csf.name,
-                                            sub_track_id,
-                                        )
-                                        binned_points = csf.filter_points(binned_points)
-                                # Execute a track weaver on the buffered Points
-                                # and save the new Track with the chosen UUID
-                                weaved_track = self.track_weaver.execute(binned_points)
-                                for csf in self.common_sense_filters:
-                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                        LOGGER.debug(
-                                            "Running common sense filter %s on point deltas in track %s",
-                                            csf.name,
-                                            sub_track_id,
-                                        )
-                                        weaved_track.points = csf.filter_point_deltas(weaved_track.points)
-                                # Abort and do not clear buffer if final track has less than 2 points
-                                if len(weaved_track.points) < 2:
-                                    continue
-                                track_dict = {
-                                    "points": weaved_track.points,
-                                    "node_id": weaved_track.node_id,
-                                    "algorithm": weaved_track.algorithm,
-                                    "observation_ids": weaved_track.observation_ids,
-                                    "acm": aac_client.get_acm_rollup(
-                                        [{"ACM": point.acm} for point in weaved_track.points]
-                                    ),
-                                }
-                                track, _ = Track.get_or_create(
-                                    session=db,
-                                    defaults=track_dict,
-                                    track_uuid=sub_track_id,
+                            track = self._generate_track(track_uuid)
+                        except TrackLengthError:
+                            LOGGER.exception(
+                                (
+                                    "Track doesn't have enough points. Ignore and remove from buffer until "
+                                    "it gets more points"
                                 )
-                                LOGGER.info(f"Track completed: {sub_track_id}")
-                                oms_track = APITrack(track).create_oms_track()
-                                LOGGER.info(f"OMS Track published: {oms_track.id}")
-                                self.log_track_comparison(points=binned_points, track=track)
-                        except Exception:
-                            # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.error(traceback.format_exc())
+                            )
                             self.track_times[track_uuid] = None
                             continue
 
-                    try:
-                        # temp fix to prevent UnboundLocalError on `track`
-                        node = self.oms_crud_tool.get_node(track.node_id)
-
-                        provider_id = None
-                        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
-
-                        # Fetch source/provider id from last (can be any) point in track
-                        if len(track.points):
-                            source_id = track.points[-1].source_id
-                            source = self.oms_crud_tool.get_source(source_id=source_id)
-                            if source:
-                                provider_id = source.providerId
-
-                        provider_config = (
-                            self.config.get(provider_id, default_config) if provider_id else default_config
-                        )
-                        geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
+                        geo_config = self._get_geo_config(track)
 
                         with ThreadPoolExecutor() as executor:
                             futures = []
@@ -298,8 +234,8 @@ class GeospatialSensemakerController(SensemakerController):
                             # make sure errors are caught
                             for future in as_completed(futures):
                                 _ = future.result()
-                    except Exception:
-                        LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
+                    except Exception as e:
+                        LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
                     finally:
                         self.track_times[track_uuid] = None  # mark for removal
                         self.track_node_buffer.pop(track_uuid)
@@ -312,6 +248,105 @@ class GeospatialSensemakerController(SensemakerController):
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
+
+    def _generate_track(self, track_uuid: UUID) -> Track:
+        """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
+        Then runs the common sense filters and track weaver.
+
+        :param track_uuid: UUID of the track
+        :return: Created Track object
+        """
+
+        track = None
+
+        points = self.track_node_buffer[track_uuid]
+        points.sort(key=attrgetter("detection_time"))
+
+        # Get the IRI hierarchy for the node
+        try:
+            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+        except IndexError as e:
+            raise TrackLengthError(e) from e
+
+        ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
+
+        time_bins = self.bin_points_for_track(points)
+
+        for binned_points in time_bins.values():
+            # since we split the track points into bins, each bin needs an id
+            sub_track_id = uuid4()
+            LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+
+            for csf in self.common_sense_filters:
+                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                    LOGGER.debug(
+                        "Running common sense filter %s on single points in track %s",
+                        csf.name,
+                        sub_track_id,
+                    )
+                    binned_points = csf.filter_points(binned_points)
+            # Execute a track weaver on the buffered Points
+            # and save the new Track with the chosen UUID
+            weaved_track = self.track_weaver.execute(binned_points)
+            for csf in self.common_sense_filters:
+                if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                    LOGGER.debug(
+                        "Running common sense filter %s on point deltas in track %s",
+                        csf.name,
+                        sub_track_id,
+                    )
+                    weaved_track.points = csf.filter_point_deltas(weaved_track.points)
+            # Abort and do not clear buffer if final track has less than 2 points
+            if len(weaved_track.points) < 2:
+                continue
+            track_dict = {
+                "points": weaved_track.points,
+                "node_id": weaved_track.node_id,
+                "algorithm": weaved_track.algorithm,
+                "observation_ids": weaved_track.observation_ids,
+                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
+            }
+
+            with db_session() as db:
+                db.expire_on_commit = False
+                track, _ = Track.get_or_create(
+                    session=db,
+                    defaults=track_dict,
+                    track_uuid=sub_track_id,
+                )
+
+            LOGGER.info(f"Track completed: {sub_track_id}")
+            oms_track = APITrack(track).create_oms_track()
+            LOGGER.info(f"OMS Track published: {oms_track.id}")
+            self.log_track_comparison(points=binned_points, track=track)
+
+        if not track:
+            raise TrackLengthError("Not enough points for track.") from None
+
+        return track
+
+    def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
+        """Get the geo config for this track based on the provider and node type
+
+        :param track: Track to process
+        :return: GeospatialSensemakerConfig settings for this track and vehicle
+        """
+
+        node = self.oms_crud_tool.get_node(track.node_id)
+
+        provider_id = None
+        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+
+        # Fetch source/provider id from last (can be any) point in track
+        if len(track.points):
+            source_id = track.points[-1].source_id
+            source = self.oms_crud_tool.get_source(source_id=str(source_id))
+            if source:
+                provider_id = source.providerId
+
+        provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
+
+        return GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
@@ -403,7 +438,6 @@ class GeospatialSensemakerController(SensemakerController):
 
     def bin_points_for_track(self, points: list[Point]):
         points.reverse()
-        # for key, group in groupby(points, lambda x: x // track_timeframe):
         time_bins = {
             k: list(g)
             for k, g in groupby(

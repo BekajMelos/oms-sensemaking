@@ -1,5 +1,9 @@
 """Application configuration."""
+import json
+import logging
 import os
+from datetime import timedelta
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
@@ -10,6 +14,8 @@ from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_fie
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
+
+LOGGER = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -24,7 +30,7 @@ class LogConfig(BaseSettings):
     log_format: str = "{asctime:<20s}{levelname:<8s}{threadName:<32s} {name}: {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
-    log_level: str = Field("WARNING", alias='app_log_level')
+    log_level: str = Field("INFO", alias='app_log_level')
 
     handlers: dict[str, dict] = {
         "default": {
@@ -146,6 +152,39 @@ class MilSymbolSettings(BaseModel):
 
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
+# IW Settings
+class IWSettings(BaseModel):
+    """Settings for I&W"""
+
+    max_observables_to_process: int = Field(500, description="Max page size to limit observations query")
+
+    observable_query_interval: timedelta = Field(
+        timedelta(minutes=15),
+        description="Minutes between each observable query"
+    )
+
+    observable_statuses: dict = Field({
+        "unknown": "Unknown",
+        "not_observed": "Not Observed",
+        "partially_observed": "Partially Observed",
+        "fully_observed": "Observed"
+    }, description="Status options for the observable")
+
+    observable_config_attribute_iri: str = Field(
+        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        description="Config attribute used to read the settings of an observable query")
+
+    observable_status_attribute_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/hasOperationalStatus",
+        description="Status attribute used to indicate the status of an observable")
+
+    observable_location_attribute_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000140",
+        description="Location attribute used to identify the boundary of an observable")
+
+    observable_associated_with_relationship_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000034",
+        description="Relationship used to associate an observable with an object")
 
 class Settings(BaseSettings):
     """Settings class."""
@@ -403,6 +442,8 @@ class Settings(BaseSettings):
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
+    iw_settings: IWSettings = IWSettings()
+    observables: bool = Field(True, description="Toggle on/off Observable updates")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
@@ -441,6 +482,28 @@ class Settings(BaseSettings):
     aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
+
+    enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
+    audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
+    audit_log_error_json_file_path: str = Field(
+        "./data/audit_log_error_acm.json",
+        description="Path to the audit event log error classification file")
+
+    rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
+
+    @computed_field  # type: ignore
+    @cached_property
+    def audit_log_error_acm(self) -> dict[str, str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(self.audit_log_error_json_file_path, encoding="utf-8") as fd:
+            return json.load(fd)
+
+    def load_audit_log_event_error_acm(self):
+        """Load audit event log error classification from file
+        This should be done on startup to ensure file exists
+        """
+        if SETTINGS.audit_log_error_acm:
+            LOGGER.info("Loaded audit log error classification")
 
     @computed_field  # type: ignore
     @property

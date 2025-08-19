@@ -1,22 +1,28 @@
 # 30_enable-ssl.sql --- Enable SSL with custom keypair.
 
-# Copy certs to a writable directory and set ownership/permissions
-if [ -f /opt/common/pki/server.public ] && [ -f /opt/common/pki/server.private ]; then
+#!/bin/bash
+set -e
 
+# Copy certs to a writable directory and set ownership/permissions
+if [ -f "$UVICORN_SSL_CERTFILE" ] && [ -f "$UVICORN_SSL_KEYFILE" ]; then
   # explicitly set ownership to match the user running postgresql/postgis
-  chown postgres: /opt/common/pki/server.public
-  chown postgres: /opt/common/pki/server.private
+  chown postgres: "$UVICORN_SSL_CERTFILE"
+  chown postgres: "$UVICORN_SSL_KEYFILE"
 
   # set file permissions
-  chmod 600 /opt/common/pki/server.private
-  chmod 640 /opt/common/pki/server.public
+  chmod 600 "$UVICORN_SSL_KEYFILE"
+  chmod 640 "$UVICORN_SSL_CERTFILE"
+  echo "==> [SSL] Ownership and file permissions set on certificate and key files."
 
   # configure and enable SSL
-  psql << EOF
-ALTER SYSTEM SET ssl_cert_file TO '/opt/common/pki/server.public';
-ALTER SYSTEM SET ssl_key_file TO '/opt/common/pki/server.private';
-ALTER SYSTEM SET ssl TO 'ON';
-EOF
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname=postgres <<-EOSQL
+    ALTER SYSTEM SET ssl_cert_file TO '$UVICORN_SSL_CERTFILE';
+    ALTER SYSTEM SET ssl_key_file TO '$UVICORN_SSL_KEYFILE';
+    ALTER SYSTEM SET ssl TO 'ON';
+EOSQL
+  echo "==> [SSL] SSL configuration applied."
 else
-  echo "Both service /opt/common/pki/server.public and /opt/common/pki/server.private are required for SSL" 1>&2;
+  echo "==> [SSL] ERROR: Missing SSL configuration." 1>&2
+  echo "    UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE:-<empty>}" 1>&2
+  echo "    UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE:-<empty>}" 1>&2
 fi
