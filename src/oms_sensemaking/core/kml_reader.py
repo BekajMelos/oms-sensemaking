@@ -27,8 +27,11 @@ class KMLReader:
             geom = placemark.geometry
             try:
                 mapped_geometry = mapping(geom)
-            except Exception as e:
-                LOGGER.warning(f"Skipping invalid geometry in placemark: {e}")
+            except AttributeError as e:
+                LOGGER.warning(f"Object does not have valid attributes for geometry: {e}")
+                continue
+            except TypeError as e:
+                LOGGER.warning(f"Invalid type passed to mapping(): {e}")
                 continue
             geojson_feature = {
                 "type": "Feature",
@@ -48,8 +51,8 @@ class KMLReader:
         try:
             k = kml.KML.parse(file_path)
             return self.extract_placemarks(k)
-        except Exception as e:
-            LOGGER.error(f"Unexpected error when parsing KML file: {e}")
+        except ValueError as e:
+            LOGGER.error(f"ValueError when parsing KML file: {e}")
             return []
 
     def parse_kmz_file(self, file_path: str):
@@ -72,6 +75,6 @@ class KMLReader:
             return self.extract_placemarks(k)
         except zipfile.BadZipFile as e:
             LOGGER.error(f"Invalid KMZ file {e}")
-        except Exception as e:
-            LOGGER.error(f"Unexpected error when parsing KMZ file: {e}")
+        except ValueError as e:
+            LOGGER.error(f"ValueError when parsing KMZ file: {e}")
         return []

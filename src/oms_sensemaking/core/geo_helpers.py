@@ -40,8 +40,10 @@ def gather_area_of_interest_data(path_to_aoi_data: str):
             elif file_lower.endswith(".kmz"):
                 features = kml_reader.parse_kmz_file(file_path)
                 areas_of_interest.extend(features)
+        except json.JSONDecodeError as e:
+            LOGGER.error(f"Invalid json {file_path}: {e}")
         except Exception as e:
-            LOGGER.error(f"Unexpected error processing {file_path}: {e}")
+            LOGGER.error(f"Unexpected error when parsing AOI files: {e}")
     return areas_of_interest
 
 
