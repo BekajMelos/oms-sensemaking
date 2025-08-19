@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import sys
 
 from geopy.distance import geodesic
 from geopy.point import Point
@@ -23,7 +24,7 @@ def gather_area_of_interest_data(path_to_aoi_data: str):
     kml_reader = KMLReader()
     if not os.path.isdir(path_to_aoi_data):
         LOGGER.warning(f"{path_to_aoi_data} is not a valid directory.")
-        return areas_of_interest
+        sys.exit("An error occured. There is not valid areas of interest directory.")
     for file in os.listdir(path_to_aoi_data):
         file_path = os.path.join(path_to_aoi_data, file)
         if not os.path.isfile(file_path):
@@ -33,17 +34,20 @@ def gather_area_of_interest_data(path_to_aoi_data: str):
             if file_lower.endswith(".json"):
                 with open(file_path, "r") as f:
                     data = json.load(f)
-                    areas_of_interest.append(data)
+                    if data.get("type") == "FeatureCollection" and "features" in data:
+                        areas_of_interest.extend(data["features"])
+                    else:
+                        areas_of_interest.append(data)
             elif file_lower.endswith(".kml"):
                 features = kml_reader.parse_kml_file(file_path)
                 areas_of_interest.extend(features)
             elif file_lower.endswith(".kmz"):
                 features = kml_reader.parse_kmz_file(file_path)
                 areas_of_interest.extend(features)
+            else:
+                LOGGER.warning(f"Unsupported file type: {file_path}")
         except json.JSONDecodeError as e:
             LOGGER.error(f"Invalid json {file_path}: {e}")
-        except Exception as e:
-            LOGGER.error(f"Unexpected error when parsing AOI files: {e}")
     return areas_of_interest
 
 

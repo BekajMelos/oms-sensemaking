@@ -167,7 +167,7 @@ class Incursion(BaseRule):
         """
 
         # Create new incursion activity pointing to observation
-        description = self._get_feature_name(feature_of_interest.raw_dict)
+        description = feature_of_interest.name
         if description is None:
             description = f"Incursion Activity by {incurring_object.name}"
         incursion_activity = CreateActivityInput(
@@ -229,8 +229,3 @@ class Incursion(BaseRule):
     def _truncate_activity_description(self, description: str):
         max_descr_length = 512
         return description[:max_descr_length]
-
-    def _get_feature_name(self, feature) -> str | None:
-        if feature and feature["properties"] and feature["properties"]["name"]:
-            return feature["properties"]["name"]
-        return None

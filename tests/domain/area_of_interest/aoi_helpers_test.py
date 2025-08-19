@@ -23,7 +23,7 @@ def sample_feature():
 def test_area_of_interest_initialization(sample_feature):
     aoi = AreaOfInterest(sample_feature)
 
-    assert aoi.raw_dict == sample_feature
+    assert aoi.name == sample_feature.get("properties", {}).get("name") if sample_feature else None
     assert aoi.geometry_dict == sample_feature["geometry"]
     assert aoi.geometry_shape.equals(Polygon([(0, 0), (0, 10), (10, 10), (10, 0)]))
 

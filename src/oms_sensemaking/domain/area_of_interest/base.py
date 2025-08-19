@@ -4,9 +4,14 @@ from shapely.geometry.base import BaseGeometry
 
 
 class AOI(Protocol):
-    raw_dict: dict
-    geometry_dict: dict
-    geometry_shape: BaseGeometry
+    @property
+    def name(self) -> str | None: ...
+
+    @property
+    def geometry_dict(self) -> dict: ...
+
+    @property
+    def geometry_shape(self) -> BaseGeometry: ...
 
     def has_overlap(self, obs_geometry: BaseGeometry) -> bool: ...
 
