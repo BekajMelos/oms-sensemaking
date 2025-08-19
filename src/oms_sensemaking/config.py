@@ -447,6 +447,23 @@ class Settings(BaseSettings):
         default=True, description="Enable OpenTelemetry metrics collection"
     )
 
+    # OpenTelemetry settings
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default=None, description="OpenTelemetry OTLP exporter endpoint"
+    )
+    otel_service_name: str = Field(
+        default="oms-sensemaking", description="OpenTelemetry service name"
+    )
+    otel_traces_sampler: str = Field(
+        default="always_on", description="OpenTelemetry traces sampler"
+    )
+    otel_metrics_exporter: str = Field(
+        default="prometheus", description="OpenTelemetry metrics exporter"
+    )
+    otel_logs_exporter: str = Field(
+        default="otlp", description="OpenTelemetry logs exporter"
+    )
+
     @computed_field  # type: ignore
     @property
     def confidence_weight_map(self) -> dict[Confidence, float]:
