@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 from zoneinfo import ZoneInfo
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -20,10 +20,8 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class ObservableQueryType(str, Enum):
-    GEOFENCE = "geofence"
-    MIN_DISTANCE = "minDistance"
-    STATUS = "status"
+class ObservableQueryType(Enum):
+    GEOFENCE = "geoFence"
     SEARCH = "search"
 
 
@@ -49,14 +47,6 @@ class TimeBounds(BaseModel):
             self.end_time = format_rfc3339(now)
 
         return self
-
-    class Config:
-        populate_by_name = True
-
-
-class StatusCriteria(BaseModel):
-    attribute_iri: str = Field(..., alias="attributeIRI")
-    triggering_values: List[Any] = Field(..., alias="triggeringValues")
 
     class Config:
         populate_by_name = True
@@ -176,8 +166,10 @@ class BaseObservable(BaseModel):
             )
 
             LOGGER.info(
-                f"Updated status{" from " + prev_status_value}" f" to {new_status_value} for observable {self.id}"
+                f"Updated status{" from " + prev_status_value}"
+                f" to {new_status_value} "
+                f"for {self.query_type} observable {self.id}"
             )
 
         else:
-            LOGGER.info(f"Status for observable {self.id} remained as {prev_status_value}")
+            LOGGER.info(f"Status for {self.query_type} observable " f"{self.id} remained as {prev_status_value}")
