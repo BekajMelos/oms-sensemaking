@@ -187,6 +187,10 @@ class Settings(BaseSettings):
     mil_sym_sm_label: str = Field("MILITARY_SYMBOL_SM", description="Label for mil sym sensemaking data")
     res_sm_label: str = Field("RESOLUTION_SM", description="Label for resolution sensemaking data")
 
+    # Classification Banner Settings
+    classification_banner_text: str = Field("UNCLASSIFIED", description="Text to display in the classification banner")
+    classification_banner_color: str = Field("#00c853", description="Background color for the classification banner")
+
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
