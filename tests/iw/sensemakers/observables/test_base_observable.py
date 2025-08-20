@@ -64,18 +64,6 @@ class TestTimeBounds:
             TimeBounds(sinceLastQuery=False, startTime="2024-01-01T00:00:00.000Z", endTime=None)
 
 
-# todo: move this to search_observable test file
-# class TestStatusCriteria:
-#     """test StatusCriteria model"""
-#
-#     def test_status_criteria_creation(self):
-#         """test StatusCriteria creation with valid data"""
-#         criteria = StatusCriteria(attributeIRI="http://example.com/status", triggeringValues=["active", "inactive"])
-#
-#         assert criteria.attribute_iri == "http://example.com/status"
-#         assert criteria.triggering_values == ["active", "inactive"]
-
-
 class TestBaseObservable:
     """test BaseObservable class"""
 
@@ -95,12 +83,12 @@ class TestBaseObservable:
     def base_observable(self, valid_time_bounds):
         """create a testable BaseObservable instance"""
         return TestableBaseObservable(
-            queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedCount=5
+            queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedCount=5
         )
 
     def test_base_observable_creation(self, base_observable, valid_time_bounds):
         """test BaseObservable creation with valid data"""
-        assert base_observable.query_type == ObservableQueryType.GEOFENCE
+        assert base_observable.query_type == ObservableQueryType.geofence
         assert base_observable.time_bounds == valid_time_bounds
         assert base_observable.fully_observed_count == 5
 
@@ -109,20 +97,20 @@ class TestBaseObservable:
         with pytest.raises(
             ValueError, match="At least one of fullyObservedCount or fullyObservedPercentage is required"
         ):
-            TestableBaseObservable(queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds)
+            TestableBaseObservable(queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds)
 
     def test_base_observable_percentage_validation(self, valid_time_bounds):
         """test percentage validation"""
         # valid percentage
         observable = TestableBaseObservable(
-            queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=80
+            queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedPercentage=80
         )
         assert observable.fully_observed_percentage == 80
 
         # invalid percentage > 100
         with pytest.raises(ValueError):
             TestableBaseObservable(
-                queryType=ObservableQueryType.GEOFENCE, timeBounds=valid_time_bounds, fullyObservedPercentage=150
+                queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedPercentage=150
             )
 
     def test_initialize(self, base_observable, mock_oms_client):
@@ -218,7 +206,7 @@ class TestBaseObservable:
     def test_determine_status_fully_observed_percentage(self, base_observable):
         """test determine_status with fully observed percentage threshold"""
         base_observable.fully_observed_count = None
-        base_observable.fully_observed_percentage = 0.8
+        base_observable.fully_observed_percentage = 80.0
 
         result = base_observable.determine_status(8, 10)
         assert result == SETTINGS.iw_settings.observable_statuses["fully_observed"]
