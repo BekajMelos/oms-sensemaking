@@ -88,7 +88,7 @@ class TestSearchObservable:
 
         search_observable.update_data()
 
-        # Should return early, no attributes should be queried
+        # should return early, no attributes should be queried
         assert mock_oms_client.get_attributes.call_count <= 1  # Only config attribute call
 
     @patch.object(SearchObservable, "get_status_attr")
