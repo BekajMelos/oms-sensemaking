@@ -2,6 +2,7 @@ services:
   oms_sensemaking:
     build:
       context: .
+      dockerfile: dockerfiles/dev/Dockerfile
       secrets:
         - mynetrc
       args:

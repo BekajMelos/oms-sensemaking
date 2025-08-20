@@ -53,6 +53,7 @@ bundle:
 
 build-docker:  ## Build docker image
 	docker build \
+		  -f dockerfiles/dev/Dockerfile
           --build-arg APP_VERSION=$(shell source .venv/bin/activate && python -m setuptools_scm) \
           --build-arg BUILD_DATE=$(shell date +%Y%m%d%H%M) \
           --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
