@@ -102,6 +102,8 @@ nuke: down
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 	@docker volume rm -f oms-sensemaking_elasticsearch
+	@docker volume rm -f oms-sensemaking_grafana_data
+	@docker volume rm -f oms-sensemaking_prometheus_data
 
 refresh: nuke  # Purge all generated content and restart
 	docker compose --profile local up --build -d
