@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum, auto
 from typing import List, Optional, Union
 from zoneinfo import ZoneInfo
 
@@ -20,9 +20,9 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class ObservableQueryType(Enum):
-    GEOFENCE = "geoFence"
-    SEARCH = "search"
+class ObservableQueryType(StrEnum):
+    geofence = auto()
+    search = auto()
 
 
 def format_rfc3339(dt: datetime) -> str:
