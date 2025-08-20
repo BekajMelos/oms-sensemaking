@@ -3,7 +3,6 @@
 import json
 import logging
 import os
-import sys
 
 from geopy.distance import geodesic
 from geopy.point import Point
@@ -22,9 +21,6 @@ def gather_area_of_interest_data(path_to_aoi_data: str):
     """
     areas_of_interest: list[dict | None] = []
     kml_reader = KMLReader()
-    if not os.path.isdir(path_to_aoi_data):
-        LOGGER.warning(f"{path_to_aoi_data} is not a valid directory.")
-        sys.exit("An error occured. There is not valid areas of interest directory.")
     for file in os.listdir(path_to_aoi_data):
         file_path = os.path.join(path_to_aoi_data, file)
         if not os.path.isfile(file_path):

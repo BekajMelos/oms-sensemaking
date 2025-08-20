@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
@@ -146,5 +147,13 @@ def initialize_settings() -> None:
         sys.exit("An error occurred during initialization.")
 
 
+def check_aoi_file_path() -> None:
+    """Check for valid areas of interest directory"""
+    if not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path):
+        LOGGER.error(f"{SETTINGS.inference_incursion_areas_of_interest_path} is not a valid directory.")
+        sys.exit("The areas of interest directory is incorrect or does not exist.")
+
+
 initialize_settings()
+check_aoi_file_path()
 app: FastAPI = create_app(SETTINGS)
