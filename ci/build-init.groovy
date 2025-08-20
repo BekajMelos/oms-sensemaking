@@ -64,6 +64,7 @@ pipeline {
                             echo "[global]" > /tmp/venv/pip.conf
                             echo "index-url = ${artUrl}/api/pypi/pypi/simple" >> /tmp/venv/pip.conf
                             echo "trusted-host = artifactory.code.dodiis.mil" >> /tmp/venv/pip.conf
+
                             pip install -U pip wheel setuptools_scm
                         '''
 
