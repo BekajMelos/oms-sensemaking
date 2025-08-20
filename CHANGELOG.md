@@ -28,6 +28,10 @@ the "incurring" node.
 - Removed the "v" prefix from version identifiers
 - Changed Sensemaking Docker image to a UBI8/RHEL8 based image
 - Updated `docker/postgis/initdb.d` scripts to use environment variables rather than hard-coded values. Refactored `.sql` scripts to `.sh` scripts.
+- Custom Classification Bars
+- DOD Consent Popup
+
+### Changed
 
 ### Fixed
 - SSL issues with AAC cache transport
