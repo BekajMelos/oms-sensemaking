@@ -1,5 +1,6 @@
 """Application configuration."""
 import os
+import re
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
@@ -485,6 +486,22 @@ class Settings(BaseSettings):
             port=int(values.get(f"{settings_prefix}port") or 5432),
             path=values.get(f"{settings_prefix}schema") or ""
         ).unicode_string()
+
+    @field_validator("classification_banner_text", mode="before")
+    @classmethod
+    def validate_classification_banner_text(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner text does not contain HTML."""
+        if re.search(r"<[^>]*>", field_value):
+            raise ValueError("Classification banner text cannot contain HTML.")
+        return field_value
+
+    @field_validator("classification_banner_color", mode="before")
+    @classmethod
+    def validate_classification_banner_color(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner color is a valid hex color."""
+        if not re.match(r"^#([A-Fa-f0-9]{3}){1,2}$", field_value):
+            raise ValueError("Classification banner color must be a valid hex color (e.g., #00c853).")
+        return field_value
 
 
 SETTINGS: Settings = Settings()

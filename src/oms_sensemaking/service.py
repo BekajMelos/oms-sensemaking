@@ -1,5 +1,6 @@
 """oms-sensemaking microservice."""
 
+import html
 import logging
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
@@ -114,9 +115,11 @@ def create_app(config: Settings) -> FastAPI:
         if template_path.exists():
             template_content = template_path.read_text()
 
-            template_content = template_content.replace("CLASSIFICATION_BANNER_TEXT", config.classification_banner_text)
             template_content = template_content.replace(
-                "CLASSIFICATION_BANNER_COLOR", config.classification_banner_color
+                "CLASSIFICATION_BANNER_TEXT", html.escape(config.classification_banner_text)
+            )
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_COLOR", html.escape(config.classification_banner_color)
             )
 
             return HTMLResponse(content=template_content, media_type="text/html")
