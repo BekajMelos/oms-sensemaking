@@ -14,8 +14,6 @@
 | `RELOAD_APP`                     | `1`                         | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
 | `ROOT_PATH`                      | `/services/sensemaking/1.0` | BaseUrl for serving the project at                             | No             |
 | `UVICORN_ROOT_PATH`              | `/services/sensemaking/1.0` | Uvicorn baseUrl for serving the project                        | Yes            |
-| `CLASSIFICATION_BANNER_TEXT`     | `UNCLASSIFIED`              | Text to display in the classification banner                   | No             |
-| `CLASSIFICATION_BANNER_COLOR`    | `#00c853`                   | Background color for the classification banner (hex format)    | No             |
 
 
 ##### Database Settings
