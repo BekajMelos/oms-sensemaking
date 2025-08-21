@@ -112,7 +112,7 @@ pipeline {
                             echo "password ${SERVICE_ACCOUNT_PSW}" >> .netrc
 
                             docker build \
-                                -f dockerfiles/prod/Dockerfile
+                                -f dockerfiles/prod/Dockerfile \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION%%+*} \
                                 -t ${artDockerUrl}/${DOCKER_PROD_IMAGE}:latest \
                                 --build-arg NAMESPACE=${artDockerUrl} \
