@@ -149,6 +149,14 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
         LOGGER.info(f"Trying to connect to {self._queue_name} at {SETTINGS.rabbitmq_host}:{SETTINGS.rabbitmq_port}")
+        # Log resolved IP address for RabbitMQ host
+        try:
+            resolved_host = socket.gethostbyname(SETTINGS.rabbitmq_host)
+            LOGGER.info(
+                f"Resolved RabbitMQ host '{SETTINGS.rabbitmq_host}' to IP {resolved_host}:{SETTINGS.rabbitmq_port}"
+            )
+        except Exception as ex:
+            LOGGER.warning(f"Unable to resolve RabbitMQ host '{SETTINGS.rabbitmq_host}': {ex}")
         try:
             credentials = PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
             parameters = ConnectionParameters(
