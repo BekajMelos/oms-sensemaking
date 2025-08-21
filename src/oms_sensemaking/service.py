@@ -14,11 +14,13 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
+from oms_sensemaking.api.routers import aac, about, health, nlp, rdf, test
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
+from oms_sensemaking.core.middleware import MetricsMiddleware
+from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
@@ -28,6 +30,9 @@ from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, Resolu
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 dictConfig(LogConfig().model_dump())  # initialize logging
+
+# Initialize observability system
+initialize_observability()
 
 
 def get_controllers() -> list[SensemakerController]:
@@ -134,12 +139,22 @@ def create_app(config: Settings) -> FastAPI:
     # initialize gzip middleware
     application.add_middleware(GZipMiddleware, minimum_size=config.gzip_minimum_size)
 
+    # Add metrics middleware
+    application.add_middleware(MetricsMiddleware)
+
     # configure routes
     application.include_router(about.router)
     application.include_router(aac.router, prefix="/aac")
     application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
+    application.include_router(test.router, prefix="/test", tags=["test"])
+
+    # Mount metrics endpoint
+    application.add_route("/metrics", metrics_endpoint)
+
+    # Instrument with OpenTelemetry
+    instrument_fastapi(application)
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
