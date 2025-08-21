@@ -77,6 +77,21 @@ class LogConfig(BaseSettings):
                 "level": self.log_level,
                 "propagate": True
             },
+            "uvicorn": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.error": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.access": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
             "oms_sdk": {
                 "level": self.log_level
             },
