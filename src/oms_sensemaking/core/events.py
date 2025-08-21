@@ -28,7 +28,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class AuditLogEvent:
     """Represents an audit log event from OMS."""
 
-    def __init__(self, userId: str, objectId: UUID, objectType: ObjectType, action: Action):
+    def __init__(self, userId: str | None, objectId: UUID, objectType: ObjectType, action: Action):
         """
         Create a new instance of AuditLogEvent.
 
@@ -37,7 +37,7 @@ class AuditLogEvent:
         :param objectType: The type of object that the event was triggered on.
         :param action: They type of event (e.g. create, update, or delete).
         """
-        self.userId: str = userId
+        self.userId: str | None = userId
         self.objectId: UUID = objectId
         self.objectType: ObjectType = objectType
         self.action: Action = action
