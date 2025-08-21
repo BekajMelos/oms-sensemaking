@@ -491,6 +491,25 @@ class Settings(BaseSettings):
 
     rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
 
+    enable_telemetry: bool = Field(
+        default=True, description="Enable OpenTelemetry metrics collection"
+    )
+
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default=None, description="OpenTelemetry OTLP exporter endpoint"
+    )
+    otel_service_name: str = Field(
+        default="oms-sensemaking", description="OpenTelemetry service name"
+    )
+    otel_traces_sampler: str = Field(
+        default="always_on", description="OpenTelemetry traces sampler"
+    )
+    otel_metrics_exporter: str = Field(
+        default="prometheus", description="OpenTelemetry metrics exporter"
+    )
+    otel_logs_exporter: str = Field(
+        default="otlp", description="OpenTelemetry logs exporter"
+    )
     @computed_field  # type: ignore
     @cached_property
     def audit_log_error_acm(self) -> dict[str, str]:
