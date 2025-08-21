@@ -25,6 +25,11 @@ class KMLReader:
         placemarks = list(find_all(kml_obj, of_type=Placemark))
         for placemark in placemarks:
             geom = placemark.geometry
+            if geom is None:
+                continue
+            geom_type = geom.geom_type if hasattr(geom, "geom_type") else None
+            if geom_type not in ("Polygon", "MultiPolygon"):
+                continue
             try:
                 mapped_geometry = mapping(geom)
             except AttributeError as e:
