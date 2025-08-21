@@ -3,7 +3,7 @@ SHELL := /bin/bash
 include .env
 export
 
-.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
+.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up metrics-up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -72,14 +72,17 @@ version:  ## Display the project version
 list-versions: ## Display the tagged versions
 	@git tag -n
 
-up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
-	docker compose --profile local up -d ${DOCKER_FLAGS}
+up: ## Start oms-sensemaking in docker (includes metrics). Force build with: DOCKER_FLAGS=--build make up
+	docker compose --profile local --profile metrics up -d ${DOCKER_FLAGS}
 
-stop: ## Stop oms-sensemaking docker environment
-	docker compose --profile dev --profile local stop
+metrics-up: ## Start oms-sensemaking with Prometheus and Grafana
+	docker compose --profile local --profile metrics up -d ${DOCKER_FLAGS}
 
-down: ## Stop oms-sensemaking docker environment and remove containers
-	docker compose --profile dev --profile local down
+stop: ## Stop oms-sensemaking docker environment (includes metrics)
+	docker compose --profile dev --profile local --profile metrics stop
+
+down: ## Stop oms-sensemaking docker environment and remove containers (includes metrics)
+	docker compose --profile dev --profile local --profile metrics down
 
 shell: ## Open a shell inside the oms_sensemaking container
 	@docker compose exec oms_sensemaking /bin/bash
@@ -102,6 +105,8 @@ nuke: down
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 	@docker volume rm -f oms-sensemaking_elasticsearch
+	@docker volume rm -f oms-sensemaking_grafana_data
+	@docker volume rm -f oms-sensemaking_prometheus_data
 
 refresh: nuke  # Purge all generated content and restart
 	docker compose --profile local up --build -d
