@@ -90,7 +90,6 @@
 | `APPLY_COMMON_SENSE_FILTERS`                        | `TRUE`                                                                                            | Toggle on/off Common Sense Filtering                           | No             |
 | `TRACK_WEAVER_ALGORITHM`                            |`naive`                                                             | The track weaver algorith to use              | No             |
 | `TIME_BIN_SIZE_SECONDS`                            |`60`                                                             | Length of time bins in seconds for grouping points in track weaver              | No             |
-
 | `COMMON_SENSE_FILTER_RULES_FILE_PATH`               | `./data/common_sense_filter_rules.json`                                                           | Path to the Common Sense Filter Rules config file              | No             |
 | `CONFIDENCE_WEIGHT_UNKNOWN`                         | `0.5`                                                                                             | Weight to give points with UNKNOWN observation confidence      | No             |
 | `CONFIDENCE_WEIGHT_HIGH`                            | `1.0`                                                                                             | Weight to give points with HIGH observation confidence         | No             |
