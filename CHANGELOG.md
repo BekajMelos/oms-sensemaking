@@ -19,7 +19,8 @@ All notable changes to this project will be documented in this file.
 - Script to create transfer bundles
 - CronEventEmitter, which emits fake Audit Log Events on a set interval
 - Observable Sensemaker, which processes all observables every 15 minutes
-  - Implemented geofence logic, other observable types to be implemented
+- Implemented geofence logic, other observable types to be implemented
+- Implemented IP logging to meet V-222470 standards
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
