@@ -166,10 +166,9 @@ class BaseObservable(BaseModel):
             )
 
             LOGGER.info(
-                f"Updated status{" from " + prev_status_value}"
-                f" to {new_status_value} "
-                f"for {self.query_type} observable {self.id}"
+                f"Updated status from {prev_status_value} to {new_status_value} "
+                f"for {self.query_type.value} observable {self.id}"
             )
 
         else:
-            LOGGER.info(f"Status for {self.query_type} observable " f"{self.id} remained as {prev_status_value}")
+            LOGGER.info(f"Status for {self.query_type.value} observable {self.id} remained as {prev_status_value}")
