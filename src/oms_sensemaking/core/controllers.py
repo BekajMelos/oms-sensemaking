@@ -9,9 +9,9 @@ from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeN
 
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
+from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.core.telemetry import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

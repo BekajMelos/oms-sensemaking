@@ -21,7 +21,7 @@ from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.telemetry import record_processing_failure, record_processing_success
+from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
