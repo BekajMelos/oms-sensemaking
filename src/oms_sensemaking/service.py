@@ -3,6 +3,7 @@
 import html
 import json
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
@@ -157,10 +158,18 @@ def create_app(config: Settings) -> FastAPI:
     return application
 
 
+def check_aoi_file_path() -> None:
+    """Check for valid areas of interest directory"""
+    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
+        LOGGER.error(f"{SETTINGS.inference_incursion_areas_of_interest_path} is not a valid directory.")
+        sys.exit("The areas of interest directory is incorrect or does not exist.")
+
+
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
         SETTINGS.load_audit_log_event_error_acm()
+        check_aoi_file_path()
     except (FileNotFoundError, OSError, json.JSONDecodeError):
         LOGGER.error("Unable to find file %s", SETTINGS.audit_log_error_json_file_path)
         sys.exit("An error occurred during initialization.")
