@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Had to change structure of how area of interest files are read due to helm chart conflit
 
 ### Removed
 
