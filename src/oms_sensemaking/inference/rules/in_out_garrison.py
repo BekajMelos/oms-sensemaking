@@ -113,7 +113,7 @@ class InOrOutOfGarrison(BaseRule):
 
         activity_query = ActivityQuery(
             name=StringQuery(equals=activity_name),
-            state=StringQuery(equals=activity_state),
+            states=[activity_state],
             nodeIds=UuidQueryByList(in_=[obs.nodeId]),
         )
         activity_response = oms_crud_tool.get_activities(activity_query)
@@ -155,7 +155,7 @@ class InOrOutOfGarrison(BaseRule):
             id=existing_activity.id,
             startTime=enhanced_activity.start_time.isoformat(),
             endTime=enhanced_activity.end_time.isoformat(),
-            addObservationIds=[observation.id],
+            observationIds=existing_activity.observationIds + [observation.id],
             nodeId=observation.nodeId,
         )
         oms_crud_tool.update_activity(updated_activity_input)
