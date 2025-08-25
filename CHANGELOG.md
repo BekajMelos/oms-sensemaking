@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Capabilities for the Incursion rule to read in .kml/.kmz formatted files as areas of interest
 
 ### Changed
+- Incursion rule now reads areas of interest files from a directory in bulk
+- Certain Incursion rule logic was moved into models and classes for improved readability and future development
 
 ### Fixed
 
 ### Removed
+- Unused data directory
 
 ## [0.10.0] - 2025-08-11
 

@@ -19,7 +19,7 @@ from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import features_list_from_geojson
+from oms_sensemaking.domain.area_of_interest.base import AOI, AOIExtractor
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
@@ -31,10 +31,10 @@ class Incursion(BaseRule):
     with and make the appropriate attribute/activity updates
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, aoi_extractor: AOIExtractor):
         self.name = name
         self.version = (1, 0, 0)
-        self.features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
+        self.features = aoi_extractor.get_areas_of_interest()
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -68,9 +68,8 @@ class Incursion(BaseRule):
         # Check if observation occurred in an area of interest
         feature_of_interest = None
         for feature in self.features:
-            feature_region = shape(feature["geometry"])
-            overlap = feature_region.intersection(obs_geo)
-            if not overlap.is_empty:
+            overlap = feature.has_overlap(obs_geo)
+            if overlap:
                 feature_of_interest = feature
                 break
 
@@ -86,7 +85,7 @@ class Incursion(BaseRule):
                     attributeIris=[SETTINGS.inference_incursion_attribute_iri],
                     attributeValue=StringQuery(equals="Incursion"),
                     attributeType={"is": AttributeType.GEOSPATIAL},
-                    geometry=GeoQuery(queryGeoJson=feature_of_interest["geometry"]),
+                    geometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
                     activityIds=[existing_incursion_activity.id],
                     tags=SETTINGS.incursion_tags,
                 )
@@ -100,7 +99,9 @@ class Incursion(BaseRule):
                     # Update existing incursion if times overlap or if object stayed in area of
                     # interest in the time between the observation and incursion
                     time_overlap = inc_attr_geo_timeframe.does_observation_overlap(incursion_obs_timeframe)
-                    geo_query = GeoQuery(queryGeoJson=feature_of_interest["geometry"], queryType=GeoQueryType.DISJOINT)
+                    geo_query = GeoQuery(
+                        queryGeoJson=(feature_of_interest.geometry_dict), queryType=GeoQueryType.DISJOINT
+                    )
                     if (
                         time_overlap
                         or inc_attr_geo_timeframe.object_observed_between_generic_node_and_observation_times(
@@ -159,14 +160,14 @@ class Incursion(BaseRule):
         oms_crud_tool.update_attribute(updated_attribute_input)
 
     def _handle_new_incursion(
-        self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: dict
+        self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: AOI
     ):
         """
         Create new incursion attribute pointing to incurring_object and activity pointing to observation
         """
 
         # Create new incursion activity pointing to observation
-        description = self._get_feature_name(feature_of_interest)
+        description = feature_of_interest.name
         if description is None:
             description = f"Incursion Activity by {incurring_object.name}"
         incursion_activity = CreateActivityInput(
@@ -205,7 +206,7 @@ class Incursion(BaseRule):
                 SETTINGS.incursion_sm_label,
                 self.version_string,
             ],
-            geometry=feature_of_interest["geometry"],
+            geometry=(feature_of_interest.geometry_dict),
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
@@ -228,8 +229,3 @@ class Incursion(BaseRule):
     def _truncate_activity_description(self, description: str):
         max_descr_length = 512
         return description[:max_descr_length]
-
-    def _get_feature_name(self, feature) -> str | None:
-        if feature and feature["properties"] and feature["properties"]["name"]:
-            return feature["properties"]["name"]
-        return None
