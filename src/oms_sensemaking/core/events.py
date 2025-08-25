@@ -6,6 +6,7 @@ import socket
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from threading import Event, Thread
 from time import sleep
 from typing import Protocol
@@ -273,6 +274,34 @@ class RabbitMQListener(BaseRabbitMQListener):
         """Stop consuming events and close the connection."""
         super().stop()
         self._disconnect()
+
+
+class CronEventEmitter(AuditLogEventConsumer):
+    """Emits an event repeatedly on a set time interval."""
+
+    def __init__(self, interval: timedelta, handle_event: EVENT_HANDLER | None = None):
+        """
+        Create a new instance of CronEventEmitter.
+
+        :param interval: The time interval between emitted events.
+        :param handle_event: The event handler to call for each emitted event.
+        """
+        super().__init__(handle_event)
+        self.interval = interval
+
+    def process_audit_log_events(self) -> None:
+        """Emits events on set interval until stopped."""
+        while not self.stopped.is_set():
+            event = AuditLogEvent(
+                userId="CronJob", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE, action=Action.CREATE
+            )
+
+            if callable(self.handle_event):
+                LOGGER.info(f"Emitting periodic event at {datetime.now()}")
+                self.handle_event(event)
+
+            # sleep for the interval or until stopped
+            self.stopped.wait(timeout=self.interval.total_seconds())
 
 
 class DummyAuditLogEventConsumer(AuditLogEventConsumer):

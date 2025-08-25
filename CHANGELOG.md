@@ -5,12 +5,36 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.10.0] - 2025-08-11
+
+### Added
+- Endpoint to clear Local AAC Cache
+- Script to create transfer bundles
+- CronEventEmitter, which emits fake Audit Log Events on a set interval
+- Observable Sensemaker, which processes all observables every 15 minutes
+  - Implemented geofence logic, other observable types to be implemented
+
+### Changed
+- Updated Inference Sensemaker to only accept Observation Audit Log Events
+- Attach Sensemaking generated "Incursion" attribute to its correlated activity instead
+the "incurring" node.
+- Removed the "v" prefix from version identifiers
+- Changed Sensemaking Docker image to a UBI8/RHEL8 based image
+- Updated `docker/postgis/initdb.d` scripts to use environment variables rather than hard-coded values. Refactored `.sql` scripts to `.sh` scripts.
 - Custom Classification Bars
 - DOD Consent Popup
 
 ### Changed
 
 ### Fixed
+- SSL issues with AAC cache transport
 
 ### Removed
 
@@ -42,6 +66,7 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2025-07-14
 
 ### Added
+- Added AuditLogError database table to store errors
 - Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
 - Added the ability for the Mil Symbol sensemaker to enrich echelon in symbol Id codes
 

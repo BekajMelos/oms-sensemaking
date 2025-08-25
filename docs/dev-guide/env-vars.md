@@ -8,12 +8,14 @@
 
 ##### Service Variables
 
-| Variable Name                    | Example                     | Description                                                    | Docker Compose |
-|:---------------------------------|:----------------------------|:---------------------------------------------------------------|:--------------:|
-| `APP_LOG_LEVEL`                  | `DEBUG`                     | Option to set log level                                        | Yes            |
-| `RELOAD_APP`                     | `1`                         | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
-| `ROOT_PATH`                      | `/services/sensemaking/1.0` | BaseUrl for serving the project at                             | No             |
-| `UVICORN_ROOT_PATH`              | `/services/sensemaking/1.0` | Uvicorn baseUrl for serving the project                        | Yes            |
+| Variable Name          | Example                                                 | Description                                                    | Docker Compose |
+|:-----------------------|:--------------------------------------------------------|:---------------------------------------------------------------|:--------------:|
+| `APP_LOG_LEVEL`        | `DEBUG`                                                 | Option to set log level                                        | Yes            |
+| `RELOAD_APP`           | `1`                                                     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
+| `ROOT_PATH`            | `/services/sensemaking/1.0`                             | BaseUrl for serving the project at                             | No             |
+| `UVICORN_ROOT_PATH`    | `/services/sensemaking/1.0`                             | Uvicorn baseUrl for serving the project                        | Yes            |
+| `UVICORN_SSL_KEYFILE`  | `/opt/common/pki/server.private`                        | Uvicorn baseUrl for serving the project                        | Yes            |
+| `UVICORN_SSL_KEYFILE`  | `/opt/common/pki/server.private`                        | Uvicorn baseUrl for serving the project                        | Yes            |
 
 
 ##### Database Settings
@@ -24,20 +26,20 @@
 > tool, and [pgAdmin].
 
 
-| Variable Name                 | Example                           | Description                                           | Docker Compose |
-|:------------------------------|:----------------------------------|:------------------------------------------------------|:--------------:|
-| `DB_HOST`                     | `postgis`                         | The database hostname                                 | No             |
-| `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                | Yes            |
-| `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                 | Yes            |
-| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                     | Yes            |
-| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admmin user           | Yes            |
-| `POSTGRES_PORT`           | `5432`                         | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests).           | Yes            |
-| `PGUSER`                      | `appuser`                         | [psql] The *regular* PostgreSQL user                  | Yes            |
-| `PGPASSWORD`                  | `xxxxxx`                          | [psql] The password for the *regular* PostgreSQL user | Yes            |
-| `PGDATABASE`                  | `oms_sensemaking`                 | [psql] The database to connect to                     | Yes            |
-| `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.     | Yes            |
-| `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin]The password for the default pgAdmin user.   | Yes            |
-| `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin]A login banner for pgAdmin                   | Yes            |
+| Variable Name                 | Example                           | Description                                                                                                   | Docker Compose |
+|:------------------------------|:----------------------------------|:--------------------------------------------------------------------------------------------------------------|:--------------:|
+| `DB_HOST`                     | `postgis`                         | The database hostname                                                                                         | No             |
+| `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                                                                        | Yes            |
+| `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                                                                         | Yes            |
+| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                                                                             | Yes            |
+| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admin user                                                                    | Yes            |
+| `POSTGRES_PORT`               | `5432`                            | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests). | Yes            |
+| `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.                                                             | Yes            |
+| `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin]The password for the default pgAdmin user.                                                           | Yes            |
+| `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin]A login banner for pgAdmin                                                                           | Yes            |
+| `DB_NAME`                     | `oms_sensemaking`                 | The name for the oms_sensemaking database.                                                                    | Yes            |
+| `DB_NAME_OMSB`                | `omsb_db`                         | The name for the omsb_db database.                                                                            | Yes            |
+| `DB_TEMPLATE`                 | `template_postgis`                | The template used in the creation of the application database.                                                | Yes            |
 
 
 ##### AWS Settings
@@ -139,6 +141,11 @@
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
+| `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
+| `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
 | `AAC_CACHE_ENABLED`       | `True`                     | Boolean to enable Local AAC Caching                | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`       | `300`                     | How long for responses to persist in Local AAC Cache before expiring                | No             |
+| `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
+| `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
+| `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |
