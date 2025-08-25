@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Incursion rule now reads areas of interest files from a directory in bulk
 - Certain Incursion rule logic was moved into models and classes for improved readability and future development
+- Updated ATOMS dependency to Grimlock-INC-29
 
 ### Fixed
 

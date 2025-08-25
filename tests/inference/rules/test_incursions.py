@@ -20,6 +20,7 @@ from oms_sdk.generated.generated_graphql_client import (
     TimeQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
+    UpdateUuidList,
 )
 from pytest_mock import MockerFixture
 from shapely.geometry import shape
@@ -516,7 +517,7 @@ def test_two_existing_incursions(
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
-            addObservationIds=[observational_node_region1.id],
+            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],
@@ -569,7 +570,7 @@ def test_existing_incursion_nonoverlapping_time(
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
-            addObservationIds=[observational_node_region1.id],
+            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],

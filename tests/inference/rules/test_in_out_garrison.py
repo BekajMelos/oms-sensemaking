@@ -20,6 +20,7 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipRelationship,
     TimeQuery,
     UpdateActivityInput,
+    UpdateUuidList,
 )
 from pytest_mock import MockerFixture
 
@@ -471,7 +472,7 @@ def test_update_in_garrison(
             id=in_garrison_activity2.id,
             startTime=in_garrison_activity2.startTime,
             endTime=in_garrison_activity2.endTime,
-            addObservationIds=[observational_node.id],
+            observationIds=UpdateUuidList(add=[observational_node.id]),
             nodeId=observational_node.nodeId,
         )
     )
@@ -538,7 +539,7 @@ def test_update_out_garrison(
             id=out_garrison_activity1.id,
             startTime=observational_node2.startTime,
             endTime=out_garrison_activity1.endTime,
-            addObservationIds=[observational_node2.id],
+            observationIds=UpdateUuidList(add=[observational_node2.id]),
             nodeId=observational_node2.nodeId,
         )
     )

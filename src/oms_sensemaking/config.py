@@ -446,7 +446,7 @@ class Settings(BaseSettings):
     observables: bool = Field(True, description="Toggle on/off Observable updates")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
     cacert_path: str | None = Field(

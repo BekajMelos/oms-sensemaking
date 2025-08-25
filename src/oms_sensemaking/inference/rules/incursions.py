@@ -13,6 +13,7 @@ from oms_sdk.generated.generated_graphql_client import (
     StringQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
+    UpdateUuidList,
 )
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
@@ -141,7 +142,7 @@ class Incursion(BaseRule):
             id=existing_incursion_activity.id,
             startTime=inc_attr_geo_timeframe.start_time.isoformat(),
             endTime=inc_attr_geo_timeframe.end_time.isoformat(),
-            addObservationIds=[observation.id],
+            observationIds=UpdateUuidList(add=[observation.id]),
             labels=activity_labels,
         )
         oms_crud_tool.update_activity(updated_activity_input)
