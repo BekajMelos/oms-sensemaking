@@ -2,8 +2,10 @@
 
 import json
 import logging
+import socket
 import ssl
 from typing import List, Optional, Union
+from urllib.parse import urlparse
 
 import hishel
 import httpcore
@@ -44,6 +46,16 @@ class AacClient:
 
         :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
+
+        # Log resolved AAC IP address
+        try:
+            parsed = urlparse(SETTINGS.aac_url)
+            if parsed.hostname:
+                resolved_host = socket.gethostbyname(parsed.hostname)
+                port = parsed.port or (443 if parsed.scheme == "https" else 80)
+                LOGGER.info(f"Resolved AAC host '{parsed.hostname}' to IP {resolved_host}:{port}")
+        except Exception as ex:
+            LOGGER.warning(f"Unable to resolve AAC host from URL '{SETTINGS.aac_url}': {ex}")
 
         if ca_cert_path is None or ca_cert_path == "":
             LOGGER.warning("AAC Client CA_CERT_PATH not detected")
