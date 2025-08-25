@@ -78,6 +78,21 @@ class LogConfig(BaseSettings):
                 "level": self.log_level,
                 "propagate": True
             },
+            "uvicorn": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.error": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.access": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
             "oms_sdk": {
                 "level": self.log_level
             },
@@ -209,7 +224,7 @@ class Settings(BaseSettings):
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
-    maximum_oms_api_calls: int = Field(500,
+    maximum_oms_api_calls: int = Field(5000,
                                        description="Maximum amount of requests made to the OMS API per time period")
     oms_api_call_period_seconds: int = Field(30,
                                              description="Alloted amount of time for maximum OMS API calls to be made")
