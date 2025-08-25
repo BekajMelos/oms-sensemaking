@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Capabilities for the Incursion rule to read in .kml/.kmz formatted files as areas of interest
 - Logic for processing search queries in the Observable Sensemaker
+- Added timestamps to fast api log
 
 ### Changed
 - Incursion rule now reads areas of interest files from a directory in bulk
