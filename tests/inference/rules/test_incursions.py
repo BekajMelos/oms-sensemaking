@@ -20,19 +20,34 @@ from oms_sdk.generated.generated_graphql_client import (
     TimeQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
+    UpdateUuidList,
 )
 from pytest_mock import MockerFixture
+from shapely.geometry import shape
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import features_list_from_geojson
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
+from tests.domain.area_of_interest.test_aoi_extractor import TestAOIExtractor
 
 
 @pytest.fixture
-def areas_of_interest():
-    features = features_list_from_geojson(SETTINGS.inference_incursion_areas_of_interest_path)
-    return [feature["geometry"] for feature in features]
+def areas_of_interest(observational_node_region1, observational_node_region2, observational_node_region3):
+    # Done this way since there is no way to tell which AOI will be what index
+    # We just grab the folder as a whole
+    extractor = TestAOIExtractor()
+    aois = extractor.get_areas_of_interest()
+    test_aois = [None] * len(aois)
+    for aoi in aois:
+        if aoi.has_overlap(shape(observational_node_region1.geometry)):
+            test_aois[0] = aoi
+        elif aoi.has_overlap(shape(observational_node_region2.geometry)):
+            test_aois[1] = aoi
+        elif aoi.has_overlap(shape(observational_node_region3.geometry)):
+            test_aois[2] = aoi
+        else:
+            test_aois[3] = aoi
+    return test_aois
 
 
 # Mocked nodes
@@ -51,7 +66,7 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi1"
-    attr.geometry = areas_of_interest[0]
+    attr.geometry = areas_of_interest[0].geometry_dict
     attr.valueStart = "2024-01-01T00:00:00+00:00"
     attr.valueEnd = "2024-05-01T00:00:00+00:00"
     attr.labels = []
@@ -73,7 +88,7 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr.confidence = Confidence.MODERATE
     attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
     attr.activityId = "incActi2"
-    attr.geometry = areas_of_interest[0]
+    attr.geometry = areas_of_interest[0].geometry_dict
     attr.valueStart = "2022-01-01T00:00:00+00:00"
     attr.valueEnd = "2023-01-01T00:00:00+00:00"
     attr.labels = []
@@ -109,6 +124,52 @@ def observational_node_region2(mocker: MockerFixture):
     Incoming observation
     """
     geometry = {"coordinates": [-152.16868319466693, 23.556473770341952], "type": "Point"}
+
+    obs = mocker.Mock(spec=ObservationObservation)
+    obs.id = "obs_id"
+    obs.version = "version"
+    obs.acm = "acm"
+    obs.classIri = "classIri"
+    obs.className = "className"
+    obs.confidence = Confidence.MODERATE
+    obs.sourceId = "obs_sourceId"
+    obs.nodeId = "incurring_object_id"
+    obs.geometry = geometry
+    obs.startTime = "2024-01-01T00:00:00+00:00"
+    obs.endTime = "2025-01-01T00:00:00+00:00"
+
+    return obs
+
+
+@pytest.fixture
+def observational_node_region3(mocker: MockerFixture):
+    """
+    Incoming observation
+    """
+    geometry = {"coordinates": [-122.083, 37.421], "type": "Point"}
+
+    obs = mocker.Mock(spec=ObservationObservation)
+    obs.id = "obs_id"
+    obs.version = "version"
+    obs.acm = "acm"
+    obs.classIri = "classIri"
+    obs.className = "className"
+    obs.confidence = Confidence.MODERATE
+    obs.sourceId = "obs_sourceId"
+    obs.nodeId = "incurring_object_id"
+    obs.geometry = geometry
+    obs.startTime = "2024-01-01T00:00:00+00:00"
+    obs.endTime = "2025-01-01T00:00:00+00:00"
+
+    return obs
+
+
+@pytest.fixture
+def observational_node_region4(mocker: MockerFixture):
+    """
+    Incoming observation
+    """
+    geometry = {"coordinates": [-77.0587192, 38.8696377], "type": "Point"}
 
     obs = mocker.Mock(spec=ObservationObservation)
     obs.id = "obs_id"
@@ -246,7 +307,7 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 # Tests
 def test_evaluate_input(observational_node_region1):
     """Test to verify valid inputs are recognized as such"""
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     # Rule should only be ran against observations
     assert not rule.evaluate(RuleContext()), "should only run for observations"
@@ -260,7 +321,7 @@ def test_evaluate_input(observational_node_region1):
 
 def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_activity, mock_update_activity):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=no_inc_observational_node))
     mock_create_activity.assert_not_called()
@@ -279,7 +340,7 @@ def test_new_incursion_region1(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region1
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_attributes.assert_called_with(
@@ -287,7 +348,7 @@ def test_new_incursion_region1(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -308,7 +369,7 @@ def test_new_incursion_region1(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[0],
+            geometry=areas_of_interest[0].geometry_dict,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
@@ -347,7 +408,7 @@ def test_new_incursion_region2(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region2))
     mock_get_attributes.assert_called_with(
@@ -355,7 +416,7 @@ def test_new_incursion_region2(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -376,7 +437,7 @@ def test_new_incursion_region2(
                 SETTINGS.incursion_sm_label,
                 rule.version_string,
             ],
-            geometry=areas_of_interest[1],
+            geometry=areas_of_interest[1].geometry_dict,
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
@@ -420,7 +481,7 @@ def test_two_existing_incursions(
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2, attribute1]
     mock_get_attributes.return_value = mock_attribute_response
@@ -431,7 +492,7 @@ def test_two_existing_incursions(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
             attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0]),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
             activityIds=[activity1.id],
             tags=SETTINGS.incursion_tags,
         )
@@ -442,7 +503,7 @@ def test_two_existing_incursions(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -456,7 +517,7 @@ def test_two_existing_incursions(
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
-            addObservationIds=[observational_node_region1.id],
+            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],
@@ -478,7 +539,7 @@ def test_existing_incursion_nonoverlapping_time(
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
-    rule = Incursion("incursion rule")
+    rule = Incursion("incursion rule", TestAOIExtractor())
 
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
@@ -493,7 +554,7 @@ def test_existing_incursion_nonoverlapping_time(
             nodeId=[incurring_object.id],
             startTime=TimeQuery(gt=attribute2.valueEnd),
             endTime=TimeQuery(lte=observational_node_region1.startTime),
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0], queryType=GeoQueryType.DISJOINT),
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
     mock_update_attribute.assert_called_with(
@@ -509,9 +570,145 @@ def test_existing_incursion_nonoverlapping_time(
     mock_update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
-            addObservationIds=[observational_node_region1.id],
+            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],
+        )
+    )
+
+
+def test_new_incursion_region3(
+    activity1,
+    observational_node_region3,
+    incurring_object,
+    mock_get_node,
+    mock_get_activities,
+    mock_get_attributes,
+    mock_create_activity,
+    mock_create_attribute,
+    areas_of_interest,
+):
+    # Scenario: Observation input yields new incursion and activity in region2
+    rule = Incursion("incursion rule", TestAOIExtractor())
+
+    rule.action(RuleContext(observation=observational_node_region3))
+    mock_get_attributes.assert_called_with(
+        AttributeQuery(
+            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
+            attributeValue=StringQuery(equals="Incursion"),
+            attributeType={"is": AttributeType.GEOSPATIAL},
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[2].geometry_dict),
+            activityIds=[activity1.id],
+            tags=SETTINGS.incursion_tags,
+        )
+    )
+    mock_create_attribute.assert_called_with(
+        CreateAttributeInput(
+            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeValue="Incursion",
+            attributeType=AttributeType.GEOSPATIAL,
+            confidence=observational_node_region3.confidence,
+            sourceId=observational_node_region3.sourceId,
+            activityId=activity1.id,
+            acm=observational_node_region3.acm,
+            tags=SETTINGS.incursion_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                rule.version_string,
+            ],
+            geometry=areas_of_interest[2].geometry_dict,
+            valueStart=observational_node_region3.startTime,
+            valueEnd=observational_node_region3.endTime,
+        )
+    )
+    mock_create_activity.assert_called_with(
+        CreateActivityInput(
+            acm=observational_node_region3.acm,
+            tags=SETTINGS.incursion_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                rule.version_string,
+            ],
+            classIri=SETTINGS.inference_incursion_class_iri,
+            name="Incursion",
+            description="Pentagon Polygon",
+            state=SETTINGS.inference_incursion_activity_state,
+            nodeId=observational_node_region3.nodeId,
+            observationIds=[observational_node_region3.id],
+            startTime=observational_node_region3.startTime,
+            endTime=observational_node_region3.endTime,
+        )
+    )
+
+
+def test_new_incursion_region4(
+    activity1,
+    observational_node_region4,
+    incurring_object,
+    mock_get_node,
+    mock_get_activities,
+    mock_get_attributes,
+    mock_create_activity,
+    mock_create_attribute,
+    areas_of_interest,
+):
+    # Scenario: Observation input yields new incursion and activity in region2
+    rule = Incursion("incursion rule", TestAOIExtractor())
+
+    rule.action(RuleContext(observation=observational_node_region4))
+    mock_get_attributes.assert_called_with(
+        AttributeQuery(
+            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
+            attributeValue=StringQuery(equals="Incursion"),
+            attributeType={"is": AttributeType.GEOSPATIAL},
+            geometry=GeoQuery(queryGeoJson=areas_of_interest[3].geometry_dict),
+            activityIds=[activity1.id],
+            tags=SETTINGS.incursion_tags,
+        )
+    )
+    mock_create_attribute.assert_called_with(
+        CreateAttributeInput(
+            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeValue="Incursion",
+            attributeType=AttributeType.GEOSPATIAL,
+            confidence=observational_node_region4.confidence,
+            sourceId=observational_node_region4.sourceId,
+            activityId=activity1.id,
+            acm=observational_node_region4.acm,
+            tags=SETTINGS.incursion_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                rule.version_string,
+            ],
+            geometry=areas_of_interest[3].geometry_dict,
+            valueStart=observational_node_region4.startTime,
+            valueEnd=observational_node_region4.endTime,
+        )
+    )
+    mock_create_activity.assert_called_with(
+        CreateActivityInput(
+            acm=observational_node_region4.acm,
+            tags=SETTINGS.incursion_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.inference_sm_label,
+                SETTINGS.incursion_sm_label,
+                rule.version_string,
+            ],
+            classIri=SETTINGS.inference_incursion_class_iri,
+            name="Incursion",
+            description="Pentagon",
+            state=SETTINGS.inference_incursion_activity_state,
+            nodeId=observational_node_region4.nodeId,
+            observationIds=[observational_node_region4.id],
+            startTime=observational_node_region4.startTime,
+            endTime=observational_node_region4.endTime,
         )
     )
