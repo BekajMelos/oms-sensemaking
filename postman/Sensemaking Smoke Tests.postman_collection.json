@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "6f032f34-f2fa-4ded-8aa4-569d54f68c70",
+		"_postman_id": "c6045758-6359-4f5d-b3bf-9d5bd5288da2",
 		"name": "Sensemaking Smoke Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "41174150"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -6160,9 +6159,9 @@
 											"                      response.data.activities.data && ",
 											"                      response.data.activities.data.length > 0 && ",
 											"                      response.data.activities.totalSize > 0;",
+											"let hasExpectedData = response.data.activities.data[0].observationIds.length == 2;",
 											"",
-											"",
-											"if (isValidResponse && response.data.activities.data[0].observationIds.length == 2) {",
+											"if (isValidResponse && hasExpectedData) {",
 											"",
 											"    pm.test(\"Response contains valid data\", function () {",
 											"        pm.expect(isValidResponse).to.be.true;",
@@ -6190,6 +6189,7 @@
 											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
 											"        pm.environment.unset(\"retryCount\");",
 											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"        pm.expect(hasExpectedData).to.be.true",
 											"    } else {",
 											"        pm.environment.set(\"retryCount\", retryCount);",
 											"",
@@ -6315,6 +6315,7 @@
 											"                      response.data.activities.data && ",
 											"                      response.data.activities.data.length > 0 && ",
 											"                      response.data.activities.totalSize > 0;",
+											"let hasExpectedData = response.data.activities.data[0].observationIds.length == 2;",
 											"",
 											"if (isValidResponse && response.data.activities.data[0].observationIds.length == 2) {",
 											"    pm.test(\"Response contains valid data\", function () {",
@@ -6337,10 +6338,11 @@
 											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
 											"    retryCount = parseInt(retryCount, 10) + 1;",
 											"",
-											"    if (retryCount >= 3) {",
+											"    if (retryCount >= pm.environment.get(\"MAX_RETRIES\")) {",
 											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
 											"        pm.environment.unset(\"retryCount\");",
 											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"        pm.expect(hasExpectedData).to.be.true;",
 											"    } else {",
 											"        pm.environment.set(\"retryCount\", retryCount);",
 											"",
