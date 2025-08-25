@@ -72,10 +72,10 @@ version:  ## Display the project version
 list-versions: ## Display the tagged versions
 	@git tag -n
 
-up: ## Start oms-sensemaking in docker (includes metrics). Force build with: DOCKER_FLAGS=--build make up
-	docker compose --profile local --profile metrics up -d ${DOCKER_FLAGS}
+up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
+	docker compose --profile local up -d ${DOCKER_FLAGS}
 
-metrics-up: ## Start oms-sensemaking with Prometheus and Grafana
+metrics-up: ## Start oms-sensemaking with Prometheus and Grafana (includes local profile)
 	docker compose --profile local --profile metrics up -d ${DOCKER_FLAGS}
 
 stop: ## Stop oms-sensemaking docker environment (includes metrics)

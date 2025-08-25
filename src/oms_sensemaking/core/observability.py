@@ -1,41 +1,105 @@
-"""Observability module for OMS Sensemaking using OpenTelemetry, Prometheus, and structured logging."""
+"""Observability module for OpenTelemetry tracing and Prometheus metrics."""
 
 import logging
 import time
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import Request
+from fastapi import Request, Response
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from prometheus_client import Counter, Histogram
-from prometheus_client.openmetrics.exposition import CONTENT_TYPE_LATEST, generate_latest
-from prometheus_client.registry import REGISTRY
-from starlette.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, Counter, Histogram, generate_latest
 
 from oms_sensemaking.config import SETTINGS
 
-# Configure logging with trace context and structured format
-LoggingInstrumentor().instrument(
-    set_logging_format=True,
-    log_level=logging.INFO,
-)
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
-# Configure structured logging format
-logging.basicConfig(
-    level=logging.INFO,
-    format=(
-        '{"timestamp": "%(asctime)s", "level": "%(levelname)s", '
-        '"name": "%(name)s", "message": "%(message)s", '
-        '"trace_id": "%(otelTraceID)s", "span_id": "%(otelSpanID)s"}'
-    ),
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+
+class TelemetryManager:
+    """Manages OpenTelemetry tracing and Prometheus metrics."""
+
+    _instance = None
+    _tracer = None
+    _initialized = False
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(TelemetryManager, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        # Only initialize once
+        if not self._initialized:
+            self._initialized = True
+
+    def initialize(self):
+        """Initialize OpenTelemetry tracing and Prometheus metrics."""
+        if not SETTINGS.enable_telemetry:
+            logging.info("Observability is disabled in configuration")
+            return
+
+        if self._tracer is not None:
+            logging.info("Observability already initialized")
+            return
+
+        try:
+            # Set up OpenTelemetry tracing
+            resource = Resource.create({"service.name": "oms-sensemaking"})
+
+            # OTLP exporter for traces
+            otlp_exporter = OTLPSpanExporter(endpoint=SETTINGS.otel_exporter_otlp_endpoint or "http://tempo:4317")
+
+            # Batch span processor
+            span_processor = BatchSpanProcessor(otlp_exporter)
+
+            # Tracer provider
+            provider = TracerProvider(resource=resource)
+            provider.add_span_processor(span_processor)
+
+            # Set global tracer provider
+            trace.set_tracer_provider(provider)
+
+            # Get tracer
+            self._tracer = trace.get_tracer(__name__)
+
+            logging.info("OpenTelemetry tracing initialized successfully")
+
+        except Exception as e:
+            logging.error(f"Failed to initialize OpenTelemetry: {e}")
+
+    def instrument_fastapi(self, app):
+        """Instrument FastAPI application with OpenTelemetry."""
+        if not SETTINGS.enable_telemetry:
+            return
+
+        try:
+            FastAPIInstrumentor.instrument_app(app)
+            logging.info("FastAPI instrumented with OpenTelemetry")
+        except Exception as e:
+            logging.error(f"Failed to instrument FastAPI: {e}")
+
+    def get_tracer(self):
+        """Get the current tracer instance."""
+        return self._tracer
+
+    def get_current_trace_id(self) -> Optional[str]:
+        """Get the current trace ID for exemplars."""
+        try:
+            span = trace.get_current_span()
+            if span and span.get_span_context().is_valid:
+                return trace.format_trace_id(span.get_span_context().trace_id)
+        except Exception:
+            pass
+        return None
+
+
+# Global instance of TelemetryManager
+telemetry_manager = TelemetryManager()
+
 
 # Prometheus metrics with exemplars
 REQUESTS_PROCESSING_TIME = Histogram(
@@ -56,9 +120,11 @@ QUEUE_PROCESSING_TIME = Histogram(
     ["queue_name", "app_name"],
 )
 
+# Event counters: EVENTS_PROCESSED counts successful events, EVENTS_FAILED counts failed events
+# Total events handled = EVENTS_PROCESSED + EVENTS_FAILED
 EVENTS_PROCESSED = Counter(
     "events_processed_total",
-    "Total number of events processed by queue",
+    "Total number of events successfully processed by queue",
     ["queue_name", "app_name"],
 )
 
@@ -68,65 +134,20 @@ EVENTS_FAILED = Counter(
     ["queue_name", "app_name"],
 )
 
-# OpenTelemetry tracer
-tracer = None
-
 
 def initialize_observability():
     """Initialize OpenTelemetry tracing and Prometheus metrics."""
-    global tracer
-
-    if not SETTINGS.enable_telemetry:
-        logging.info("Observability is disabled in configuration")
-        return
-
-    try:
-        # Set up OpenTelemetry tracing
-        resource = Resource.create({"service.name": "oms-sensemaking"})
-
-        # OTLP exporter for traces
-        otlp_exporter = OTLPSpanExporter(endpoint=SETTINGS.otel_exporter_otlp_endpoint or "http://tempo:4317")
-
-        # Batch span processor
-        span_processor = BatchSpanProcessor(otlp_exporter)
-
-        # Tracer provider
-        provider = TracerProvider(resource=resource)
-        provider.add_span_processor(span_processor)
-
-        # Set global tracer provider
-        trace.set_tracer_provider(provider)
-
-        # Get tracer
-        tracer = trace.get_tracer(__name__)
-
-        logging.info("OpenTelemetry tracing initialized successfully")
-
-    except Exception as e:
-        logging.error(f"Failed to initialize OpenTelemetry: {e}")
+    telemetry_manager.initialize()
 
 
 def instrument_fastapi(app):
     """Instrument FastAPI application with OpenTelemetry."""
-    if not SETTINGS.enable_telemetry:
-        return
-
-    try:
-        FastAPIInstrumentor.instrument_app(app)
-        logging.info("FastAPI instrumented with OpenTelemetry")
-    except Exception as e:
-        logging.error(f"Failed to instrument FastAPI: {e}")
+    telemetry_manager.instrument_fastapi(app)
 
 
 def get_current_trace_id() -> Optional[str]:
     """Get the current trace ID for exemplars."""
-    try:
-        span = trace.get_current_span()
-        if span and span.get_span_context().is_valid:
-            return trace.format_trace_id(span.get_span_context().trace_id)
-    except Exception:
-        pass
-    return None
+    return telemetry_manager.get_current_trace_id()
 
 
 def record_request_metrics(method: str, path: str, status_code: int, duration: float):
@@ -205,8 +226,10 @@ def record_processing_completion(queue_name: str, start_time: float, success: bo
     try:
         processing_time = time.time() - start_time
 
+        # Always record processing time for any completed event
         record_queue_processing_time(queue_name, processing_time)
 
+        # Record success/failure separately
         if success:
             record_event_processed(queue_name)
         else:
@@ -234,7 +257,12 @@ def metrics_endpoint(request: Request) -> Response:
 @asynccontextmanager
 async def trace_span(name: str, attributes: Optional[dict] = None):
     """Context manager for creating trace spans."""
-    if not SETTINGS.enable_telemetry or not tracer:
+    if not SETTINGS.enable_telemetry:
+        yield
+        return
+
+    tracer = telemetry_manager.get_tracer()
+    if not tracer:
         yield
         return
 

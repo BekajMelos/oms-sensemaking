@@ -16,12 +16,12 @@ def about() -> AppInfo:
     """Return service information."""
     start_time = time.time()
 
-    # Simulate some processing time
-    time.sleep(0.1)
+    # Create AppInfo object (this represents the "processing")
+    app_info = AppInfo(title=__title__, version=__version__, description=__description__)
 
     # Record custom metrics for version info requests
     processing_time = time.time() - start_time
     record_queue_processing_time("version_info", processing_time)
     record_event_processed("version_info")
 
-    return AppInfo(title=__title__, version=__version__, description=__description__)
+    return app_info

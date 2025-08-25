@@ -149,7 +149,10 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
-    application.include_router(test.router, prefix="/test", tags=["test"])
+
+    # Include test endpoints only if enabled
+    if config.toggle_test_endpoints:
+        application.include_router(test.router, prefix="/test", tags=["test"])
 
     # Mount metrics endpoint
     application.add_route("/metrics", metrics_endpoint)

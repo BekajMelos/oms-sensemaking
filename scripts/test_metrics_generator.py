@@ -4,6 +4,10 @@ Test Metrics Generator Script
 
 This script calls the test endpoints to generate real metrics
 that can be observed in Prometheus and Grafana.
+
+Note: Test endpoints are disabled by default. To enable them:
+1. Set environment variable: export TOGGLE_TEST_ENDPOINTS=true
+2. Or use: make metrics-up (which includes metrics and test endpoints)
 """
 
 import time
@@ -57,15 +61,33 @@ def test_connectivity() -> bool:
     print("Testing connectivity...")
 
     try:
-        response = requests.post(f"{BASE_URL}/test/hello-world", verify=VERIFY_SSL, timeout=5)
+        # First try to connect to a basic endpoint to check if service is running
+        response = requests.get(f"{BASE_URL}/version.json", verify=VERIFY_SSL, timeout=5)
         if response.status_code == 200:
             print("Service is accessible!")
-            return True
+
+            # Now check if test endpoints are enabled
+            try:
+                test_response = requests.post(f"{BASE_URL}/test/hello-world", verify=VERIFY_SSL, timeout=5)
+                if test_response.status_code == 200:
+                    print("Test endpoints are enabled!")
+                    return True
+                elif test_response.status_code == 404:
+                    print("Test endpoints are disabled. To enable them, set TOGGLE_TEST_ENDPOINTS=true")
+                    print("Or use: make metrics-up")
+                    return False
+                else:
+                    print(f"Test endpoint responded with status: {test_response.status_code}")
+                    return False
+            except Exception as e:
+                print(f"Error testing test endpoints: {e}")
+                return False
         else:
             print(f"Service responded with status: {response.status_code}")
             return False
     except Exception as e:
         print(f"Cannot connect to service: {e}")
+        print("Make sure the service is running with: make up")
         return False
 
 
