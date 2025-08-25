@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>mozambiqueChannel</name>
+	<gx:CascadingStyle kml:id="__managed_style_1C82071AE039F90822F0">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>4</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<displayMode>hide</displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_23A90344E039F90822F0">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>6</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<displayMode>hide</displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_0D2054CAFF39F90822F0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_1C82071AE039F90822F0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_23A90344E039F90822F0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark id="0688D32FD639F90822E6">
+		<name>Mozambique Channel</name>
+		<LookAt>
+			<longitude>43.2182864741972</longitude>
+			<latitude>-15.3403600934055</latitude>
+			<altitude>-3804.058280904873</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>8435808.883781433</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0D2054CAFF39F90822F0</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						40.57386044808256,-10.56474154982015,0 40.17278716380269,-15.88974606991546,0 34.46449212910503,-20.09294915755266,0 35.140387518857,-24.3249446320213,0 44.44369882433065,-25.06257904790603,0 43.50582430436974,-21.74653068205955,0 44.74369685699077,-19.73344117140852,0 44.2453684302688,-17.6437166812456,0 49.77768335452831,-12.7456812060181,0 40.57386044808256,-10.56474154982015,0
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+	<Placemark id="035A78FC7339F91EFB7C">
+		<name>Madagascar</name>
+		<LookAt>
+			<longitude>43.27632292203297</longitude>
+			<latitude>-18.85617486508319</latitude>
+			<altitude>-5397.381397439458</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>11554076.04333043</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0D2054CAFF39F90822F0</styleUrl>
+		<Point>
+			<coordinates>46.73211860528883,-19.18224507356555,-4218.790687980196</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark id="062B714CF539F91FB564">
+		<name>Roundabout Way</name>
+		<LookAt>
+			<longitude>43.27632125568577</longitude>
+			<latitude>-18.85617450678937</latitude>
+			<altitude>-5397.394186397838</altitude>
+			<heading>0</heading>
+			<tilt>0</tilt>
+			<gx:fovy>35</gx:fovy>
+			<range>11554076.04333043</range>
+			<altitudeMode>absolute</altitudeMode>
+		</LookAt>
+		<styleUrl>#__managed_style_0D2054CAFF39F90822F0</styleUrl>
+		<LineString>
+			<coordinates>
+				59.0950358135785,-25.23732262414545,0 67.27687048946096,-17.05512458578361,0 59.57491021654879,-14.45316938490111,0 61.34780921563572,-8.444074134730762,0 55.06774573574668,-6.987837986543092,0
+			</coordinates>
+		</LineString>
+	</Placemark>
+</Document>
+</kml>

@@ -71,7 +71,7 @@ will rely on the default values set in the applicaton's configuraton:
 | Variable Name       | Example                                           | Description                                           |
 |:--------------------|:--------------------------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                                         | The password for the PostgreSQL admmin user           |
-| `OMSB_VERSION`      | `Grimlock-INC-23`                                 | The version of oms-bridge                             |
+| `OMSB_VERSION`      | `Grimlock-INC-29`                                 | The version of oms-bridge                             |
 | `OMSB_URL`          | `https://localhost:8020/graphql`                  | URL for OMSB                                          |
 | `CERT_PATH`         | `./pki/test10.pem`                                | Path to User PEM                                      |
 | `KEY_PATH`          | `./pki/test10.key`                                | Path to User Key                                      |
