@@ -259,7 +259,7 @@ services:
   ess3:
     container_name: ess3
     hostname: ess3
-    image: ${DOCKER_REGISTRY}/dpaas-internal/ess/ess-3:1.2.6
+    image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-ess-3:1.2.7
     volumes:
       - ./etc/pki:/opt/common/pki
       - ./etc/es/v8/omsb-node-document-index.json:/omsb-node-document-index.json
@@ -292,6 +292,7 @@ services:
       PORT: 3000
       SNIPPET_TYPE: elasticsearch8
       WAIT_HOSTS: elasticsearch8:9200
+      GET_URL_PATTERNS: /es/{index}/_refresh,/es/_cluster/health
       PUT_URL_PATTERNS: /es/{index},/es/{index}/_doc/{id}
       POST_URL_PATTERNS: /es/{index}/_doc/{id},/es/{index}/_update/{id},/es/{index}/_delete_by_query
       DELETE_URL_PATTERNS: /es/{index},/es/{index}/_doc/{id}
