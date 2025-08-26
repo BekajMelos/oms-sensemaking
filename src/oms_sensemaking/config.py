@@ -521,12 +521,7 @@ class Settings(BaseSettings):
     otel_traces_sampler: str = Field(
         default="always_on", description="OpenTelemetry traces sampler"
     )
-    otel_metrics_exporter: str = Field(
-        default="prometheus", description="OpenTelemetry metrics exporter"
-    )
-    otel_logs_exporter: str = Field(
-        default="otlp", description="OpenTelemetry logs exporter"
-    )
+
     @computed_field  # type: ignore
     @cached_property
     def audit_log_error_acm(self) -> dict[str, str]:
