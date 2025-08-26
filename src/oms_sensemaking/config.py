@@ -293,8 +293,8 @@ class Settings(BaseSettings):
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")
-    db_user: str = Field("appuser", description="Database user.")
-    db_password: str = Field("password", description="Database user's password.")
+    db_user: str = Field(description="Database user.")
+    db_password: str = Field(description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
     db_uri: str | None = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
@@ -373,8 +373,8 @@ class Settings(BaseSettings):
     rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
     rabbitmq_port: int = Field(5672, description="RabbitMQ port")
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
-    rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
-    rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
+    rabbitmq_username: str = Field(description="RabbitMQ username")
+    rabbitmq_password: str = Field(description="RabbitMQ password")
     rabbitmq_prefetch_count: int = Field(200, description="RabbitMQ prefetch count")
 
     rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
@@ -415,18 +415,18 @@ class Settings(BaseSettings):
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
-    user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
+    user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(
         None,
         description="Optional path to a CA cert",
         examples=[None, "/opt/common/pki/cacert.pem"])
     cert_path: str | None = Field(
-        "/opt/common/pki/server.public",
+        None,
         description="Path to service user cert",
         examples=[None, "/opt/common/pki/sensemaking.pem"]
     )
     key_path: str | None = Field(
-        "/opt/common/pki/server.private",
+        None,
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
     )
