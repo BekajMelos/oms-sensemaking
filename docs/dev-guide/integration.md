@@ -7,8 +7,6 @@
     1. Deteremine your IP address: `ipconfig getifaddr en0`
     2. Update the `.env` with the following values. _Please note the uncommented and commented settings_
         * `# POSTGRES_PORT=5432`
-        * `# CORENLP_EXPOSE_PORT=9000`
-        * `# CORENLP_HOST=corenlp:9000`
         * `RMQ_GEO_QUEUE_NAME=oms-wfs-trigger`
         * `OMSB_VERSION=<OMSB_VERSION>`
         * `OMSB_URL="https://<your_ip_address>:8443/graphql"`
@@ -59,7 +57,7 @@
                 2. Select 'Sourcing'
                 3. On the Sourcing page, ensure you are on the 'Sources' tab and click 'Actions' and 'Add Source'
                 4. Work through the creation steps. In creating a Source, you will also be prompted to create a Provider and Originator.
-            2. If the CoreNLP container quits unexpectedly with no error message upon API call, allocate more resources to docker and try again
+            2. 
             3. Check out the Objects, Relationships, and Attributes! The Nodes/Relationships you see in Chronicle should resemble those in the response of the FastAPI call. (See below example)
 
         - Below is a sample request with the `source_id` and `text` fields filled out. You must change the `source_id` for it to work, but feel free to use this text sample, which is an excerpt from `etc/data/russia-ukraine.txt`:

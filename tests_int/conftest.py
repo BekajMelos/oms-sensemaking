@@ -33,10 +33,6 @@ alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "
 escaped_uri = SETTINGS.db_uri.replace("%", "%%")
 alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 
-# NLP Configuration
-if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
-    SETTINGS.corenlp_host = SETTINGS.corenlp_localhost
-
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
 

@@ -290,55 +290,6 @@ class Settings(BaseSettings):
     )
     garrison_distance_kilometers: int = 2000
 
-    # NLP Settings
-    corenlp_localhost: str = Field("localhost:9000",
-                              description="Host and port for CoreNLP when running local script.")
-    corenlp_host: str = Field("host.docker.internal:9000",
-                                   description="Host and port for CoreNLP.")
-    nlp_configuration: dict = Field(
-        {"NER Model": "Default CoreNLP NER", "Relationship Extraction Model": "Default CoreNLP Relation Extraction"},
-        description="Configuration of the NLP NER/Relationship extraction algorithm"
-    )
-    algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
-    nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
-    nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
-    corenlp_client_props: dict = Field(
-        {
-            "annotators": "tokenize, pos, lemma, ner, depparse, relation",
-            "outputFormat": "text",
-            "ner.model": "ner-model.ser.gz",
-            "relation.model": "relation-model.ser.gz"
-        },
-        description="Properties to instantiate the CoreNLP client with."
-    )
-
-    # NLP Node IRIs (change once custom model is trained)
-    nlp_node_iris: dict = Field({
-            "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
-            "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
-            "Location": "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-            "Document": "http://www.ontologyrepository.com/CommonCoreOntologies/InformationContentEntity",
-            "Date": "https://foundry.ai.mil/NIEM/v5.2/DateType",
-            "Entity": "http://purl.obolibrary.org/obo/BFO_0000001",
-        },
-        description="Dictionary of NLP Node IRIs"
-        )
-    nlp_default_node_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001", description="Default NLP Node IRI")
-
-    # NLP Relationship IRIs
-    nlp_relationship_iris: dict = Field({
-            "Work_For": "https://foundry.ai.mil/ontology/4901-001/operationallyControlledBy",
-            "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",
-            "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
-            "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
-            "Document_Contains_Entity": "http://www.ontologyrepository.com/CommonCoreOntologies/describes",
-            "Relates_To": "http://www.ontologyrepository.com/CommonCoreOntologies/is_about", # Placeholder IRI
-        },
-        description="Dictionary of NLP Relationship IRIs"
-        )
-    nlp_default_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
-                                              description="Default NLP Relationship IRI") # Placeholder IRI
-
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")
