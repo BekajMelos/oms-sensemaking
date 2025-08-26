@@ -1,5 +1,6 @@
 """The *about* module contains endpoints that return information about the service."""
 
+import logging
 import time
 
 from fastapi import APIRouter
@@ -10,11 +11,14 @@ from oms_sensemaking.core.observability import record_event_processed, record_qu
 
 router: APIRouter = APIRouter()
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 @router.get("/version.json", response_model=AppInfo, response_model_exclude_none=True)
 def about() -> AppInfo:
     """Return service information."""
     start_time = time.time()
+    LOGGER.info("Version endpoint requested", extra={"endpoint": "/version.json", "version": __version__})
 
     # Create AppInfo object (this represents the "processing")
     app_info = AppInfo(title=__title__, version=__version__, description=__description__)
