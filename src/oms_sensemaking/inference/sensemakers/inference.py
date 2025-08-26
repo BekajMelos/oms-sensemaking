@@ -3,6 +3,7 @@ from collections.abc import Iterable
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
+from oms_sensemaking.domain.area_of_interest.aoi_extractor import RealAOIDataExtractor
 from oms_sensemaking.inference.engine.engine import Engine
 from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 from oms_sensemaking.inference.rules.incursions import Incursion
@@ -20,7 +21,7 @@ class InferenceSensemaker(Sensemaker):
         self.engine = Engine()
         rule_mappings = {
             "toggle_add_garrison_rule": InOrOutOfGarrison("InOrOutOfGarrison"),
-            "toggle_incursion_rule": Incursion("Incursion"),
+            "toggle_incursion_rule": Incursion("Incursion", RealAOIDataExtractor()),
         }
         for setting_name, rule in rule_mappings.items():
             if getattr(SETTINGS, setting_name, False):  # Check if toggle is True

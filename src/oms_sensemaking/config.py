@@ -77,6 +77,21 @@ class LogConfig(BaseSettings):
                 "level": self.log_level,
                 "propagate": True
             },
+            "uvicorn": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.error": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.access": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
             "oms_sdk": {
                 "level": self.log_level
             },
@@ -208,7 +223,7 @@ class Settings(BaseSettings):
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
-    maximum_oms_api_calls: int = Field(500,
+    maximum_oms_api_calls: int = Field(5000,
                                        description="Maximum amount of requests made to the OMS API per time period")
     oms_api_call_period_seconds: int = Field(30,
                                              description="Alloted amount of time for maximum OMS API calls to be made")
@@ -239,8 +254,9 @@ class Settings(BaseSettings):
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
     )
-    inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest.json", description="Path to areas of interest file"
+    inference_incursion_areas_of_interest_paths: list[str] = Field(
+        ["./data/big_island_aoi.json", "./data/mozambiqueChannel.kml", "./data/pacific_ocean_aoi.json",
+         "./data/pohakuloa_training_aoi.json"], description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
         "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
@@ -446,7 +462,7 @@ class Settings(BaseSettings):
     observables: bool = Field(True, description="Toggle on/off Observable updates")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(

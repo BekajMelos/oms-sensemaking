@@ -47,7 +47,7 @@ class TestGeofenceObservable:
     def geofence_observable(self, valid_time_bounds, test_polygon):
         """create a GeofenceObservable instance"""
         return GeofenceObservable(
-            queryType=ObservableQueryType.GEOFENCE,
+            queryType=ObservableQueryType.geofence,
             timeBounds=valid_time_bounds,
             location=test_polygon,
             fullyObservedCount=5,
@@ -55,7 +55,7 @@ class TestGeofenceObservable:
 
     def test_geofence_observable_creation(self, geofence_observable, test_polygon):
         """test GeofenceObservable creation with valid data"""
-        assert geofence_observable.query_type == ObservableQueryType.GEOFENCE
+        assert geofence_observable.query_type == ObservableQueryType.geofence
         assert geofence_observable.location == test_polygon
         assert geofence_observable.fully_observed_count == 5
 
