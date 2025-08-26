@@ -16,8 +16,6 @@ from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
 
-SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
-
 
 @pytest.fixture
 def ts_acm():

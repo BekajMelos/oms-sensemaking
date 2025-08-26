@@ -70,7 +70,7 @@ def test_multi_crud_operations(mock_source):
                 acm=DEFAULT_ACM,
                 name=test_node_name + f"_{i}",
                 tier=ObjectTier.DERIVATIVE,
-                tags=SETTINGS.nlp_tags,
+                tags=SETTINGS.inference_tags,
                 classIri=person_node_iri,
                 isNso=True,
             )
@@ -118,7 +118,7 @@ def test_node_crud():
             acm=DEFAULT_ACM,
             name=test_node_name,
             tier=ObjectTier.DERIVATIVE,
-            tags=SETTINGS.nlp_tags,
+            tags=SETTINGS.inference_tags,
             classIri=person_node_iri,
             isNso=True,
         )
@@ -150,7 +150,7 @@ def test_relationship_crud(mock_source):
                 acm=DEFAULT_ACM,
                 name=test_node_name + f"_{i}",
                 tier=ObjectTier.DERIVATIVE,
-                tags=SETTINGS.nlp_tags,
+                tags=SETTINGS.inference_tags,
                 classIri=person_node_iri,
                 isNso=True,
             )

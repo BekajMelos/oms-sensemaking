@@ -344,7 +344,7 @@ class OmsCrudTool:
                     name=test_originator_name,
                     description="A test originator",
                     acm=DEFAULT_ACM,
-                    tags=SETTINGS.nlp_tags,
+                    tags=SETTINGS.inference_tags,
                 )
             )
 
@@ -358,7 +358,7 @@ class OmsCrudTool:
                     name=test_provider_name,
                     description="A test provider",
                     originatorId=originator.id,
-                    tags=SETTINGS.nlp_tags,
+                    tags=SETTINGS.inference_tags,
                     acm=DEFAULT_ACM,
                 )
             )
@@ -373,7 +373,7 @@ class OmsCrudTool:
                     name=test_source_name,
                     dateOfReport="2004-05-23T00:00:00-04:00",
                     dateOfInformation="2004-05-23T00:00:00-04:00",
-                    tags=SETTINGS.nlp_tags,
+                    tags=SETTINGS.inference_tags,
                     providerId=provider.id,
                     acm=DEFAULT_ACM,
                     identifier="nlp_test_identifier",
