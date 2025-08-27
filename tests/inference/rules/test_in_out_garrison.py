@@ -6,7 +6,6 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     AttributeAttribute,
-    AttributeQuery,
     AttributeType,
     Confidence,
     CreateActivityInput,
@@ -15,8 +14,6 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeNode,
     ObservationObservation,
     ObservationQuery,
-    RelationshipNodeQuery,
-    RelationshipQuery,
     RelationshipRelationship,
     TimeQuery,
     UpdateActivityInput,
@@ -312,6 +309,43 @@ def mock_get_observations(mocker: MockerFixture, observational_node2):
     return mock_get_observations
 
 
+@pytest.fixture
+def mock_gql_query(mocker, garrison_object, geo_attribute1):
+    """
+    Mocks the single custom operation used by _fetch_home_base_and_geo.
+    Returns a structure matching the generated client:
+      result.node.relationships.data[0].end_node.attributes.data[0].geometry.coordinates
+    """
+    payload = {
+        "node": {
+            "relationships": {
+                "data": [
+                    {
+                        "end_node": {
+                            "id": garrison_object.id,
+                            "attributes": {
+                                "data": [
+                                    {
+                                        "id": "attr-geo-1",
+                                        "geometry": {
+                                            "coordinates": geo_attribute1.geometry["coordinates"]
+                                        },  # [lon, lat]
+                                    }
+                                ]
+                            },
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+    return mocker.patch(
+        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.query",
+        new=MagicMock(return_value=payload),
+    )
+
+
 # Tests
 def test_evaluate_input(observational_node):
     """Test to verify valid inputs are recognized as such"""
@@ -331,25 +365,18 @@ def test_new_in_garrison(
     observational_node,
     garrison_object,
     mock_get_node,
-    mock_get_attributes,
-    mock_get_relationships,
     mock_get_activities,
     mock_create_activity,
     geo_attribute1,
+    mock_gql_query,
 ):
     # Scenario: Observation input yields new in garrison activity
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [geo_attribute1]
-    mock_get_attributes.return_value = mock_attribute_response
     rule = InOrOutOfGarrison("garrison rule")
-
     rule.action(RuleContext(observation=observational_node))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=[garrison_object.id],
-        )
-    )
+
+    mock_gql_query.assert_called_once()
+    _, kwargs = mock_gql_query.call_args
+    assert kwargs.get("operation_name") == "InOutGarrison_HomeBaseWithGeo"
 
     mock_create_activity.assert_called_with(
         CreateActivityInput(
@@ -375,26 +402,18 @@ def test_new_out_garrison(
     observational_node2,
     garrison_object,
     mock_get_node,
-    mock_get_attributes,
-    mock_get_relationships,
     mock_get_activities,
     mock_create_activity,
     geo_attribute1,
+    mock_gql_query,
 ):
     # Scenario: Observation input yields new out of garrison activity
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [geo_attribute1]
-    mock_get_attributes.return_value = mock_attribute_response
-
     rule = InOrOutOfGarrison("garrison rule")
-
     rule.action(RuleContext(observation=observational_node2))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=[garrison_object.id],
-        )
-    )
+
+    mock_gql_query.assert_called_once()
+    _, kwargs = mock_gql_query.call_args
+    assert kwargs.get("operation_name") == "InOutGarrison_HomeBaseWithGeo"
 
     mock_create_activity.assert_called_with(
         CreateActivityInput(
@@ -420,20 +439,15 @@ def test_update_in_garrison(
     observational_node,
     garrison_object,
     mock_get_node,
-    mock_get_attributes,
-    mock_get_relationships,
     mock_get_activities,
     mock_get_observations,
     mock_update_activity,
     geo_attribute1,
     in_garrison_activity1,
     in_garrison_activity2,
+    mock_gql_query,
 ):
     # Scenario: Observation input yields updating an in garrison activity
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [geo_attribute1]
-    mock_get_attributes.return_value = mock_attribute_response
-
     mock_activity_response = MagicMock()
     mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
     mock_get_activities.return_value = mock_activity_response
@@ -441,18 +455,10 @@ def test_update_in_garrison(
     rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node))
-    mock_get_relationships.assert_called_with(
-        RelationshipQuery(
-            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(startNodeIds=["initial_object_id"]),
-        )
-    )
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=[garrison_object.id],
-        )
-    )
+
+    # single call now
+    mock_gql_query.assert_called_once()
+
     garrison_buffer_points = generate_circle_points_geographical(
         geo_attribute1.geometry["coordinates"][1],
         geo_attribute1.geometry["coordinates"][0],
@@ -482,20 +488,15 @@ def test_update_out_garrison(
     observational_node2,
     garrison_object,
     mock_get_node,
-    mock_get_attributes,
-    mock_get_relationships,
     mock_get_activities,
     mock_get_observations,
     mock_update_activity,
     geo_attribute1,
     out_garrison_activity1,
+    mock_gql_query,
 ):
     # Scenario: Observation input yields updating an out of garrison activity
     # that has non overlapping time with observation
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [geo_attribute1]
-    mock_get_attributes.return_value = mock_attribute_response
-
     mock_activity_response = MagicMock()
     mock_activity_response.data = [out_garrison_activity1]
     mock_get_activities.return_value = mock_activity_response
@@ -507,18 +508,9 @@ def test_update_out_garrison(
     rule = InOrOutOfGarrison("garrison rule")
 
     rule.action(RuleContext(observation=observational_node2))
-    mock_get_relationships.assert_called_with(
-        RelationshipQuery(
-            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(startNodeIds=["initial_object_id"]),
-        )
-    )
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_geo_attribute_iri],
-            nodeIds=[garrison_object.id],
-        )
-    )
+
+    mock_gql_query.assert_called_once()
+
     garrison_buffer_points = generate_circle_points_geographical(
         geo_attribute1.geometry["coordinates"][1],
         geo_attribute1.geometry["coordinates"][0],

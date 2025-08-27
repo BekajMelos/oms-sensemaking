@@ -1,21 +1,33 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+from typing import Any, List, Optional, Tuple
+
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    AttributeQuery,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
     NodeNode,
     ObservationObservation,
-    RelationshipNodeQuery,
-    RelationshipQuery,
     StringQuery,
     UpdateActivityInput,
     UpdateUuidList,
     UuidQueryByList,
+)
+from oms_sdk.generated.generated_graphql_client.custom_fields import (
+    AttributeFields,
+    AttributePageFields,
+    NodeFields,
+    RelationshipFields,
+    RelationshipPageFields,
+)
+from oms_sdk.generated.generated_graphql_client.custom_queries import Query
+from oms_sdk.generated.generated_graphql_client.input_types import (
+    AttributeFilter,
+    IdQuery,
+    NodeRelationshipFilter,
 )
 
 from oms_sensemaking.clients.instances import oms_crud_tool
@@ -62,42 +74,24 @@ class InOrOutOfGarrison(BaseRule):
 
         obs = rule_context.observation
         node_object = oms_crud_tool.get_node(obs.nodeId)
-        geo = obs.geometry
 
-        # Find garrison node id through garrison relationship
-        garrison_relationship_query = RelationshipQuery(
-            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(startNodeIds=[obs.nodeId]),
-        )
-        garrison_relationship_res = oms_crud_tool.get_relationships(garrison_relationship_query)
+        home_base_id, garrison_coords_lonlat = self._fetch_home_base_and_geo(obs.nodeId)
 
-        if len(garrison_relationship_res.data):
-            relationship = garrison_relationship_res.data[0]
-            garrison_object_id = relationship.endNodeId
+        if home_base_id and garrison_coords_lonlat:
+            # obs.geometry is GeoJSON: [lon, lat]; convert both to [lat, lon] for geodesic()
+            object_coordinates = obs.geometry["coordinates"]
+            object_latlon = [object_coordinates[1], object_coordinates[0]]
+            garrison_latlon = [garrison_coords_lonlat[1], garrison_coords_lonlat[0]]
 
-            # Find garrison coordinates through location attribute
-            garrison_attribute_query = AttributeQuery(
-                nodeIds=[garrison_object_id], attributeIris=[SETTINGS.inference_geo_attribute_iri]
+            distance = geodesic(object_latlon, garrison_latlon).kilometers
+            in_garrison = distance < SETTINGS.garrison_distance_kilometers
+
+            garrison_buffer_points = generate_circle_points_geographical(
+                garrison_latlon[0], garrison_latlon[1], SETTINGS.garrison_distance_kilometers
             )
-            garrison_attribute_res = oms_crud_tool.get_attributes(garrison_attribute_query)
-            if len(garrison_attribute_res.data):
-                garrison_object_coordinates = garrison_attribute_res.data[0].geometry["coordinates"]
+            garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
-                # Determine if object is in garrison
-                object_coordinates = geo["coordinates"]
-                object_coordinates = [object_coordinates[1], object_coordinates[0]]
-                garrison_object_coordinates = [garrison_object_coordinates[1], garrison_object_coordinates[0]]
-                distance = geodesic(object_coordinates, garrison_object_coordinates).kilometers
-                in_garrison = distance < SETTINGS.garrison_distance_kilometers
-                garrison_buffer_points = generate_circle_points_geographical(
-                    garrison_object_coordinates[0],
-                    garrison_object_coordinates[1],
-                    SETTINGS.garrison_distance_kilometers,
-                )
-
-                garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-
-                self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
+            self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
 
     def _create_or_update_garrison_activity(
         self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
@@ -202,3 +196,82 @@ class InOrOutOfGarrison(BaseRule):
             or act.name == SETTINGS.inference_out_of_garrison_activity_name
             for act in activities
         )
+
+    def _fetch_home_base_and_geo(self, obs_node_id: str) -> Tuple[Optional[str], Optional[List[float]]]:
+        """
+        Return (home_base_id, [lon, lat]) for the observed node, or (None, None) if not found.
+        Uses a single custom-built operation via the SDK's custom operation builder.
+
+        :param obs_node_id: Observation's nodeId
+        """
+        q = Query.node(IdQuery(id=obs_node_id)).fields(
+            # relationships() -> RelationshipPageFields
+            NodeFields.relationships(
+                filter=NodeRelationshipFilter(objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri])
+            ).fields(
+                # Page 'data' is a PageableUnion; specify the concrete type
+                RelationshipPageFields.data.on(
+                    "RelationshipFields",
+                    RelationshipFields.end_node().fields(
+                        NodeFields.id,
+                        # attributes() -> AttributePageFields
+                        NodeFields.attributes(
+                            filter=AttributeFilter(attributeIris=[SETTINGS.inference_geo_attribute_iri])
+                        ).fields(
+                            # Page 'data' again; select the concrete AttributeFields
+                            AttributePageFields.data.on(
+                                "AttributeFields",
+                                AttributeFields.id,
+                                AttributeFields.geometry,
+                            )
+                        ),
+                    ),
+                )
+            )
+        )
+
+        result = oms_crud_tool.oms_client.query(q, operation_name="InOutGarrison_HomeBaseWithGeo")
+
+        # Parsing for object-like and dict-like responses
+        def get(obj: Any, name: str):
+            return getattr(obj, name, None) if not isinstance(obj, dict) else obj.get(name)
+
+        node = get(result, "node")
+        if not node:
+            return None, None
+
+        rels_page = get(node, "relationships")
+        if not rels_page:
+            return None, None
+
+        rels = get(rels_page, "data") or []
+        if not rels:
+            return None, None
+
+        # Take the first matching relationship/end_node/attribute
+        rel0 = rels[0]
+        end_node = get(rel0, "end_node")
+        if not end_node:
+            return None, None
+
+        home_base_id = get(end_node, "id")
+
+        attrs_page = get(end_node, "attributes")
+        if not attrs_page:
+            return home_base_id, None
+
+        attrs = get(attrs_page, "data") or []
+        if not attrs:
+            return home_base_id, None
+
+        attr0 = attrs[0]
+        geometry = get(attr0, "geometry")
+        if not isinstance(geometry, dict):
+            return home_base_id, None
+
+        coords = geometry.get("coordinates")
+        if not (isinstance(coords, list) and len(coords) >= 2):
+            return home_base_id, None
+
+        # coords [lon, lat] are standard to GeoJSON / GraphQL
+        return home_base_id, coords
