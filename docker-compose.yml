@@ -175,19 +175,6 @@ services:
     profiles:
       - local
 
-  doccano:
-    image: doccano/doccano
-    ports:
-      - "8000:8000"
-    environment:
-      ADMIN_USERNAME: admin
-      ADMIN_EMAIL: admin@example.com
-      ADMIN_PASSWORD: password
-    volumes:
-     - doccano-db:/data
-    profiles:
-      - local
-
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: rabbitmq
@@ -325,7 +312,6 @@ services:
       - local
 
 volumes:
-  doccano-db:
   localstack:
   pgadmin:
   postgis:
