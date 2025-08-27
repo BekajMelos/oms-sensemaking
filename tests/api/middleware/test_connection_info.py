@@ -21,3 +21,10 @@ def test_header_address_connection_info(mocker: MockerFixture):
     conn_info = header_conn_info.get_connection_info(request)
 
     assert conn_info.host == "172.23.43.164"
+
+
+def test_no_headers_connection():
+    header_conn_info = HeaderAddressConnectionInfo()
+    request = MockRequest({})
+    conn_info = header_conn_info.get_connection_info(request)
+    assert conn_info.host == "Unknown"

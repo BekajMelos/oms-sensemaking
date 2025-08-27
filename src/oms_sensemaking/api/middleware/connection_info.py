@@ -36,7 +36,7 @@ class HeaderAddressConnectionInfo:
             hostname = x_forwarded_for[1].split(",")[0].strip()
             return ParamsConnectionInfo(hostname, "Unknown (from X-Forwarded-For)")
         elif x_real_ip:
-            hostname = x_real_ip[0]
+            hostname = x_real_ip[1]
             return ParamsConnectionInfo(hostname, "Unknown (from X-Real-IP)")
         else:
             return ParamsConnectionInfo("Unknown", "Unkown")
