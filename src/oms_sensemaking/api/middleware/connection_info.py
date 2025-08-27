@@ -33,7 +33,7 @@ class HeaderAddressConnectionInfo:
         x_real_ip = self._get_header(request.headers, "X-Real-IP")
 
         if x_forwarded_for:
-            hostname = x_forwarded_for[0].split(",")[0].strip()
+            hostname = x_forwarded_for[1].split(",")[0].strip()
             return ParamsConnectionInfo(hostname, "Unknown (from X-Forwarded-For)")
         elif x_real_ip:
             hostname = x_real_ip[0]
