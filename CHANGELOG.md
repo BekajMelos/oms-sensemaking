@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Integrate custom query to InOrOutOfGarrison to reduce complexity. 
 
 ### Fixed
 
