@@ -1,5 +1,6 @@
 """oms-sensemaking microservice."""
 
+import html
 import json
 import logging
 import os
@@ -128,7 +129,16 @@ def create_app(config: Settings) -> FastAPI:
         """Serve custom Swagger UI with DoD warning."""
         template_path = Path(__file__).parent / "templates" / "custom_swagger.html"
         if template_path.exists():
-            return HTMLResponse(content=template_path.read_text(), media_type="text/html")
+            template_content = template_path.read_text()
+
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_TEXT", html.escape(config.classification_banner_text)
+            )
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_COLOR", html.escape(config.classification_banner_color)
+            )
+
+            return HTMLResponse(content=template_content, media_type="text/html")
         else:
             return HTMLResponse(content="<h1>Template not found</h1>", media_type="text/html")
 
