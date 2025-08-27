@@ -92,13 +92,6 @@ def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
 
-@pytest.fixture(scope="session")
-def mock_source() -> Generator[CreateSourceCreateSource, Any, None]:
-    oms_crud_tool = OmsCrudTool()
-    source = oms_crud_tool.create_test_source()
-    yield source
-
-
 @pytest.fixture
 def mock_oms_crud_tool(mock_oms_client, mock_source):
     def get_source_side_effect(source_id):
