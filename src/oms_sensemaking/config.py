@@ -215,11 +215,6 @@ class Settings(BaseSettings):
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
 
     # General IRIs
-    url_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/InformationSource", description="URL IRI")
-    # ^Place holder IRI
-    identifier_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasObjectID", description="Identifier IRI")
-    # ^Place holder IRI
-    text_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/nonspecificObject", description="Text IRI")
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
