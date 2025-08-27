@@ -200,25 +200,21 @@ class InOrOutOfGarrison(BaseRule):
     def _fetch_home_base_and_geo(self, obs_node_id: str) -> Tuple[Optional[str], Optional[List[float]]]:
         """
         Return (home_base_id, [lon, lat]) for the observed node, or (None, None) if not found.
-        Uses a single custom-built operation via the SDK's custom operation builder.
+        Uses a single operation via the SDK's custom operation builder.
 
         :param obs_node_id: Observation's nodeId
         """
         q = Query.node(IdQuery(id=obs_node_id)).fields(
-            # relationships() -> RelationshipPageFields
             NodeFields.relationships(
                 filter=NodeRelationshipFilter(objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri])
             ).fields(
-                # Page 'data' is a PageableUnion; specify the concrete type
                 RelationshipPageFields.data.on(
                     "RelationshipFields",
                     RelationshipFields.end_node().fields(
                         NodeFields.id,
-                        # attributes() -> AttributePageFields
                         NodeFields.attributes(
                             filter=AttributeFilter(attributeIris=[SETTINGS.inference_geo_attribute_iri])
                         ).fields(
-                            # Page 'data' again; select the concrete AttributeFields
                             AttributePageFields.data.on(
                                 "AttributeFields",
                                 AttributeFields.id,
