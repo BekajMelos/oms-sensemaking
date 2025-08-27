@@ -1,7 +1,10 @@
+import logging
 from typing import Protocol
 
 from fastapi import Request
 from fastapi.datastructures import Address, Headers
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class ConnectionInfo(Protocol):
@@ -29,16 +32,27 @@ class HeaderAddressConnectionInfo:
     """Handle proxied requests that may not have request client populated"""
 
     def get_connection_info(self, request: Request) -> ConnectionInfo:
+        """
+        Try to process request headers that may indicate a client's address.
+        The headers are a "defacto" but official standard when proxied,
+        X-Real-IP does not have an official singular format though.  The env
+        is likely to be proxied somewhere though, so we need to at least try
+        to capture the original host.
+        """
         x_forwarded_for = self._get_header(request.headers, "X-Forwarded-For")
         x_real_ip = self._get_header(request.headers, "X-Real-IP")
 
-        if x_forwarded_for:
-            hostname = x_forwarded_for[1].split(",")[0].strip()
-            return ParamsConnectionInfo(hostname, "Unknown (from X-Forwarded-For)")
-        elif x_real_ip:
-            hostname = x_real_ip[1]
-            return ParamsConnectionInfo(hostname, "Unknown (from X-Real-IP)")
-        else:
+        try:
+            if x_forwarded_for:
+                hostname = x_forwarded_for[1].split(",")[0].strip()
+                return ParamsConnectionInfo(hostname, "Unknown (from X-Forwarded-For)")
+            elif x_real_ip:
+                hostname = x_real_ip[1]
+                return ParamsConnectionInfo(hostname, "Unknown (from X-Real-IP)")
+            else:
+                return ParamsConnectionInfo("Unknown", "Unkown")
+        except Exception:
+            LOGGER.exception("Unable to parse header for connection information")
             return ParamsConnectionInfo("Unknown", "Unkown")
 
     def _get_header(self, headers: Headers, header_name: str) -> tuple[str, str] | None:
