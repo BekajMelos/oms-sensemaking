@@ -507,6 +507,15 @@ class Settings(BaseSettings):
 
     rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
 
+    user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
+
+    @computed_field  # type: ignore
+    @cached_property
+    def user_dn_whitelist(self) -> list[str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(SETTINGS.user_dn_whitelist_path, "r") as fd:
+            return fd.read().lower().splitlines()
+
     @computed_field  # type: ignore
     @cached_property
     def audit_log_error_acm(self) -> dict[str, str]:

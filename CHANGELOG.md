@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added authorization for POST /aac/clear endpoint
 
 ### Changed
 
 ### Fixed
+- Fixed bug causing multiple incursions to be created
 
 ### Removed
 
