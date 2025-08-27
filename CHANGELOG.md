@@ -12,6 +12,17 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## [0.11.1] - 2025-08-25
+
+### Added
+
+### Changed
+
+### Fixed
+- Had to change structure of how area of interest files are read due to helm chart conflit
+
+### Removed
+
 ## [0.11.0] - 2025-08-25
 
 ### Added
