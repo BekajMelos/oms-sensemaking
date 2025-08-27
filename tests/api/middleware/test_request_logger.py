@@ -17,7 +17,8 @@ client = TestClient(app)
 
 
 def test_request_logger(mocker: MockerFixture):
-    response = client.get("/test")
     mock_logger = mocker.patch("oms_sensemaking.api.middleware.request_logger.LOGGER.info")
+    response = client.get("/test")
+
     assert response.status_code == 200
     mock_logger.assert_called_once()
