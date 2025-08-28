@@ -1,3 +1,7 @@
+"""Incursion Rule"""
+
+import logging
+
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
@@ -24,6 +28,8 @@ from oms_sensemaking.domain.area_of_interest.base import AOI, AOIExtractor
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Incursion(BaseRule):
@@ -75,10 +81,14 @@ class Incursion(BaseRule):
                 break
 
         if feature_of_interest:
+            LOGGER.debug(f"Incursion detected for Observation: {obs.id} with geometry {obs_geo}")
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
             existing_incursion_activities = oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
             matching_incursion_attribute_found = False
+
+            LOGGER.debug(f"{len(existing_incursion_activities)} Existing Incursion Activities")
+
             for existing_incursion_activity in existing_incursion_activities:
                 if matching_incursion_attribute_found:
                     break
@@ -92,6 +102,8 @@ class Incursion(BaseRule):
                 )
                 attr_response = oms_crud_tool.get_attributes(attribute_query)
                 existing_incursion_attributes = attr_response.data
+
+                LOGGER.debug(f"{len(existing_incursion_attributes)} Existing Incursion Attributes")
 
                 for existing_incursion_attribute in existing_incursion_attributes:
                     inc_attr_geo_timeframe = GeoTimeframe(

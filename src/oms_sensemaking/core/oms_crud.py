@@ -303,6 +303,12 @@ class OmsCrudTool:
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
+    def delete_observation(self, observation_id) -> bool:
+        return self.oms_client.delete_observation(DeleteByIdInput(id=observation_id))
+
+    def delete_activity(self, activity_id) -> bool:
+        return self.oms_client.delete_activity(DeleteByIdInput(id=activity_id))
+
     def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
         """
         Given a node id and a list of IRIs, get the attribute values from OMS

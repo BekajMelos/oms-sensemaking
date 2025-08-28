@@ -84,6 +84,9 @@ jobs:
       - name: Decrypt SSL Key
         run: |
           bin/transcrypt -p ${{ secrets.TRANSCRYPT_PW }} -c aes-256-cbc -y
+      - name: Prepare .env file
+        run: |
+          cp .env.template .env
       - name: Test with pytest
         run: |
           source .venv/bin/activate

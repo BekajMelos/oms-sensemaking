@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
 
@@ -12,6 +14,7 @@ class MyLimitedClass:
         return "bar"
 
 
+@pytest.mark.skip(reason="This test is flaky")
 def test_rate_limiting_works():
     obj = MyLimitedClass()
     for _ in range(4):

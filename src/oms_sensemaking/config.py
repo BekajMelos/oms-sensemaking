@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from datetime import timedelta
 from functools import cached_property
 from pathlib import Path
@@ -223,7 +224,7 @@ class Settings(BaseSettings):
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
-    maximum_oms_api_calls: int = Field(500,
+    maximum_oms_api_calls: int = Field(5000,
                                        description="Maximum amount of requests made to the OMS API per time period")
     oms_api_call_period_seconds: int = Field(30,
                                              description="Alloted amount of time for maximum OMS API calls to be made")
@@ -241,6 +242,10 @@ class Settings(BaseSettings):
     mil_sym_sm_label: str = Field("MILITARY_SYMBOL_SM", description="Label for mil sym sensemaking data")
     res_sm_label: str = Field("RESOLUTION_SM", description="Label for resolution sensemaking data")
 
+    # Classification Banner Settings
+    classification_banner_text: str = Field("UNCLASSIFIED", description="Text to display in the classification banner")
+    classification_banner_color: str = Field("#00c853", description="Background color for the classification banner")
+
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
@@ -254,8 +259,9 @@ class Settings(BaseSettings):
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
     )
-    inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest", description="Path to areas of interest file"
+    inference_incursion_areas_of_interest_paths: list[str] = Field(
+        ["./data/big_island_aoi.json", "./data/mozambiqueChannel.kml", "./data/pacific_ocean_aoi.json",
+         "./data/pohakuloa_training_aoi.json"], description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
         "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
@@ -341,8 +347,8 @@ class Settings(BaseSettings):
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")
-    db_user: str = Field("appuser", description="Database user.")
-    db_password: str = Field("password", description="Database user's password.")
+    db_user: str = Field(description="Database user.")
+    db_password: str = Field(description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
     db_uri: str | None = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
@@ -421,8 +427,8 @@ class Settings(BaseSettings):
     rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
     rabbitmq_port: int = Field(5672, description="RabbitMQ port")
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
-    rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
-    rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
+    rabbitmq_username: str = Field(description="RabbitMQ username")
+    rabbitmq_password: str = Field(description="RabbitMQ password")
     rabbitmq_prefetch_count: int = Field(200, description="RabbitMQ prefetch count")
 
     rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
@@ -463,18 +469,18 @@ class Settings(BaseSettings):
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
-    user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
+    user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(
         None,
         description="Optional path to a CA cert",
         examples=[None, "/opt/common/pki/cacert.pem"])
     cert_path: str | None = Field(
-        "/opt/common/pki/server.public",
+        None,
         description="Path to service user cert",
         examples=[None, "/opt/common/pki/sensemaking.pem"]
     )
     key_path: str | None = Field(
-        "/opt/common/pki/server.private",
+        None,
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
     )
@@ -559,6 +565,22 @@ class Settings(BaseSettings):
             port=int(values.get(f"{settings_prefix}port") or 5432),
             path=values.get(f"{settings_prefix}schema") or ""
         ).unicode_string()
+
+    @field_validator("classification_banner_text", mode="before")
+    @classmethod
+    def validate_classification_banner_text(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner text does not contain HTML."""
+        if re.search(r"<[^>]*>", field_value):
+            raise ValueError("Classification banner text cannot contain HTML.")
+        return field_value
+
+    @field_validator("classification_banner_color", mode="before")
+    @classmethod
+    def validate_classification_banner_color(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner color is a valid hex color."""
+        if not re.match(r"^#([A-Fa-f0-9]{3}){1,2}$", field_value):
+            raise ValueError("Classification banner color must be a valid hex color (e.g., #00c853).")
+        return field_value
 
 
 SETTINGS: Settings = Settings()

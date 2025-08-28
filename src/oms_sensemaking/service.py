@@ -1,5 +1,6 @@
 """oms-sensemaking microservice."""
 
+import html
 import json
 import logging
 import os
@@ -15,6 +16,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
+from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -128,12 +130,22 @@ def create_app(config: Settings) -> FastAPI:
         """Serve custom Swagger UI with DoD warning."""
         template_path = Path(__file__).parent / "templates" / "custom_swagger.html"
         if template_path.exists():
-            return HTMLResponse(content=template_path.read_text(), media_type="text/html")
+            template_content = template_path.read_text()
+
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_TEXT", html.escape(config.classification_banner_text)
+            )
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_COLOR", html.escape(config.classification_banner_color)
+            )
+
+            return HTMLResponse(content=template_content, media_type="text/html")
         else:
             return HTMLResponse(content="<h1>Template not found</h1>", media_type="text/html")
 
     # initialize gzip middleware
     application.add_middleware(GZipMiddleware, minimum_size=config.gzip_minimum_size)
+    application.add_middleware(RequestLogger)
 
     # configure routes
     application.include_router(about.router)
@@ -150,9 +162,11 @@ def create_app(config: Settings) -> FastAPI:
 
 def check_aoi_file_path() -> None:
     """Check for valid areas of interest directory"""
-    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
-        LOGGER.error(f"{SETTINGS.inference_incursion_areas_of_interest_path} is not a valid directory.")
-        sys.exit("The areas of interest directory is incorrect or does not exist.")
+    if SETTINGS.toggle_incursion_rule:
+        for file_path in SETTINGS.inference_incursion_areas_of_interest_paths:
+            if not os.path.isfile(file_path):
+                LOGGER.error(f"{file_path} is not a valid area of interest file.")
+                sys.exit("The areas of interest file you provided is incorrect or does not exist.")
 
 
 def initialize_settings() -> None:
