@@ -11,7 +11,13 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
+from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import (
+    CreateOriginatorInput,
+    CreateProviderInput,
+    CreateSourceCreateSource,
+    CreateSourceInput,
+)
 from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
@@ -90,6 +96,57 @@ def db(session_local) -> Generator[Session, Any, None]:
 @pytest.fixture
 def mock_oms_client():
     return mock.MagicMock(spec=Client)
+
+
+@pytest.fixture(scope="session")
+def create_source() -> Generator[CreateSourceCreateSource, Any, None]:
+    """Create a real Source (and dependencies) in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+
+    originator_name = "int_test_originator"
+    provider_name = "int_test_provider"
+    source_name = "int_test_source"
+
+    # Ensure Originator exists
+    originators = oms_crud_tool.get_originator_by_name(originator_name)
+    if originators.data:
+        originator = originators.data[0]
+    else:
+        originator = oms_crud_tool.create_originator(
+            CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
+        )
+
+    # Ensure Provider exists
+    providers = oms_crud_tool.get_provider_by_name(provider_name)
+    if providers.data:
+        provider = providers.data[0]
+    else:
+        provider = oms_crud_tool.create_provider(
+            CreateProviderInput(
+                name=provider_name, description="Integration Test", originatorId=originator.id, acm=DEFAULT_ACM, tags=[]
+            )
+        )
+
+    # Ensure Source exists
+    sources = oms_crud_tool.get_source_by_name(source_name)
+    if sources.data:
+        source = sources.data[0]
+    else:
+        source = oms_crud_tool.create_source(
+            CreateSourceInput(
+                name=source_name,
+                description="Integration Test",
+                providerId=provider.id,
+                acm=DEFAULT_ACM,
+                identifier="int_test_identifier",
+                dateOfReport="2004-05-23T00:00:00-04:00",
+                dateOfInformation="2004-05-23T00:00:00-04:00",
+                dataAcm=DEFAULT_ACM,
+                tags=[],
+            )
+        )
+
+    yield source
 
 
 @pytest.fixture

@@ -161,7 +161,7 @@ def test_attribute_crud(mock_source):
             acm=DEFAULT_ACM,
             name=test_node_name,
             tier=ObjectTier.DERIVATIVE,
-            tags=SETTINGS.nlp_tags,
+            tags=SETTINGS.inference_tags,
             classIri=person_node_iri,
             isNso=True,
         )
