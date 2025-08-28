@@ -3,7 +3,7 @@ from oms_sensemaking.domain.area_of_interest.aoi import AreaOfInterest
 from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
 
 
-class TestAOIExtractor(AOIExtractor):
+class FakeAOIExtractor(AOIExtractor):
     def __init__(self):
         self.path = [
             "tests/unit_test_data/aoi/test_aoi.kml",

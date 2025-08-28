@@ -16,6 +16,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
+from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, rdf
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -144,6 +145,7 @@ def create_app(config: Settings) -> FastAPI:
 
     # initialize gzip middleware
     application.add_middleware(GZipMiddleware, minimum_size=config.gzip_minimum_size)
+    application.add_middleware(RequestLogger)
 
     # configure routes
     application.include_router(about.router)
