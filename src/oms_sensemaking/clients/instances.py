@@ -67,12 +67,12 @@ corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SET
 health_checker = HealthChecker()
 
 
-def ping_db(timeout_seconds: float = 3.0) -> bool:
+def ping_db() -> bool:
     """Simple database connectivity check via SELECT 1."""
     try:
         with db_session() as db:
-            statement_timeout_ms = int(max(timeout_seconds, 0.1) * 1000)
-            db.execute(text("SET LOCAL statement_timeout = :ms").bindparams(ms=statement_timeout_ms))
+            statement_timeout_ms = int(max(SETTINGS.ping_timeout_seconds, 0.1) * 1000)
+            db.execute(text(f"SET statement_timeout = {statement_timeout_ms}"))
             db.execute(text("SELECT 1"))
         LOGGER.info("DB connectivity check successful")
         return True

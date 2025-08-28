@@ -1,11 +1,11 @@
 import logging
+from typing import Callable
 
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.input_types import (
     NodeQuery,
     PageParams,
 )
-from sqlalchemy import text
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -30,12 +30,11 @@ class HealthChecker:
             LOGGER.error(repr(e))
             return f"{self._unhealthy} OMS"
 
-    def get_db_health(self, db_session):
+    def get_db_health(self, ping_db: Callable[[], bool]):
         LOGGER.debug("Checking DB health")
         try:
-            with db_session() as db:
-                db.execute(text("SELECT 1"))
-                return self._healthy
+            ok = ping_db()
+            return self._healthy if ok else f"{self._unhealthy} DB Service"
         except Exception as e:
             LOGGER.error(repr(e))
             return f"{self._unhealthy} DB Service"

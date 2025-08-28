@@ -4,6 +4,8 @@ import logging
 import socket
 import time
 
+from oms_sensemaking.config import SETTINGS
+
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
@@ -28,19 +30,24 @@ class BaseClient:
             LOGGER.warning(f"Unable to resolve {self._service_name} host '{self._host}': {ex}")
             return None
 
-    def ping(self, timeout_seconds: float = 3.0) -> bool:
+    def ping(self) -> bool:
         """Attempt a TCP connection to the configured host/port."""
+
         resolved = self._resolve_host() or self._host
         try:
-            with socket.create_connection((resolved, self._port), timeout=timeout_seconds):
+            with socket.create_connection((resolved, self._port), timeout=SETTINGS.ping_timeout_seconds):
                 LOGGER.info(f"{self._service_name} connectivity check successful to {resolved}:{self._port}")
                 return True
         except Exception as ex:
             LOGGER.warning(f"{self._service_name} connectivity check failed to {resolved}:{self._port}: {ex}")
             return False
 
-    def wait_until_ready(self, retries: int = 5, delay_seconds: float = 2.0) -> bool:
+    def wait_until_ready(self) -> bool:
         """Ping until healthy or retries exhausted."""
+
+        retries = SETTINGS.ping_wait_retries
+        delay_seconds = SETTINGS.ping_wait_delay_seconds
+
         attempt = 0
         while attempt < retries:
             if self.ping():

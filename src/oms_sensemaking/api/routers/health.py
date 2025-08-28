@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter
 
-from oms_sensemaking.clients.instances import aac_client, corenlp_client, db_session, health_checker, oms_crud_tool
+from oms_sensemaking.clients.instances import aac_client, corenlp_client, health_checker, oms_crud_tool, ping_db
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -20,5 +20,5 @@ def get_healthcheck():
 
     system_health["nlp"] = health_checker.get_nlp_health(corenlp_client)
 
-    system_health["db"] = health_checker.get_db_health(db_session)
+    system_health["db"] = health_checker.get_db_health(ping_db)
     return system_health

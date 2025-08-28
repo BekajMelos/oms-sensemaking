@@ -466,6 +466,11 @@ class Settings(BaseSettings):
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
 
+    # Connectivity ping settings
+    ping_timeout_seconds: float = Field(3.0, description="Default timeout in seconds for service ping checks")
+    ping_wait_retries: int = Field(5, description="Default number of retries when waiting for service readiness")
+    ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
+
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
