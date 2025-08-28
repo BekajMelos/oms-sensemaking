@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-#
 # This Dockerfile provides a multi-stage build for a UBI8 based image with
 # Python 3.12. The first build stage sets up UBI8 and Python 3.12, while the second
 # build stage installs the application and it's dependencies.
@@ -102,8 +100,8 @@ if [ "$ARCH" = "aarch64" ]; then \
     dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-libs-16.4-1PGDG.rhel8.aarch64.rpm && \
     dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-16.4-1PGDG.rhel8.aarch64.rpm; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
@@ -117,6 +115,7 @@ chmod 774 $APP_HOME
 
 # clean up os packages
 dnf clean all
+update-ca-trust
 EOF
 ENV PATH="/usr/pgsql-16/bin:${PATH}"
 
@@ -209,15 +208,20 @@ dnf install -y \
 
 ARCH=$(uname -m) && \
 if [ "$ARCH" = "aarch64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
+    dnf config-manager --set-enabled epel && \
+    dnf install -y geos-devel && \
+    dnf clean all; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
+    dnf install -y --nogpgcheck ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
+    sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
+    sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
+    dnf clean all && \
+    dnf install -y geos-devel && \
+    dnf clean all; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
-dnf config-manager --set-enabled epel && \
-dnf install -y geos-devel && \
-dnf clean all
 
 # install app
 pip install .
