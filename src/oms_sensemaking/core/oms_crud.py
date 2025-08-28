@@ -1,5 +1,4 @@
 import logging
-import socket
 from typing import List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
@@ -64,6 +63,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UuidQueryByList,
 )
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
@@ -71,19 +71,14 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 @rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
-class OmsCrudTool:
+class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
     def __init__(self, user_dn: str | None = None) -> None:
-        # Log resolved OMS IP address
-        try:
-            parsed = urlparse(SETTINGS.omsb_url)
-            if parsed.hostname:
-                resolved_host = socket.gethostbyname(parsed.hostname)
-                port = parsed.port or (443 if parsed.scheme == "https" else 80)
-                LOGGER.info(f"Resolved OMS host '{parsed.hostname}' to IP {resolved_host}:{port}")
-        except Exception as ex:
-            LOGGER.warning(f"Unable to resolve OMS host from URL '{SETTINGS.omsb_url}': {ex}")
+        parsed = urlparse(SETTINGS.omsb_url)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        super().__init__(host=host, port=port, service_name="OMS")
 
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,

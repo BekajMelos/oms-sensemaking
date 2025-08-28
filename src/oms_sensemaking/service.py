@@ -18,7 +18,8 @@ from fastapi_offline import FastAPIOffline
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
-from oms_sensemaking.config import SETTINGS, LogConfig, Settings
+from oms_sensemaking.clients.instances import aac_client, corenlp_client, oms_crud_tool, ping_db
+from oms_sensemaking.config import LogConfig, SETTINGS, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
@@ -81,6 +82,14 @@ async def lifespan(application: FastAPI):
     """
     # startup
     LOGGER.info("Initializing sensemaker controllers")
+    # Ensure dependencies are reachable before launching controllers
+    try:
+        aac_client.wait_until_ready()
+        oms_crud_tool.wait_until_ready()
+        corenlp_client.wait_until_ready()
+        ping_db()
+    except Exception as ex:  # defensive, continue startup but log
+        LOGGER.warning(f"Dependency readiness checks encountered an issue: {ex}")
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():

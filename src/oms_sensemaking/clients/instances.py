@@ -5,7 +5,7 @@ import socket
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
@@ -65,3 +65,17 @@ oms_crud_tool = OmsCrudTool()
 corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
 
 health_checker = HealthChecker()
+
+
+def ping_db(timeout_seconds: float = 3.0) -> bool:
+    """Simple database connectivity check via SELECT 1."""
+    try:
+        with db_session() as db:
+            statement_timeout_ms = int(max(timeout_seconds, 0.1) * 1000)
+            db.execute(text("SET LOCAL statement_timeout = :ms").bindparams(ms=statement_timeout_ms))
+            db.execute(text("SELECT 1"))
+        LOGGER.info("DB connectivity check successful")
+        return True
+    except Exception as ex:
+        LOGGER.warning(f"DB connectivity check failed: {ex}")
+        return False

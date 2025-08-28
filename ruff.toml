@@ -41,6 +41,8 @@ convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 
 # Ignore `N803` (invalid-argument-name) in OMS audit log events
 '**/core/events.py' = ['N803']
+'src/oms_sensemaking/clients/base_client.py' = ['I001']
+'src/oms_sensemaking/service.py' = ['I001']
 
 # Ignore `E501` (line too long) in mock responses
 'tests/nlp/mock_responses.py' = ['E501']

@@ -2,7 +2,6 @@
 
 import json
 import logging
-import socket
 import ssl
 from typing import List, Optional, Union
 from urllib.parse import urlparse
@@ -12,6 +11,7 @@ import httpcore
 import httpx
 from hishel._utils import generate_key
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 HTTPX_TIMEOUT = 30
 
 
-class AacClient:
+class AacClient(BaseClient):
     """AAC Client for communicating with the AAC Service"""
 
     def __init__(
@@ -47,15 +47,10 @@ class AacClient:
         :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
 
-        # Log resolved AAC IP address
-        try:
-            parsed = urlparse(SETTINGS.aac_url)
-            if parsed.hostname:
-                resolved_host = socket.gethostbyname(parsed.hostname)
-                port = parsed.port or (443 if parsed.scheme == "https" else 80)
-                LOGGER.info(f"Resolved AAC host '{parsed.hostname}' to IP {resolved_host}:{port}")
-        except Exception as ex:
-            LOGGER.warning(f"Unable to resolve AAC host from URL '{SETTINGS.aac_url}': {ex}")
+        parsed = urlparse(SETTINGS.aac_url)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        super().__init__(host=host, port=port, service_name="AAC")
 
         if ca_cert_path is None or ca_cert_path == "":
             LOGGER.warning("AAC Client CA_CERT_PATH not detected")
