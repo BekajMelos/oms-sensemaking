@@ -29,10 +29,10 @@ pipeline {
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
         IMAGE_NAME="dpaas/ubi8-ccp"
-        IMAGE_VERSION="8.10-1262"
+        IMAGE_VERSION="8.10"
 
-        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote-cache"
-        EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote-cache"
+        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
+        EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
     }
 
     stages {
@@ -43,7 +43,7 @@ pipeline {
                     filename 'ci/Dockerfile.jenkins'
                     registryUrl 'https://${artDockerUrl}'
                     registryCredentialsId env.SERVICE_ACCOUNT_ID
-                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/{IMAGE_NAME}:${IMAGE_VERSION}'
+                    additionalBuildArgs '--build-arg BASE_IMAGE=${artDockerUrl}/${IMAGE_NAME}:${IMAGE_VERSION}'
                     args '''
                         -e HOME=/tmp \
                         -v /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt
@@ -56,7 +56,6 @@ pipeline {
                         sh '''
                             python -m venv /tmp/venv
                             . /tmp/venv/bin/activate
-                            pip install -U pip wheel setuptools_scm
 
                             echo "machine artifactory.code.dodiis.mil" > ${HOME}/.netrc
                             echo "login ${SERVICE_ACCOUNT_USR}" >> ${HOME}/.netrc
@@ -64,7 +63,9 @@ pipeline {
 
                             echo "[global]" > /tmp/venv/pip.conf
                             echo "index-url = ${artUrl}/api/pypi/pypi/simple" >> /tmp/venv/pip.conf
-                            echo "extra-index-url = https://pypi.org/simple" >> /tmp/venv/pip.conf
+                            echo "trusted-host = artifactory.code.dodiis.mil" >> /tmp/venv/pip.conf
+
+                            pip install -U pip wheel setuptools_scm
                         '''
 
                         script {

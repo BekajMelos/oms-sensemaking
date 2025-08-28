@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from datetime import timedelta
 from functools import cached_property
 from pathlib import Path
@@ -240,6 +241,10 @@ class Settings(BaseSettings):
     garrison_sm_label: str = Field("IN/OUT_GARRISON_RULE", description="Label for garrison sensemaking data")
     mil_sym_sm_label: str = Field("MILITARY_SYMBOL_SM", description="Label for mil sym sensemaking data")
     res_sm_label: str = Field("RESOLUTION_SM", description="Label for resolution sensemaking data")
+
+    # Classification Banner Settings
+    classification_banner_text: str = Field("UNCLASSIFIED", description="Text to display in the classification banner")
+    classification_banner_color: str = Field("#00c853", description="Background color for the classification banner")
 
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
@@ -569,6 +574,22 @@ class Settings(BaseSettings):
             port=int(values.get(f"{settings_prefix}port") or 5432),
             path=values.get(f"{settings_prefix}schema") or ""
         ).unicode_string()
+
+    @field_validator("classification_banner_text", mode="before")
+    @classmethod
+    def validate_classification_banner_text(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner text does not contain HTML."""
+        if re.search(r"<[^>]*>", field_value):
+            raise ValueError("Classification banner text cannot contain HTML.")
+        return field_value
+
+    @field_validator("classification_banner_color", mode="before")
+    @classmethod
+    def validate_classification_banner_color(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner color is a valid hex color."""
+        if not re.match(r"^#([A-Fa-f0-9]{3}){1,2}$", field_value):
+            raise ValueError("Classification banner color must be a valid hex color (e.g., #00c853).")
+        return field_value
 
 
 SETTINGS: Settings = Settings()
