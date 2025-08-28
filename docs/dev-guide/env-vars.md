@@ -41,16 +41,6 @@
 | `DB_NAME_OMSB`                | `omsb_db`                         | The name for the omsb_db database.                                                                            | Yes            |
 | `DB_TEMPLATE`                 | `template_postgis`                | The template used in the creation of the application database.                                                | Yes            |
 
-##### Database Monitoring/Protection
-
-| Variable Name                        | Example  | Description                                                                                  | Docker Compose |
-|:-------------------------------------|:---------|:---------------------------------------------------------------------------------------------|:--------------:|
-| `ENABLE_DB_QUERY_MONITORING`         | `True`   | Enable SQL monitoring for slow/atypical queries and frequency limiting.                      | No             |
-| `DB_STATEMENT_TIMEOUT_MS`            | `30000`  | Server-side `statement_timeout` (ms) set via connection options.                             | No             |
-| `DB_SLOW_QUERY_THRESHOLD_MS`         | `1000`   | Duration (ms) after which a query is logged as slow.                                         | No             |
-| `DB_QUERIES_PER_WINDOW`              | `3000`   | Max queries allowed per `DB_QUERY_WINDOW_SECONDS` before a warning is emitted.               | No             |
-| `DB_QUERY_WINDOW_SECONDS`            | `60`     | Sliding window size in seconds for query frequency monitoring.                               | No             |
-| `DB_MONITOR_LOG_SQL_PARAMETERS`      | `False`  | When `True`, include bound parameters in logs. Default redacts parameters.                   | No             |
 
 
 ##### AWS Settings

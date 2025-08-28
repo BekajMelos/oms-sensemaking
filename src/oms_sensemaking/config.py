@@ -350,34 +350,15 @@ class Settings(BaseSettings):
     )
     db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
 
-    # Database Query Monitoring and Protections (STIG V-222423)
-    enable_db_query_monitoring: bool = Field(
-        True, description="Enable SQL monitoring for slow/atypical queries and frequency limiting."
-    )
-    db_statement_timeout_ms: int = Field(
-        30000, description="Server-side statement timeout (ms) applied via connection options."
-    )
-    db_slow_query_threshold_ms: int = Field(
-        1000, description="Threshold (ms) after which queries are logged as slow."
-    )
-    db_queries_per_window: int = Field(
-        3000, description="Max queries allowed in the window before throttling/logging."
-    )
-    db_query_window_seconds: int = Field(
-        60, description="Window size in seconds for query frequency limiting."
-    )
-    db_monitor_log_sql_parameters: bool = Field(
-        False, description="Whether to include bound parameters when logging queries. Defaults to redacted."
-    )
-    db_enforce_query_frequency_limit: bool = Field(
-        False, description="If True, enforce the frequency limit (sleep or raise) rather than only warn."
-    )
-    db_query_throttle_sleep_seconds: int = Field(
-        1, description="If enforcing and not raising, sleep seconds when frequency limit exceeded."
-    )
-    db_raise_on_frequency_exceed: bool = Field(
-        False, description="If True and enforcing, raise an exception when frequency limit exceeded."
-    )
+    # Database connection pooling (limits concurrent access and mitigates mining)
+    db_pool_size: int = Field(10, description="SQLAlchemy connection pool size.")
+    db_max_overflow: int = Field(20, description="SQLAlchemy max overflow connections beyond the pool size.")
+    db_pool_timeout_seconds: int = Field(30, description="Seconds to wait for a connection from the pool.")
+
+    # GraphQL query pagination controls (enforce bounded responses)
+    enforce_graphql_pagination: bool = Field(True, description="Force pagination on collection queries.")
+    graphql_default_page_size: int = Field(200, description="Default page size when none is provided.")
+    graphql_max_page_size: int = Field(500, description="Upper bound on allowed page size.")
 
     # Geospatial Sensemaking Settings
     geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",
