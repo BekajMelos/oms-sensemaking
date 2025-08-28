@@ -34,7 +34,7 @@ class HeaderAddressConnectionInfo:
     def get_connection_info(self, request: Request) -> ConnectionInfo:
         """
         Try to process request headers that may indicate a client's address.
-        The headers are a "defacto" but official standard when proxied,
+        The headers are a "defacto" but unofficial standard when proxied,
         X-Real-IP does not have an official singular format though.  The env
         is likely to be proxied somewhere though, so we need to at least try
         to capture the original host.
@@ -50,10 +50,10 @@ class HeaderAddressConnectionInfo:
                 hostname = x_real_ip[1]
                 return ParamsConnectionInfo(hostname, "Unknown (from X-Real-IP)")
             else:
-                return ParamsConnectionInfo("Unknown", "Unkown")
+                return ParamsConnectionInfo("Unknown", "Unknown")
         except Exception:
             LOGGER.exception("Unable to parse header for connection information")
-            return ParamsConnectionInfo("Unknown", "Unkown")
+            return ParamsConnectionInfo("Unknown", "Unknown")
 
     def _get_header(self, headers: Headers, header_name: str) -> tuple[str, str] | None:
         name = header_name.upper()
