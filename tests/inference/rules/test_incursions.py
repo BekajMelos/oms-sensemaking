@@ -29,14 +29,14 @@ from shapely.geometry import shape
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.inference.rules.incursions import Incursion
 from oms_sensemaking.inference.rules.rule_context import RuleContext
-from tests.domain.area_of_interest.test_aoi_extractor import TestAOIExtractor
+from tests.domain.area_of_interest.test_aoi_extractor import FakeAOIExtractor
 
 
 @pytest.fixture
 def areas_of_interest(observational_node_region1, observational_node_region2, observational_node_region3):
     # Done this way since there is no way to tell which AOI will be what index
     # We just grab the folder as a whole
-    extractor = TestAOIExtractor()
+    extractor = FakeAOIExtractor()
     aois = extractor.get_areas_of_interest()
     test_aois = [None] * len(aois)
     for aoi in aois:
@@ -308,7 +308,7 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 # Tests
 def test_evaluate_input(observational_node_region1):
     """Test to verify valid inputs are recognized as such"""
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     # Rule should only be ran against observations
     assert not rule.evaluate(RuleContext()), "should only run for observations"
@@ -322,7 +322,7 @@ def test_evaluate_input(observational_node_region1):
 
 def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_activity, mock_update_activity):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     rule.action(RuleContext(observation=no_inc_observational_node))
     mock_create_activity.assert_not_called()
@@ -341,7 +341,7 @@ def test_new_incursion_region1(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region1
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region1))
     mock_get_attributes.assert_called_with(
@@ -409,7 +409,7 @@ def test_new_incursion_region2(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region2))
     mock_get_attributes.assert_called_with(
@@ -482,7 +482,7 @@ def test_two_existing_incursions(
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2, attribute1]
     mock_get_attributes.return_value = mock_attribute_response
@@ -540,7 +540,7 @@ def test_existing_incursion_nonoverlapping_time(
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
@@ -591,7 +591,7 @@ def test_new_incursion_region3(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region3))
     mock_get_attributes.assert_called_with(
@@ -659,7 +659,7 @@ def test_new_incursion_region4(
     areas_of_interest,
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", TestAOIExtractor())
+    rule = Incursion("incursion rule", FakeAOIExtractor())
 
     rule.action(RuleContext(observation=observational_node_region4))
     mock_get_attributes.assert_called_with(
