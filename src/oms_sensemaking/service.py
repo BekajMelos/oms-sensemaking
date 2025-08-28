@@ -19,7 +19,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ping_db
-from oms_sensemaking.config import LogConfig, SETTINGS, Settings
+from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
