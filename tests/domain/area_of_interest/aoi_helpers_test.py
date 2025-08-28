@@ -2,11 +2,11 @@ import pytest
 from shapely.geometry import Polygon, mapping, shape
 
 from oms_sensemaking.domain.area_of_interest.aoi import AreaOfInterest
-from tests.domain.area_of_interest.test_aoi_extractor import TestAOIExtractor  # adjust import path as needed
+from tests.domain.area_of_interest.test_aoi_extractor import FakeAOIExtractor  # adjust import path as needed
 
 
 def test_get_areas_of_interest_returns_list():
-    extractor = TestAOIExtractor()
+    extractor = FakeAOIExtractor()
     aois = extractor.get_areas_of_interest()
 
     assert isinstance(aois, list)
