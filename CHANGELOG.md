@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Log request header information
 
 ### Changed
+- Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
 
 ### Fixed
 

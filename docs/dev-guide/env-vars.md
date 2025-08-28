@@ -148,3 +148,10 @@
 | `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
 | `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
 | `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |
+
+##### UI/Display Settings
+
+| Variable Name                    | Example                           | Description                                                    | Docker Compose |
+|:---------------------------------|:----------------------------------|:---------------------------------------------------------------|:--------------:|
+| `CLASSIFICATION_BANNER_TEXT`     | `UNCLASSIFIED`                    | Text to display in the classification banner                   | No             |
+| `CLASSIFICATION_BANNER_COLOR`    | `#00c853`                         | Background color for the classification banner                 | No             |
