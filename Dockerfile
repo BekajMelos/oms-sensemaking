@@ -209,19 +209,17 @@ dnf install -y \
 ARCH=$(uname -m) && \
 if [ "$ARCH" = "aarch64" ]; then \
     dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
-    dnf config-manager --set-enabled epel && \
-    dnf install -y geos-devel && \
-    dnf clean all; \
+    dnf config-manager --set-enabled epel; \
 elif [ "$ARCH" = "x86_64" ]; then \
     dnf install -y --nogpgcheck ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
     sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
-    dnf clean all && \
-    dnf install -y geos-devel && \
     dnf clean all; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
+dnf install -y geos-devel && \
+dnf clean all
 
 # install app
 pip install .
