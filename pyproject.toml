@@ -17,8 +17,8 @@ dynamic = ['version']
 dependencies = [
     'alembic==1.13.2',
     'collections-extended==2.0.2',
-    'fastapi[standard]==0.112.2',
-    'fastapi-offline==1.7.2',
+    'fastapi[standard]==0.116.1',
+    'fastapi-offline==1.7.4',
     'fastkml==1.1.0',
     'geoalchemy2==0.15.2',
     'geolib==1.0.7',
