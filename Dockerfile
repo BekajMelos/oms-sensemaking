@@ -129,9 +129,6 @@ ARG VCS_REF
 
 ARG PIP_INDEX_URL
 
-# fallback to public PyPI
-ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
-
 # disable pip cache
 ARG PIP_NO_CACHE_DIR=1
 
