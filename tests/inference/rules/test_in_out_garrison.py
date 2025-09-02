@@ -312,7 +312,7 @@ def mock_get_observations(mocker: MockerFixture, observational_node2):
 @pytest.fixture
 def mock_gql_query(mocker, garrison_object, geo_attribute1):
     """
-    Mocks the single custom operation used by _fetch_home_base_and_geo.
+    Mocks the single custom operation used by _fetch_garrison_coords.
     Returns a structure matching the generated client:
       result.node.relationships.data[0].end_node.attributes.data[0].geometry.coordinates
     """

@@ -1,6 +1,6 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
@@ -75,9 +75,9 @@ class InOrOutOfGarrison(BaseRule):
         obs = rule_context.observation
         node_object = oms_crud_tool.get_node(obs.nodeId)
 
-        home_base_id, garrison_coords_lonlat = self._fetch_home_base_and_geo(obs.nodeId)
+        garrison_coords_lonlat = self._fetch_garrison_coords(obs.nodeId)
 
-        if home_base_id and garrison_coords_lonlat:
+        if garrison_coords_lonlat:
             # obs.geometry is GeoJSON: [lon, lat]; convert both to [lat, lon] for geodesic()
             object_coordinates = obs.geometry["coordinates"]
             object_latlon = [object_coordinates[1], object_coordinates[0]]
@@ -197,13 +197,8 @@ class InOrOutOfGarrison(BaseRule):
             for act in activities
         )
 
-    def _fetch_home_base_and_geo(self, obs_node_id: str) -> Tuple[Optional[str], Optional[List[float]]]:
-        """
-        Return (home_base_id, [lon, lat]) for the observed node, or (None, None) if not found.
-        Uses a single operation via the SDK's custom operation builder.
-
-        :param obs_node_id: Observation's nodeId
-        """
+    def _fetch_garrison_coords(self, obs_node_id: str) -> Optional[List[float]]:
+        """Return [lon, lat] for the home base of the observed node, or None."""
         q = Query.node(IdQuery(id=obs_node_id)).fields(
             NodeFields.relationships(
                 filter=NodeRelationshipFilter(objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri])
@@ -211,13 +206,11 @@ class InOrOutOfGarrison(BaseRule):
                 RelationshipPageFields.data.on(
                     "RelationshipFields",
                     RelationshipFields.end_node().fields(
-                        NodeFields.id,
                         NodeFields.attributes(
                             filter=AttributeFilter(attributeIris=[SETTINGS.inference_geo_attribute_iri])
                         ).fields(
                             AttributePageFields.data.on(
                                 "AttributeFields",
-                                AttributeFields.id,
                                 AttributeFields.geometry,
                             )
                         ),
@@ -225,49 +218,20 @@ class InOrOutOfGarrison(BaseRule):
                 )
             )
         )
-
         result = oms_crud_tool.oms_client.query(q, operation_name="InOutGarrison_HomeBaseWithGeo")
 
-        # Parsing for object-like and dict-like responses
         def get(obj: Any, name: str):
             return getattr(obj, name, None) if not isinstance(obj, dict) else obj.get(name)
 
         node = get(result, "node")
-        if not node:
-            return None, None
-
-        rels_page = get(node, "relationships")
-        if not rels_page:
-            return None, None
-
-        rels = get(rels_page, "data") or []
+        rels = get(get(node, "relationships"), "data") or []
         if not rels:
-            return None, None
-
-        # Take the first matching relationship/end_node/attribute
-        rel0 = rels[0]
-        end_node = get(rel0, "end_node")
-        if not end_node:
-            return None, None
-
-        home_base_id = get(end_node, "id")
-
-        attrs_page = get(end_node, "attributes")
-        if not attrs_page:
-            return home_base_id, None
-
-        attrs = get(attrs_page, "data") or []
+            return None
+        end_node = get(rels[0], "end_node")
+        attrs = get(get(end_node, "attributes"), "data") or []
         if not attrs:
-            return home_base_id, None
+            return None
 
-        attr0 = attrs[0]
-        geometry = get(attr0, "geometry")
-        if not isinstance(geometry, dict):
-            return home_base_id, None
-
-        coords = geometry.get("coordinates")
-        if not (isinstance(coords, list) and len(coords) >= 2):
-            return home_base_id, None
-
-        # coords [lon, lat] are standard to GeoJSON / GraphQL
-        return home_base_id, coords
+        geometry = get(attrs[0], "geometry") or {}
+        coords = geometry.get("coordinates")  # [lon, lat]
+        return coords if isinstance(coords, list) and len(coords) >= 2 else None
