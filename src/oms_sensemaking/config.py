@@ -526,6 +526,14 @@ class Settings(BaseSettings):
     otel_traces_sampler: str = Field(
         default="always_on", description="OpenTelemetry traces sampler"
     )
+    user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
+
+    @computed_field  # type: ignore
+    @cached_property
+    def user_dn_whitelist(self) -> list[str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(SETTINGS.user_dn_whitelist_path, "r") as fd:
+            return fd.read().lower().splitlines()
 
     @computed_field  # type: ignore
     @cached_property

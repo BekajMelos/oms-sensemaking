@@ -148,6 +148,8 @@
 | `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
 | `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
 | `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |
+| `USER_DN_WHITELIST_PATH`                    | `./data/whitelist.txt`                     | File path to the user whitelist for privileged requests                       | No             |
+
 
 ##### UI/Display Settings
 
