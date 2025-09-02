@@ -181,6 +181,11 @@ RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
   --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
 
+# disable pam_namespace to prevent CVE-2025-8941
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
+
 find /app -type f ! -name '*.sh' -exec chmod 644 {} \;
 find /app -type d -exec chmod 755 {} \;
 
