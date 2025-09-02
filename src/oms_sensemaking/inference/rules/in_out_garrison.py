@@ -198,7 +198,12 @@ class InOrOutOfGarrison(BaseRule):
         )
 
     def _fetch_garrison_coords(self, obs_node_id: str) -> Optional[List[float]]:
-        """Return [lon, lat] for the home base of the observed node, or None."""
+        """
+        Return [lon, lat] for the home base of the observed node, or None.
+        Uses a single operation via the SDK's custom operation builder.
+
+        :param obs_node_id: Observation's nodeId
+        """
         q = Query.node(IdQuery(id=obs_node_id)).fields(
             NodeFields.relationships(
                 filter=NodeRelationshipFilter(objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri])
@@ -227,6 +232,7 @@ class InOrOutOfGarrison(BaseRule):
         rels = get(get(node, "relationships"), "data") or []
         if not rels:
             return None
+
         end_node = get(rels[0], "end_node")
         attrs = get(get(end_node, "attributes"), "data") or []
         if not attrs:
