@@ -12,11 +12,11 @@ from typing import TypedDict
 
 import geopy.distance as gd
 import numpy
+import pygeohash as pgh
 from dateutil.parser import isoparse
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
-from geolib import geohash
 from oms_sdk.generated.generated_graphql_client import Confidence
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 from pydantic import BaseModel
@@ -79,7 +79,7 @@ class OmsGeoMixin(MappedAsDataclass):
         This value is calculated when the data is queried
         or provided by Python if accessed in a Python expression
         """
-        return geohash.encode(self.coordinates[1], self.coordinates[0], 20)
+        return pgh.encode(self.coordinates[1], self.coordinates[0], 12)
 
     @geohash.expression  # type: ignore [no-redef]
     @classmethod

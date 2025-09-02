@@ -7,13 +7,13 @@ from queue import PriorityQueue
 from typing import Any
 
 from geoalchemy2.types import Geography
-from geolib import geohash
 from sqlalchemy import and_, desc, func, join, select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.sql import cast
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.geo_helpers import get_geohash_neighbors
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_id_projection import GroupByTrackIdProjection
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
@@ -189,7 +189,7 @@ class SimilarTracksSensemaker(Sensemaker):
             base_geohash = point_geohash[0:-1]
             buffered_geohash_set.add(base_geohash)
 
-            neighbors = geohash.neighbours(base_geohash)
+            neighbors = get_geohash_neighbors(base_geohash)
             for neighbor in neighbors:
                 buffered_geohash_set.add(neighbor)
 

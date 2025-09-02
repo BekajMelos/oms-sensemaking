@@ -202,7 +202,7 @@ dnf install -y \
   git \
   jq \
   gcc \
-  python3-devel \
+  python3.12-devel \
   procps-ng
 
 ARCH=$(uname -m) && \
