@@ -5,6 +5,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationObservation,
     ObservationQuery,
     TimeQuery,
+    UuidQueryByList,
 )
 
 from oms_sensemaking.clients.instances import oms_crud_tool
@@ -48,7 +49,7 @@ class GeoTimeframe:
         if observation_start_time < self.start_time:
             # Check for observations between current observation end time and generic node start time
             observation_query = ObservationQuery(
-                nodeId=[node_object.id],
+                nodeIds=UuidQueryByList(in_=[node_object.id]),
                 startTime=TimeQuery(gte=observation.endTime),
                 endTime=TimeQuery(lt=self.start_time.isoformat()),
                 geometry=geo_query,
@@ -56,7 +57,7 @@ class GeoTimeframe:
         else:
             # Check for observations between generic end time and current observation start time
             observation_query = ObservationQuery(
-                nodeId=[node_object.id],
+                nodeIds=UuidQueryByList(in_=[node_object.id]),
                 startTime=TimeQuery(gt=self.end_time.isoformat()),
                 endTime=TimeQuery(lte=observation.startTime),
                 geometry=geo_query,

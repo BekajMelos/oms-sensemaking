@@ -5,11 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Log request header information
+- Added authorization for POST /aac/clear endpoint
 
 ### Changed
-- Integrate custom query to InOrOutOfGarrison to reduce complexity. 
+- Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Integrate custom query to InOrOutOfGarrison to reduce complexity.
 
 ### Fixed
+- Fixed bug causing multiple incursions to be created
 
 ### Removed
 
