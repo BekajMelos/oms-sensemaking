@@ -362,6 +362,30 @@ def test_evaluate_input(observational_node):
     assert not rule.evaluate(RuleContext(observation=observation_without_parent)), "expected input to be invalid"
 
 
+def test_no_relationship_no_op(mocker, observational_node, mock_get_node, mock_create_activity):
+    payload = {"node": {"relationships": {"data": []}}}
+    mocker.patch(
+        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.query", new=MagicMock(return_value=payload)
+    )
+    rule = InOrOutOfGarrison("garrison rule")
+
+    rule.action(RuleContext(observation=observational_node))
+    mock_create_activity.assert_not_called()
+
+
+def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_get_node, mock_create_activity):
+    payload = {
+        "node": {"relationships": {"data": [{"end_node": {"id": garrison_object.id, "attributes": {"data": []}}}]}}
+    }
+    mocker.patch(
+        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.query", new=MagicMock(return_value=payload)
+    )
+    rule = InOrOutOfGarrison("garrison rule")
+
+    rule.action(RuleContext(observation=observational_node))
+    mock_create_activity.assert_not_called()
+
+
 def test_new_in_garrison(
     observational_node,
     garrison_object,
