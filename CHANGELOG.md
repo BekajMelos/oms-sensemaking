@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Replaced geolib with pygeohash and updated packages to mitigate some prisma issues
 
 ### Removed
 
