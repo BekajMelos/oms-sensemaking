@@ -290,8 +290,6 @@ class TestDatabaseConnectionPooling:
                     patch("oms_sensemaking.clients.instances.scoped_session"),
                     patch("oms_sensemaking.clients.instances.sessionmaker"),
                 ):
-                    from oms_sensemaking.clients.instances import db_session
-
                     with db_session():
                         pass
 
@@ -315,8 +313,6 @@ class TestDatabaseConnectionPooling:
                     patch("oms_sensemaking.clients.instances.scoped_session"),
                     patch("oms_sensemaking.clients.instances.sessionmaker"),
                 ):
-                    from oms_sensemaking.clients.instances import db_session
-
                     with db_session():
                         pass
 
