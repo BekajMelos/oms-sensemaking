@@ -172,9 +172,10 @@ def initialize_settings() -> None:
     """Initialize Settings"""
     try:
         SETTINGS.load_audit_log_event_error_acm()
+        _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
-    except (FileNotFoundError, OSError, json.JSONDecodeError):
-        LOGGER.error("Unable to find file %s", SETTINGS.audit_log_error_json_file_path)
+    except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
+        LOGGER.error("Unable to initialize settings: %s", e)
         sys.exit("An error occurred during initialization.")
 
 

@@ -6,11 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Log request header information
+- Added authorization for POST /aac/clear endpoint
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
 
 ### Fixed
+- Fixed bug causing multiple incursions to be created
 
 ### Removed
 Removed the NLP feature from the code base to comply with STIG V-222518
