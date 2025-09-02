@@ -98,14 +98,19 @@ def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
 
-@pytest.fixture(scope="session")
-def create_source() -> Generator[CreateSourceCreateSource, Any, None]:
-    """Create a real Source (and dependencies) in OMS for integration tests."""
-    oms_crud_tool = OmsCrudTool()
+@pytest.fixture
+def mock_source():
+    """Mock source fixture for tests that need a source object."""
+    mock_source_obj = mock.MagicMock(spec=CreateSourceCreateSource)
+    mock_source_obj.id = "mock-source-id"
+    return mock_source_obj
 
+
+@pytest.fixture(scope="session")
+def test_originator() -> Generator[Any, Any, None]:
+    """Create a real Originator in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
     originator_name = "int_test_originator"
-    provider_name = "int_test_provider"
-    source_name = "int_test_source"
 
     # Ensure Originator exists
     originators = oms_crud_tool.get_originator_by_name(originator_name)
@@ -116,6 +121,15 @@ def create_source() -> Generator[CreateSourceCreateSource, Any, None]:
             CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
         )
 
+    yield originator
+
+
+@pytest.fixture(scope="session")
+def test_provider(test_originator) -> Generator[Any, Any, None]:
+    """Create a real Provider in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    provider_name = "int_test_provider"
+
     # Ensure Provider exists
     providers = oms_crud_tool.get_provider_by_name(provider_name)
     if providers.data:
@@ -123,9 +137,22 @@ def create_source() -> Generator[CreateSourceCreateSource, Any, None]:
     else:
         provider = oms_crud_tool.create_provider(
             CreateProviderInput(
-                name=provider_name, description="Integration Test", originatorId=originator.id, acm=DEFAULT_ACM, tags=[]
+                name=provider_name,
+                description="Integration Test",
+                originatorId=test_originator.id,
+                acm=DEFAULT_ACM,
+                tags=[],
             )
         )
+
+    yield provider
+
+
+@pytest.fixture(scope="session")
+def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, None]:
+    """Create a real Source in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    source_name = "int_test_source"
 
     # Ensure Source exists
     sources = oms_crud_tool.get_source_by_name(source_name)
@@ -136,7 +163,7 @@ def create_source() -> Generator[CreateSourceCreateSource, Any, None]:
             CreateSourceInput(
                 name=source_name,
                 description="Integration Test",
-                providerId=provider.id,
+                providerId=test_provider.id,
                 acm=DEFAULT_ACM,
                 identifier="int_test_identifier",
                 dateOfReport="2004-05-23T00:00:00-04:00",

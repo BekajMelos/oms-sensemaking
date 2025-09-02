@@ -19,14 +19,14 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 oms_crud_tool = OmsCrudTool()
-person_node_iri = SETTINGS.nlp_node_iris["Person"]
-work_for_relationship_iri = SETTINGS.nlp_relationship_iris["Work_For"]
+person_node_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+work_for_relationship_iri = SETTINGS.resolution_relationship_iri
 test_node_name = "test_node_name"
 test_attribute_name = "test_attribute_name"
 test_relationship_name = "test_relationship_name"
 
 
-def test_multi_crud_operations(mock_source):
+def test_multi_crud_operations(create_source):
     nodes_to_publish = []
     for i in range(2):
         nodes_to_publish.append(
@@ -49,7 +49,7 @@ def test_multi_crud_operations(mock_source):
                 name=test_relationship_name + f"_{i}",
                 startNodeId=nodes[0].id,
                 endNodeId=nodes[1].id,
-                sourceId=mock_source.id,
+                sourceId=create_source.id,
                 confidence=Confidence.UNKNOWN,
                 acm=DEFAULT_ACM,
                 objectPropertyIri=work_for_relationship_iri,
@@ -62,11 +62,11 @@ def test_multi_crud_operations(mock_source):
     for i in range(2):
         attrs_to_publish.append(
             CreateAttributeInput(
-                attributeIri=SETTINGS.text_iri,
+                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeValue=test_attribute_name + f"_{i}",
                 attributeType=AttributeType.STRING,
                 confidence=Confidence.UNKNOWN,
-                sourceId=mock_source.id,
+                sourceId=create_source.id,
                 nodeId=nodes[0].id,
                 acm=DEFAULT_ACM,
             )
@@ -105,7 +105,7 @@ def test_node_crud():
     assert delete_node
 
 
-def test_relationship_crud(mock_source):
+def test_relationship_crud(create_source):
     # First need to create a couple nodes that the relationship can use
     nodes_to_publish = []
     for i in range(2):
@@ -128,7 +128,7 @@ def test_relationship_crud(mock_source):
             name=work_for_relationship_iri,
             startNodeId=nodes[0].id,
             endNodeId=nodes[1].id,
-            sourceId=mock_source.id,
+            sourceId=create_source.id,
             confidence=Confidence.UNKNOWN,
             acm=DEFAULT_ACM,
             objectPropertyIri=work_for_relationship_iri,
@@ -154,8 +154,7 @@ def test_relationship_crud(mock_source):
     assert delete_relationship
 
 
-def test_attribute_crud(mock_source):
-    # First, need to create a node that the attribute can be based on
+def test_attribute_crud(create_source):
     node = oms_crud_tool.create_node(
         CreateNodeInput(
             acm=DEFAULT_ACM,
@@ -170,11 +169,11 @@ def test_attribute_crud(mock_source):
 
     attribute = oms_crud_tool.create_attribute(
         CreateAttributeInput(
-            attributeIri=SETTINGS.text_iri,
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
             attributeValue=test_attribute_name,
             attributeType=AttributeType.STRING,
             confidence=Confidence.UNKNOWN,
-            sourceId=mock_source.id,
+            sourceId=create_source.id,
             nodeId=node.id,
             acm=DEFAULT_ACM,
         )
