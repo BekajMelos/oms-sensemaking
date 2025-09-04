@@ -22,9 +22,13 @@ class BaseClient:
         self._service_name = service_name
 
     def _resolve_host(self) -> str | None:
-        resolved = socket.gethostbyname(self._host)
-        LOGGER.info(f"Resolved {self._service_name} host '{self._host}' to IP {resolved}:{self._port}")
-        return resolved
+        try:
+            resolved = socket.gethostbyname(self._host)
+            LOGGER.info(f"Resolved {self._service_name} host '{self._host}' to IP {resolved}:{self._port}")
+            return resolved
+        except socket.gaierror as e:
+            LOGGER.warning(f"Failed to resolve host '{self._host}' for {self._service_name}: {e}")
+            return None
 
     def ping(self) -> bool:
         """Attempt a TCP connection to the configured host/port."""
