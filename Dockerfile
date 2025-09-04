@@ -88,7 +88,12 @@ dnf install -y \
   gzip \
   tar
 
+
+
+ls /bin
+# python -m pip uninstall urllib3 -y
 dnf install -y python3.12 python3.12-pip
+pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
 alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 100 \
@@ -181,10 +186,7 @@ RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
   --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
 
-# disable pam_namespace to prevent CVE-2025-8941
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
+
 
 find /app -type f ! -name '*.sh' -exec chmod 644 {} \;
 find /app -type d -exec chmod 755 {} \;
@@ -199,7 +201,7 @@ dnf -y update
 
 # update core Python packaging tools
 export PIP_NO_INPUT=1
-python3 -m pip install --upgrade pip wheel
+python3 -m pip install --upgrade pip wheel setuptools
 
 # install application's system dependencies
 dnf install -y \
@@ -224,6 +226,15 @@ else \
 fi && \
 dnf install -y geos-devel && \
 dnf clean all
+
+# disable pam_namespace to prevent CVE-2025-8941
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
+sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
+find / -name pam_namespace.so -delete
+
+# delete private keys
+rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
 
 # install app
 pip install .
