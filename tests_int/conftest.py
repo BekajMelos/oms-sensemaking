@@ -112,14 +112,9 @@ def test_originator() -> Generator[Any, Any, None]:
     oms_crud_tool = OmsCrudTool()
     originator_name = "int_test_originator"
 
-    # Ensure Originator exists
-    originators = oms_crud_tool.get_originator_by_name(originator_name)
-    if originators.data:
-        originator = originators.data[0]
-    else:
-        originator = oms_crud_tool.create_originator(
-            CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
-        )
+    originator = oms_crud_tool.create_originator(
+        CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
+    )
 
     yield originator
 
@@ -130,20 +125,15 @@ def test_provider(test_originator) -> Generator[Any, Any, None]:
     oms_crud_tool = OmsCrudTool()
     provider_name = "int_test_provider"
 
-    # Ensure Provider exists
-    providers = oms_crud_tool.get_provider_by_name(provider_name)
-    if providers.data:
-        provider = providers.data[0]
-    else:
-        provider = oms_crud_tool.create_provider(
-            CreateProviderInput(
-                name=provider_name,
-                description="Integration Test",
-                originatorId=test_originator.id,
-                acm=DEFAULT_ACM,
-                tags=[],
-            )
+    provider = oms_crud_tool.create_provider(
+        CreateProviderInput(
+            name=provider_name,
+            description="Integration Test",
+            originatorId=test_originator.id,
+            acm=DEFAULT_ACM,
+            tags=[],
         )
+    )
 
     yield provider
 
@@ -154,24 +144,19 @@ def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, Non
     oms_crud_tool = OmsCrudTool()
     source_name = "int_test_source"
 
-    # Ensure Source exists
-    sources = oms_crud_tool.get_source_by_name(source_name)
-    if sources.data:
-        source = sources.data[0]
-    else:
-        source = oms_crud_tool.create_source(
-            CreateSourceInput(
-                name=source_name,
-                description="Integration Test",
-                providerId=test_provider.id,
-                acm=DEFAULT_ACM,
-                identifier="int_test_identifier",
-                dateOfReport="2004-05-23T00:00:00-04:00",
-                dateOfInformation="2004-05-23T00:00:00-04:00",
-                dataAcm=DEFAULT_ACM,
-                tags=[],
-            )
+    source = oms_crud_tool.create_source(
+        CreateSourceInput(
+            name=source_name,
+            description="Integration Test",
+            providerId=test_provider.id,
+            acm=DEFAULT_ACM,
+            identifier="int_test_identifier",
+            dateOfReport="2004-05-23T00:00:00-04:00",
+            dateOfInformation="2004-05-23T00:00:00-04:00",
+            dataAcm=DEFAULT_ACM,
+            tags=[],
         )
+    )
 
     yield source
 
