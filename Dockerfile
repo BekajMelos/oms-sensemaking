@@ -106,7 +106,7 @@ else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
 dnf -qy module disable postgresql || true && \
-dnf -y install postgresql16
+dnf -y install postgresql17
 
 # prepare file system
 mkdir -p $APP_HOME
