@@ -46,5 +46,10 @@ class BaseClient:
                 return True
             attempt += 1
             if attempt < retries:
+                LOGGER.warning(
+                    f"Failed to connect to {self._service_name} at {self._host}:{self._port}. "
+                    f"Retrying in {delay_seconds}s. Attempt {attempt + 1}/{retries}"
+                )
                 time.sleep(delay_seconds)
+        LOGGER.error(f"Failed to connect to {self._service_name} at {self._host}:{self._port} after {retries} attempts")
         return False
