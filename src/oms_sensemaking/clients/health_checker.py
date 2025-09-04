@@ -9,7 +9,6 @@ from oms_sdk.generated.generated_graphql_client.input_types import (
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -47,12 +46,3 @@ class HealthChecker:
         except Exception as e:
             LOGGER.error(repr(e))
             return f"{self._unhealthy} AAC Service"
-
-    def get_nlp_health(self, corenlp_client: CoreNlpClient):
-        LOGGER.debug("Checking NLP Service health")
-        try:
-            corenlp_client.annotate_document_str("the quick brown fox jumped over the lazy dog")
-            return self._healthy
-        except Exception as e:
-            LOGGER.error(repr(e))
-            return f"{self._unhealthy} NLP Service"

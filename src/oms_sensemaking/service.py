@@ -17,7 +17,7 @@ from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
-from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
+from oms_sensemaking.api.routers import aac, about, health, rdf
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -158,7 +158,6 @@ def create_app(config: Settings) -> FastAPI:
     # configure routes
     application.include_router(about.router)
     application.include_router(aac.router, prefix="/aac")
-    application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
 

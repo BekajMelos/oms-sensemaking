@@ -13,56 +13,20 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeInput,
     UpdateNodeInput,
     UpdateRelationshipInput,
-    UpdateSourceInput,
 )
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 oms_crud_tool = OmsCrudTool()
-person_node_iri = SETTINGS.nlp_node_iris["Person"]
-work_for_relationship_iri = SETTINGS.nlp_relationship_iris["Work_For"]
+person_node_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
+work_for_relationship_iri = SETTINGS.resolution_relationship_iri
 test_node_name = "test_node_name"
 test_attribute_name = "test_attribute_name"
 test_relationship_name = "test_relationship_name"
 
 
-def test_test_source_creation():
-    # Test path where source already exists (it is created in conftest before testing)
-    test_source = oms_crud_tool.create_test_source()
-    assert test_source
-    assert test_source.name == "nlp_test_source"
-
-    # Test logic path where source does not yet exist
-    new_originator_name = "new_test_nlp_originator"
-    new_provider_name = "new_test_nlp_provider"
-    new_source_name = "new_test_nlp_source"
-    new_test_source = oms_crud_tool.create_test_source(
-        test_originator_name=new_originator_name, test_provider_name=new_provider_name, test_source_name=new_source_name
-    )
-    assert new_test_source
-    assert new_test_source.name == new_source_name
-
-    source_id = new_test_source.id
-    provider_id = new_test_source.providerId
-    originator_id = oms_crud_tool.get_originator_by_name(new_originator_name).data[0].id
-
-    # Source update
-    updated_name = "updated_source_name_x"
-    updated_source = oms_crud_tool.update_source(UpdateSourceInput(id=source_id, name=updated_name))
-    assert updated_source.name == updated_name
-
-    # Source get
-    get_source = oms_crud_tool.get_source(source_id)
-    assert get_source.name == updated_source.name
-
-    # Delete source, provider, and originator
-    assert oms_crud_tool.delete_source(source_id)
-    assert oms_crud_tool.delete_provider(provider_id)
-    assert oms_crud_tool.delete_originator(originator_id)
-
-
-def test_multi_crud_operations(mock_source):
+def test_multi_crud_operations(create_source):
     nodes_to_publish = []
     for i in range(2):
         nodes_to_publish.append(
@@ -70,7 +34,7 @@ def test_multi_crud_operations(mock_source):
                 acm=DEFAULT_ACM,
                 name=test_node_name + f"_{i}",
                 tier=ObjectTier.DERIVATIVE,
-                tags=SETTINGS.nlp_tags,
+                tags=SETTINGS.inference_tags,
                 classIri=person_node_iri,
                 isNso=True,
             )
@@ -85,7 +49,7 @@ def test_multi_crud_operations(mock_source):
                 name=test_relationship_name + f"_{i}",
                 startNodeId=nodes[0].id,
                 endNodeId=nodes[1].id,
-                sourceId=mock_source.id,
+                sourceId=create_source.id,
                 confidence=Confidence.UNKNOWN,
                 acm=DEFAULT_ACM,
                 objectPropertyIri=work_for_relationship_iri,
@@ -98,11 +62,11 @@ def test_multi_crud_operations(mock_source):
     for i in range(2):
         attrs_to_publish.append(
             CreateAttributeInput(
-                attributeIri=SETTINGS.text_iri,
+                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeValue=test_attribute_name + f"_{i}",
                 attributeType=AttributeType.STRING,
                 confidence=Confidence.UNKNOWN,
-                sourceId=mock_source.id,
+                sourceId=create_source.id,
                 nodeId=nodes[0].id,
                 acm=DEFAULT_ACM,
             )
@@ -118,7 +82,7 @@ def test_node_crud():
             acm=DEFAULT_ACM,
             name=test_node_name,
             tier=ObjectTier.DERIVATIVE,
-            tags=SETTINGS.nlp_tags,
+            tags=SETTINGS.inference_tags,
             classIri=person_node_iri,
             isNso=True,
         )
@@ -141,7 +105,7 @@ def test_node_crud():
     assert delete_node
 
 
-def test_relationship_crud(mock_source):
+def test_relationship_crud(create_source):
     # First need to create a couple nodes that the relationship can use
     nodes_to_publish = []
     for i in range(2):
@@ -150,7 +114,7 @@ def test_relationship_crud(mock_source):
                 acm=DEFAULT_ACM,
                 name=test_node_name + f"_{i}",
                 tier=ObjectTier.DERIVATIVE,
-                tags=SETTINGS.nlp_tags,
+                tags=SETTINGS.inference_tags,
                 classIri=person_node_iri,
                 isNso=True,
             )
@@ -164,7 +128,7 @@ def test_relationship_crud(mock_source):
             name=work_for_relationship_iri,
             startNodeId=nodes[0].id,
             endNodeId=nodes[1].id,
-            sourceId=mock_source.id,
+            sourceId=create_source.id,
             confidence=Confidence.UNKNOWN,
             acm=DEFAULT_ACM,
             objectPropertyIri=work_for_relationship_iri,
@@ -190,14 +154,13 @@ def test_relationship_crud(mock_source):
     assert delete_relationship
 
 
-def test_attribute_crud(mock_source):
-    # First, need to create a node that the attribute can be based on
+def test_attribute_crud(create_source):
     node = oms_crud_tool.create_node(
         CreateNodeInput(
             acm=DEFAULT_ACM,
             name=test_node_name,
             tier=ObjectTier.DERIVATIVE,
-            tags=SETTINGS.nlp_tags,
+            tags=SETTINGS.inference_tags,
             classIri=person_node_iri,
             isNso=True,
         )
@@ -206,11 +169,11 @@ def test_attribute_crud(mock_source):
 
     attribute = oms_crud_tool.create_attribute(
         CreateAttributeInput(
-            attributeIri=SETTINGS.text_iri,
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
             attributeValue=test_attribute_name,
             attributeType=AttributeType.STRING,
             confidence=Confidence.UNKNOWN,
-            sourceId=mock_source.id,
+            sourceId=create_source.id,
             nodeId=node.id,
             acm=DEFAULT_ACM,
         )
