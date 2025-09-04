@@ -22,25 +22,17 @@ class BaseClient:
         self._service_name = service_name
 
     def _resolve_host(self) -> str | None:
-        try:
-            resolved = socket.gethostbyname(self._host)
-            LOGGER.info(f"Resolved {self._service_name} host '{self._host}' to IP {resolved}:{self._port}")
-            return resolved
-        except Exception as ex:
-            LOGGER.warning(f"Unable to resolve {self._service_name} host '{self._host}': {ex}")
-            return None
+        resolved = socket.gethostbyname(self._host)
+        LOGGER.info(f"Resolved {self._service_name} host '{self._host}' to IP {resolved}:{self._port}")
+        return resolved
 
     def ping(self) -> bool:
         """Attempt a TCP connection to the configured host/port."""
 
         resolved = self._resolve_host() or self._host
-        try:
-            with socket.create_connection((resolved, self._port), timeout=SETTINGS.ping_timeout_seconds):
-                LOGGER.info(f"{self._service_name} connectivity check successful to {resolved}:{self._port}")
-                return True
-        except Exception as ex:
-            LOGGER.warning(f"{self._service_name} connectivity check failed to {resolved}:{self._port}: {ex}")
-            return False
+        with socket.create_connection((resolved, self._port), timeout=SETTINGS.ping_timeout_seconds):
+            LOGGER.info(f"{self._service_name} connectivity check successful to {resolved}:{self._port}")
+            return True
 
     def wait_until_ready(self) -> bool:
         """Ping until healthy or retries exhausted."""
