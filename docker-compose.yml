@@ -175,38 +175,6 @@ services:
     profiles:
       - local
 
-  doccano:
-    image: doccano/doccano
-    ports:
-      - "8000:8000"
-    environment:
-      ADMIN_USERNAME: admin
-      ADMIN_EMAIL: admin@example.com
-      ADMIN_PASSWORD: password
-    volumes:
-     - doccano-db:/data
-    profiles:
-      - local
-
-#  corenlp:
-#    command: docker buildx build -t corenlp https://github.com/NLPbox/stanford-corenlp-docker.git
-#    build:
-#        context: https://github.com/NLPbox/stanford-corenlp-docker
-#    image: corenlp:latest
-#    ports:
-#      - "9000:9000"
-#    environment:
-#      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation
-
-  corenlp:
-    build:
-      dockerfile: docker/corenlp/Dockerfile
-    image: corenlp:latest
-    ports:
-      - "${CORENLP_EXPOSE_PORT:-}:9000"
-    environment:
-      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
-
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: rabbitmq
@@ -344,7 +312,6 @@ services:
       - local
 
 volumes:
-  doccano-db:
   localstack:
   pgadmin:
   postgis:

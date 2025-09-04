@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Fixed bug causing multiple incursions to be created
 
 ### Removed
+Removed the NLP feature from the code base to comply with STIG V-222518
 
 ## [0.11.1] - 2025-08-25
 
