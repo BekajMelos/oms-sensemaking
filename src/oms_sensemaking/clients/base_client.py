@@ -38,7 +38,7 @@ class BaseClient:
             with socket.create_connection((resolved, self._port), timeout=SETTINGS.ping_timeout_seconds):
                 LOGGER.info(f"{self._service_name} connectivity check successful to {resolved}:{self._port}")
                 return True
-        except Exception as ex:
+        except (TimeoutError, socket.gaierror, OSError) as ex:
             LOGGER.warning(f"{self._service_name} connectivity check failed to {resolved}:{self._port}: {ex}")
             return False
 
