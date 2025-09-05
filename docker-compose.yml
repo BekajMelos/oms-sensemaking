@@ -5,7 +5,8 @@ services:
       secrets:
         - mynetrc
       args:
-        PIP_EXTRA_INDEX_URL: ${PIP_INDEX}
+        PIP_INDEX_URL: ${PIP_INDEX}
+        PIP_EXTRA_INDEX_URL: ${PIP_EXTRA_INDEX}
     ports:
       - 5001:${UVICORN_PORT:-8443}
     environment:

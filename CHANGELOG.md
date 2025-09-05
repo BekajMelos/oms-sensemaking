@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Only use private pypi package registries
 
 ### Fixed
 - Fixed bug causing multiple incursions to be created
