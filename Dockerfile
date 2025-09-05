@@ -89,9 +89,8 @@ dnf install -y \
   tar
 
 
-
-ls /bin
-# python -m pip uninstall urllib3 -y
+# remove old urllib3 (prisma)
+rm -rf /usr/lib/python3.6/site-packages/urllib3*
 dnf install -y python3.12 python3.12-pip
 pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
@@ -227,13 +226,13 @@ fi && \
 dnf install -y geos-devel && \
 dnf clean all
 
-# disable pam_namespace to prevent CVE-2025-8941
+# disable pam_namespace to prevent CVE-2025-8941 (prisma)
 sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
 sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
 sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
 find / -name pam_namespace.so -delete
 
-# delete private keys
+# delete private keys in documentation (prisma)
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
 
 # install app
