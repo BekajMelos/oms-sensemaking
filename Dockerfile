@@ -234,6 +234,7 @@ find / -name pam_namespace.so -delete
 
 # delete private keys in documentation (prisma)
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
+rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
 
 # install app
 pip install .
