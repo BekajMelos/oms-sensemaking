@@ -97,16 +97,16 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 
 ARCH=$(uname -m) && \
 if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-libs-16.4-1PGDG.rhel8.aarch64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-16.4-1PGDG.rhel8.aarch64.rpm; \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-libs-17.6-1PGDG.rhel8.aarch64.rpm && \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-17.6-1PGDG.rhel8.aarch64.rpm; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
 dnf -qy module disable postgresql || true && \
-dnf -y install postgresql16
+dnf -y install postgresql17
 
 # prepare file system
 mkdir -p $APP_HOME
