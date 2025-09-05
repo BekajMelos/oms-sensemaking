@@ -6,7 +6,7 @@ services:
         - mynetrc
       args:
         PIP_INDEX_URL: ${PIP_INDEX}
-        PIP_EXTRA_INDEX_URL: "https://pypi.org/simple"
+        PIP_EXTRA_INDEX_URL: ${PIP_EXTRA_INDEX}
     ports:
       - 5001:${UVICORN_PORT:-8443}
     environment:
