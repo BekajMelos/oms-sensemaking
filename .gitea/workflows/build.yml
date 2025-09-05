@@ -85,7 +85,7 @@ jobs:
             BUILD_DATE=${{ env.BUILD_DATE }}
             VCS_REF=${{ env.GITHUB_SHA }}
             PIP_INDEX_URL=${{ vars.PIP_INDEX }}
-            PIP_EXTRA_INDEX_URL=https://pypi.org/simple
+            PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
 
           # https://github.com/docker/build-push-action/issues/293#issuecomment-1865957342
           secret-files: |
