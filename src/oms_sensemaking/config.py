@@ -254,9 +254,8 @@ class Settings(BaseSettings):
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
     )
-    inference_incursion_areas_of_interest_paths: list[str] = Field(
-        ["./data/big_island_aoi.json", "./data/mozambiqueChannel.kml", "./data/pacific_ocean_aoi.json",
-         "./data/pohakuloa_training_aoi.json"], description="Path to areas of interest file"
+    inference_incursion_areas_of_interest_path: str = Field(
+        "./data/areas_of_interest", description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
         "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
@@ -418,7 +417,7 @@ class Settings(BaseSettings):
     ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-29", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(
