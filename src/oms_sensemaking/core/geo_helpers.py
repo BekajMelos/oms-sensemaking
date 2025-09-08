@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 
 from geopy.distance import geodesic
 from geopy.point import Point
@@ -11,7 +12,7 @@ from oms_sensemaking.core.kml_reader import KMLReader
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def gather_area_of_interest_data(paths_to_aoi_data: list[str]):
+def gather_area_of_interest_data(paths_to_aoi_data: str):
     """
     A function that gathers all of the data from the individual
     geoJSON files found in the specified directory.
@@ -20,7 +21,10 @@ def gather_area_of_interest_data(paths_to_aoi_data: list[str]):
     """
     areas_of_interest: list[dict | None] = []
     kml_reader = KMLReader()
-    for file_path in paths_to_aoi_data:
+    for file in os.listdir(paths_to_aoi_data):
+        file_path = os.path.join(paths_to_aoi_data, file)
+        if not os.path.isfile(file_path):
+            continue
         try:
             if file_path.endswith(".json"):
                 json_aois = get_aois_from_json(file_path)

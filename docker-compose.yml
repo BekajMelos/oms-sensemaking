@@ -5,7 +5,8 @@ services:
       secrets:
         - mynetrc
       args:
-        PIP_EXTRA_INDEX_URL: ${PIP_INDEX}
+        PIP_INDEX_URL: ${PIP_INDEX}
+        PIP_EXTRA_INDEX_URL: ${PIP_EXTRA_INDEX}
     ports:
       - 5001:${UVICORN_PORT:-8443}
     environment:
@@ -37,7 +38,7 @@ services:
       - postgis
 
   postgis:
-    image: postgis/postgis:16-3.4-alpine
+    image: postgis/postgis:17-3.5-alpine
     platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
     ports:
       - "${POSTGRES_PORT:-}:5432"
