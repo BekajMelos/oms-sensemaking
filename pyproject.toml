@@ -26,7 +26,7 @@ dependencies = [
     'graphql-core==3.2.6',
     'hishel==0.1.2',
     'numpy==1.26.4',
-    'oms_sdk@git+https://tex.gerbil-cloud.ts.net:3000/oms/oms-sdk-python.git@feature/grimlock-inc-30',
+    'oms_sdk==8.0.0',
     'pandas==2.2.2',
     'pika==1.3.2',
     'psycopg[binary,pool]==3.2.1',
