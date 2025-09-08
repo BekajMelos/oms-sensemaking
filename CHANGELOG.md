@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
-
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
 ### Fixed
 - Fixed bug causing multiple incursions to be created
 
