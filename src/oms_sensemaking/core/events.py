@@ -20,7 +20,6 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
-from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -150,10 +149,6 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
         LOGGER.info(f"Trying to connect to {self._queue_name} at {SETTINGS.rabbitmq_host}:{SETTINGS.rabbitmq_port}")
-        try:
-            BaseClient(SETTINGS.rabbitmq_host, SETTINGS.rabbitmq_port, "RabbitMQ").ping()
-        except Exception as ex:
-            LOGGER.warning(f"Unable to resolve/ping RabbitMQ host '{SETTINGS.rabbitmq_host}': {ex}")
         try:
             credentials = PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
             parameters = ConnectionParameters(
