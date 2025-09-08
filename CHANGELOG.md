@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Only use private pypi package registries
 - Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
 - Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths
+- Updated ATOMS dependency to Grimlock-INC-30
 
 ### Fixed
 - Fixed bug causing multiple incursions to be created
