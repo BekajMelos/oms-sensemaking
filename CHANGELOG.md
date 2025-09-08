@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.12.0] - 2025-09-08
+
+### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
 
