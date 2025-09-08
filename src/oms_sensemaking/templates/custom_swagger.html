@@ -214,9 +214,6 @@
                 openapiUrl = currentPath.replace(/\/$/, '') + '/openapi.json';
             }
             
-            // Debug: log the constructed URL
-            console.log('Constructed OpenAPI URL:', openapiUrl);
-            
             const ui = SwaggerUIBundle({
                 url: openapiUrl,
                 dom_id: '#swagger-ui',
@@ -228,7 +225,6 @@
                 plugins: [
                     SwaggerUIBundle.plugins.DownloadUrl
                 ],
-                layout: "StandaloneLayout",
                 filter: true,
                 showExtensions: true,
                 showCommonExtensions: true,
