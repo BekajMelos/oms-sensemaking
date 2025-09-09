@@ -89,8 +89,6 @@ dnf install -y \
   tar
 
 
-# remove old urllib3 (prisma)
-rm -rf /usr/lib/python3.6/site-packages/urllib3*
 dnf install -y python3.12 python3.12-pip
 pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
@@ -248,6 +246,11 @@ alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_
 dnf remove -y gcc python3-devel geos-devel && \
 dnf autoremove -y && \
 dnf clean all
+
+# remove old python packages (prisma)
+rm -rf /usr/lib/python3.6/site-packages/urllib3*
+rm -rf /usr/lib/python3.6/site-packages/setuptools*
+
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
