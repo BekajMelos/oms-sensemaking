@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.12.1] - 2025-09-09
+
+### Fixed
+- Incorrect pgsql version being added to PATH was updated to version 17 to commincate with the database in deployed environments
+
+## [0.12.0] - 2025-09-08
+
+### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
 
@@ -13,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Only use private pypi package registries
 - Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
 - Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths
+- Updated ATOMS dependency to Grimlock-INC-30
 
 ### Fixed
 - Fixed bug causing multiple incursions to be created
