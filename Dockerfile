@@ -238,11 +238,14 @@ dnf clean all
 rm -rf /usr/lib/python3.6/site-packages/urllib3*
 rm -rf /usr/lib/python3.6/site-packages/setuptools*
 
-# # disable pam_namespace to prevent CVE-2025-8941 (prisma)
+# disable pam_namespace to prevent CVE-2025-8941 (prisma)
 # sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
 # sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
 # sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
-# find / -name pam_namespace.so -delete
+sed -i '/pam_namespace.so/d' /etc/pam.d/login
+sed -i '/pam_namespace.so/d' /etc/pam.d/remote
+sed -i '/pam_namespace.so/d' /etc/pam.d/systemd-user
+find / -name pam_namespace.so -delete
 
 # delete private keys in documentation (prisma)
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
