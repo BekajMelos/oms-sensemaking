@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
+- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
@@ -72,7 +73,6 @@ Removed the NLP feature from the code base to comply with STIG V-222518
 - CronEventEmitter, which emits fake Audit Log Events on a set interval
 - Observable Sensemaker, which processes all observables every 15 minutes
 - Implemented geofence logic, other observable types to be implemented
-- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
