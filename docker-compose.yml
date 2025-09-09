@@ -5,7 +5,8 @@ services:
       secrets:
         - mynetrc
       args:
-        PIP_EXTRA_INDEX_URL: ${PIP_INDEX}
+        PIP_INDEX_URL: ${PIP_INDEX}
+        PIP_EXTRA_INDEX_URL: ${PIP_EXTRA_INDEX}
     ports:
       - 5001:${UVICORN_PORT:-8443}
     environment:
@@ -42,7 +43,7 @@ services:
       - postgis
 
   postgis:
-    image: postgis/postgis:16-3.4-alpine
+    image: postgis/postgis:17-3.5-alpine
     platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
     ports:
       - "${POSTGRES_PORT:-}:5432"
@@ -68,7 +69,7 @@ services:
       - ./etc/pki:/opt/common/pki:rw
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sh:/docker-entrypoint-initdb.d/20_oms-sensemaking.sh
       - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
-      - ./docker/postgis/initdb.d/40_enable-hstore.sh:/docker-entrypoint-initdb.d/40_enable-hstore.sh
+      - ./docker/postgis/initdb.d/40_enable-extensions.sh:/docker-entrypoint-initdb.d/40_enable-extensions.sh
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -179,38 +180,6 @@ services:
       TEMPLATES_PARSE_INTERVAL: 15s
     profiles:
       - local
-
-  doccano:
-    image: doccano/doccano
-    ports:
-      - "8000:8000"
-    environment:
-      ADMIN_USERNAME: admin
-      ADMIN_EMAIL: admin@example.com
-      ADMIN_PASSWORD: password
-    volumes:
-     - doccano-db:/data
-    profiles:
-      - local
-
-#  corenlp:
-#    command: docker buildx build -t corenlp https://github.com/NLPbox/stanford-corenlp-docker.git
-#    build:
-#        context: https://github.com/NLPbox/stanford-corenlp-docker
-#    image: corenlp:latest
-#    ports:
-#      - "9000:9000"
-#    environment:
-#      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation
-
-  corenlp:
-    build:
-      dockerfile: docker/corenlp/Dockerfile
-    image: corenlp:latest
-    ports:
-      - "${CORENLP_EXPOSE_PORT:-}:9000"
-    environment:
-      ANNOTATORS: tokenize,ssplit,pos,lemma,ner,depparse,coref,natlog,openie,parse,relation,kbp
 
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -408,7 +377,6 @@ services:
       - metrics
 
 volumes:
-  doccano-db:
   localstack:
   pgadmin:
   postgis:

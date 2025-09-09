@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session, scoped_session, sessionmaker
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.clients.health_checker import HealthChecker
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.nlp.corenlp_client import CoreNlpClient
 
 from ..config import SETTINGS
 
@@ -47,7 +46,5 @@ def db_session() -> Iterator[Session]:
 aac_client = AacClient(SETTINGS.cert_path, SETTINGS.key_path, SETTINGS.cacert_path, SETTINGS.aac_verification_mode)
 
 oms_crud_tool = OmsCrudTool()
-
-corenlp_client = CoreNlpClient(props=SETTINGS.corenlp_client_props, hostname=SETTINGS.corenlp_host)
 
 health_checker = HealthChecker()

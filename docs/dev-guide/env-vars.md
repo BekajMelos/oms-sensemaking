@@ -58,7 +58,7 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-29`                                  | The version of oms-bridge | Yes            |
+| `OMSB_VERSION` | `Grimlock-INC-30`                                  | The version of oms-bridge | Yes            |
 | `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
@@ -108,8 +108,6 @@
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
 | `TOGGLE_ADD_GARRISON_RULE`                          | `True`                                                                                            | Turn the Garrison Rule On/Off                                  | Yes            |
 | `TOGGLE_INCURSION_RULE`                             | `True`                                                                                            | Turn the Incursion Rule On/Off                                 | Yes            |
-| `CORENLP_EXPOSE_PORT`                               | `9000`                                                                                            | Port to use for the core-nlp service. When set, this will expose the port to the host | Yes |
-| `CORENLP_HOST`                                      | `localhost:9000`                                                                                  | Host and port to connect to Core NLP                           | Yes            |
 | `INFERENCE_TAGS`                                    | `'["Oms Sensemaking", "Inferred Data"]'`                                                          | Tags Inference Sensemaker adds to data                         | No             |
 | `INFERENCE_INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
 | `INFERENCE_INCURSION_ATTRIBUTE_IRI`                 | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion Attribute                       | No             |
