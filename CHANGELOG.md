@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Incorrect pgsql version being added to PATH was updated to version 17 to commincate with the database in deployed environments
 
 ### Removed
 
