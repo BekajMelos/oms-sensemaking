@@ -88,7 +88,6 @@ dnf install -y \
   gzip \
   tar
 
-
 dnf install -y python3.12 python3.12-pip
 pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
@@ -183,8 +182,6 @@ RUN --mount=type=secret,id=mynetrc,dst=/root/.netrc,required,mode=0600 \
   --mount=type=secret,id=cacert,dst=/root/ca-certificate.crt,mode=0600 <<EOF
 set -e
 
-
-
 find /app -type f ! -name '*.sh' -exec chmod 644 {} \;
 find /app -type d -exec chmod 755 {} \;
 
@@ -224,16 +221,6 @@ fi && \
 dnf install -y geos-devel && \
 dnf clean all
 
-# disable pam_namespace to prevent CVE-2025-8941 (prisma)
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
-sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
-find / -name pam_namespace.so -delete
-
-# delete private keys in documentation (prisma)
-rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
-rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
-
 # install app
 pip install .
 
@@ -251,6 +238,15 @@ dnf clean all
 rm -rf /usr/lib/python3.6/site-packages/urllib3*
 rm -rf /usr/lib/python3.6/site-packages/setuptools*
 
+# # disable pam_namespace to prevent CVE-2025-8941 (prisma)
+# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
+# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
+# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
+# find / -name pam_namespace.so -delete
+
+# delete private keys in documentation (prisma)
+rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
+rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
