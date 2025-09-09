@@ -1,6 +1,6 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
-from typing import Any, List, Optional
+from typing import List, Optional
 
 from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
@@ -61,7 +61,6 @@ class InOrOutOfGarrison(BaseRule):
 
         obs = rule_context.observation
         node_object = oms_crud_tool.get_node(obs.nodeId)
-
         garrison_coords_lonlat = self._fetch_garrison_coords(obs.nodeId)
 
         if garrison_coords_lonlat:
@@ -72,7 +71,6 @@ class InOrOutOfGarrison(BaseRule):
 
             distance = geodesic(object_latlon, garrison_latlon).kilometers
             in_garrison = distance < SETTINGS.garrison_distance_kilometers
-
             garrison_buffer_points = generate_circle_points_geographical(
                 garrison_latlon[0], garrison_latlon[1], SETTINGS.garrison_distance_kilometers
             )
@@ -191,28 +189,26 @@ class InOrOutOfGarrison(BaseRule):
 
         :param obs_node_id: Observation's nodeId
         """
-
         result = oms_crud_tool.oms_client.in_out_garrison_with_geo(
             id=obs_node_id,
             garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
             geoIris=[SETTINGS.inference_geo_attribute_iri],
         )
 
-        def get(obj: Any, name: str):
-            return getattr(obj, name, None) if not isinstance(obj, dict) else obj.get(name)
-
-        node = get(result, "node")
-        rels_page = get(node, "relationships")
-        rels = get(rels_page, "data") or []
-        if not rels:
+        relationships = getattr(result, "relationships", None)
+        rel_data = getattr(relationships, "data", None)
+        rel = rel_data[0] if isinstance(rel_data, list) and rel_data else rel_data
+        if not rel:
             return None
 
-        end_node = get(rels[0], "endNode")
-        attrs_page = get(end_node, "attributes")
-        attrs = get(attrs_page, "data") or []
-        if not attrs:
+        end_node = getattr(rel, "endNode", None)
+        attributes = getattr(end_node, "attributes", None)
+        attr_data = getattr(attributes, "data", None)
+        attr = attr_data[0] if isinstance(attr_data, list) and attr_data else attr_data
+        if not attr:
             return None
 
-        geometry = get(attrs[0], "geometry") or {}
-        coords = geometry.get("coordinates")  # [lon, lat]
+        geometry = getattr(attr, "geometry", None)
+        coords = geometry.get("coordinates") if geometry else None
+
         return coords if isinstance(coords, list) and len(coords) >= 2 else None

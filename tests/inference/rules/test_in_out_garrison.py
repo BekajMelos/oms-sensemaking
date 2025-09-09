@@ -1,4 +1,5 @@
 import copy
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -346,6 +347,15 @@ def mock_gql_query(mocker, garrison_object, geo_attribute1):
     )
 
 
+def make_in_out_garrison_response(coords):
+    # attr.geometry must be a dict with "coordinates"
+    geo_attr = SimpleNamespace(geometry={"type": "Point", "coordinates": coords})
+    end_node = SimpleNamespace(attributes=SimpleNamespace(data=[geo_attr]))
+    rel = SimpleNamespace(endNode=end_node)
+    relationships = SimpleNamespace(data=[rel])
+    return SimpleNamespace(relationships=relationships)
+
+
 # Tests
 def test_evaluate_input(observational_node):
     """Test to verify valid inputs are recognized as such"""
@@ -396,6 +406,9 @@ def test_new_in_garrison(
     geo_attribute1,
     mock_gql_query,
 ):
+    # Make the mocked GQL call return a shape compatible with the helper
+    mock_gql_query.return_value = make_in_out_garrison_response(geo_attribute1.geometry["coordinates"])
+
     # Scenario: Observation input yields new in garrison activity
     rule = InOrOutOfGarrison("garrison rule")
     rule.action(RuleContext(observation=observational_node))
@@ -435,6 +448,8 @@ def test_new_out_garrison(
     geo_attribute1,
     mock_gql_query,
 ):
+    # Make the mocked GQL call return a shape compatible with the helper
+    mock_gql_query.return_value = make_in_out_garrison_response(geo_attribute1.geometry["coordinates"])
     # Scenario: Observation input yields new out of garrison activity
     rule = InOrOutOfGarrison("garrison rule")
     rule.action(RuleContext(observation=observational_node2))
@@ -483,6 +498,7 @@ def test_update_in_garrison(
     mock_get_activities.return_value = mock_activity_response
 
     rule = InOrOutOfGarrison("garrison rule")
+    mock_gql_query.return_value = make_in_out_garrison_response(coords=geo_attribute1.geometry["coordinates"])
     rule.action(RuleContext(observation=observational_node))
 
     # single call now
@@ -539,6 +555,7 @@ def test_update_out_garrison(
     mock_get_observations.return_value = mock_observation_response
 
     rule = InOrOutOfGarrison("garrison rule")
+    mock_gql_query.return_value = make_in_out_garrison_response(coords=geo_attribute1.geometry["coordinates"])
     rule.action(RuleContext(observation=observational_node2))
 
     mock_gql_query.assert_called_once_with(
