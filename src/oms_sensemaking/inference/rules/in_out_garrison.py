@@ -2,7 +2,6 @@
 
 from typing import List, Optional
 
-from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
@@ -20,6 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
+from oms_sensemaking.domain.in_or_out_garrison import utils as garrison_utils
 from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
@@ -64,13 +64,12 @@ class InOrOutOfGarrison(BaseRule):
         garrison_coords_lonlat = self._fetch_garrison_coords(obs.nodeId)
 
         if garrison_coords_lonlat:
-            # obs.geometry is GeoJSON: [lon, lat]; convert both to [lat, lon] for geodesic()
+            # obs.geometry is GeoJSON: [lon, lat]; convert both to [lat, lon] for in_garrison()
             object_coordinates = obs.geometry["coordinates"]
             object_latlon = [object_coordinates[1], object_coordinates[0]]
             garrison_latlon = [garrison_coords_lonlat[1], garrison_coords_lonlat[0]]
 
-            distance = geodesic(object_latlon, garrison_latlon).kilometers
-            in_garrison = distance < SETTINGS.garrison_distance_kilometers
+            in_garrison = garrison_utils.in_garrison(object_latlon, garrison_latlon)
             garrison_buffer_points = generate_circle_points_geographical(
                 garrison_latlon[0], garrison_latlon[1], SETTINGS.garrison_distance_kilometers
             )
