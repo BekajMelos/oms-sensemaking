@@ -237,6 +237,13 @@ rm -rf /usr/lib/python3.6/site-packages/setuptools*
 # delete private keys in documentation (prisma)
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
 rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
+
+rm -rf /usr/lib/python3.12/site-packages/pip*
+rm -rf /usr/lib/python6/site-packages/pip*
+rm -rf /usr/bin/pip*
+rm -rf /usr/local/bin/pip*
+rm -rf /usr/local/lib/python3.12/site-packages/pip*
+
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
