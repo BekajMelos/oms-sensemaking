@@ -9,8 +9,14 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Issues with parsing certain envvars within the .env
 
 ### Removed
+
+## [0.12.1] - 2025-09-09
+
+### Fixed
+- Incorrect pgsql version being added to PATH was updated to version 17 to commincate with the database in deployed environments
 
 ## [0.12.0] - 2025-09-08
 
