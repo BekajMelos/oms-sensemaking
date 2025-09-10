@@ -117,7 +117,7 @@ chmod 774 $APP_HOME
 dnf clean all
 update-ca-trust
 EOF
-ENV PATH="/usr/pgsql-16/bin:${PATH}"
+ENV PATH="/usr/pgsql-17/bin:${PATH}"
 
 FROM python-base AS app
 
