@@ -463,7 +463,7 @@ class Settings(BaseSettings):
     )
 
     otel_exporter_otlp_endpoint: str | None = Field(
-        default=None, description="OpenTelemetry OTLP exporter endpoint"
+        default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
     )
     otel_service_name: str = Field(
         default="oms-sensemaking", description="OpenTelemetry service name"

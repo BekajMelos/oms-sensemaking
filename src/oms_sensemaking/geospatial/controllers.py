@@ -23,6 +23,7 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.core.exceptions import TrackLengthError
+from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
@@ -105,6 +106,7 @@ class GeospatialSensemakerController(SensemakerController):
 
         super().stop()
 
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.

@@ -3,6 +3,7 @@
 import logging
 import time
 from contextlib import asynccontextmanager
+from functools import wraps
 from typing import Optional
 
 from fastapi import Request, Response
@@ -32,9 +33,7 @@ class TelemetryManager:
         return cls._instance
 
     def __init__(self):
-        # Only initialize once
-        if not self._initialized:
-            self._initialized = True
+        pass
 
     def initialize(self):
         """Initialize OpenTelemetry tracing and Prometheus metrics."""
@@ -42,16 +41,18 @@ class TelemetryManager:
             logging.info("Observability is disabled in configuration")
             return
 
-        if self._tracer is not None:
+        if self._initialized:
             logging.info("Observability already initialized")
             return
+
+        self._initialized = True
 
         try:
             # Set up OpenTelemetry tracing
             resource = Resource.create({"service.name": "oms-sensemaking"})
 
             # OTLP exporter for traces
-            otlp_exporter = OTLPSpanExporter(endpoint=SETTINGS.otel_exporter_otlp_endpoint or "http://tempo:4317")
+            otlp_exporter = OTLPSpanExporter(endpoint=SETTINGS.otel_exporter_otlp_endpoint)
 
             # Batch span processor
             span_processor = BatchSpanProcessor(otlp_exporter)
@@ -92,8 +93,8 @@ class TelemetryManager:
             span = trace.get_current_span()
             if span and span.get_span_context().is_valid:
                 return trace.format_trace_id(span.get_span_context().trace_id)
-        except Exception:
-            pass
+        except Exception as e:
+            logging.warning(f"Failed to get current trace ID: {e}")
         return None
 
 
@@ -247,6 +248,27 @@ def record_processing_success(queue_name: str, start_time: float):
 def record_processing_failure(queue_name: str, start_time: float):
     """Record failed processing completion."""
     record_processing_completion(queue_name, start_time, success=False)
+
+
+def with_metrics_collection(func):
+    """Decorator to add metrics collection to handle_event methods."""
+
+    @wraps(func)
+    def wrapper(self, event, *args, **kwargs):
+        start_time = time.time()
+        queue_name = getattr(self.event_consumer, "_queue_name", "unknown")
+
+        try:
+            result = func(self, event, *args, **kwargs)
+            # Record successful processing
+            record_processing_success(queue_name, start_time)
+            return result
+        except Exception as e:
+            # Record failed processing
+            record_processing_failure(queue_name, start_time)
+            raise e
+
+    return wrapper
 
 
 def metrics_endpoint(request: Request) -> Response:

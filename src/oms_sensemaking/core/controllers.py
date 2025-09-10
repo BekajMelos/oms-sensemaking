@@ -3,13 +3,12 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
-from time import time
 
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
 
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
-from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
+from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 
@@ -126,6 +125,7 @@ class SensemakerController:
         """
         return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
 
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -135,9 +135,6 @@ class SensemakerController:
 
         :param event: The event to process.
         """
-        start_time = time()  # Record when we start processing in the controller
-        queue_name = getattr(self.event_consumer, "_queue_name", "unknown")
-
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         try:
@@ -150,8 +147,6 @@ class SensemakerController:
 
         if not oms_obj:
             LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
-            # Record failed processing due to no OMS object
-            record_processing_failure(queue_name, start_time)
             return True
 
         try:
@@ -167,9 +162,6 @@ class SensemakerController:
 
                 executor.shutdown(wait=True)
 
-                # Record successful processing
-                record_processing_success(queue_name, start_time)
-
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
             self.err_logger.log_error(
@@ -179,9 +171,6 @@ class SensemakerController:
                 e,
                 oms_obj.acm,
             )
-
-            # Record failed processing
-            record_processing_failure(queue_name, start_time)
 
         return True
 
