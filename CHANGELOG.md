@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Issues with parsing certain envvars within the .env
 
 ### Removed
 
