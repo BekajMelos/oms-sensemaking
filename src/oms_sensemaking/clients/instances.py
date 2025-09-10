@@ -5,7 +5,6 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from oms_sensemaking.clients.aac_client import AacClient
@@ -72,9 +71,8 @@ def ping_db() -> bool:
 def ping_db_host_wait() -> bool:
     """Resolve and ping DB host:port once on startup using BaseClient."""
     try:
-        db_url = make_url(SETTINGS.db_uri)  # type: ignore[arg-type]
-        host = db_url.host or "localhost"
-        port: int = int(db_url.port or 5432)
+        host = SETTINGS.db_host
+        port: int = int(SETTINGS.db_port)
         client = BaseClient(host, port, "Postgres")
         return client.wait_until_ready()
     except Exception as ex:

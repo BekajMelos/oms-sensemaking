@@ -1,6 +1,5 @@
 import logging
 from typing import List, Optional, Union
-from urllib.parse import urlparse
 from uuid import UUID
 
 from oms_sdk import get_generated_graphql_client
@@ -75,10 +74,7 @@ class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
     def __init__(self, user_dn: str | None = None) -> None:
-        parsed = urlparse(SETTINGS.omsb_url)
-        host = parsed.hostname or "localhost"
-        port = parsed.port or (443 if parsed.scheme == "https" else 80)
-        super().__init__(host=host, port=port, service_name="OMS")
+        super().__init__(host=SETTINGS.omsb_host, port=SETTINGS.omsb_port, service_name="OMS")
 
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,

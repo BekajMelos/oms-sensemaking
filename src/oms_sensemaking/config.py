@@ -417,8 +417,12 @@ class Settings(BaseSettings):
     ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
+    omsb_host: str = Field("omsb2", description="OMSB hostname or IP address")
+    omsb_port: int = Field(8443, description="OMSB port")
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
+    aac_host: str = Field("aac2", description="AAC hostname or IP address")
+    aac_port: int = Field(3000, description="AAC port")
     user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(
         None,

@@ -4,7 +4,6 @@ import json
 import logging
 import ssl
 from typing import List, Optional, Union
-from urllib.parse import urlparse
 
 import hishel
 import httpcore
@@ -47,10 +46,7 @@ class AacClient(BaseClient):
         :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
 
-        parsed = urlparse(SETTINGS.aac_url)
-        host = parsed.hostname or "localhost"
-        port = parsed.port or (443 if parsed.scheme == "https" else 80)
-        super().__init__(host=host, port=port, service_name="AAC")
+        super().__init__(host=SETTINGS.aac_host, port=SETTINGS.aac_port, service_name="AAC")
 
         if ca_cert_path is None or ca_cert_path == "":
             LOGGER.warning("AAC Client CA_CERT_PATH not detected")
