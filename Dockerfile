@@ -81,7 +81,6 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-dnf -y update && \
 dnf install -y \
   ca-certificates \
   curl \
@@ -190,9 +189,6 @@ if [ -f /root/ca-certificate.crt ]; then
   cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
-# configure package manager
-dnf -y update
-
 # update core Python packaging tools
 export PIP_NO_INPUT=1
 python3 -m pip install --upgrade pip wheel setuptools
@@ -237,15 +233,6 @@ dnf clean all
 # remove old python packages (prisma)
 rm -rf /usr/lib/python3.6/site-packages/urllib3*
 rm -rf /usr/lib/python3.6/site-packages/setuptools*
-
-# disable pam_namespace to prevent CVE-2025-8941 (prisma)
-# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/login
-# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/remote
-# sed -i '/pam_namespace.so/s/^/#/' /etc/pam.d/systemd-user
-sed -i '/pam_namespace.so/d' /etc/pam.d/login
-sed -i '/pam_namespace.so/d' /etc/pam.d/remote
-sed -i '/pam_namespace.so/d' /etc/pam.d/systemd-user
-find / -name pam_namespace.so -delete
 
 # delete private keys in documentation (prisma)
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
