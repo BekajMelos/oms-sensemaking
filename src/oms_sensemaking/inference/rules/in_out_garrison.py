@@ -189,26 +189,18 @@ class InOrOutOfGarrison(BaseRule):
 
         :param obs_node_id: Observation's nodeId
         """
-        result = oms_crud_tool.oms_client.in_out_garrison_with_geo(
-            id=obs_node_id,
-            garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-            geoIris=[SETTINGS.inference_geo_attribute_iri],
-        )
+        try:
+            result = oms_crud_tool.oms_client.in_out_garrison_with_geo(
+                id=obs_node_id,
+                garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
+                geoIris=[SETTINGS.inference_geo_attribute_iri],
+            )
 
-        relationships = getattr(result, "relationships", None)
-        rel_data = getattr(relationships, "data", None)
-        rel = rel_data[0] if isinstance(rel_data, list) and rel_data else rel_data
-        if not rel:
+            coords = result.relationships.data[0].endNode.attributes.data[0].geometry["coordinates"]
+            return coords if isinstance(coords, list) and len(coords) >= 2 else None
+
+        except (AttributeError, IndexError, KeyError, TypeError):
+            # AttributeError → missing field somewhere
+            # IndexError → empty list (no relationships/attributes)
+            # KeyError/TypeError → geometry not a dict or doesn’t have "coordinates"
             return None
-
-        end_node = getattr(rel, "endNode", None)
-        attributes = getattr(end_node, "attributes", None)
-        attr_data = getattr(attributes, "data", None)
-        attr = attr_data[0] if isinstance(attr_data, list) and attr_data else attr_data
-        if not attr:
-            return None
-
-        geometry = getattr(attr, "geometry", None)
-        coords = geometry.get("coordinates") if geometry else None
-
-        return coords if isinstance(coords, list) and len(coords) >= 2 else None
