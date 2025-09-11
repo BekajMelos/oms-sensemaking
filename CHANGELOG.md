@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
-
+- Issue with loading Swagger Docs content
 ### Removed
 
 ## [0.12.1] - 2025-09-09
