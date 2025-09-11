@@ -105,6 +105,15 @@ class GeospatialSensemakerController(SensemakerController):
 
         super().stop()
 
+    def _ensure_uuid(self, id) -> UUID:
+        """
+        Ensure ids are used as UUID
+        """
+        if type(id) is UUID:
+            return id
+        else:
+            return UUID(id)
+
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -170,10 +179,10 @@ class GeospatialSensemakerController(SensemakerController):
                             "observation_version": int(oms_obs.version),
                         },
                         location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
-                        node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
-                        observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),
+                        node_id=self._ensure_uuid(oms_obs.nodeId),
+                        observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,
-                        source_id=oms_obs.sourceId if type(oms_obs.sourceId) is UUID else UUID(oms_obs.sourceId),
+                        source_id=self._ensure_uuid(oms_obs.sourceId),
                         # TODO: Multiply by source weight if available
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
