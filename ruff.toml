@@ -14,6 +14,7 @@ select = [
     'W',      # pycodestyle warnings
     'F',      # Pyflakes
 #    'UP',     # pyupgrade
+    'C'
 ]
 
 # ingoring some linting rules for compatibility with the ruff formatter
@@ -30,6 +31,8 @@ ignore = [
 [lint.pydocstyle]
 convention = 'pep257'  # Accepts: "google", "numpy", or "pep257".
 
+[lint.mccabe]
+max-complexity = 15  # increase max complexity to 15
 
 [lint.per-file-ignores]
 # Ignore `E402` (import violations) where dotenv is being used

@@ -155,9 +155,9 @@ class GeospatialSensemakerController(SensemakerController):
                 try:
                     point, is_new = Point.get_or_create(
                         db,
-                        defaults=dict(
-                            acm=oms_obs.acm,
-                            altitude=None,
+                        defaults={
+                            "acm": oms_obs.acm,
+                            "altitude": None,
                             # The below altitude setting can cause Shapely methods to fail if only some points have
                             #   a Z coordinate. Mismatched coordinate array lengths (2 vs 3) will break the LineString
                             #   and MultiLineString methods used by sensemakers to output results. This must be dealt
@@ -165,10 +165,10 @@ class GeospatialSensemakerController(SensemakerController):
                             # altitude=oms_obs.geometry["coordinates"][2]
                             # if oms_obs.geometry["coordinates"][2:]
                             # else None,
-                            detection_time=point_data["detection_time"],
-                            node_version=int(node_version),
-                            observation_version=int(oms_obs.version),
-                        ),
+                            "detection_time": point_data["detection_time"],
+                            "node_version": int(node_version),
+                            "observation_version": int(oms_obs.version),
+                        },
                         location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
                         node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
                         observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),

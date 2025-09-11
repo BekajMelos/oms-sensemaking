@@ -78,35 +78,37 @@ class RDFClient:
         subject = URIRef("https://oms.dodiis.ic.gov/ontology/guideId/" + subject_id)
         g.add((subject, RDF.type, oms.node))
 
-        def get_predicate(key):
-            if key.startswith("acm_"):
-                return acm[key[len("acm_") :]]
-            return URIRef(key)
-
-        def add_triples(subj, obj, prefix=""):
-            if isinstance(obj, dict):
-                for k, v in obj.items():
-                    add_triples(subj, v, prefix=prefix + k + "_")
-            elif isinstance(obj, list):
-                predicate = get_predicate(prefix.rstrip("_"))
-                for item in obj:
-                    g.add((subj, predicate, Literal(item)))
-            elif obj is not None:
-                predicate = get_predicate(prefix.rstrip("_"))
-                g.add((subj, predicate, Literal(obj)))
-
         for key, value in node_data_obj.items():
             if key not in ["guideId", "permissions"]:  # Ignore 'permissions' and 'guideId' (already used)
-                add_triples(subject, value, prefix=key + "_")
+                self.add_triples(g, subject, value, acm, prefix=key + "_")
 
-        # present relationships of node
-        rel_dict = json.loads(relationships_obj)
+        self.present_relationships(relationships_obj, g, oms, acm)
+
+        return g.serialize(format=format, sort=True)
+
+    def get_predicate(self, key, acm_ns):
+        if key.startswith("acm_"):
+            return acm_ns[key[len("acm_") :]]
+        return URIRef(key)
+
+    def add_triples(self, graph, subj, obj, acm_ns, prefix=""):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                self.add_triples(graph, subj, v, acm_ns, prefix=prefix + k + "_")
+        elif isinstance(obj, list):
+            predicate = self.get_predicate(prefix.rstrip("_"), acm_ns)
+            for item in obj:
+                graph.add((subj, predicate, Literal(item)))
+        elif obj is not None:
+            predicate = self.get_predicate(prefix.rstrip("_"), acm_ns)
+            graph.add((subj, predicate, Literal(obj)))
+
+    def present_relationships(self, rel_obj, graph, oms_ns, acm_ns):
+        rel_dict = json.loads(rel_obj)
         if "data" in rel_dict and len(rel_dict["data"]) > 0:  # relationships could not exist meaning "data" is empty
             for rel in rel_dict["data"]:
                 rel_uri = URIRef(f"https://oms.dodiis.ic.gov/ontology/relationship/{rel['id']}")
-                g.add((rel_uri, RDF.type, oms.relationship))
+                graph.add((rel_uri, RDF.type, oms_ns.relationship))
                 for key, value in rel.items():
                     if key not in ["id"]:  # Ignore 'permissions' and 'guideId' (already used)
-                        add_triples(rel_uri, value, prefix=key + "_")
-
-        return g.serialize(format=format, sort=True)
+                        self.add_triples(graph, rel_uri, value, acm_ns, prefix=key + "_")
