@@ -7,7 +7,7 @@ from datetime import timedelta
 from functools import cached_property
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
@@ -417,12 +417,8 @@ class Settings(BaseSettings):
     ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
 
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_host: str = Field("omsb2", description="OMSB hostname or IP address")
-    omsb_port: int = Field(8443, description="OMSB port")
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
-    aac_host: str = Field("aac2", description="AAC hostname or IP address")
-    aac_port: int = Field(3000, description="AAC port")
     user_dn: str = Field(description="User DN")
     cacert_path: str | None = Field(
         None,
@@ -498,6 +494,34 @@ class Settings(BaseSettings):
             Confidence.MODERATE: self.confidence_weight_moderate,
             Confidence.LOW: self.confidence_weight_low,
         }
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_host(self) -> str | None:
+        """OMSB hostname or IP address derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_port(self) -> int | None:
+        """OMSB port derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        return parsed.port
+
+    @computed_field  # type: ignore
+    @property
+    def aac_host(self) -> str | None:
+        """AAC hostname or IP address derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def aac_port(self) -> int | None:
+        """AAC port derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        return parsed.port
 
     @field_validator("db_uri", mode="before")
     @classmethod
