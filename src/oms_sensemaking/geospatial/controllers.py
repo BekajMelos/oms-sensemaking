@@ -107,7 +107,8 @@ class GeospatialSensemakerController(SensemakerController):
 
     def _ensure_uuid(self, id) -> UUID:
         """
-        Ensure ids are used as UUID
+        Function used to ensure that ids used
+        in operations are of type UUID
         """
         if type(id) is UUID:
             return id

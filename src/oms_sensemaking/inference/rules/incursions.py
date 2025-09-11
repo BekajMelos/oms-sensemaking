@@ -105,7 +105,7 @@ class Incursion(BaseRule):
 
                 LOGGER.debug(f"{len(existing_incursion_attributes)} Existing Incursion Attributes")
 
-                matching_incursion_attribute_found = self._check_for_existing_incursion(
+                matching_incursion_attribute_found = self._check_existing_incursion_and_update(
                     obs,
                     incurring_object,
                     feature_of_interest,
@@ -118,9 +118,19 @@ class Incursion(BaseRule):
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, feature_of_interest)
 
-    def _check_for_existing_incursion(
-        self, observation, incurring_obj, feat_of_int, existing_act, existing_attributes, obs_timeframe
-    ):
+    def _check_existing_incursion_and_update(
+        self,
+        observation: ObservationObservation,
+        incurring_obj: NodeNode,
+        feat_of_int: AOI,
+        existing_act: ActivitiesActivitiesData,
+        existing_attributes: list[AttributesAttributesData],
+        obs_timeframe: Timeframe,
+    ) -> bool:
+        """
+        function to check for existing incursions given an activity object
+        and its connected attributes
+        """
         for existing_incursion_attribute in existing_attributes:
             inc_attr_geo_timeframe = GeoTimeframe(
                 existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd

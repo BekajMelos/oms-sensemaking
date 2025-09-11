@@ -87,11 +87,18 @@ class RDFClient:
         return g.serialize(format=format, sort=True)
 
     def get_predicate(self, key, acm_ns):
+        """
+        Function used to parse predicates and attach it to
+        necessary fields for organization of data output
+        """
         if key.startswith("acm_"):
             return acm_ns[key[len("acm_") :]]
         return URIRef(key)
 
     def add_triples(self, graph, subj, obj, acm_ns, prefix=""):
+        """
+        Funtion used to add RDF triples to the graph
+        """
         if isinstance(obj, dict):
             for k, v in obj.items():
                 self.add_triples(graph, subj, v, acm_ns, prefix=prefix + k + "_")
@@ -104,6 +111,10 @@ class RDFClient:
             graph.add((subj, predicate, Literal(obj)))
 
     def present_relationships(self, rel_obj, graph, oms_ns, acm_ns):
+        """
+        Function used to to dispaly relationships
+        of the specified node in RDF triples
+        """
         rel_dict = json.loads(rel_obj)
         if "data" in rel_dict and len(rel_dict["data"]) > 0:  # relationships could not exist meaning "data" is empty
             for rel in rel_dict["data"]:
