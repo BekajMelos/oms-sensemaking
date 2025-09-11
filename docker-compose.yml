@@ -64,7 +64,7 @@ services:
       - ./etc/pki:/opt/common/pki:rw
       - ./docker/postgis/initdb.d/20_oms-sensemaking.sh:/docker-entrypoint-initdb.d/20_oms-sensemaking.sh
       - ./docker/postgis/initdb.d/30_enable-ssl.sh:/docker-entrypoint-initdb.d/30_enable-ssl.sh
-      - ./docker/postgis/initdb.d/40_enable-hstore.sh:/docker-entrypoint-initdb.d/40_enable-hstore.sh
+      - ./docker/postgis/initdb.d/40_enable-extensions.sh:/docker-entrypoint-initdb.d/40_enable-extensions.sh
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
