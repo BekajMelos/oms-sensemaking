@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Integrate custom query in InOrOutOfGarrison to reduce complexity.
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
