@@ -312,6 +312,16 @@ services:
     profiles:
       - local
 
+  sonarqube:
+    container_name: sonarqube
+    image: ${DOCKER_REGISTRY}/sonarqube:9.9.8-community
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: true
+    ports:
+      - "9900:9000"
+    profiles:
+      - tools
+
 volumes:
   localstack:
   pgadmin:
