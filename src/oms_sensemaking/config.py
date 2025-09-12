@@ -497,30 +497,38 @@ class Settings(BaseSettings):
 
     @computed_field  # type: ignore
     @property
-    def omsb_host(self) -> str | None:
+    def omsb_host(self) -> str:
         """OMSB hostname or IP address derived from omsb_url."""
         parsed = urlparse(self.omsb_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no hostname found")
         return parsed.hostname
 
     @computed_field  # type: ignore
     @property
-    def omsb_port(self) -> int | None:
+    def omsb_port(self) -> int:
         """OMSB port derived from omsb_url."""
         parsed = urlparse(self.omsb_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
         return parsed.port
 
     @computed_field  # type: ignore
     @property
-    def aac_host(self) -> str | None:
+    def aac_host(self) -> str:
         """AAC hostname or IP address derived from aac_url."""
         parsed = urlparse(self.aac_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no hostname found")
         return parsed.hostname
 
     @computed_field  # type: ignore
     @property
-    def aac_port(self) -> int | None:
+    def aac_port(self) -> int:
         """AAC port derived from aac_url."""
         parsed = urlparse(self.aac_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
         return parsed.port
 
     @field_validator("db_uri", mode="before")
