@@ -142,11 +142,11 @@ class SensemakerController:
         except Exception as e:
             message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
             self.err_logger.log_error(event, message, __name__, e, None)
-            return True
+            return False
 
         if not oms_obj:
             LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
-            return True
+            return False
 
         try:
             with ThreadPoolExecutor() as executor:
