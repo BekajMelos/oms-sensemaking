@@ -7,9 +7,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
 
 ### Fixed
-- Replaced geolib with pygeohash and updated packages to mitigate some prisma issues
+- Issues with parsing certain envvars within the .env
+- Issue with loading Swagger Docs content
 
 ### Removed
 
@@ -26,6 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
 - Only use private pypi package registries
 - Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
 - Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths

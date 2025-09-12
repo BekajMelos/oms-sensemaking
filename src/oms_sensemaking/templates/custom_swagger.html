@@ -204,25 +204,36 @@
         }
         
         function loadSwaggerUI() {
+            const currentPath = window.location.pathname;
+            let openapiUrl;
+            
+            if (currentPath.endsWith('/docs') || currentPath.endsWith('/docs/')) {
+                const basePath = currentPath.replace(/\/docs\/?$/, '');
+                openapiUrl = basePath + '/openapi.json';
+            } else {
+                openapiUrl = currentPath.replace(/\/$/, '') + '/openapi.json';
+            }
+            
             const ui = SwaggerUIBundle({
-                url: '/openapi.json',
+                url: openapiUrl,
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
                     SwaggerUIBundle.presets.apis,
-                    SwaggerUIStandalonePreset
+                    SwaggerUIBundle.presets.standalone
                 ],
                 plugins: [
                     SwaggerUIBundle.plugins.DownloadUrl
                 ],
-                layout: "StandaloneLayout"
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                tryItOutEnabled: true
             });
         }
     </script>
     
-    <!-- Swagger UI Dependencies -->
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
-    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+    <link rel="stylesheet" type="text/css" href="./static-offline-docs/swagger-ui.css" />
+    <script src="./static-offline-docs/swagger-ui-bundle.js"></script>
 </body>
 </html> 
