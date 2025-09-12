@@ -219,45 +219,50 @@ class GeospatialSensemakerController(SensemakerController):
                 LOGGER.debug("Checking buffer for %s", track_uuid)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
-
-                    try:
-                        try:
-                            track = self._generate_track(track_uuid)
-                        except TrackLengthError:
-                            LOGGER.exception(
-                                (
-                                    "Track doesn't have enough points. Ignore and remove from buffer until "
-                                    "it gets more points"
-                                )
-                            )
-                            self.track_times[track_uuid] = None
-                            continue
-
-                        geo_config = self._get_geo_config(track)
-
-                        with ThreadPoolExecutor() as executor:
-                            futures = []
-                            for sensemaker in self._registry.values():
-                                future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                                futures.append(future)
-
-                            # make sure errors are caught
-                            for future in as_completed(futures):
-                                _ = future.result()
-                    except Exception as e:
-                        LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
-                    finally:
-                        self.track_times[track_uuid] = None  # mark for removal
-                        self.track_node_buffer.pop(track_uuid)
-                        for key, value in list(self.node_track_mapping.items()):
-                            if value == track_uuid:
-                                del self.node_track_mapping[key]
+                    process_track_status = self._process_track(track_uuid)
+                    if not process_track_status:
+                        continue
                 else:
                     LOGGER.debug("track_uuid %s is still active in the buffer", track_uuid)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
+
+    def _process_track(self, track_uuid: UUID) -> bool:
+        """
+        Function used to generate and process and track
+        """
+        try:
+            try:
+                track = self._generate_track(track_uuid)
+            except TrackLengthError:
+                LOGGER.exception(
+                    ("Track doesn't have enough points. Ignore and remove from buffer until " "it gets more points")
+                )
+                self.track_times[track_uuid] = None
+                return False
+
+            geo_config = self._get_geo_config(track)
+
+            with ThreadPoolExecutor() as executor:
+                futures = []
+                for sensemaker in self._registry.values():
+                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                    futures.append(future)
+
+                # make sure errors are caught
+                for future in as_completed(futures):
+                    _ = future.result()
+        except Exception as e:
+            LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
+        finally:
+            self.track_times[track_uuid] = None  # mark for removal
+            self.track_node_buffer.pop(track_uuid)
+            for key, value in list(self.node_track_mapping.items()):
+                if value == track_uuid:
+                    del self.node_track_mapping[key]
+        return True
 
     def _generate_track(self, track_uuid: UUID) -> Track:
         """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
