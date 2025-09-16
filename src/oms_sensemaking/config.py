@@ -7,7 +7,7 @@ from datetime import timedelta
 from functools import cached_property
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
@@ -420,6 +420,11 @@ class Settings(BaseSettings):
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
 
+    # Connectivity ping settings
+    ping_timeout_seconds: float = Field(3.0, description="Default timeout in seconds for service ping checks")
+    ping_wait_retries: int = Field(5, description="Default number of retries when waiting for service readiness")
+    ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
+
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
@@ -498,6 +503,42 @@ class Settings(BaseSettings):
             Confidence.MODERATE: self.confidence_weight_moderate,
             Confidence.LOW: self.confidence_weight_low,
         }
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_host(self) -> str:
+        """OMSB hostname or IP address derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no hostname found")
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_port(self) -> int:
+        """OMSB port derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
+        return parsed.port
+
+    @computed_field  # type: ignore
+    @property
+    def aac_host(self) -> str:
+        """AAC hostname or IP address derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no hostname found")
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def aac_port(self) -> int:
+        """AAC port derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
+        return parsed.port
 
     @field_validator("db_uri", mode="before")
     @classmethod

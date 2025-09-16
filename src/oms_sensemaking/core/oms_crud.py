@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -61,15 +62,20 @@ from oms_sdk.generated.generated_graphql_client import (
     UuidQueryByList,
 )
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 @rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
-class OmsCrudTool:
+class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
     def __init__(self, user_dn: str | None = None) -> None:
+        super().__init__(host=SETTINGS.omsb_host, port=SETTINGS.omsb_port, service_name="OMS")
+
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,
             user_dn=user_dn or SETTINGS.user_dn,

@@ -10,6 +10,7 @@ import httpcore
 import httpx
 from hishel._utils import generate_key
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 HTTPX_TIMEOUT = 30
 
 
-class AacClient:
+class AacClient(BaseClient):
     """AAC Client for communicating with the AAC Service"""
 
     def __init__(
@@ -44,6 +45,8 @@ class AacClient:
 
         :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
+
+        super().__init__(host=SETTINGS.aac_host, port=SETTINGS.aac_port, service_name="AAC")
 
         if ca_cert_path is None or ca_cert_path == "":
             LOGGER.warning("AAC Client CA_CERT_PATH not detected")

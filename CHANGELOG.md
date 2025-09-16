@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
 
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
-
+- Issue with loading Swagger Docs content
 ### Removed
 
 ## [0.12.1] - 2025-09-09
@@ -27,6 +30,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
 - Only use private pypi package registries
 - Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
 - Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths
@@ -73,7 +77,7 @@ Removed the NLP feature from the code base to comply with STIG V-222518
 - Script to create transfer bundles
 - CronEventEmitter, which emits fake Audit Log Events on a set interval
 - Observable Sensemaker, which processes all observables every 15 minutes
-  - Implemented geofence logic, other observable types to be implemented
+- Implemented geofence logic, other observable types to be implemented
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
