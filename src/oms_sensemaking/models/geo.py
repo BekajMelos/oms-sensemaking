@@ -499,7 +499,7 @@ class CommonSenseFilter(BaseModel):
         """
         last_good_point = points[0]
         last_altitude_point: Point | None = None
-        bad_points = []
+        bad_points: list[Point] = []
         for cur_point in points[1:]:
             if last_good_point.altitude is not None:
                 last_altitude_point = last_good_point
@@ -508,60 +508,86 @@ class CommonSenseFilter(BaseModel):
                 (cur_point.coordinates[1], cur_point.coordinates[0]),
                 (last_good_point.coordinates[1], last_good_point.coordinates[0]),
             ).meters
-            relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
-            if self.time_threshold_seconds is not None and time_delta.total_seconds() < self.time_threshold_seconds:
-                # Too little time resolution to accurately compare points.
-                # Allow current point but don't update last good point.
-                LOGGER.debug(
-                    "Skipping point due to time delta %s s less than threshold %s s.",
-                    round(time_delta.total_seconds(), 1),
-                    self.time_threshold_seconds,
-                )
+            relative_velocity = self._rel_velocity(time_delta, distance)
+            passed_checks = self._point_deltas_checks(
+                last_altitude_point, bad_points, cur_point, time_delta, relative_velocity
+            )
+            if not passed_checks:
                 continue
-            if (
-                self.relative_velocity_threshold_mps is not None
-                and relative_velocity > self.relative_velocity_threshold_mps
-            ):
-                # Too fast, kill the current point and don't update the last good point.
-                LOGGER.debug(
-                    "Filtered point_id (%s) due to relative velocity %s mps exceeding threshold %s mps.",
-                    cur_point.point_id,
-                    round(relative_velocity, 1),
-                    self.relative_velocity_threshold_mps,
-                )
-                cur_point.weight = 0
-                bad_points.append(cur_point)
-                continue
-            if (
-                self.altitude_deviation_threshold_mps is not None
-                and last_altitude_point is not None
-                and cur_point.altitude is not None
-            ):
-                # Check if the vertical movement between this point and the previous is large.
-                time_delta = cur_point.detection_time - last_altitude_point.detection_time
-                altitude_delta = abs(cur_point.altitude - last_altitude_point.altitude)  # type: ignore[operator]
-                altitude_rate = altitude_delta / time_delta.total_seconds()
-                if altitude_rate > self.altitude_deviation_threshold_mps:
-                    LOGGER.debug(
-                        (
-                            "Removing point %s due to altitude rate deviation: "
-                            "altitude diff=%s, time=%s, rate=%s, threshold=%s"
-                        ),
-                        cur_point.observation_id,
-                        altitude_delta,
-                        time_delta,
-                        altitude_rate,
-                        self.altitude_deviation_threshold_mps,
-                    )
-                    cur_point.weight = 0
-                    bad_points.append(cur_point)
-                    continue
             # Made it through all checks. Update last good point for next comparison.
             last_good_point = cur_point
         if bad_points:
             LOGGER.debug(f"Removed {len(bad_points)} of {len(points)} points.")
         points = [p for p in points if p not in bad_points]
         return points
+
+    def _rel_velocity(self, time_delta: timedelta, distance: float) -> float:
+        """
+        Helper function to calculate relative velocity for
+        better readability and organization
+        """
+        relative_velocity = distance / time_delta.total_seconds() if time_delta.total_seconds() > 0 else 0
+        return relative_velocity
+
+    def _point_deltas_checks(
+        self,
+        last_altitude_point: Point | None,
+        bad_points: list[Point],
+        cur_point: Point,
+        time_delta: timedelta,
+        relative_velocity: float,
+    ):
+        """
+        Function that lays out pipeline of criteria on what poitns to remove based on deltas
+        """
+        if self.time_threshold_seconds is not None and time_delta.total_seconds() < self.time_threshold_seconds:
+            # Too little time resolution to accurately compare points.
+            # Allow current point but don't update last good point.
+            LOGGER.debug(
+                "Skipping point due to time delta %s s less than threshold %s s.",
+                round(time_delta.total_seconds(), 1),
+                self.time_threshold_seconds,
+            )
+            return False
+        if (
+            self.relative_velocity_threshold_mps is not None
+            and relative_velocity > self.relative_velocity_threshold_mps
+        ):
+            # Too fast, kill the current point and don't update the last good point.
+            LOGGER.debug(
+                "Filtered point_id (%s) due to relative velocity %s mps exceeding threshold %s mps.",
+                cur_point.point_id,
+                round(relative_velocity, 1),
+                self.relative_velocity_threshold_mps,
+            )
+            cur_point.weight = 0
+            bad_points.append(cur_point)
+            return False
+        if (
+            self.altitude_deviation_threshold_mps is not None
+            and last_altitude_point is not None
+            and cur_point.altitude is not None
+        ):
+            # Check if the vertical movement between this point and the previous is large.
+            time_delta = cur_point.detection_time - last_altitude_point.detection_time
+            altitude_delta = abs(cur_point.altitude - last_altitude_point.altitude)  # type: ignore[operator]
+            altitude_rate = altitude_delta / time_delta.total_seconds()
+            if altitude_rate > self.altitude_deviation_threshold_mps:
+                LOGGER.debug(
+                    (
+                        "Removing point %s due to altitude rate deviation: "
+                        "altitude diff=%s, time=%s, rate=%s, threshold=%s"
+                    ),
+                    cur_point.observation_id,
+                    altitude_delta,
+                    time_delta,
+                    altitude_rate,
+                    self.altitude_deviation_threshold_mps,
+                )
+                cur_point.weight = 0
+                bad_points.append(cur_point)
+                return False
+        return True
 
 
 def weighted_average(values: Iterable[int | float], weights: Iterable[int | float]) -> float:

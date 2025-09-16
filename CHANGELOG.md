@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
 
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
@@ -24,7 +27,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
-- Implemented IP logging to meet V-222470 standards
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment

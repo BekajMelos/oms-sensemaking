@@ -20,6 +20,15 @@ LOGGER = logging.getLogger(__name__)
 
 load_dotenv()
 
+class CommonVars:
+    '''
+    Class for ommon values used throughout config.py to get rid of
+    SonarQube code smells for duplicated values
+    '''
+    has_text_value_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"
+    base_oms_sensemaking_tag = "Atoms Sensemaking"
+    intentional_act_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct"
+    has_coords_iri = "https://foundry.ai.mil/ontology/4901-001/hasCoordinates"
 
 class LogConfig(BaseSettings):
     """Logging configuration to be set for the server."""
@@ -113,10 +122,10 @@ class LogConfig(BaseSettings):
 
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        CommonVars.has_text_value_iri,
         description="Military Symbol Sensemaker tags")
     mil_symbol_sensemaker_tags: list[str] = Field(
-        ["Oms Sensemaking", "Military Symbol Sensemaker"],
+        [CommonVars.base_oms_sensemaking_tag, "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
     rmq_mil_symbol_queue_name: str = Field(
@@ -137,7 +146,7 @@ class MilSymbolSettings(BaseModel):
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
     attribute_code_iris: list[str] = Field(
-        ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
+        [CommonVars.has_text_value_iri],
         description="Attribute Iris for full mil symbol codes")
 
     # 2525B and 2525C placeholders
@@ -187,7 +196,7 @@ class IWSettings(BaseModel):
     }, description="Status options for the observable")
 
     observable_config_attribute_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        CommonVars.has_text_value_iri,
         description="Config attribute used to read the settings of an observable query")
 
     observable_status_attribute_iri: str = Field(
@@ -246,10 +255,10 @@ class Settings(BaseSettings):
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
+        [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
     incursion_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
+        [CommonVars.base_oms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
     )
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
@@ -258,21 +267,21 @@ class Settings(BaseSettings):
         "./data/areas_of_interest", description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
+        CommonVars.intentional_act_iri, description="IRI for incursion class"
     )
     inference_incursion_attribute_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+        CommonVars.has_coords_iri,
         description="IRI for incursion attribute"
     )
     inference_geo_attribute_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates", description="IRI for geo attribute"
+        CommonVars.has_coords_iri, description="IRI for geo attribute"
     )
     inference_garrisoned_in_iri: str = Field(
         "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
         description="IRI for relationship between an object and its garrison"
     )
     inference_garrison_class_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+        CommonVars.intentional_act_iri,
         description="IRI for garrison activity class"
     )
     inference_in_garrison_activity_name: str = Field(
@@ -341,11 +350,11 @@ class Settings(BaseSettings):
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
     loiter_event_name: str = Field("LoiterEvent", description="Name prefix for OMSB Loiter Event Nodes")
-    loiter_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+    loiter_event_node_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Loiter Event Node IRI")
     loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Loiter Event Node to Track Relationship IRI")
-    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+    loiter_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Loiter Event Node Geo Attribute IRI")
 
     # Cotravel Settings
@@ -355,11 +364,11 @@ class Settings(BaseSettings):
                                                        description="Name for OMSB Potential Duplicate")
     cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
     lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
-    cotravel_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+    cotravel_event_node_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+    cotravel_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Cotravel Event Node Geo Attribute IRI")
     cotravel_track_to_event_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")
