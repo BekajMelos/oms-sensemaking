@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.13.0] - 2025-09-16
+
+### Added
 - Implemented IP logging to meet V-222470 standards
 - Added more unit tests to the code base to acheive a code coverage of at least 80%
 
@@ -18,8 +28,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Issues with parsing certain envvars within the .env
 - Issue with loading Swagger Docs content
-
-### Removed
 
 ## [0.12.1] - 2025-09-09
 
