@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
 - Refactored code in compliance to SonarQube scans
+- Updated logs to not print potentially classified data
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
