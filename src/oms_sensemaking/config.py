@@ -26,7 +26,7 @@ class CommonVars:
     SonarQube code smells for duplicated values
     '''
     has_text_value_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"
-    base_oms_sensemaking_tag = "Oms Sensemaking"
+    base_oms_sensemaking_tag = "Atoms Sensemaking"
     intentional_act_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct"
     has_coords_iri = "https://foundry.ai.mil/ontology/4901-001/hasCoordinates"
 
