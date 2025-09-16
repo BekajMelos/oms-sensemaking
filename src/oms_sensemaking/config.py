@@ -447,12 +447,6 @@ class Settings(BaseSettings):
     aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
     aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
 
-    atoms_cacert_path: str | None = Field(
-        None,
-        description="Optional path to a CA cert for ATOMS",
-        examples=[None, "/opt/common/pki/cacert.pem"])
-
-
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
