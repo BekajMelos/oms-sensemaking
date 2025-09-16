@@ -105,7 +105,6 @@ class SimilarTracksSensemaker(Sensemaker):
         ref_track_geohash_set: set[str] = self.get_buffered_geohash_set(data.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
-        LOGGER.debug(f"Reference track has first {first} and last {last} points")
         similar_track_groups: list[GroupByTrackIdProjection] = self.query_for_similar_tracks(
             first.coordinates, last.coordinates, self.config["within_meters"]
         )
@@ -152,7 +151,8 @@ class SimilarTracksSensemaker(Sensemaker):
         # Unions of two sets
         union = len(ref_track_geohash_set.union(eval_track_geohash_set))
         score = intersection / union
-        LOGGER.debug(f"Overall similarity for {eval_track_geohash_set}, {score}")
+        # can we do this
+        LOGGER.debug(f"Overall similarity for tracks {score}")
         return ComparisonResult(track_uuid, score)
 
     @classmethod

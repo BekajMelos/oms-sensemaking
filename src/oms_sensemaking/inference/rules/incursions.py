@@ -81,7 +81,8 @@ class Incursion(BaseRule):
                 break
 
         if feature_of_interest:
-            LOGGER.debug(f"Incursion detected for Observation: {obs.id} with geometry {obs_geo}")
+            # can we include geo?
+            LOGGER.debug(f"Incursion detected for Observation: {obs.id}")
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
             existing_incursion_activities = oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)

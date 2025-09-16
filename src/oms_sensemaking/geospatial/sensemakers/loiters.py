@@ -120,7 +120,6 @@ class LoiterSensemaker(Sensemaker):
         # check for potential loiters that are long enough (> LOITER_MIN_TIME)
         # TODO could also check for loiters across geohashes that could be combined
         for point_geohash, potential_loiters in prospective_loiters.items():
-            LOGGER.debug(f"Prospective Loiter: {point_geohash}: {potential_loiters}")
             for potential_loiter in potential_loiters:
                 time_diff = abs(potential_loiter.latest_time - potential_loiter.start_time)
                 if time_diff >= timedelta(seconds=self.config["loiter_min_time"]):
@@ -142,7 +141,6 @@ class LoiterSensemaker(Sensemaker):
             LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_uuid}")
 
         for loiter in confirmed_loiters:
-            LOGGER.debug("Loiter geometry: " + loiter.geometry.wkt)
             self.publish_loiter(data, loiter)
 
         return confirmed_loiters

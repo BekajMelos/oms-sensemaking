@@ -472,17 +472,15 @@ class CommonSenseFilter(BaseModel):
             # Check if the altitude is negative or exceeds the maximum altitude threshold.
             if point.altitude < 0:
                 LOGGER.debug(
-                    "Removing point %s due to negative altitude: altitude=%s",
+                    "Removing point %s due to negative altitude",
                     point.observation_id,
-                    point.altitude,
                 )
                 point.weight = 0
                 continue
             elif self.altitude_threshold_meters and point.altitude > self.altitude_threshold_meters:
                 LOGGER.debug(
-                    "Removing point %s due to altitude exceeding maximum: altitude=%s",
+                    "Removing point %s due to altitude exceeding maximum",
                     point.observation_id,
-                    point.altitude,
                 )
                 point.weight = 0
                 continue
