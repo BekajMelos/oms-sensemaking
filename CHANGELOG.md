@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
 - Refactored code in compliance to SonarQube scans
+- Updated logs to not print potentially classified data
 - Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
 - Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
 

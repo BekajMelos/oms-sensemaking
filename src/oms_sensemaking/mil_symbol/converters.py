@@ -15,17 +15,17 @@ def to_2525b(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525B:
     # convert standard identity, when starting with C, corresponding B will match identity
     standard_identity = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
     code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, standard_identity)
-    LOGGER.debug(f"Equivalent dimension is : {standard_identity}, 2525b & 2525c share dimension")
+    LOGGER.debug("Converted std identity from C to B")
 
     # convert dimension, when starting with C, corresponding B will match dimension
     dimension = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_DIMENSION_IDX]
     code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_DIMENSION_IDX, dimension)
-    LOGGER.debug(f"Equivalent dimension is : {dimension}, 2525b & 2525c share dimension")
+    LOGGER.debug("Converted dimension from C to B")
 
     # convert status, when starting with C, corresponding B will match status
     status = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX]
     code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_STATUS_IDX, status)
-    LOGGER.debug(f"Equivalent status is : {status}, 2525b & 2525c share status")
+    LOGGER.debug("Converted status from C to B")
 
     # convert sym modifier, when starting with C, corresponding B may/may not match sym modifier
     # Due to command sym modifier codes existing in C, but not in B
@@ -38,13 +38,13 @@ def to_2525b(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525B:
         if set(sym_modifier_list) & set(other_sym_modifier_list) and code == sym_modifier:
             code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
             code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
-            LOGGER.debug(f"Equivalent symbol modifier is : {code}, 2525c symbol modifiers are a superset of 2525b's")
+            LOGGER.debug("Converted symbol modifier from C to B")
             break
 
     # convert order of battle, when startign with C, corresponding B will match order of battle
     ob = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
     code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX, ob)
-    LOGGER.debug(f"Equivalent order of battle is : {ob}, 2525b & 2525c share order of battle")
+    LOGGER.debug("Converted order of battle from C to B")
 
     return code_2525b
 
@@ -55,7 +55,7 @@ def to_2525c(code: MilSymbol2525B | MilSymbol2525D, settings: Dict) -> MilSymbol
     elif isinstance(code, MilSymbol2525D):
         return to_2525c_from_2525d(code, settings)
     else:
-        raise NotImplementedError(f"Code type {type(code)} not supported")
+        raise NotImplementedError("Code type {type(code)} not supported")
 
 
 def to_2525c_from_2525b(code_2525b: MilSymbol2525B, settings: Dict) -> MilSymbol2525C:
@@ -70,18 +70,18 @@ def to_2525c_from_2525b(code_2525b: MilSymbol2525B, settings: Dict) -> MilSymbol
         # if the lists have values in common then that's the equivalent code
         if set(standard_identity_list) & set(other_standard_identity_list):
             code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
-            LOGGER.debug(f"Equivalent std identity is : {code} b/c {other_standard_identity_list}")
+            LOGGER.debug("Converted std identity from B to C")
             break
 
     # convert dimension, when starting with B, corresponding C code will match dimension
     dimension = code_2525b.code[MilSymbol2525B.MIL_SYM_2525_B_C_DIMENSION_IDX]
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_DIMENSION_IDX, dimension)
-    LOGGER.debug(f"Equivalent dimension is : {dimension}, 2525b & 2525c share dimension")
+    LOGGER.debug("Converted dimension from B to C")
 
     # convert status, when starting with B, corresponding C code will match status
     status = code_2525b.code[MilSymbol2525B.MIL_SYM_2525_B_C_STATUS_IDX]
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX, status)
-    LOGGER.debug(f"Equivalent status is : {status}, 2525b & 2525c share status")
+    LOGGER.debug("Converted status from B to C")
 
     # convert sym modifier, when starting with B, corresponding C code will match sym modifier
     sym_modifier_idx_0 = code_2525b.code[MilSymbol2525B.MIL_SYM_2525_B_C_SYM_MOD_IDX_0]
@@ -89,12 +89,12 @@ def to_2525c_from_2525b(code_2525b: MilSymbol2525B, settings: Dict) -> MilSymbol
     sym_modifier = sym_modifier_idx_0 + sym_modifier_idx_1
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, sym_modifier[0])
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, sym_modifier[1])
-    LOGGER.debug(f"Equivalent symbol modifier is : {sym_modifier}, 2525b symbol modifiers are a subset of 2525c's")
+    LOGGER.debug("Converted symbol modifier from B to C")
 
     # convert order of battle, when starting with B, corresponding C code will mach order of battle
     ob = code_2525b.code[MilSymbol2525B.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
     code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX, ob)
-    LOGGER.debug(f"Equivalent order of battle is : {ob}, 2525b & 2525c share order of battle")
+    LOGGER.debug("Converted order of battle from B to C")
 
     return code_2525c
 
@@ -109,7 +109,7 @@ def to_2525c_from_2525d(code_2525d: MilSymbol2525D, settings: Dict) -> MilSymbol
         # if the lists have values in common then that's the equivalent code
         if set(standard_identity_list) & set(other_standard_identity_list):
             code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
-            LOGGER.debug(f"Equivalent std identity is : {code} b/c {other_standard_identity_list}")
+            LOGGER.debug("Converted std identity from D to C")
             break
 
     # convert dimension
@@ -122,7 +122,7 @@ def to_2525c_from_2525d(code_2525d: MilSymbol2525D, settings: Dict) -> MilSymbol
         # if the lists have values in common then that's the equivalent code
         if set(dimension_list) & set(other_dimension_list):
             code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_DIMENSION_IDX, code)
-            LOGGER.debug(f"Equivalent dimension is : {code} b/c {other_dimension_list}")
+            LOGGER.debug("Converted dimension from D to C")
             break
 
     # convert status
@@ -132,7 +132,7 @@ def to_2525c_from_2525d(code_2525d: MilSymbol2525D, settings: Dict) -> MilSymbol
         # if the lists have values in common then that's the equivalent code
         if set(status_list) & set(other_status_list):
             code_2525c.update_code(MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX, code)
-            LOGGER.debug(f"Equivalent status is : {code} b/c {other_status_list}")
+            LOGGER.debug("Converted status from D to C")
             break
 
     return code_2525c
@@ -148,7 +148,7 @@ def to_2525d(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525D:
         # if the lists have values in common then that's the equivalent code
         if set(standard_identity_list) & set(other_standard_identity_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
-            LOGGER.debug(f"Equivalent std identity is : {code} b/c {other_standard_identity_list}")
+            LOGGER.debug("Converted std identity from C to D")
             break
 
     # convert dimension
@@ -159,7 +159,7 @@ def to_2525d(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525D:
         if set(dimension_list) & set(other_dimension_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_DIMENSION_IDX_1, code[1])
-            LOGGER.debug(f"Equivalent dimension is : {code} b/c {other_dimension_list}")
+            LOGGER.debug("Converted dimension from C to D")
             break
 
     # convert status
@@ -169,7 +169,7 @@ def to_2525d(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525D:
         # if the lists have values in common then that's the equivalent code
         if set(status_list) & set(other_status_list):
             code_2525d.update_code(MilSymbol2525D.MIL_SYM_2525D_STATUS_IDX, code)
-            LOGGER.debug(f"Equivalent status is : {code} b/c {other_status_list}")
+            LOGGER.debug("Converted status from C to D")
             break
 
     return code_2525d

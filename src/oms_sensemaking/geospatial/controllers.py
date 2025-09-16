@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
-from shapely import LineString
 
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
@@ -161,7 +160,7 @@ class GeospatialSensemakerController(SensemakerController):
                 db.expire_on_commit = False
                 # create a point in the oms_sensemaking db, including the vehicle node_id
                 point = is_new = None
-                LOGGER.info(f' coordinates: Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})')
+                LOGGER.info(f"Parsed coordinates for {oms_obs.id}")
                 try:
                     point, is_new = Point.get_or_create(
                         db,
@@ -320,7 +319,6 @@ class GeospatialSensemakerController(SensemakerController):
             LOGGER.info(f"Track completed: {sub_track_id}")
             oms_track = APITrack(track).create_oms_track()
             LOGGER.info(f"OMS Track published: {oms_track.id}")
-            self.log_track_comparison(points=binned_points, track=track)
 
         if not track:
             raise TrackLengthError("Not enough points for track.") from None
@@ -393,47 +391,6 @@ class GeospatialSensemakerController(SensemakerController):
                 iris_to_check.put_nowait(parent_ontology_class.iri)
 
         return iris
-
-    @classmethod
-    def log_track_comparison(cls, points: list[Point], track: Track):
-        LOGGER.debug("GeoJSON features:")
-        LOGGER.debug(
-            json.dumps(
-                {
-                    "type": "FeatureCollection",
-                    "features": [
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Original Points",
-                                "num_points": len(points),
-                                "stroke": "#ff0000",
-                                "stroke-width": 2,
-                                "stroke-opacity": 1,
-                            },
-                            "geometry": LineString([point.coordinates for point in points]).__geo_interface__,
-                            "id": 0,
-                        },
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Weaved Track",
-                                "algorithm": track.algorithm,
-                                "num_points": len(track.points),
-                                "average_point_weight": round(
-                                    sum(p.weight for p in track.points) / len(track.points), 2
-                                ),
-                                "stroke": "#00ff1e",
-                                "stroke-width": 2,
-                                "stroke-opacity": 1,
-                            },
-                            "geometry": LineString([point.coordinates for point in track.points]).__geo_interface__,
-                            "id": 1,
-                        },
-                    ],
-                }
-            )
-        )
 
     def is_generated_track(self, obs: ObservationObservation):
         return hasattr(obs, "labels") and obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
