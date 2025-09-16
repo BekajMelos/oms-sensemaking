@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
 
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
 - Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
 - Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
 
@@ -77,7 +80,7 @@ Removed the NLP feature from the code base to comply with STIG V-222518
 - Script to create transfer bundles
 - CronEventEmitter, which emits fake Audit Log Events on a set interval
 - Observable Sensemaker, which processes all observables every 15 minutes
-  - Implemented geofence logic, other observable types to be implemented
+- Implemented geofence logic, other observable types to be implemented
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events

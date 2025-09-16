@@ -125,4 +125,4 @@ class RethrowErrorLogger(BaseErrorLogger):
         :return: None
         """
         self.err_logger.log_error(event, message, module, exc, acm)
-        raise
+        raise exc

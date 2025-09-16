@@ -125,15 +125,7 @@ class LoiterSensemaker(Sensemaker):
                 time_diff = abs(potential_loiter.latest_time - potential_loiter.start_time)
                 if time_diff >= timedelta(seconds=self.config["loiter_min_time"]):
                     # if craft loitered long enough
-                    loiter_points: list[Point] = []
-                    for point in data.points:
-                        # check for points within the loiter time window
-                        if (
-                            point.detection_time >= potential_loiter.start_time
-                            and point.detection_time <= potential_loiter.latest_time
-                        ):
-                            loiter_points.append(point)
-
+                    loiter_points = self._points_in_time_window(data, potential_loiter)
                     geometry = LineString([point.coordinates for point in loiter_points])
                     loiter = Loiter(
                         data.node_id,
@@ -154,6 +146,19 @@ class LoiterSensemaker(Sensemaker):
             self.publish_loiter(data, loiter)
 
         return confirmed_loiters
+
+    def _points_in_time_window(self, track: Track, potential_loiter: PotentialLoiter) -> list[Point]:
+        """
+        Check for points within the loiter time window
+        """
+        loiter_points_in_time_window = []
+        for point in track.points:
+            if (
+                point.detection_time >= potential_loiter.start_time
+                and point.detection_time <= potential_loiter.latest_time
+            ):
+                loiter_points_in_time_window.append(point)
+        return loiter_points_in_time_window
 
     def find_prospective_loiters(self, points: list[Point]) -> dict[str, list[PotentialLoiter]]:
         """

@@ -105,33 +105,50 @@ class Incursion(BaseRule):
 
                 LOGGER.debug(f"{len(existing_incursion_attributes)} Existing Incursion Attributes")
 
-                for existing_incursion_attribute in existing_incursion_attributes:
-                    inc_attr_geo_timeframe = GeoTimeframe(
-                        existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
-                    )
-                    # Update existing incursion if times overlap or if object stayed in area of
-                    # interest in the time between the observation and incursion
-                    time_overlap = inc_attr_geo_timeframe.does_observation_overlap(incursion_obs_timeframe)
-                    geo_query = GeoQuery(
-                        queryGeoJson=(feature_of_interest.geometry_dict), queryType=GeoQueryType.DISJOINT
-                    )
-                    if (
-                        time_overlap
-                        or inc_attr_geo_timeframe.object_observed_between_generic_node_and_observation_times(
-                            incurring_object, obs, geo_query
-                        )
-                    ):
-                        # Update existing incursion with union of observation and incursion time intervals
-                        inc_attr_geo_timeframe.update_generic_node_times_with_observation(incursion_obs_timeframe)
-                        self._update_existing_incursion(
-                            obs, existing_incursion_activity, existing_incursion_attribute, inc_attr_geo_timeframe
-                        )
-                        matching_incursion_attribute_found = True
-                        break
+                matching_incursion_attribute_found = self._check_existing_incursion_and_update(
+                    obs,
+                    incurring_object,
+                    feature_of_interest,
+                    existing_incursion_activity,
+                    existing_incursion_attributes,
+                    incursion_obs_timeframe,
+                )
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, feature_of_interest)
+
+    def _check_existing_incursion_and_update(
+        self,
+        observation: ObservationObservation,
+        incurring_obj: NodeNode,
+        feat_of_int: AOI,
+        existing_act: ActivitiesActivitiesData,
+        existing_attributes: list[AttributesAttributesData],
+        obs_timeframe: Timeframe,
+    ) -> bool:
+        """
+        function to check for existing incursions given an activity object
+        and its connected attributes
+        """
+        for existing_incursion_attribute in existing_attributes:
+            inc_attr_geo_timeframe = GeoTimeframe(
+                existing_incursion_attribute.valueStart, existing_incursion_attribute.valueEnd
+            )
+            # Update existing incursion if times overlap or if object stayed in area of
+            # interest in the time between the observation and incursion
+            time_overlap = inc_attr_geo_timeframe.does_observation_overlap(obs_timeframe)
+            geo_query = GeoQuery(queryGeoJson=(feat_of_int.geometry_dict), queryType=GeoQueryType.DISJOINT)
+            if time_overlap or inc_attr_geo_timeframe.object_observed_between_generic_node_and_observation_times(
+                incurring_obj, observation, geo_query
+            ):
+                # Update existing incursion with union of observation and incursion time intervals
+                inc_attr_geo_timeframe.update_generic_node_times_with_observation(obs_timeframe)
+                self._update_existing_incursion(
+                    observation, existing_act, existing_incursion_attribute, inc_attr_geo_timeframe
+                )
+                return True
+        return False
 
     def _update_existing_incursion(
         self,
