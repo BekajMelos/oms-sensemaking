@@ -429,9 +429,9 @@ class Settings(BaseSettings):
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
-    cacert_path: str | None = Field(
+    aac_cacert_path: str | None = Field(
         None,
-        description="Optional path to a CA cert",
+        description="Optional path to a CA cert for AAC",
         examples=[None, "/opt/common/pki/cacert.pem"])
     cert_path: str | None = Field(
         None,

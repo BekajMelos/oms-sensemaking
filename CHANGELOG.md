@@ -12,10 +12,13 @@ All notable changes to this project will be documented in this file.
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
 - Refactored code in compliance to SonarQube scans
 - Updated logs to not print potentially classified data
+- Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
+- Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
 - Issue with loading Swagger Docs content
+
 ### Removed
 
 ## [0.12.1] - 2025-09-09

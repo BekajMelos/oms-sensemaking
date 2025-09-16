@@ -14,7 +14,7 @@ def client():
     c = AacClient(
         cert_path=SETTINGS.cert_path,
         key_path=SETTINGS.key_path,
-        ca_cert_path=SETTINGS.cacert_path,
+        ca_cert_path=SETTINGS.aac_cacert_path,
         verification_mode=SETTINGS.aac_verification_mode,
     )
     return c

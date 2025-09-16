@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
+import pygeohash as pgh
 import pytest
 import shapely
-from geolib import geohash
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Confidence
 from sqlalchemy import func, select
@@ -198,7 +198,7 @@ def test_geohash(tester_db: Session):
     )
 
     assert point
-    assert point.geohash == geohash.encode(38.846224, -77.306373, 20)
+    assert point.geohash == pgh.encode(38.846224, -77.306373, 12)
 
 
 def test_geohash_nearby_query(tester_db: Session):
