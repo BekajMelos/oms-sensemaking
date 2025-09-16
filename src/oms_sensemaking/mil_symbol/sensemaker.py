@@ -129,9 +129,9 @@ class MilSymbolSensemaker(Sensemaker):
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code
 
-        LOGGER.info(f"2525D before enrichment: {code_2525d.formatted_code}")
-        LOGGER.info(f"2525C before enrichment: {code_2525c.formatted_code}")
-        LOGGER.info(f"2525B before enrichment: {code_2525b.formatted_code}")
+        LOGGER.info(f"Parsed 2525D for {oms_node.id}")
+        LOGGER.info(f"Parsed 2525C for {oms_node.id}")
+        LOGGER.info(f"Parsed 2525B for {oms_node.id}")
 
         # Get OMS data to enrich codes
         context_attr = self.get_context(oms_node)
@@ -144,9 +144,9 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
 
-        LOGGER.info(f"Enriched 2525B: {code_2525b.formatted_code}")
-        LOGGER.info(f"Enriched 2525C: {code_2525c.formatted_code}")
-        LOGGER.info(f"Enriched 2525D: {code_2525d.formatted_code}")
+        LOGGER.info(f"Enriched 2525B for {oms_node.id}")
+        LOGGER.info(f"Enriched 2525C for {oms_node.id}")
+        LOGGER.info(f"Enriched 2525D for {oms_node.id}")
 
         symbol_code_update_d = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
