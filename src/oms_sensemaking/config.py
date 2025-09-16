@@ -415,9 +415,9 @@ class Settings(BaseSettings):
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
-    cacert_path: str | None = Field(
+    aac_cacert_path: str | None = Field(
         None,
-        description="Optional path to a CA cert",
+        description="Optional path to a CA cert for AAC",
         examples=[None, "/opt/common/pki/cacert.pem"])
     cert_path: str | None = Field(
         None,
@@ -446,6 +446,12 @@ class Settings(BaseSettings):
     )
     aac_cache_enabled: bool = Field(True, description="Whether to use cached responses from AAC")
     aac_cache_storage_ttl_seconds: int = Field(300, description="How long cached responses should be stored")
+
+    atoms_cacert_path: str | None = Field(
+        None,
+        description="Optional path to a CA cert for ATOMS",
+        examples=[None, "/opt/common/pki/cacert.pem"])
+
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 

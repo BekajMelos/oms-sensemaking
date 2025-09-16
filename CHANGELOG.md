@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
 - Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
+- Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
 
 ### Fixed
 - Issues with parsing certain envvars within the .env
