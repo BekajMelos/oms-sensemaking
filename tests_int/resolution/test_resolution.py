@@ -39,6 +39,7 @@ def tester_db():
         classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
     )
     original_be_number_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=BE_NUMBER_IRI,
         attributeValue=BE_NUMBER,
         nodeId=original_facility_node.id,
@@ -46,6 +47,7 @@ def tester_db():
         acm=DEFAULT_ACM,
     )
     original_osuffix_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=OSUFFIX_IRI,
         attributeValue=OSUFFIX,
         nodeId=original_facility_node.id,
@@ -60,6 +62,7 @@ def tester_db():
         classIri="https://foundry.ai.mil/ontology/4901-001/EquipmentItem",
     )
     original_equipment_code_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=EQUIPMENT_CODE_IRI,
         attributeValue=EQUIPMENT_CODE,
         nodeId=original_equipment_node.id,
@@ -74,6 +77,7 @@ def tester_db():
         classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
     )
     empty_string_be_num_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=BE_NUMBER_IRI,
         attributeValue="",
         nodeId=facility_node_empty_string.id,
@@ -81,6 +85,7 @@ def tester_db():
         acm=DEFAULT_ACM,
     )
     empty_string_osuffix_num_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=OSUFFIX_IRI,
         attributeValue="",
         nodeId=facility_node_empty_string.id,
@@ -95,6 +100,7 @@ def tester_db():
         classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
     )
     mismatch_key_be_num_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=BE_NUMBER_IRI,
         attributeValue="12345678",
         nodeId=facility_node_mismatch_keys.id,
@@ -102,6 +108,7 @@ def tester_db():
         acm=DEFAULT_ACM,
     )
     mismatch_key_osuffix_num_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=OSUFFIX_IRI,
         attributeValue="ABCD",
         nodeId=facility_node_mismatch_keys.id,
@@ -151,12 +158,18 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
 
     # Test unsupported attribute is ignored
     unsupported_attribute = AttributeAttribute.model_construct(
-        attributeIri="test", attributeValue="test", nodeId=new_facility_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
+        id=uuid4(),
+        attributeIri="test",
+        attributeValue="test",
+        nodeId=new_facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
     )
     assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(unsupported_attribute) == []
 
     # Test Failure. Irrelevant attribute IRI
     new_irrelevant_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri="bleh",
         attributeValue=EQUIPMENT_CODE,
         nodeId=new_equipment_node.id,
@@ -167,12 +180,18 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
 
     # Test Failure. Attribute not pointing to a node
     new_no_node_attribute = AttributeAttribute.model_construct(
-        attributeIri=EQUIPMENT_CODE_IRI, attributeValue=EQUIPMENT_CODE, nodeId=None, sourceId=uuid4(), acm=DEFAULT_ACM
+        id=uuid4(),
+        attributeIri=EQUIPMENT_CODE_IRI,
+        attributeValue=EQUIPMENT_CODE,
+        nodeId=None,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
     )
     assert ResolutionSensemaker(duplicate_object_iris, mock_oms_crud_tool).execute(new_no_node_attribute) == []
 
     # Test Failure. BE_NUMBER given but no OSUFFIX in DB. Criteria not met
     new_be_number_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=BE_NUMBER_IRI,
         attributeValue=BE_NUMBER,
         nodeId=new_facility_node.id,
@@ -183,7 +202,12 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
 
     # Test Failure. Matching facility nodes with be number and osuffix. Criteria met but no matching nodes
     new_osuffix_attribute = AttributeAttribute.model_construct(
-        attributeIri=OSUFFIX_IRI, attributeValue=OSUFFIX, nodeId=new_facility_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
+        id=uuid4(),
+        attributeIri=OSUFFIX_IRI,
+        attributeValue=OSUFFIX,
+        nodeId=new_facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
     )
     # mock osuffix already existing and be_number being sent
     mock_oms_crud_tool.get_node_attribute_by_iri.return_value = [new_osuffix_attribute]
@@ -199,6 +223,7 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
 
     # Test Success. Matching equipment nodes with be number and osuffix. Criteria met with matching nodes
     new_equipment_code_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=EQUIPMENT_CODE_IRI,
         attributeValue=EQUIPMENT_CODE,
         nodeId=new_equipment_node.id,
@@ -260,7 +285,12 @@ def test_resolution_no_relationship_empty_string(db, mock_source, tester_db):
     mock_oms_crud_tool.get_node.return_value = facility_node
 
     facility_be_num_attribute = AttributeAttribute.model_construct(
-        attributeIri=BE_NUMBER_IRI, attributeValue="", nodeId=facility_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
+        id=uuid4(),
+        attributeIri=BE_NUMBER_IRI,
+        attributeValue="",
+        nodeId=facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
     )
     facility_osuffix_num_attribute = AttributeAttribute.model_construct(
         attributeIri=OSUFFIX_IRI, attributeValue="", nodeId=facility_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
@@ -297,6 +327,7 @@ def test_resolution_no_relationship_mismatch_keys(db, mock_source, tester_db):
     mock_oms_crud_tool.get_node.return_value = facility_node
 
     facility_be_num_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri=BE_NUMBER_IRI,
         attributeValue="876564321",
         nodeId=facility_node.id,
@@ -304,7 +335,12 @@ def test_resolution_no_relationship_mismatch_keys(db, mock_source, tester_db):
         acm=DEFAULT_ACM,
     )
     facility_osuffix_num_attribute = AttributeAttribute.model_construct(
-        attributeIri=OSUFFIX_IRI, attributeValue="ABCD", nodeId=facility_node.id, sourceId=uuid4(), acm=DEFAULT_ACM
+        id=uuid4(),
+        attributeIri=OSUFFIX_IRI,
+        attributeValue="ABCD",
+        nodeId=facility_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
     )
 
     mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(data=[])
