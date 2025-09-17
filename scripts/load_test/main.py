@@ -1,4 +1,6 @@
 import random
+from abc import ABC, abstractmethod
+from typing import Protocol
 
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
@@ -8,6 +10,7 @@ from oms_sdk.generated.generated_graphql_client import (
     Confidence,
     CreateAttributeInput,
     CreateNodeInput,
+    CreateObservationInput,
     CreateOriginatorInput,
     CreateProviderInput,
     CreateRelationshipInput,
@@ -28,6 +31,7 @@ from oms_sdk.generated.generated_graphql_client.exceptions import GraphQLClientG
 from oms_sensemaking.config import SETTINGS
 
 omsb_url = "https://localhost:8020/graphql"
+obs_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation"
 
 
 class AtomsClient:
@@ -61,7 +65,7 @@ class Location:
         self.lat = lat
         self.lon = lon
 
-    def geometry(self):
+    def get_geometry(self):
         return {"type": "Point", "coordinates": [self.lon, self.lat]}
 
 
@@ -125,6 +129,10 @@ class GarrisonedUnit:
         # self.relationship = Relationship(unit, garrison, garrison_iri)
 
 
+class Locatable(Protocol):
+    def get_location() -> Location: ...
+
+
 class Garrison:
     def __init__(self, facility: NodeNode, location: AttributeAttribute):
         self.facility = facility
@@ -138,6 +146,9 @@ class Garrison:
 
     def get_facility_geo(self):
         return self.location.geometry
+
+    def get_location(self) -> Location:
+        raise NotImplementedError
 
 
 class GarrisonService(DTO):
@@ -161,7 +172,7 @@ class GarrisonService(DTO):
             attributeIri=SETTINGS.inference_geo_attribute_iri,
             attributeValue="a location",
             attributeType=AttributeType.GEOSPATIAL,
-            geometry=location.geometry(),
+            geometry=location.get_geometry(),
             valueStart="2023-01-01T00:00:00+00:00",
             valueEnd="2028-01-01T00:00:00+00:00",
             confidence=Confidence.LOW,
@@ -170,6 +181,31 @@ class GarrisonService(DTO):
         location_attr = self.client.client.create_attribute(attr_input)
 
         return Garrison(node_data, location_attr)
+
+
+def gen_random_location() -> Location:
+    # cut off the ends to ease up on distance math and quick and (probably)
+    # make it harder to go out of bounds
+    lat = random.randint(-70, 70)
+    lon = random.randint(-170, 170)
+    return Location(lat, lon)
+
+
+class LocationCreationStrategy(ABC):
+    @abstractmethod
+    def get_location(self, locatable: Locatable) -> Location:
+        raise NotImplementedError
+
+
+class RandomLocation(LocationCreationStrategy):
+    def get_location(self, locatable: Locatable):
+        return gen_random_location()
+
+
+class GetNearLocation(LocationCreationStrategy):
+    def get_location(self, locatable: Locatable):
+        input_location = locatable.get_location()
+        return Location(input_location.lat + 1, input_location.lon + 1)
 
 
 class DetermineOutOfGarrison:
@@ -233,14 +269,6 @@ def create_sourcing() -> Sourcing:
     return Sourcing(orig, prov, src)
 
 
-def gen_random_location() -> Location:
-    # cut off the ends to ease up on distance math and quick and (probably)
-    # make it harder to go out of bounds
-    lat = random.randint(-70, 70)
-    lon = random.randint(-170, 170)
-    return Location(lat, lon)
-
-
 def create_garrisons(limit, sourcing) -> list[Garrison]:
     garrison_service = GarrisonService(atoms_client)
 
@@ -256,7 +284,7 @@ def create_garrisons(limit, sourcing) -> list[Garrison]:
     return garrisons
 
 
-def assign_unit_to_garrison(units: list[Unit], garrisons: list[Garrison], sourcing: Sourcing) -> list[GarrisonedUnit]:
+def assign_units_to_garrisons(units: list[Unit], garrisons: list[Garrison], sourcing: Sourcing) -> list[GarrisonedUnit]:
     relationship_service = RelationshipService(atoms_client)
     unit_garrisons = zip(units, garrisons, strict=False)
     garrisoned_units = []
@@ -272,10 +300,32 @@ def assign_unit_to_garrison(units: list[Unit], garrisons: list[Garrison], sourci
     return garrisoned_units
 
 
+def observe_unit(unit: Unit, sourcing: Sourcing, location_strategy: LocationCreationStrategy):
+    junk_location = gen_random_location()
+    input = CreateObservationInput(
+        nodeId=unit.id,
+        acm=DEFAULT_ACM,
+        sourceId=sourcing.source.id,
+        # should've passed garrisoned unit
+        geometry=location_strategy.get_location(junk_location).get_geometry(),
+        classIri=obs_iri,
+        startTime="2023-01-01T00:00:00+00:00",
+        endTime="2028-01-01T00:00:00+00:00",
+    )
+    obs = atoms_client.client.create_observation(input)
+    print(f"unit: {unit.id}, observation: {obs.id}")
+
+
+def observe_units(units: list[Unit], sourcing: Sourcing):
+    for unit in units:
+        observe_unit(unit, sourcing, RandomLocation())
+
+
 if __name__ == "__main__":
     print("running load test")
     limit = 10
     units = create_units(limit)
     sourcing: Sourcing = create_sourcing()
     garrisons = create_garrisons(limit, sourcing)
-    assign_unit_to_garrison(units, garrisons, sourcing)
+    garrisoned_units = assign_units_to_garrisons(units, garrisons, sourcing)
+    observe_units(units, sourcing)
