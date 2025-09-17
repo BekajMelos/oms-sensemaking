@@ -1,5 +1,8 @@
+import random
+
 from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
     AttributeType,
     Client,
     Confidence,
@@ -52,7 +55,7 @@ class Sourcing:
 
 
 class Location:
-    def __init__(self, lat, lon):
+    def __init__(self, lat: float, lon: float):
         self.lat = lat
         self.lon = lon
 
@@ -72,8 +75,7 @@ class DTO:
 
 
 class Unit(NodeNode):
-    def __init__(self):
-        pass
+    pass
 
 
 class UnitService(DTO):
@@ -107,10 +109,18 @@ class GarrisonedUnit:
 
 
 class Garrison:
-    def __init__(self, name, location: Location, id="") -> None:
-        self.name = name
+    def __init__(self, facility: NodeNode, location: AttributeAttribute):
+        self.facility = facility
         self.location = location
-        self.id = id
+
+    def get_facility_id(self):
+        return self.facility.id
+
+    def get_facility_name(self):
+        return self.facility.name
+
+    def get_facility_geo(self):
+        return self.location.geometry
 
 
 class GarrisonService(DTO):
@@ -123,13 +133,16 @@ class GarrisonService(DTO):
             tags=["Load Test"],
             labels=[],
             classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
+            allegiance="USA",
         )
 
-        self._node_data = self.client.client.create_node(node_input)
+        node_data = self.client.client.create_node(node_input)
 
         attr_input = CreateAttributeInput(
-            nodeId=self._node_data.id,
+            nodeId=node_data.id,
+            acm=DEFAULT_ACM,
             attributeIri=SETTINGS.inference_geo_attribute_iri,
+            attributeValue="a location",
             attributeType=AttributeType.GEOSPATIAL,
             geometry=location.geometry(),
             valueStart="2023-01-01T00:00:00+00:00",
@@ -137,7 +150,9 @@ class GarrisonService(DTO):
             confidence=Confidence.LOW,
             sourceId=sourcing.source.id,
         )
-        self.client.client.create_attribute(attr_input)
+        location_attr = self.client.client.create_attribute(attr_input)
+
+        return Garrison(node_data, location_attr)
 
 
 class DetermineOutOfGarrison:
@@ -145,7 +160,7 @@ class DetermineOutOfGarrison:
         self.distance_km = distance_km
 
 
-def create_units(limit):
+def create_units(limit) -> list[Unit]:
     unit_names = []
     unit_service = UnitService(atoms_client)
     for index in range(limit):
@@ -156,6 +171,8 @@ def create_units(limit):
         unit = unit_service.create(unit_name)
         units.append(unit)
         print(f"created unit {unit.id}: {unit.name}")
+
+    return units
 
 
 def create_sourcing() -> Sourcing:
@@ -199,7 +216,32 @@ def create_sourcing() -> Sourcing:
     return Sourcing(orig, prov, src)
 
 
+def gen_random_location() -> Location:
+    # cut off the ends to ease up on distance math and quick and (probably)
+    # make it harder to go out of bounds
+    lat = random.randint(-70, 70)
+    lon = random.randint(-170, 170)
+    return Location(lat, lon)
+
+
+def create_garrisons(limit, sourcing) -> list[Garrison]:
+    garrison_service = GarrisonService(atoms_client)
+
+    garrison_names = []
+    for index in range(limit):
+        garrison_names.append(f"Garrison no. {index}")
+
+    garrisons = []
+    for garrison_name in garrison_names:
+        garrison = garrison_service.create(garrison_name, gen_random_location(), sourcing)
+        garrisons.append(garrison)
+        print(f"created garrison {garrison.get_facility_id()}: {garrison.get_facility_name()}")
+    return garrisons
+
+
 if __name__ == "__main__":
     print("running load test")
-    create_units(10)
+    limit = 10
+    units = create_units(limit)
     sourcing: Sourcing = create_sourcing()
+    garrisons = create_garrisons(limit, sourcing)
