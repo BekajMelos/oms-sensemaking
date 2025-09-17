@@ -10,6 +10,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateNodeInput,
     CreateOriginatorInput,
     CreateProviderInput,
+    CreateRelationshipInput,
     CreateSourceInput,
     Domain,
     NodeNode,
@@ -18,6 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
     OriginatorQuery,
     ProviderProvider,
     ProviderQuery,
+    RelationshipRelationship,
     SourceQuery,
     SourceSource,
 )
@@ -100,12 +102,27 @@ class Relationship:
         self.relationship_iri = relationship_iri
 
 
+class RelationshipService(DTO):
+    def create(
+        self, start_node: NodeNode, end_node: NodeNode, relationship_iri: str, sourcing: Sourcing
+    ) -> RelationshipRelationship:
+        input = CreateRelationshipInput(
+            name=f"{start_node.id} to {end_node.id} rel {relationship_iri}",
+            acm=DEFAULT_ACM,
+            startNodeId=start_node.id,
+            endNodeId=end_node.id,
+            sourceId=sourcing.source.id,
+            confidence=Confidence.LOW,
+            objectPropertyIri=relationship_iri,
+        )
+        return self.client.client.create_relationship(input)
+
+
 class GarrisonedUnit:
     def __init__(self, unit, garrison) -> None:
-        garrison_iri = "https://foundry.ai.mil/ontology/4901-001/garrisonedIn"
         self.unit = unit
         self.garrison = garrison
-        self.relationship = Relationship(unit, garrison, garrison_iri)
+        # self.relationship = Relationship(unit, garrison, garrison_iri)
 
 
 class Garrison:
@@ -239,9 +256,26 @@ def create_garrisons(limit, sourcing) -> list[Garrison]:
     return garrisons
 
 
+def assign_unit_to_garrison(units: list[Unit], garrisons: list[Garrison], sourcing: Sourcing) -> list[GarrisonedUnit]:
+    relationship_service = RelationshipService(atoms_client)
+    unit_garrisons = zip(units, garrisons, strict=False)
+    garrisoned_units = []
+    for unit_garrison in unit_garrisons:
+        unit, garrison = unit_garrison
+        relationship = relationship_service.create(
+            unit, garrison.facility, SETTINGS.inference_garrisoned_in_iri, sourcing
+        )
+        garrisoned_unit = GarrisonedUnit(unit, garrison)
+        garrisoned_units.append(garrisoned_unit)
+        print(f"unit: {unit.id}, garrison_facility: {garrison.facility.id}, relationship: {relationship.id}")
+
+    return garrisoned_units
+
+
 if __name__ == "__main__":
     print("running load test")
     limit = 10
     units = create_units(limit)
     sourcing: Sourcing = create_sourcing()
     garrisons = create_garrisons(limit, sourcing)
+    assign_unit_to_garrison(units, garrisons, sourcing)
