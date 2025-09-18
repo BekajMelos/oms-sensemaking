@@ -5,16 +5,54 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.13.0] - 2025-09-16
+
+### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
+
+### Changed
+- Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
+- Updated logs to not print potentially classified data
+- Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
+- Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
+
+### Fixed
+- Issues with parsing certain envvars within the .env
+- Issue with loading Swagger Docs content
+
+## [0.12.1] - 2025-09-09
+
+### Fixed
+- Incorrect pgsql version being added to PATH was updated to version 17 to commincate with the database in deployed environments
+
+## [0.12.0] - 2025-09-08
+
+### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
 - Added data mining prevention techniques based off of core's implementations
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
+- Only use private pypi package registries
+- Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
+- Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths
+- Updated ATOMS dependency to Grimlock-INC-30
 
 ### Fixed
 - Fixed bug causing multiple incursions to be created
 
 ### Removed
+Removed the NLP feature from the code base to comply with STIG V-222518
 
 ## [0.11.1] - 2025-08-25
 
@@ -51,7 +89,7 @@ All notable changes to this project will be documented in this file.
 - Script to create transfer bundles
 - CronEventEmitter, which emits fake Audit Log Events on a set interval
 - Observable Sensemaker, which processes all observables every 15 minutes
-  - Implemented geofence logic, other observable types to be implemented
+- Implemented geofence logic, other observable types to be implemented
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events

@@ -1,12 +1,16 @@
 """Module for testing event listeners"""
 
+import json
 import socket
 import time
 from datetime import timedelta
 from unittest import mock
 from unittest.mock import MagicMock
+from uuid import uuid4
 
-from oms_sensemaking.core.events import AuditLogEvent, BaseRabbitMQListener, CronEventEmitter
+from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
+
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, BaseRabbitMQListener, CronEventEmitter
 
 
 class DummyRabbitMQListener(BaseRabbitMQListener):
@@ -142,3 +146,87 @@ def test_cron_event_emitter_event_properties(mock_uuid):
     assert event.objectId == mock_uuid_value
     assert event.objectType == ObjectType.ATTRIBUTE
     assert event.action == Action.CREATE
+
+
+class TestAuditLogEvent:
+    def test_to_json_roundtrip(self):
+        event = AuditLogEvent(
+            userId="user123",
+            objectId="12345",
+            objectType=ObjectType.ATTRIBUTE,
+            action=Action.CREATE,
+        )
+
+        json_str = event.to_json()
+        parsed = json.loads(json_str)
+
+        assert parsed["userId"] == "user123"
+        assert parsed["objectId"] == "12345"
+        assert parsed["objectType"] == ObjectType.ATTRIBUTE.value
+        assert parsed["action"] == Action.CREATE.value
+
+    def test_from_dict_with_defaults(self):
+        obj_id = uuid4()
+        data = {
+            "userId": "user456",
+            "objectId": str(obj_id),
+            "action": Action.UPDATE.value,
+            # objectType intentionally omitted
+        }
+
+        event = AuditLogEvent.from_dict(data)
+
+        assert event.userId == "user456"
+        assert event.objectId == obj_id
+        assert event.objectType == ObjectType.ATTRIBUTE  # default
+        assert event.action == Action.UPDATE
+
+    def test_from_json_roundtrip(self):
+        obj_id = uuid4()
+        data = {
+            "userId": "user789",
+            "objectId": str(obj_id),
+            "objectType": ObjectType.ATTRIBUTE.value,
+            "action": Action.DELETE.value,
+        }
+        json_str = json.dumps(data)
+
+        event = AuditLogEvent.from_json(json_str)
+
+        assert event.userId == "user789"
+        assert event.objectId == obj_id
+        assert event.objectType == ObjectType.ATTRIBUTE
+        assert event.action == Action.DELETE
+
+
+class DummyConsumer(AuditLogEventConsumer):
+    def process_audit_log_events(self):
+        while not self.stopped.is_set():
+            break
+
+
+def long_running_stub(self):
+    time.sleep(5)
+
+
+class TestAuditLogEventConsumer:
+    def test_stop_sets_stopped_flag(self):
+        consumer = DummyConsumer()
+        consumer.start()
+        consumer.stop()
+        assert consumer.stopped.is_set()
+
+    def test_handle_event_is_called(self):
+        mock_handler = MagicMock()
+        consumer = DummyConsumer(handle_event=mock_handler)
+
+        event = AuditLogEvent(
+            userId="user123",
+            objectId=uuid4(),
+            objectType=ObjectType.ATTRIBUTE,
+            action=Action.CREATE,
+        )
+
+        # simulate calling the handler manually
+        consumer.handle_event(consumer, event)
+        mock_handler.assert_called_once_with(consumer, event)

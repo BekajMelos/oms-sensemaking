@@ -81,7 +81,6 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-dnf -y update && \
 dnf install -y \
   ca-certificates \
   curl \
@@ -89,6 +88,7 @@ dnf install -y \
   tar
 
 dnf install -y python3.12 python3.12-pip
+pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
 alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 100 \
@@ -97,16 +97,16 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 
 ARCH=$(uname -m) && \
 if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-libs-16.4-1PGDG.rhel8.aarch64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-16.4-1PGDG.rhel8.aarch64.rpm; \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-libs-17.6-1PGDG.rhel8.aarch64.rpm && \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-17.6-1PGDG.rhel8.aarch64.rpm; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
+    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
 dnf -qy module disable postgresql || true && \
-dnf -y install postgresql16
+dnf -y install postgresql17
 
 # prepare file system
 mkdir -p $APP_HOME
@@ -117,7 +117,7 @@ chmod 774 $APP_HOME
 dnf clean all
 update-ca-trust
 EOF
-ENV PATH="/usr/pgsql-16/bin:${PATH}"
+ENV PATH="/usr/pgsql-17/bin:${PATH}"
 
 FROM python-base AS app
 
@@ -129,8 +129,7 @@ ARG VCS_REF
 
 ARG PIP_INDEX_URL
 
-# fallback to public PyPI
-ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+ARG PIP_EXTRA_INDEX_URL
 
 # disable pip cache
 ARG PIP_NO_CACHE_DIR=1
@@ -190,12 +189,9 @@ if [ -f /root/ca-certificate.crt ]; then
   cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
-# configure package manager
-dnf -y update
-
 # update core Python packaging tools
 export PIP_NO_INPUT=1
-python3 -m pip install --upgrade pip wheel
+python3 -m pip install --upgrade pip wheel setuptools
 
 # install application's system dependencies
 dnf install -y \
@@ -203,7 +199,7 @@ dnf install -y \
   git \
   jq \
   gcc \
-  python3-devel \
+  python3.12-devel \
   procps-ng
 
 ARCH=$(uname -m) && \
@@ -233,6 +229,21 @@ alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_
 dnf remove -y gcc python3-devel geos-devel && \
 dnf autoremove -y && \
 dnf clean all
+
+# remove old python packages (prisma)
+rm -rf /usr/lib/python3.6/site-packages/urllib3*
+rm -rf /usr/lib/python3.6/site-packages/setuptools*
+
+# delete private keys in documentation (prisma)
+rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
+rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
+
+rm -rf /usr/lib/python3.12/site-packages/pip*
+rm -rf /usr/lib/python6/site-packages/pip*
+rm -rf /usr/bin/pip*
+rm -rf /usr/local/bin/pip*
+rm -rf /usr/local/lib/python3.12/site-packages/pip*
+
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"

@@ -59,12 +59,12 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-29`                                  | The version of oms-bridge | Yes            |
+| `OMSB_VERSION` | `Grimlock-INC-30`                                  | The version of oms-bridge | Yes            |
 | `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
-| `CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `ATOMS_CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
 | `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
 
@@ -73,7 +73,7 @@
 |:-------------------------|:---------------------------------------------------|:--------------------------|:--------------:|
 | `CERT_PATH`              | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
-| `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `AAC_CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `AAC_VERIFICATION_MODE`  | `True`                                             | Verify CA bundle of AAC   | No             |
 | `AAC_CACHE_ENABLED`      | `True`                                             | Cache AAC Requests        | No             |
 
@@ -109,10 +109,8 @@
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
 | `TOGGLE_ADD_GARRISON_RULE`                          | `True`                                                                                            | Turn the Garrison Rule On/Off                                  | Yes            |
 | `TOGGLE_INCURSION_RULE`                             | `True`                                                                                            | Turn the Incursion Rule On/Off                                 | Yes            |
-| `CORENLP_EXPOSE_PORT`                               | `9000`                                                                                            | Port to use for the core-nlp service. When set, this will expose the port to the host | Yes |
-| `CORENLP_HOST`                                      | `localhost:9000`                                                                                  | Host and port to connect to Core NLP                           | Yes            |
 | `INFERENCE_TAGS`                                    | `'["Oms Sensemaking", "Inferred Data"]'`                                                          | Tags Inference Sensemaker adds to data                         | No             |
-| `INFERENCE_INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
+| `INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
 | `INFERENCE_INCURSION_ATTRIBUTE_IRI`                 | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion Attribute                       | No             |
 | `INFERENCE_INCURSION_CLASS_IRI`                     | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri to apply for the Incursion Activity class                  | No             |
 | `INFERENCE_INCURSION_ACTIVITY_STATE`                | `UNKNOWN`                                                                                         | Incursion Activity State                                       | No             |

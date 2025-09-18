@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional, Union
 from uuid import UUID
 
-from oms_sdk import DEFAULT_ACM, get_generated_graphql_client
+from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivities,
     ActivityActivity,
@@ -62,16 +62,21 @@ from oms_sdk.generated.generated_graphql_client import (
     UuidQueryByList,
 )
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 @rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
-class OmsCrudTool:
+class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
     def __init__(self, user_dn: str | None = None) -> None:
         self._logger: logging.Logger = logging.getLogger(__name__)
+        super().__init__(host=SETTINGS.omsb_host, port=SETTINGS.omsb_port, service_name="OMS")
+
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,
             user_dn=user_dn or SETTINGS.user_dn,
@@ -392,59 +397,3 @@ class OmsCrudTool:
         :return: Optional OntologyClass object
         """
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
-
-    def create_test_source(
-        self,
-        test_originator_name: str = "nlp_test_originator",
-        test_provider_name: str = "nlp_test_provider",
-        test_source_name: str = "nlp_test_source",
-    ) -> CreateSourceCreateSource:
-        """Creates an originator, a provider, and a source for test purposes"""
-        # Create test originator if it doesn't already exist
-        originator_by_name = self.get_originator_by_name(test_originator_name)
-        if len(originator_by_name.data) > 0:
-            originator = originator_by_name.data[0]
-        else:
-            originator = self.create_originator(
-                CreateOriginatorInput(
-                    name=test_originator_name,
-                    description="A test originator",
-                    acm=DEFAULT_ACM,
-                    tags=SETTINGS.nlp_tags,
-                )
-            )
-
-        # Create test provider if it doesn't already exist
-        provider_by_name = self.get_provider_by_name(test_provider_name)
-        if len(provider_by_name.data) > 0:
-            provider = provider_by_name.data[0]
-        else:
-            provider = self.create_provider(
-                CreateProviderInput(
-                    name=test_provider_name,
-                    description="A test provider",
-                    originatorId=originator.id,
-                    tags=SETTINGS.nlp_tags,
-                    acm=DEFAULT_ACM,
-                )
-            )
-
-        # Create test source if it doesn't already exist
-        source_by_name = self.get_source_by_name(test_source_name)
-        if len(source_by_name.data) > 0:
-            source = source_by_name.data[0]
-        else:
-            source = self.create_source(
-                CreateSourceInput(
-                    name=test_source_name,
-                    dateOfReport="2004-05-23T00:00:00-04:00",
-                    dateOfInformation="2004-05-23T00:00:00-04:00",
-                    tags=SETTINGS.nlp_tags,
-                    providerId=provider.id,
-                    acm=DEFAULT_ACM,
-                    identifier="nlp_test_identifier",
-                    dataAcm=DEFAULT_ACM,
-                )
-            )
-
-        return source

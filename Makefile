@@ -3,7 +3,7 @@ SHELL := /bin/bash
 include .env
 export
 
-.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
+.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up tools
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -57,6 +57,7 @@ build-docker:  ## Build docker image
           --build-arg BUILD_DATE=$(shell date +%Y%m%d%H%M) \
           --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 		  --build-arg PIP_INDEX_URL=${PIP_INDEX} \
+		  --build-arg PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX} \
           --no-cache \
           -t oms_sensemaking:latest \
           --secret id=mynetrc,src=$${HOME}/.netrc \
@@ -89,6 +90,9 @@ psql: ## psql into main db
 
 pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
 	docker compose --profile dev up pgadmin -d
+
+tools: ## start dev tools (kill it with: docker-compose --profile dev down)
+	docker compose --profile dev --profile tools up -d
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip

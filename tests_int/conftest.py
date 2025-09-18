@@ -11,7 +11,13 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
-from oms_sdk.generated.generated_graphql_client import CreateSourceCreateSource
+from oms_sdk import DEFAULT_ACM
+from oms_sdk.generated.generated_graphql_client import (
+    CreateOriginatorInput,
+    CreateProviderInput,
+    CreateSourceCreateSource,
+    CreateSourceInput,
+)
 from oms_sdk.generated.generated_graphql_client.client import Client
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
@@ -33,10 +39,6 @@ alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "
 escaped_uri = SETTINGS.db_uri.replace("%", "%%")
 alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 
-# NLP Configuration
-if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
-    SETTINGS.corenlp_host = SETTINGS.corenlp_localhost
-
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
 
@@ -48,8 +50,6 @@ if not SETTINGS.create_source_if_none:
     SETTINGS.create_source_if_none = True
 if not SETTINGS.create_provider_if_none:
     SETTINGS.create_provider_if_none = True
-
-SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
 
 
 @pytest.fixture(scope="function")
@@ -98,10 +98,66 @@ def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
 
+@pytest.fixture
+def mock_source():
+    """Mock source fixture for tests that need a source object."""
+    mock_source_obj = mock.MagicMock(spec=CreateSourceCreateSource)
+    mock_source_obj.id = "mock-source-id"
+    return mock_source_obj
+
+
 @pytest.fixture(scope="session")
-def mock_source() -> Generator[CreateSourceCreateSource, Any, None]:
+def test_originator() -> Generator[Any, Any, None]:
+    """Create a real Originator in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
-    source = oms_crud_tool.create_test_source()
+    originator_name = "int_test_originator"
+
+    originator = oms_crud_tool.create_originator(
+        CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
+    )
+
+    yield originator
+
+
+@pytest.fixture(scope="session")
+def test_provider(test_originator) -> Generator[Any, Any, None]:
+    """Create a real Provider in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    provider_name = "int_test_provider"
+
+    provider = oms_crud_tool.create_provider(
+        CreateProviderInput(
+            name=provider_name,
+            description="Integration Test",
+            originatorId=test_originator.id,
+            acm=DEFAULT_ACM,
+            tags=[],
+        )
+    )
+
+    yield provider
+
+
+@pytest.fixture(scope="session")
+def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, None]:
+    """Create a real Source in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    source_name = "int_test_source"
+
+    source = oms_crud_tool.create_source(
+        CreateSourceInput(
+            name=source_name,
+            description="Integration Test",
+            providerId=test_provider.id,
+            acm=DEFAULT_ACM,
+            identifier="int_test_identifier",
+            dateOfReport="2004-05-23T00:00:00-04:00",
+            dateOfInformation="2004-05-23T00:00:00-04:00",
+            dataAcm=DEFAULT_ACM,
+            tags=[],
+        )
+    )
+
     yield source
 
 

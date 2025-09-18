@@ -2,7 +2,9 @@
 
 import json
 import logging
+import os
 
+import pygeohash as pgh
 from geopy.distance import geodesic
 from geopy.point import Point
 
@@ -11,7 +13,7 @@ from oms_sensemaking.core.kml_reader import KMLReader
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def gather_area_of_interest_data(paths_to_aoi_data: list[str]):
+def gather_area_of_interest_data(paths_to_aoi_data: str):
     """
     A function that gathers all of the data from the individual
     geoJSON files found in the specified directory.
@@ -20,7 +22,10 @@ def gather_area_of_interest_data(paths_to_aoi_data: list[str]):
     """
     areas_of_interest: list[dict | None] = []
     kml_reader = KMLReader()
-    for file_path in paths_to_aoi_data:
+    for file in os.listdir(paths_to_aoi_data):
+        file_path = os.path.join(paths_to_aoi_data, file)
+        if not os.path.isfile(file_path):
+            continue
         try:
             if file_path.endswith(".json"):
                 json_aois = get_aois_from_json(file_path)
@@ -78,3 +83,22 @@ def generate_circle_points_geographical(center_lat, center_lon, radius_km, num_p
     if points:
         points.append(points[0])  # close the ring for a polygon
     return points
+
+
+def get_geohash_neighbors(geohash: str) -> list[str]:
+    """Get neghboring geohashes to the given geohash
+
+    :param geohash: Middle geohash to get neighbors for
+    :return: List of adjacent geohashes
+    """
+
+    n = pgh.get_adjacent(geohash, "top")
+    s = pgh.get_adjacent(geohash, "bottom")
+    e = pgh.get_adjacent(geohash, "right")
+    w = pgh.get_adjacent(geohash, "left")
+    nw = pgh.get_adjacent(w, "top")
+    ne = pgh.get_adjacent(e, "top")
+    sw = pgh.get_adjacent(w, "bottom")
+    se = pgh.get_adjacent(e, "bottom")
+
+    return [n, s, e, w, nw, ne, sw, se]
