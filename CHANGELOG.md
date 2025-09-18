@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Ensure automated tests have 80% coverage
 
 ### Changed
 
