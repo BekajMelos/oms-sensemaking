@@ -1,8 +1,10 @@
 from queue import SimpleQueue
 from typing import Optional, Protocol
 
+from cachetools import TTLCache, cached
 from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 
@@ -21,9 +23,14 @@ class OntologyService(Protocol):
 
 
 class OntologyClient(OntologyService):
+    """
+    Provide cohesive Ontology related requests
+    """
+
     def __init__(self, oms_client: OmsCrudTool):
         self._oms_client = oms_client
 
+    @cached(TTLCache(SETTINGS.ttl_cache_size, SETTINGS.ttl_cache_seconds))
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
         return self._oms_client.get_ontology_class(iri)
 

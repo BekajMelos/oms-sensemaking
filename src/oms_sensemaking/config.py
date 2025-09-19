@@ -425,6 +425,8 @@ class Settings(BaseSettings):
     ping_wait_retries: int = Field(5, description="Default number of retries when waiting for service readiness")
     ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
 
+    ttl_cache_size: int = Field(1024, description="Max items in a given TTL Cache")
+    ttl_cache_seconds: int = Field(3600, description="Max time to live in a given TTL Cache")
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
     omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
