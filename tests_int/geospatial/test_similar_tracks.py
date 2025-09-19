@@ -13,36 +13,9 @@ from sqlalchemy.orm import Session
 
 from oms_sensemaking.geospatial.sensemakers import SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track
+from tests_int.conftest import rollup_unclass_acm_3_0
 
-ROLLUP_DEFAULT_ACM = {
-    "version": "3.0",
-    "classif_type": "US",
-    "classif": "U",
-    "owner_prod": ["USA"],
-    "non_us_ctrls": [],
-    "sci_ctrls": [],
-    "disponly_to": [""],
-    "dissem_ctrls": [],
-    "non_ic": [],
-    "rel_to": [],
-    "fgi_open": [],
-    "fgi_protect": [],
-    "portion": "U//DISPLAY ONLY",
-    "banner": "UNCLASSIFIED//DISPLAY ONLY",
-    "dissem_countries": [],
-    "accms": [],
-    "macs": [],
-    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
-    "share": {"users": [], "projects": {}},
-    "f_clearance": ["u"],
-    "f_sci_ctrls": [],
-    "f_accms": [],
-    "f_oc_org": [],
-    "f_regions": [],
-    "f_missions": [],
-    "f_share": [],
-    "f_macs": [],
-}
+ROLLUP_DEFAULT_ACM = rollup_unclass_acm_3_0()
 
 NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
