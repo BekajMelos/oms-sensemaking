@@ -294,12 +294,12 @@ class GeospatialSensemakerController(SensemakerController):
             sub_track_id = uuid4()
             LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
 
-            binned_points = csf_funcs._csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
+            binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
             # Execute a track weaver on the buffered Points
             # and save the new Track with the chosen UUID
             weaved_track = self.track_weaver.execute(binned_points)
 
-            weaved_track = csf_funcs._csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
+            weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
             # Abort and do not clear buffer if final track has less than 2 points
             if len(weaved_track.points) < 2:
                 continue
@@ -401,7 +401,7 @@ class GeoCSFTrackPointHelpers:
     def __init__(self, cs_filters: list[CommonSenseFilter]) -> None:
         self.common_sense_filters = cs_filters
 
-    def _csf_single_track_points(
+    def csf_single_track_points(
         self, ancestor_iris: set[str], binned_points: list[Point], sub_track_id: UUID
     ) -> list[Point]:
         """
@@ -417,7 +417,7 @@ class GeoCSFTrackPointHelpers:
                 binned_points = csf.filter_points(binned_points)
         return binned_points
 
-    def _csf_track_point_deltas(self, ancestor_iris: set[str], sub_track_id: UUID, weaved_track: Track) -> Track:
+    def csf_track_point_deltas(self, ancestor_iris: set[str], sub_track_id: UUID, weaved_track: Track) -> Track:
         for csf in self.common_sense_filters:
             if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
                 LOGGER.debug(
