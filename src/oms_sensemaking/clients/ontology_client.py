@@ -39,7 +39,7 @@ class OntologyClient(OntologyService):
         iris_to_check.put_nowait(oms_node.classIri)
         while not iris_to_check.empty():
             current_iri = iris_to_check.get_nowait()
-            ontology_class: OntologyClassOntologyClass | None = self._oms_client.get_ontology_class(iri=current_iri)
+            ontology_class: OntologyClassOntologyClass | None = self.get_ontology_class(iri=current_iri)
 
             if not ontology_class or not ontology_class.parentOntologyClasses:
                 continue
@@ -63,7 +63,7 @@ class OntologyClient(OntologyService):
         has_parent = True
         current_iri = oms_node.classIri
         while has_parent:
-            ontology_class: Optional[OntologyClassOntologyClass] = self._oms_client.get_ontology_class(iri=current_iri)
+            ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=current_iri)
 
             if not ontology_class or not ontology_class.parentOntologyClasses:
                 break
@@ -82,7 +82,7 @@ class OntologyClient(OntologyService):
         :return: Closest parent iri with a defaultSymbolIdCode
         """
 
-        ontology_class: Optional[OntologyClassOntologyClass] = self._oms_client.get_ontology_class(iri=iri)
+        ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=iri)
         if not ontology_class:
             return None
 
