@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Ontology Service
 
 ### Changed
+- Reverted In or Out of Garrison custom query
 
 ### Fixed
 
