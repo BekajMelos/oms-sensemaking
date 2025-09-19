@@ -18,7 +18,7 @@ from fastapi_offline import FastAPIOffline
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, rdf
-from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ping_db, ping_db_host_wait
+from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
@@ -43,7 +43,13 @@ def get_controllers() -> list[SensemakerController]:
 
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(
-            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()), err_logger
+            RabbitMQListener(
+                "GeoRMQListener",
+                SETTINGS.rmq_geo_queue_name,
+                event_filter=GeoQueueFilter(),
+            ),
+            err_logger,
+            ontology_service,
         ),
         InferenceSensemakerController(
             RabbitMQListener(

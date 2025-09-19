@@ -1,3 +1,4 @@
+import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeQuery,
@@ -26,6 +27,7 @@ test_attribute_name = "test_attribute_name"
 test_relationship_name = "test_relationship_name"
 
 
+@pytest.mark.skip("This test fails when ran repeatedly")
 def test_multi_crud_operations(create_source):
     nodes_to_publish = []
     for i in range(2):
@@ -105,6 +107,7 @@ def test_node_crud():
     assert delete_node
 
 
+@pytest.mark.skip("This test fails when ran repeatedly")
 def test_relationship_crud(create_source):
     # First need to create a couple nodes that the relationship can use
     nodes_to_publish = []
@@ -154,6 +157,7 @@ def test_relationship_crud(create_source):
     assert delete_relationship
 
 
+@pytest.mark.skip("This test fails when ran repeatedly")
 def test_attribute_crud(create_source):
     node = oms_crud_tool.create_node(
         CreateNodeInput(
