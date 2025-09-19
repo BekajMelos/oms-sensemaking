@@ -3,6 +3,7 @@ import warnings
 from typing import List, Optional, Union
 from uuid import UUID
 
+from cachetools import TTLCache, cached
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivities,
@@ -177,16 +178,19 @@ class OmsCrudTool(BaseClient):
         activity = self.oms_client.activity(IdQuery(id=id))
         return activity
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_attribute(self, id: UUID) -> AttributeAttribute:
         """Get existing Attribute from OMS"""
         attribute = self.oms_client.attribute(IdQuery(id=id))
         return attribute
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_node(self, id: UUID) -> NodeNode:
         """Get existing Node from OMS"""
         node = self.oms_client.node(IdQuery(id=id))
         return node
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_observation(self, id: UUID) -> ObservationObservation:
         """Get existing Observation from OMS"""
         observation = self.oms_client.observation(IdQuery(id=id))

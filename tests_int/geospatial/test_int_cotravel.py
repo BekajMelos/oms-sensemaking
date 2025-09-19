@@ -423,13 +423,7 @@ def test_cotravel_success(
     assert findings[0].algorithm_configuration
 
 
-def test_potential_duplicate_success(
-    mock_oms_client: MagicMock,
-    tester_db: Session,
-    db: Session,
-    mock_oms_crud_tool: OmsCrudTool,
-    aircraft_geo_config: dict,
-):
+def make_potential_duplicate_track() -> Track:
     node_id = uuid4()
     track_id = uuid4()
 
@@ -477,6 +471,21 @@ def test_potential_duplicate_success(
     track = Track(
         points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id, acm=ROLLUP_DEFAULT_ACM
     )
+
+    return track
+
+
+def test_potential_duplicate_success(
+    mock_oms_client: MagicMock,
+    tester_db: Session,
+    db: Session,
+    mock_oms_crud_tool: OmsCrudTool,
+    aircraft_geo_config: dict,
+):
+    track = make_potential_duplicate_track()
+    node_id = track.node_id
+    p1 = track.points[0]
+    p3 = track.points[2]
 
     # Set up mocks
     cotravel_node_id = uuid4()
@@ -525,79 +534,14 @@ def test_potential_duplicate_success(
     assert findings[0].algorithm_configuration
 
 
-def test_potential_duplicate_nso(
+def test_potential_duplicate_with_nso(
     mock_oms_client: MagicMock,
     tester_db: Session,
     db: Session,
     mock_oms_crud_tool: OmsCrudTool,
     aircraft_geo_config: dict,
 ):
-    node_id = uuid4()
-    track_id = uuid4()
-
-    # <30 seconds behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:10:28-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    # Create Track Object
-    track = Track(
-        points=[p1, p2, p3], node_id=node_id, algorithm="test_algorithm", track_uuid=track_id, acm=ROLLUP_DEFAULT_ACM
-    )
-
-    # Test isNSO False should return cotravel
-    # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
-    )
-    mock_oms_client.node.return_value = NodeNode.model_construct(
-        id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False
-    )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
-    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
-
-    assert len(cotravels) == 1
-    cotravel = cotravels[0]
-    print("mock: ", mock_oms_client)
-    assert cotravel.cotravel_type == CotravelType.cotravel
+    track = make_potential_duplicate_track()
 
     # Test isNSO True should return duplicate
     # Set up mocks
@@ -617,6 +561,35 @@ def test_potential_duplicate_nso(
     assert len(cotravels) == 1
     cotravel = cotravels[0]
     assert cotravel.cotravel_type == CotravelType.potential_duplicate
+
+
+def test_potential_duplicate_with_known_node(
+    mock_oms_client: MagicMock,
+    tester_db: Session,
+    db: Session,
+    mock_oms_crud_tool: OmsCrudTool,
+    aircraft_geo_config: dict,
+):
+    track = make_potential_duplicate_track()
+
+    # Test isNSO False should return cotravel
+    # Set up mocks
+    cotravel_node_id = uuid4()
+    mock_oms_client.create_node = MagicMock(
+        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    )
+    mock_oms_client.node.return_value = NodeNode.model_construct(
+        id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False
+    )
+    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_attribute.return_value = MagicMock()
+
+    cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
+
+    assert len(cotravels) == 1
+    cotravel = cotravels[0]
+    print("mock: ", mock_oms_client)
+    assert cotravel.cotravel_type == CotravelType.cotravel
 
 
 def test_potential_duplicate_failure(

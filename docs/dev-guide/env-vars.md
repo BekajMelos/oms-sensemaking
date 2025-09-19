@@ -140,6 +140,8 @@
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
 | `TTL_CACHE_SIZE` | `1024` | Max items in a given TTL Cache | No |
 | `TTL_CACHE_SECONDS` | `3600` | Max time to live in a given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SIZE` | `1024` | Max items in OMS CRUD Tool's given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SECONDS` | `3600` | Max time to live in OMS CRUD Tool's given TTL Cache | No |
 | `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
