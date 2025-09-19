@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.geospatial.sensemakers import SimilarTracksSensemaker
 from oms_sensemaking.models.geo import Point, Track
 from tests_int.conftest import rollup_unclass_acm_3_0
+from tests_int.geospatial.helper import TimeLocation
 
 ROLLUP_DEFAULT_ACM = rollup_unclass_acm_3_0()
 
@@ -172,45 +173,11 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session, aircraf
     """Test similar track with same path."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # first point is wayyy east of london
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(2.289575, 41.467810).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(2.217167, 41.399953).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(2.183748, 41.356069).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(2.289575, 41.467810).wkt, "2024-03-20T12:05:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation(shapely.Point(2.217167, 41.399953).wkt, "2024-03-20T12:15:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(shapely.Point(2.183748, 41.356069).wkt, "2024-03-20T12:25:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -231,45 +198,10 @@ def test_most_similar_tracks_success_start(tester_db: Session, aircraft_geo_conf
     node_id = uuid4()
     track_uuid = uuid4()
 
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.165222, 51.482286).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.210562, 51.466103).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
+    p1 = TimeLocation(shapely.Point(-0.165222, 51.482286).wkt, "2024-03-20T12:05:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation(shapely.Point(-0.210562, 51.466103).wkt, "2024-03-20T12:15:00-04:00").create_node_point(node_id)
     # last point is wayyy west of london
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.405754, 51.489425).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p3 = TimeLocation(shapely.Point(-0.405754, 51.489425).wkt, "2024-03-20T12:25:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -286,45 +218,11 @@ def test_most_similar_tracks_success_end(tester_db: Session, aircraft_geo_config
     """Test similar track where starting point doesn't match the similar track."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # first point is wayyy east of london
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(0.226432, 51.479597).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.186849, 51.465229).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.225258, 51.476589).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(0.226432, 51.479597).wkt, "2024-03-20T12:05:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation(shapely.Point(-0.186849, 51.465229).wkt, "2024-03-20T12:15:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(shapely.Point(-0.225258, 51.476589).wkt, "2024-03-20T12:25:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
