@@ -29,6 +29,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateNodeUpdateNode,
 )
 
+from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
@@ -73,7 +74,7 @@ class MilSymbolSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool, ontology_service: OntologyService) -> None:
         """Create a new instance of MilSymbolSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -81,6 +82,7 @@ class MilSymbolSensemaker(Sensemaker):
         self.config = SETTINGS.mil_symbol_settings.model_dump()
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
+        self._ontology_service = ontology_service
 
     def process_data(
         self, oms_object: AttributeAttribute | NodeNode, config: dict | None = None
@@ -206,6 +208,7 @@ class MilSymbolSensemaker(Sensemaker):
         :param iri: Iri to search for
         :return: Closest parent iri with a defaultSymbolIdCode
         """
+        # cache this somehow
         ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(iri=iri)
         if not ontology_class:
             return None
@@ -327,6 +330,7 @@ class MilSymbolSensemaker(Sensemaker):
         has_parent = True
         current_iri = oms_node.classIri
         while has_parent:
+            # cache this somehow
             ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(
                 iri=current_iri
             )

@@ -17,6 +17,7 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 
 from oms_sensemaking.clients.aac_client import AacClient
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
@@ -57,6 +58,12 @@ def oms_object() -> AttributeAttribute:
     return attribute_val
 
 
+@pytest.fixture
+def build_sensemaker(mock_oms_crud_tool: OmsCrudTool, mil_symbol_rules: Dict):
+    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool, OntologyClient(mock_oms_crud_tool))
+    return sensemaker
+
+
 def create_attribute(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) -> AttributeAttribute:
     attr = AttributeAttribute.model_construct(
         id=uuid4(), attributeIri=attribute_iri, attributeValue=attribute_value, sourceId=uuid4(), acm=acm
@@ -67,10 +74,9 @@ def create_attribute(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_process_data(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
-
+    sensemaker = build_sensemaker
     ### Mocks
     ## Mock getting acm
     mock_get_acm.return_value = DEFAULT_ACM
@@ -142,10 +148,9 @@ def test_process_data(
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_correct_updates_made_when_none_specified(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_get_acm: AacClient, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
-
+    sensemaker = build_sensemaker
     mock_get_acm.return_value = DEFAULT_ACM
     sensemaker.get_context = mock.MagicMock(
         return_value=create_attribute(
@@ -169,9 +174,9 @@ def test_correct_updates_made_when_none_specified(
 
 
 def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
-    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+    oms_node: NodeNode, oms_object: AttributeAttribute, build_sensemaker: MilSymbolSensemaker
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # Case where oms_object is an attribute and returns a valid mil symbol attributeIris
     code = sensemaker.get_starting_symbol_id_code(oms_object, oms_node)
@@ -179,9 +184,9 @@ def test_get_starting_symbol_id_code_from_attribute_with_valid_mil_symbol(
 
 
 def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
-    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+    oms_node: NodeNode, oms_object: AttributeAttribute, build_sensemaker: MilSymbolSensemaker
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # Case where oms_object is an attribute that does not have a valid milsymbol attributeIri and node has symboldIdCode
     oms_object.attributeIri = "invalidIri"
@@ -191,9 +196,12 @@ def test_get_starting_symbol_id_code_from_attribute_with_no_valid_mil_symbol(
 
 
 def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
-    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    oms_object: AttributeAttribute,
+    build_sensemaker: MilSymbolSensemaker,
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # Don't actually get the ontology class from API
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -210,9 +218,12 @@ def test_get_starting_symbol_id_code_from_node_with_symbol_id_code(
 
 
 def test_get_starting_symbol_id_code(
-    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, oms_object: AttributeAttribute, mil_symbol_rules: Dict
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    oms_object: AttributeAttribute,
+    build_sensemaker: MilSymbolSensemaker,
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # Don't actually get the ontology class from API
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -247,10 +258,12 @@ def test_get_starting_symbol_id_code(
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
 
-def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool: OmsCrudTool, mil_symbol_rules: Dict):
+def test_get_default_symbol_id_code_regular_traversal(
+    mock_oms_crud_tool: OmsCrudTool, build_sensemaker: MilSymbolSensemaker
+):
     """Test traversing ontology for parent classes with codes"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # mock getting the ontology classes
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -277,12 +290,10 @@ def test_get_default_symbol_id_code_regular_traversal(mock_oms_crud_tool: OmsCru
     assert code == "10-0-0-01-0-0-00-000000-00-00"
 
 
-def test_get_default_symbol_id_code_no_parents(
-    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
-):
+def test_get_default_symbol_id_code_no_parents(mock_oms_crud_tool: OmsCrudTool, build_sensemaker: MilSymbolSensemaker):
     """test get_default_symbol_id_code when there's no code and no parents to traverse"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # mock getting the ontology classes
     mock_oms_crud_tool.get_ontology_class = mock.MagicMock()
@@ -297,10 +308,10 @@ def test_get_default_symbol_id_code_no_parents(
     assert code is None
 
 
-def test_get_context(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
+def test_get_context(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker):
     """Test that we get the context correctly"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     sensemaker.get_context(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
@@ -313,10 +324,10 @@ def test_get_context(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_sy
     )
 
 
-def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
+def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker):
     """Test that we get the affiliation correctly"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     sensemaker.get_affiliation(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
@@ -324,8 +335,8 @@ def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mi
     )
 
 
-def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker):
+    sensemaker = build_sensemaker
 
     sensemaker.get_status(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
@@ -333,10 +344,12 @@ def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_sym
     )
 
 
-def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
+def test_get_node_ancestors_iris(
+    mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
+):
     """Test get ancestor's iris."""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     oms_node.classIri = "http://omsb/test/SmallTouringHelicopter"
 
@@ -379,8 +392,8 @@ def test_get_node_ancestors_iris(mock_oms_crud_tool: OmsCrudTool, oms_node: Node
     ]
 
 
-def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker):
+    sensemaker = build_sensemaker
 
     sensemaker.get_echelon(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
@@ -390,11 +403,14 @@ def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_sy
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_dimension_enrichment(
-    mock_get_acm: mock.MagicMock, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_get_acm: mock.MagicMock,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    build_sensemaker: MilSymbolSensemaker,
 ):
     """Test that the dimension is updated based on the parent IRIs"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     ### Mocks
     ## Mock getting acm
@@ -475,10 +491,10 @@ def test_acms(
     mock_aac_client: mock.MagicMock,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
-    mil_symbol_rules: Dict,
+    build_sensemaker: MilSymbolSensemaker,
     ts_acm: Dict,
 ):
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     # case 1
     sensemaker.get_context = mock.MagicMock(
@@ -513,11 +529,11 @@ def test_acms(
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_controlling_affiliation_enrichment(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, mil_symbol_rules: Dict
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
 ):
     """Test that the affiliation is updated based on the parent controlling nodes"""
 
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, mock_oms_crud_tool)
+    sensemaker = build_sensemaker
 
     ### Mocks
     ## Mock getting acm

@@ -5,6 +5,7 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
+from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import (
@@ -29,7 +30,7 @@ class MilSymbolSensemakerController(SensemakerController):
             with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
                 mil_symbol_rules = json.load(fd)
 
-            self.register("mil_symbol", MilSymbolSensemaker(mil_symbol_rules, self.oms_crud_tool))
+            self.register("mil_symbol", MilSymbolSensemaker(mil_symbol_rules, self.oms_crud_tool, ontology_service))
 
         super().start()
 
