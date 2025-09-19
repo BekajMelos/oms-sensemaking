@@ -1,4 +1,5 @@
 import logging
+import warnings
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -337,4 +338,5 @@ class OmsCrudTool(BaseClient):
         :param iri: Iri to get ontology data for
         :return: Optional OntologyClass object
         """
+        warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
