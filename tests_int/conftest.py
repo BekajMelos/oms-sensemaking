@@ -112,7 +112,6 @@ def test_originator() -> Generator[Any, Any, None]:
     """Create a real Originator in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
     originator_name = f"int_test_originator_{uuid4().hex[:8]}"
-    # originator_name = "int_test_originator"
 
     originator = oms_crud_tool.create_originator(
         CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
@@ -128,7 +127,6 @@ def test_provider(test_originator) -> Generator[Any, Any, None]:
     """Create a real Provider in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
     provider_name = f"int_test_provider_{uuid4().hex[:8]}"
-    # provider_name = "int_test_provider"
 
     provider = oms_crud_tool.create_provider(
         CreateProviderInput(
@@ -149,7 +147,6 @@ def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, Non
     """Create a real Source in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
     source_name = f"int_test_source_{uuid4().hex[:8]}"
-    # source_name = "int_test_source"
 
     source = oms_crud_tool.create_source(
         CreateSourceInput(
