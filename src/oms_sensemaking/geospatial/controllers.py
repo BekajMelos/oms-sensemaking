@@ -8,15 +8,15 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from operator import attrgetter
-from queue import SimpleQueue
 from threading import Event, Timer
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
+from oms_sdk.generated.generated_graphql_client import NodeNode
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
 
 from oms_sensemaking.clients.instances import aac_client, db_session
+from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
@@ -44,7 +44,9 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
+    def __init__(
+        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
+    ) -> None:
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
@@ -54,6 +56,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
         self.track_node_buffer: dict[UUID, list[Point]] = defaultdict(list)
+        self._ontology_service = ontology_service
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -291,12 +294,12 @@ class GeospatialSensemakerController(SensemakerController):
             sub_track_id = uuid4()
             LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
 
-            binned_points = csf_funcs._csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
+            binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
             # Execute a track weaver on the buffered Points
             # and save the new Track with the chosen UUID
             weaved_track = self.track_weaver.execute(binned_points)
 
-            weaved_track = csf_funcs._csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
+            weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
             # Abort and do not clear buffer if final track has less than 2 points
             if len(weaved_track.points) < 2:
                 continue
@@ -375,22 +378,7 @@ class GeospatialSensemakerController(SensemakerController):
         :param oms_node: Node to grab the status for
         :return: The Node's ancestor's iri list
         """
-
-        iris = set()
-        iris_to_check: SimpleQueue = SimpleQueue()
-        iris_to_check.put_nowait(oms_node.classIri)
-        while not iris_to_check.empty():
-            current_iri = iris_to_check.get_nowait()
-            ontology_class: OntologyClassOntologyClass | None = self.oms_crud_tool.get_ontology_class(iri=current_iri)
-
-            if not ontology_class or not ontology_class.parentOntologyClasses:
-                continue
-
-            for parent_ontology_class in ontology_class.parentOntologyClasses:
-                iris.add(parent_ontology_class.iri)
-                iris_to_check.put_nowait(parent_ontology_class.iri)
-
-        return iris
+        return self._ontology_service.geospatial_get_node_ancestors_iris(oms_node)
 
     def is_generated_track(self, obs: ObservationObservation):
         return hasattr(obs, "labels") and obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
@@ -413,7 +401,7 @@ class GeoCSFTrackPointHelpers:
     def __init__(self, cs_filters: list[CommonSenseFilter]) -> None:
         self.common_sense_filters = cs_filters
 
-    def _csf_single_track_points(
+    def csf_single_track_points(
         self, ancestor_iris: set[str], binned_points: list[Point], sub_track_id: UUID
     ) -> list[Point]:
         """
@@ -429,7 +417,7 @@ class GeoCSFTrackPointHelpers:
                 binned_points = csf.filter_points(binned_points)
         return binned_points
 
-    def _csf_track_point_deltas(self, ancestor_iris: set[str], sub_track_id: UUID, weaved_track: Track) -> Track:
+    def csf_track_point_deltas(self, ancestor_iris: set[str], sub_track_id: UUID, weaved_track: Track) -> Track:
         for csf in self.common_sense_filters:
             if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
                 LOGGER.debug(

@@ -14,6 +14,7 @@ from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode, Sou
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
@@ -30,6 +31,7 @@ def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
         RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()),
         RethrowErrorLogger(ErrorLogger()),
+        OntologyClient(mock_oms_client),
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
 

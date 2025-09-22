@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, scoped_session, sessionmaker
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.clients.health_checker import HealthChecker
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 from ..config import SETTINGS
@@ -55,6 +56,8 @@ aac_client = AacClient(SETTINGS.cert_path, SETTINGS.key_path, SETTINGS.aac_cacer
 oms_crud_tool = OmsCrudTool()
 
 health_checker = HealthChecker()
+
+ontology_service = OntologyClient(oms_crud_tool)
 
 
 def ping_db() -> bool:

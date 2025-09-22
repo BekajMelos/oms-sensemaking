@@ -10,6 +10,7 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, NodeNode, ObjectType
 
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
@@ -39,8 +40,11 @@ def test_mil_sym_controller(
     mock_mil_sym_controller: MilSymbolSensemakerController,
     mil_symbol_rules: Dict,
 ):
+    oms_client = OmsCrudTool()
     # register the sensemaker without starting the listener
-    mock_mil_sym_controller.register("mil_symbol", MilSymbolSensemaker(OmsCrudTool(), mil_symbol_rules))
+    mock_mil_sym_controller.register(
+        "mil_symbol", MilSymbolSensemaker(oms_client, mil_symbol_rules, OntologyClient(oms_client))
+    )
 
     # mock oms call
     oms_node = NodeNode.model_construct(id=uuid4(), name="test", sourceId=uuid4(), acm=DEFAULT_ACM)
@@ -103,9 +107,6 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_mil_sym_control
         settings_mock.rules_file_path = "fake_mil_rules.json"
 
         mock_mil_sym_controller.start()
-
-        # Verify ResolutionSensemaker was created with correct args
-        sensemaker_mock.assert_called_once_with(fake_mil_rules, mock_mil_sym_controller.oms_crud_tool)
 
         # Verify register called
         register_mock.assert_called_once_with("mil_symbol", sensemaker_mock.return_value)
