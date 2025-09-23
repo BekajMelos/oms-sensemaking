@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Removed "localstack" docker container and other references.
 
 ## [0.13.1] - 2025-09-19
 
