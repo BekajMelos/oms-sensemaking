@@ -1,5 +1,0 @@
-{
-  "VisibilityTimeout": "30",
-  "ReceiveMessageWaitTimeSeconds": "20",
-  "DelaySeconds": "0"
-}
