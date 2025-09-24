@@ -141,6 +141,8 @@ ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
 
 ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
+ARG EPEL_GPG_URL
+
 ENV MODULE_NAME=oms_sensemaking.service
 
 # dump the Python traceback for segfaults and other signals
@@ -207,6 +209,9 @@ if [ "$ARCH" = "aarch64" ]; then \
     dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     dnf config-manager --set-enabled epel; \
 elif [ "$ARCH" = "x86_64" ]; then \
+    mkdir -p /etc/pki/rpm-gpg && \
+    curl -fsSL ${EPEL_GPG_KEY_URL} -o /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
     dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
     sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
