@@ -100,8 +100,8 @@ if [ "$ARCH" = "aarch64" ]; then \
     dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-libs-17.6-1PGDG.rhel8.aarch64.rpm && \
     dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-17.6-1PGDG.rhel8.aarch64.rpm; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
+    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
 else \
     echo "Unsupported architecture: $ARCH" && exit 1; \
 fi && \
@@ -207,7 +207,7 @@ if [ "$ARCH" = "aarch64" ]; then \
     dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     dnf config-manager --set-enabled epel; \
 elif [ "$ARCH" = "x86_64" ]; then \
-    dnf install -y --nogpgcheck ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
+    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
     sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
     dnf clean all; \
