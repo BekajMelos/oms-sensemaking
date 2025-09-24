@@ -95,19 +95,6 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --set python3 /usr/bin/python3.12 \
 && alternatives --set pip /usr/bin/pip3.12
 
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-libs-17.6-1PGDG.rhel8.aarch64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-17.6-1PGDG.rhel8.aarch64.rpm; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf -qy module disable postgresql || true && \
-dnf -y install postgresql17
-
 # prepare file system
 mkdir -p $APP_HOME
 chown $USER_NAME:$GROUP_NAME $APP_HOME
@@ -117,7 +104,6 @@ chmod 774 $APP_HOME
 dnf clean all
 update-ca-trust
 EOF
-ENV PATH="/usr/pgsql-17/bin:${PATH}"
 
 FROM python-base AS app
 
@@ -141,7 +127,7 @@ ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
 
 ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
-ARG EPEL_GPG_URL
+ARG EPEL_GPG_URL="https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -210,7 +196,7 @@ if [ "$ARCH" = "aarch64" ]; then \
     dnf config-manager --set-enabled epel; \
 elif [ "$ARCH" = "x86_64" ]; then \
     mkdir -p /etc/pki/rpm-gpg && \
-    curl -fsSL ${EPEL_GPG_KEY_URL} -o /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
+    curl -fsSL ${EPEL_GPG_URL} -o /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
     dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
     sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
@@ -231,7 +217,7 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3-devel geos-devel && \
+dnf remove -y gcc python3.12-devel geos-devel && \
 dnf autoremove -y && \
 dnf clean all
 
