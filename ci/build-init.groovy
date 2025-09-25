@@ -31,7 +31,6 @@ pipeline {
         IMAGE_NAME="dpaas/ubi8-ccp"
         IMAGE_VERSION="8.10"
 
-        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
         EPEL_GPG_URL = "https://artifactory.code.dodiis.mil/artifactory/yum-dodiis/gpg-keys/RPM-GPG-KEY-EPEL-8"
     }
@@ -122,7 +121,6 @@ pipeline {
                                 --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                                 --build-arg VCS_REF=$(git rev-parse HEAD) \
                                 --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
-                                --build-arg POSTGRES_REPOSITORY=${POSTGRES_REPOSITORY} \
                                 --build-arg EPEL_REPOSITORY=${EPEL_REPOSITORY} \
                                 --build-arg EPEL_GPG_URL=${EPEL_GPG_URL} \
                                 --secret id=mynetrc,src=.netrc \

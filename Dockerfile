@@ -55,8 +55,6 @@ ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
-ARG POSTGRES_REPOSITORY="https://download.postgresql.org/pub/repos/yum"
-
 ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
