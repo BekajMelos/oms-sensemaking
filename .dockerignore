@@ -23,6 +23,7 @@ etc
 docker*
 !docker/*.sh
 !docker/*.txt
+!docker/*.py
 docs
 scripts
 tests
