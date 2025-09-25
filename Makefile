@@ -59,7 +59,7 @@ build-docker:  ## Build docker image
 		  --build-arg PIP_INDEX_URL=${PIP_INDEX} \
 		  --build-arg PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX} \
           --no-cache \
-          -t oms-sensemaking:latest-test \
+          -t oms_sensemaking:latest \
           --secret id=mynetrc,src=$${HOME}/.netrc \
           --platform linux/amd64,linux/arm64 \
           .
