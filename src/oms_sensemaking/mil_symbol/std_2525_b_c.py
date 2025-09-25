@@ -82,7 +82,7 @@ class MilSymbol2525BandC(MilSymbol):
                     self.update_code(self.MIL_SYM_2525_B_C_STD_IDENTITY_IDX, code)
                     self.source_ids.put((self.AFFILIATION_SOURCE_PRIORITY, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
-                    LOGGER.debug(f"Updated std identity: {code} b/c {node_standard_identity}")
+                    LOGGER.debug(f"Updated std identity for {affiliation_attr.id}")
                     break
 
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
@@ -106,7 +106,7 @@ class MilSymbol2525BandC(MilSymbol):
                 if current_iri in dimension_iris:
                     self.update_code(self.MIL_SYM_2525_B_C_DIMENSION_IDX, code)
                     self.acms.append(oms_node.acm)
-                    LOGGER.debug(f"Updated dimension: {code} b/c {current_iri}")
+                    LOGGER.debug(f"Updated dimension for {oms_node.id}")
                     return True
             return False
 
@@ -135,7 +135,7 @@ class MilSymbol2525BandC(MilSymbol):
                     self.update_code(self.MIL_SYM_2525_B_C_STATUS_IDX, code)
                     self.source_ids.put((self.STATUS_SOURCE_PRIORITY, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
-                    LOGGER.debug(f"Updated status: {code} b/c {status}")
+                    LOGGER.debug(f"Updated status for {status_attr.id}")
                     break
 
     def enrich_echelon(self, echelon_attr: Optional[AttributeAttribute]) -> None:
@@ -156,16 +156,21 @@ class MilSymbol2525BandC(MilSymbol):
                 break
         if echelon_attr:
             echelon = echelon_attr.attributeValue
-            for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"].items():
-                if echelon.lower() in echelon_list:
-                    if current_placeholder and any(c in code for c in SETTINGS.mil_symbol_settings.b_c_placeholders):
-                        code = "".join(
-                            current_placeholder if char in SETTINGS.mil_symbol_settings.b_c_placeholders else char
-                            for char in code
-                        )
-                    self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
-                    self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
-                    self.source_ids.put((self.ECHELON_SOURCE_PRIORITY, echelon_attr.sourceId))
-                    self.acms.append(echelon_attr.acm)
-                    LOGGER.debug(f"Updated echelon: {code} b/c {echelon}")
-                    break
+            self._execute_echelon_enrichment(echelon_attr, echelon, current_placeholder)
+
+    def _execute_echelon_enrichment(
+        self, echelon_attr: AttributeAttribute, echelon: str, curr_placeholder: None | str
+    ) -> None:
+        for code, echelon_list in self.settings[self.code_type_config]["SYMBOL_MODIFIER_LISTS"].items():
+            if echelon.lower() in echelon_list:
+                if curr_placeholder and any(c in code for c in SETTINGS.mil_symbol_settings.b_c_placeholders):
+                    code = "".join(
+                        curr_placeholder if char in SETTINGS.mil_symbol_settings.b_c_placeholders else char
+                        for char in code
+                    )
+                self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_0, code[0])
+                self.update_code(self.MIL_SYM_2525_B_C_SYM_MOD_IDX_1, code[1])
+                self.source_ids.put((self.ECHELON_SOURCE_PRIORITY, echelon_attr.sourceId))
+                self.acms.append(echelon_attr.acm)
+                LOGGER.debug(f"Updated echelon for {echelon_attr.id}")
+                break

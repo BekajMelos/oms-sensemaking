@@ -94,6 +94,9 @@ psql: ## psql into main db
 pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
 	docker compose --profile dev up pgadmin -d
 
+tools: ## start dev tools (kill it with: docker-compose --profile dev down)
+	docker compose --profile dev --profile tools up -d
+
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
 
@@ -102,7 +105,6 @@ distclean: clean  ## Purge all generated content
 
 nuke: down
 	@docker volume rm -f oms-sensemaking_doccano-db
-	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 	@docker volume rm -f oms-sensemaking_elasticsearch

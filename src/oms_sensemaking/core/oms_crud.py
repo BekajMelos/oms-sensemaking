@@ -1,6 +1,9 @@
+import logging
+import warnings
 from typing import List, Optional, Union
 from uuid import UUID
 
+from cachetools import TTLCache, cached
 from oms_sdk import get_generated_graphql_client
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivities,
@@ -61,15 +64,20 @@ from oms_sdk.generated.generated_graphql_client import (
     UuidQueryByList,
 )
 
+from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 @rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
-class OmsCrudTool:
+class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
     def __init__(self, user_dn: str | None = None) -> None:
+        super().__init__(host=SETTINGS.omsb_host, port=SETTINGS.omsb_port, service_name="OMS")
+
         self.oms_client: Client = get_generated_graphql_client(
             url=SETTINGS.omsb_url,
             user_dn=user_dn or SETTINGS.user_dn,
@@ -170,16 +178,19 @@ class OmsCrudTool:
         activity = self.oms_client.activity(IdQuery(id=id))
         return activity
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_attribute(self, id: UUID) -> AttributeAttribute:
         """Get existing Attribute from OMS"""
         attribute = self.oms_client.attribute(IdQuery(id=id))
         return attribute
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_node(self, id: UUID) -> NodeNode:
         """Get existing Node from OMS"""
         node = self.oms_client.node(IdQuery(id=id))
         return node
 
+    @cached(TTLCache(SETTINGS.oms_crud_ttl_cache_size, SETTINGS.oms_crud_ttl_cache_seconds))
     def get_observation(self, id: UUID) -> ObservationObservation:
         """Get existing Observation from OMS"""
         observation = self.oms_client.observation(IdQuery(id=id))
@@ -331,4 +342,5 @@ class OmsCrudTool:
         :param iri: Iri to get ontology data for
         :return: Optional OntologyClass object
         """
+        warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))

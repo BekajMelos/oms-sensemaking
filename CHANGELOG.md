@@ -11,6 +11,32 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Removed "localstack" docker container and other references.
+
+## [0.13.1] - 2025-09-19
+
+### Added
+- Ontology Service
+
+### Changed
+- Reverted In or Out of Garrison custom query
+
+## [0.13.0] - 2025-09-16
+
+### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
+
+### Changed
+- Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
+- Updated logs to not print potentially classified data
+- Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
+- Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
+
+### Fixed
+- Issues with parsing certain envvars within the .env
+- Issue with loading Swagger Docs content
 
 ## [0.12.1] - 2025-09-09
 
@@ -26,6 +52,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
 - Only use private pypi package registries
 - Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
 - Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths

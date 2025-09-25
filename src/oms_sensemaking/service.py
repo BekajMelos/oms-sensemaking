@@ -18,6 +18,7 @@ from fastapi_offline import FastAPIOffline
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, health, rdf, test
+from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
@@ -47,7 +48,13 @@ def get_controllers() -> list[SensemakerController]:
 
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(
-            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()), err_logger
+            RabbitMQListener(
+                "GeoRMQListener",
+                SETTINGS.rmq_geo_queue_name,
+                event_filter=GeoQueueFilter(),
+            ),
+            err_logger,
+            ontology_service,
         ),
         InferenceSensemakerController(
             RabbitMQListener(
@@ -86,6 +93,13 @@ async def lifespan(application: FastAPI):
     """
     # startup
     LOGGER.info("Initializing sensemaker controllers")
+    try:
+        aac_client.wait_until_ready()
+        oms_crud_tool.wait_until_ready()
+        ping_db_host_wait()
+        ping_db()
+    except Exception as ex:
+        LOGGER.warning(f"Dependency readiness checks encountered an issue: {ex}")
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():

@@ -78,7 +78,8 @@ class ResolutionSensemaker(Sensemaker):
         :return: list[DupFinding] List of duplicates found
         """
         LOGGER.info("Running Resolution Sensemaker")
-        LOGGER.debug(f"{attribute.attributeIri}: {attribute.attributeValue}")
+        # can we print value
+        LOGGER.debug(f"id: {attribute.id} attrIri: {attribute.attributeIri}")
 
         results = []
 

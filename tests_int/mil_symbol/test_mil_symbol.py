@@ -4,6 +4,7 @@ from typing import List, Optional
 from unittest import mock
 from uuid import uuid4
 
+import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
@@ -19,10 +20,17 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 from sqlalchemy import select
 
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 from oms_sensemaking.models.sensemaking import Finding, FindingType
+
+
+class FixtureHelper:
+    def __init__(self, oms_crud_tool: OmsCrudTool, sensemaker: MilSymbolSensemaker) -> None:
+        self.oms_crud_tool = oms_crud_tool
+        self.sensemaker = sensemaker
 
 
 def create_node(oms_crud_tool: OmsCrudTool, class_iri: str, symbol_id_code: str) -> NodeNode:
@@ -61,13 +69,22 @@ def create_attribute(
     return attr
 
 
-def test_execute(mock_source, db, mil_symbol_rules):
+@pytest.fixture
+def build_helper(mil_symbol_rules):
     oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
+    ontology_service = OntologyClient(oms_crud_tool)
 
     # mock create_attribute
     oms_crud_tool.create_attribute = mock.MagicMock()
     oms_crud_tool.update_node = mock.MagicMock()
+
+    return FixtureHelper(oms_crud_tool, MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool, ontology_service))
+
+
+def test_execute(mock_source, db, build_helper):
+    helper = build_helper
+    oms_crud_tool = helper.oms_crud_tool
+    sensemaker = helper.sensemaker
 
     # case 1
     oms_node = create_node(
@@ -373,13 +390,10 @@ def test_execute(mock_source, db, mil_symbol_rules):
     assert len(findings) == 12
 
 
-def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symbol_rules):
-    oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
-
-    # mock create_attribute
-    oms_crud_tool.create_attribute = mock.MagicMock()
-    oms_crud_tool.update_node = mock.MagicMock()
+def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_helper):
+    helper = build_helper
+    oms_crud_tool = helper.oms_crud_tool
+    sensemaker = helper.sensemaker
 
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", "SUSP------*****"
@@ -430,13 +444,10 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, mil_symb
         )
 
 
-def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symbol_rules):
-    oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
-
-    # mock create_attribute
-    oms_crud_tool.create_attribute = mock.MagicMock()
-    oms_crud_tool.update_node = mock.MagicMock()
+def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_helper):
+    helper = build_helper
+    oms_crud_tool = helper.oms_crud_tool
+    sensemaker = helper.sensemaker
 
     oms_node = create_node(
         oms_crud_tool,
@@ -489,13 +500,10 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, mil_symb
         )
 
 
-def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symbol_rules):
-    oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
-
-    # mock create_attribute
-    oms_crud_tool.create_attribute = mock.MagicMock()
-    oms_crud_tool.update_node = mock.MagicMock()
+def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_helper):
+    helper = build_helper
+    oms_crud_tool = helper.oms_crud_tool
+    sensemaker = helper.sensemaker
 
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGD------*****"
@@ -546,13 +554,10 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, mil_symb
         )
 
 
-def test_echelon_enrichment(mock_source, db, mil_symbol_rules):
-    oms_crud_tool = OmsCrudTool()
-    sensemaker = MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool)
-
-    # mock create_attribute
-    oms_crud_tool.create_attribute = mock.MagicMock()
-    oms_crud_tool.update_node = mock.MagicMock()
+def test_echelon_enrichment(mock_source, db, build_helper):
+    helper = build_helper
+    oms_crud_tool = helper.oms_crud_tool
+    sensemaker = helper.sensemaker
 
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGD------*****"

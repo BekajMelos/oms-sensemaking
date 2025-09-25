@@ -81,7 +81,6 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-dnf -y update && \
 dnf install -y \
   ca-certificates \
   curl \
@@ -89,6 +88,7 @@ dnf install -y \
   tar
 
 dnf install -y python3.12 python3.12-pip
+pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
 alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 100 \
@@ -189,12 +189,9 @@ if [ -f /root/ca-certificate.crt ]; then
   cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
-# configure package manager
-dnf -y update
-
 # update core Python packaging tools
 export PIP_NO_INPUT=1
-python3 -m pip install --upgrade pip wheel
+python3 -m pip install --upgrade pip wheel setuptools
 
 # install application's system dependencies
 dnf install -y \
@@ -202,7 +199,7 @@ dnf install -y \
   git \
   jq \
   gcc \
-  python3-devel \
+  python3.12-devel \
   procps-ng
 
 ARCH=$(uname -m) && \
@@ -232,6 +229,21 @@ alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_
 dnf remove -y gcc python3-devel geos-devel && \
 dnf autoremove -y && \
 dnf clean all
+
+# remove old python packages (prisma)
+rm -rf /usr/lib/python3.6/site-packages/urllib3*
+rm -rf /usr/lib/python3.6/site-packages/setuptools*
+
+# delete private keys in documentation (prisma)
+rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
+rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
+
+rm -rf /usr/lib/python3.12/site-packages/pip*
+rm -rf /usr/lib/python6/site-packages/pip*
+rm -rf /usr/bin/pip*
+rm -rf /usr/local/bin/pip*
+rm -rf /usr/local/lib/python3.12/site-packages/pip*
+
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
