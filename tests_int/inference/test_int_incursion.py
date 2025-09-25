@@ -5,12 +5,15 @@ from datetime import datetime
 import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
+    ActivityQuery,
+    AttributeQuery,
     CreateNodeInput,
     CreateObservationInput,
     CreateOriginatorInput,
     CreateProviderInput,
     CreateSourceInput,
     ObjectTier,
+    UuidQueryByList,
 )
 
 from oms_sensemaking.clients.instances import oms_crud_tool
@@ -129,10 +132,28 @@ def test_incursion_includes_node_observation_query(tester_db):
         )
     )
 
-    assert obs1.id is not None
-    assert separate_obs.id is not None
-    assert obs2.id is not None
+    activities = []
+    for _ in range(3):
+        activity_query = ActivityQuery(nodeIds=UuidQueryByList(in_=[node1.id]))
+        activity_response = oms_crud_tool.get_activities(activity_query)
+        if activity_response.data:
+            activities = activity_response.data
+            break
+        time.sleep(1.0)
 
-    observations = [obs1, separate_obs, obs2]
-    for observation in observations:
-        oms_crud_tool.delete_observation(observation.id)
+    try:
+        assert len(activities) == 1
+        assert activities[0].startTime == "2025-08-26T16:10:00.000Z"
+        assert activities[0].endTime == "2025-08-26T16:15:00.000Z"
+    finally:
+        observations = [obs1, separate_obs, obs2]
+        for observation in observations:
+            oms_crud_tool.delete_observation(observation.id)
+
+        for activity in activities:
+            attribute_query = AttributeQuery(activityIds=[activity.id])
+            attribute_response = oms_crud_tool.get_attributes(attribute_query)
+            for attribute in attribute_response.data:
+                oms_crud_tool.delete_attribute(attribute.id)
+
+            oms_crud_tool.delete_activity(activity.id)
