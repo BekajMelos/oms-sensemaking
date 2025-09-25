@@ -33,6 +33,8 @@ pipeline {
 
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
+
+        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME.substring(env.TAG_NAME.indexOf('-') + 1) : 'latest'}"
     }
 
     stages {
@@ -70,10 +72,6 @@ pipeline {
                             git status
                             git diff
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Install') {
@@ -85,10 +83,6 @@ pipeline {
                             . /tmp/venv/bin/activate
                             pip install -e ".[dev,docs,test,build]"
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Test') {
@@ -141,7 +135,7 @@ pipeline {
                     ca: '',
                     cert: '',
                     dockerAddress: 'unix:///var/run/docker.sock',
-                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}",
+                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION}",
                     key: '',
                     logLevel: 'info',
                     podmanPath: '',
@@ -174,6 +168,7 @@ pipeline {
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.login=${SONARQUBE_API_KEY} \
                         -Dsonar.projectKey=${SONARQUBE_PROJECT} \
+                        -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                         -Dsonar.python.coverage.reportPaths=coverage.xml
