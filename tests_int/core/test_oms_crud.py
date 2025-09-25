@@ -95,14 +95,6 @@ def test_attrs(create_source, test_nodes):
     assert del_attr1, del_attr2
 
 
-def test_multi_crud_operations(test_nodes, test_relationships, test_attrs):
-    assert test_nodes
-
-    assert test_relationships
-
-    assert test_attrs
-
-
 def test_node_crud(test_nodes):
     # Create test
     node = test_nodes[0]
@@ -120,13 +112,9 @@ def test_node_crud(test_nodes):
     assert update_node.name == new_node_name
 
 
-def test_relationship_crud(test_nodes, test_relationships):
-    # First need to create a couple nodes that the relationship can use
-    assert test_nodes
-
-    # Create test
+def test_relationship_crud(test_relationships):
+    # Set test rel
     rel = test_relationships[0]
-    assert rel
 
     # Get test
     get_rels = oms_crud_tool.get_relationships(
@@ -144,12 +132,8 @@ def test_relationship_crud(test_nodes, test_relationships):
     assert update_relationship.name == new_relationship_name
 
 
-def test_attribute_crud(test_nodes, test_attrs):
-    node = test_nodes[0]
-    assert node
-
+def test_attribute_crud(test_attrs):
     attribute = test_attrs[0]
-    assert attribute
 
     # Get test
     get_attrs = oms_crud_tool.get_attributes(
