@@ -18,9 +18,7 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
-from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.models.geo import Point, Track
@@ -125,17 +123,13 @@ def track_points(source1, oms_node) -> list[Point]:
 
 
 @mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
-@mock.patch("oms_sensemaking.geospatial.controllers.APITrack")
-@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
 @mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
-def test_geo_controller_without_provider_config(
+def test_geo_controller_with_default_provider_config(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
     mock_aac_client1: AacClient,
-    mock_aac_client2: AacClient,
-    mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
@@ -154,15 +148,22 @@ def test_geo_controller_without_provider_config(
 
     # mock track creation
     track_uuid = uuid4()
-    track = Track(DEFAULT_ACM, track_points, uuid4(), "", [], track_uuid)
+    track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
 
     mock_track_get_or_create.return_value = (track, None)
 
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
     mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
-    mock_api_track_client.create_oms_track = mock.MagicMock()
+    t = Track(
+        acm=DEFAULT_ACM,
+        points=track_points,
+        node_id=oms_node.id,
+        algorithm="",
+        observation_ids=[],
+        track_uuid=track.track_uuid,
+    )
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
 
     # mock thread pool execution
     # Create a mock executor that returns a future with a known result
@@ -191,8 +192,6 @@ def test_geo_controller_without_provider_config(
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
     mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
-    mock_api_track_client.create_oms_track = mock.MagicMock()
 
     instance.reset_mock()
 
@@ -205,8 +204,6 @@ def test_geo_controller_without_provider_config(
 
 
 @mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
-@mock.patch("oms_sensemaking.geospatial.controllers.APITrack")
-@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
 @mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
@@ -214,8 +211,6 @@ def test_geo_controller_with_provider_config(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
     mock_aac_client1: AacClient,
-    mock_aac_client2: AacClient,
-    mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
     provider_1_aircraft_config: dict,
@@ -226,8 +221,6 @@ def test_geo_controller_with_provider_config(
 ):
     # register the sensemaker without starting the listener
     mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
-
-    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
 
     source_irrelevant_provider = source1
     source_relevant_provider = source2
@@ -241,8 +234,6 @@ def test_geo_controller_with_provider_config(
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
     mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
-    mock_api_track_client.create_oms_track = mock.MagicMock()
 
     # mock thread pool execution
     # Create a mock executor that returns a future with a known result
@@ -257,11 +248,16 @@ def test_geo_controller_with_provider_config(
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
     mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_relevant_provider)
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
-    # set up track buffer
-    mock_geo_controller.track_node_buffer = {track_uuid: track_points}
-    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
-    mock_api_track_client.create_oms_track = mock.MagicMock()
+
+    t = Track(
+        acm=DEFAULT_ACM,
+        points=track_points,
+        node_id=oms_node.id,
+        algorithm="",
+        observation_ids=[],
+        track_uuid=track.track_uuid,
+    )
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
 
     # call flush buffer
     mock_geo_controller.flush_buffer()
@@ -273,7 +269,6 @@ def test_geo_controller_with_provider_config(
     mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=str(source_irrelevant_provider.id))
 
 
-@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
 @mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
@@ -281,7 +276,6 @@ def test_track_too_short1(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
     mock_aac_client1: AacClient,
-    mock_aac_client2: AacClient,
     mock_geo_controller: GeospatialSensemakerController,
     source1: SourceSource,
     oms_node: NodeNode,
@@ -303,7 +297,7 @@ def test_track_too_short1(
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
     mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+    mock_geo_controller._track_generator.get_node_ancestors_iris = mock.MagicMock(return_value=set())
 
     # mock execute function
     mock_geo_controller._registry["geo"].execute = mock.MagicMock()
@@ -313,39 +307,3 @@ def test_track_too_short1(
     assert caplog.records[-1].message == (
         "Track doesn't have enough points. Ignore and remove from buffer until it gets more points"
     )
-
-
-@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
-@mock.patch("oms_sensemaking.models.geo.aac_client")
-@mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
-@mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
-def test_generate_track_too_short(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
-    mock_aac_client1: AacClient,
-    mock_aac_client2: AacClient,
-    mock_geo_controller: GeospatialSensemakerController,
-    source1: SourceSource,
-    oms_node: NodeNode,
-    track_points: list[Point],
-):
-    # register the sensemaker without starting the listener
-    mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
-
-    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
-    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source1)
-
-    # mock track creation
-    track_uuid = uuid4()
-
-    # only 1 point
-    track_points = track_points[:1]
-
-    # set up track buffer
-    mock_geo_controller.track_node_buffer = {track_uuid: track_points}
-    mock_geo_controller.track_times = {track_uuid: datetime.now(tz=timezone.utc) - timedelta(days=1)}
-    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
-
-    # call flush buffer. Should raise exception
-    with pytest.raises(TrackLengthError):
-        mock_geo_controller._generate_track(track_uuid=track_uuid)
