@@ -34,7 +34,7 @@ pipeline {
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
 
-        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME.substring(env.TAG_NAME.indexOf('-') + 1) : 'latest'}"
+        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : 'latest'}"
     }
 
     stages {
