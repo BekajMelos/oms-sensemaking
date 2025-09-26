@@ -1,13 +1,11 @@
 """Tests for loiter sensemaker."""
 
 import random
-from datetime import datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
 import shapely
 from geoalchemy2.shape import to_shape
-from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
@@ -21,38 +19,12 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers.loiters import Loiter, LoiterSensemaker
-from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.geo import Track
 from oms_sensemaking.models.sensemaking import Finding, FindingType
+from tests_int.conftest import rollup_unclass_acm_3_0
+from tests_int.geospatial.helper import TimeLocation
 
-ROLLUP_DEFAULT_ACM = {
-    "version": "3.0",
-    "classif_type": "US",
-    "classif": "U",
-    "owner_prod": ["USA"],
-    "non_us_ctrls": [],
-    "sci_ctrls": [],
-    "disponly_to": [""],
-    "dissem_ctrls": [],
-    "non_ic": [],
-    "rel_to": [],
-    "fgi_open": [],
-    "fgi_protect": [],
-    "portion": "U//DISPLAY ONLY",
-    "banner": "UNCLASSIFIED//DISPLAY ONLY",
-    "dissem_countries": [],
-    "accms": [],
-    "macs": [],
-    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
-    "share": {"users": [], "projects": {}},
-    "f_clearance": ["u"],
-    "f_sci_ctrls": [],
-    "f_accms": [],
-    "f_oc_org": [],
-    "f_regions": [],
-    "f_missions": [],
-    "f_share": [],
-    "f_macs": [],
-}
+ROLLUP_DEFAULT_ACM = rollup_unclass_acm_3_0()
 
 
 def get_random_stamford_bridge_point() -> str:
@@ -82,97 +54,16 @@ def test_loiter_success(
     node_id = uuid4()
     track_uuid = uuid4()
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
+
     # Loiter Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p6_point = get_random_stamford_bridge_point()
-    p6 = Point(
-        acm=DEFAULT_ACM,
-        location=p6_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:04:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:08:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:12:00-04:00").create_node_point(node_id)
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:16:00-04:00").create_node_point(node_id)
+    p6 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:20:00-04:00").create_node_point(node_id)
     # West London way later
-    p7 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.413890, 51.474942).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p7 = TimeLocation(shapely.Point(-0.413890, 51.474942).wkt, "2024-03-20T12:44:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -283,73 +174,15 @@ def test_loiter_invalid_not_long_enough(
     """Loiter is only 8 minutes vs required 15."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
     # Loiter Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:04:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:08:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:12:00-04:00").create_node_point(node_id)
     # Still within stamford bridge but past the observation time
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T14:00:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -368,98 +201,18 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool, aircraft_geo_
     """Failure. Unobserved for too long."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
+
     # Loiter Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:40:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p6_point = get_random_stamford_bridge_point()
-    p6 = Point(
-        acm=DEFAULT_ACM,
-        location=p6_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:40:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:20:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:40:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T13:00:00-04:00").create_node_point(node_id)
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T13:20:00-04:00").create_node_point(node_id)
+    p6 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T13:40:00-04:00").create_node_point(node_id)
     # West London
-    p7 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.413890, 51.474942).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p7 = TimeLocation(shapely.Point(-0.413890, 51.474942).wkt, "2024-03-20T14:00:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -482,99 +235,18 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
 
     node_id = uuid4()
     track_uuid = uuid4()
+
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
+
     # Loiter Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p6_point = get_random_stamford_bridge_point()
-    p6 = Point(
-        acm=DEFAULT_ACM,
-        location=p6_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:04:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:08:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:12:00-04:00").create_node_point(node_id)
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:16:00-04:00").create_node_point(node_id)
+    p6 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:20:00-04:00").create_node_point(node_id)
     # Still within stamford bridge but past the observation time
-    p7_point = get_random_stamford_bridge_point()
-    p7 = Point(
-        acm=DEFAULT_ACM,
-        location=p7_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T14:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p7 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T14:00:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -682,151 +354,24 @@ def test_loiter_success_multiple_in_same_geohash(
     """Two separate loiters in the same geohash."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
+
     # Loiter 1 Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p6_point = get_random_stamford_bridge_point()
-    p6 = Point(
-        acm=DEFAULT_ACM,
-        location=p6_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:04:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:08:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:12:00-04:00").create_node_point(node_id)
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:16:00-04:00").create_node_point(node_id)
+    p6 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:20:00-04:00").create_node_point(node_id)
     # West London way later
-    p7 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.413890, 51.474942).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p7 = TimeLocation(shapely.Point(-0.413890, 51.474942).wkt, "2024-03-20T12:44:00-04:00").create_node_point(node_id)
+
     # Loiter 2 Points
-    p8_point = get_random_stamford_bridge_point()
-    p8 = Point(
-        acm=DEFAULT_ACM,
-        location=p8_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p9_point = get_random_stamford_bridge_point()
-    p9 = Point(
-        acm=DEFAULT_ACM,
-        location=p9_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p10_point = get_random_stamford_bridge_point()
-    p10 = Point(
-        acm=DEFAULT_ACM,
-        location=p10_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p11_point = get_random_stamford_bridge_point()
-    p11 = Point(
-        acm=DEFAULT_ACM,
-        location=p11_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p8 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:48:00-04:00").create_node_point(node_id)
+    p9 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:53:00-04:00").create_node_point(node_id)
+    p10 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:58:00-04:00").create_node_point(node_id)
+    p11 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T13:03:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -993,151 +538,24 @@ def test_loiter_success_multiple_in_different_geohash(
     """Two separate loiters in different geohashes."""
     node_id = uuid4()
     track_uuid = uuid4()
+
     # East London
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.030890, 51.509420).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation(shapely.Point(-0.030890, 51.509420).wkt, "2024-03-20T12:00:00-04:00").create_node_point(node_id)
+
     # Loiter 1 Points
-    p2_point = get_random_stamford_bridge_point()
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location=p2_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:04:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p3_point = get_random_stamford_bridge_point()
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location=p3_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:08:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p4_point = get_random_stamford_bridge_point()
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location=p4_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:12:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p5_point = get_random_stamford_bridge_point()
-    p5 = Point(
-        acm=DEFAULT_ACM,
-        location=p5_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:16:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p6_point = get_random_stamford_bridge_point()
-    p6 = Point(
-        acm=DEFAULT_ACM,
-        location=p6_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p2 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:04:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:08:00-04:00").create_node_point(node_id)
+    p4 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:12:00-04:00").create_node_point(node_id)
+    p5 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:16:00-04:00").create_node_point(node_id)
+    p6 = TimeLocation(get_random_stamford_bridge_point(), "2024-03-20T12:20:00-04:00").create_node_point(node_id)
     # West London way later
-    p7 = Point(
-        acm=DEFAULT_ACM,
-        location=shapely.Point(-0.413890, 51.474942).wkt,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:44:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p7 = TimeLocation(shapely.Point(-0.413890, 51.474942).wkt, "2024-03-20T12:44:00-04:00").create_node_point(node_id)
+
     # Loiter 2 Points
-    p8_point = get_random_emirates_stadium_point()
-    p8 = Point(
-        acm=DEFAULT_ACM,
-        location=p8_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:48:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p9_point = get_random_emirates_stadium_point()
-    p9 = Point(
-        acm=DEFAULT_ACM,
-        location=p9_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:53:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p10_point = get_random_emirates_stadium_point()
-    p10 = Point(
-        acm=DEFAULT_ACM,
-        location=p10_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:58:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-    p11_point = get_random_emirates_stadium_point()
-    p11 = Point(
-        acm=DEFAULT_ACM,
-        location=p11_point,
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:03:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p8 = TimeLocation(get_random_emirates_stadium_point(), "2024-03-20T12:48:00-04:00").create_node_point(node_id)
+    p9 = TimeLocation(get_random_emirates_stadium_point(), "2024-03-20T12:53:00-04:00").create_node_point(node_id)
+    p10 = TimeLocation(get_random_emirates_stadium_point(), "2024-03-20T12:58:00-04:00").create_node_point(node_id)
+    p11 = TimeLocation(get_random_emirates_stadium_point(), "2024-03-20T13:03:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
