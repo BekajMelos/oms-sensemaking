@@ -122,15 +122,11 @@ def track_points(source1, oms_node) -> list[Point]:
     return points
 
 
-@mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
-@mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_with_default_provider_config(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
-    mock_aac_client1: AacClient,
-    mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
     default_watercraft_config: dict,
@@ -149,8 +145,6 @@ def test_geo_controller_with_default_provider_config(
     # mock track creation
     track_uuid = uuid4()
     track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
-
-    mock_track_get_or_create.return_value = (track, None)
 
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
@@ -203,15 +197,11 @@ def test_geo_controller_with_default_provider_config(
     mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=str(source_irrelevant_provider.id))
 
 
-@mock.patch("oms_sensemaking.geospatial.controllers.Track.get_or_create")
-@mock.patch("oms_sensemaking.models.geo.aac_client")
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_with_provider_config(
     mock_executor: ThreadPoolExecutor,
     mock_as_completed: Callable,
-    mock_aac_client1: AacClient,
-    mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
     provider_1_aircraft_config: dict,
     source1: SourceSource,
@@ -228,8 +218,6 @@ def test_geo_controller_with_provider_config(
     # mock track creation
     track_uuid = uuid4()
     track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
-
-    mock_track_get_or_create.return_value = (track, None)
 
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
@@ -270,11 +258,7 @@ def test_geo_controller_with_provider_config(
 
 
 @mock.patch("oms_sensemaking.models.geo.aac_client")
-@mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
-@mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_track_too_short1(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
     mock_aac_client1: AacClient,
     mock_geo_controller: GeospatialSensemakerController,
     source1: SourceSource,
