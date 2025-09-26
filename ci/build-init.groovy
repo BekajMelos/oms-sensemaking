@@ -35,6 +35,8 @@ pipeline {
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
 
         APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : 'latest'}"
+
+        TRANSCRYPT_PW = credentials('omsb-transcrypt-key')
     }
 
     stages {
@@ -88,7 +90,10 @@ pipeline {
                     }
                     steps {
                         sh '''
+                            git config --unset core.hookspath
+                            bin/transcrypt -c aes-256-cbc -p ${TRANSCRYPT_PW} -y
                             . /tmp/venv/bin/activate
+                            cp .env.template .env
                             python -m pytest tests --cov-report=xml || true
                         '''
                         stash(includes: 'coverage.xml', name: 'coverage')
