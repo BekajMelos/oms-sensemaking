@@ -157,7 +157,6 @@ COPY --chown=appuser:appuser src/oms_sensemaking/templates ${APP_HOME}/src/oms_s
 COPY --chown=appuser:appuser --chmod=644 alembic.ini pyproject.toml README.md ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 prestart.sh ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 docker/start.sh docker/healthcheck.sh /
-COPY --chown=appuser:appuser --chmod=755 docker/wait_for_postgres.py ${APP_HOME}
 COPY --chmod=644 docker/banner.txt /etc/motd
 
 # NOTE: This RUN command is mounting a .netrc file as a Docker secret to allow
