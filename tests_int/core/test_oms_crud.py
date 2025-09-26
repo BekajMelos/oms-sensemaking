@@ -28,7 +28,7 @@ test_relationship_name = "test_relationship_name"
 
 
 @pytest.fixture(scope="function")
-def test_nodes():
+def nodes():
     nodes_to_publish = []
     for i in range(2):
         nodes_to_publish.append(
@@ -50,14 +50,14 @@ def test_nodes():
 
 
 @pytest.fixture(scope="function")
-def test_relationships(create_source, test_nodes):
+def relationships(create_source, nodes):
     rels_to_publish = []
     for i in range(2):
         rels_to_publish.append(
             CreateRelationshipInput(
                 name=test_relationship_name + f"_{i}",
-                startNodeId=test_nodes[0].id,
-                endNodeId=test_nodes[1].id,
+                startNodeId=nodes[0].id,
+                endNodeId=nodes[1].id,
                 sourceId=create_source.id,
                 confidence=Confidence.UNKNOWN,
                 acm=DEFAULT_ACM,
@@ -73,7 +73,7 @@ def test_relationships(create_source, test_nodes):
 
 
 @pytest.fixture(scope="function")
-def test_attrs(create_source, test_nodes):
+def attrs(create_source, nodes):
     attrs_to_publish = []
     for i in range(2):
         attrs_to_publish.append(
@@ -83,7 +83,7 @@ def test_attrs(create_source, test_nodes):
                 attributeType=AttributeType.STRING,
                 confidence=Confidence.UNKNOWN,
                 sourceId=create_source.id,
-                nodeId=test_nodes[0].id,
+                nodeId=nodes[0].id,
                 acm=DEFAULT_ACM,
             )
         )
@@ -95,9 +95,9 @@ def test_attrs(create_source, test_nodes):
     assert del_attr1, del_attr2
 
 
-def test_node_crud(test_nodes):
+def test_node_crud(nodes):
     # Create test
-    node = test_nodes[0]
+    node = nodes[0]
     assert node
 
     # Get test
@@ -112,9 +112,9 @@ def test_node_crud(test_nodes):
     assert update_node.name == new_node_name
 
 
-def test_relationship_crud(test_relationships):
+def test_relationship_crud(relationships):
     # Set test rel
-    rel = test_relationships[0]
+    rel = relationships[0]
 
     # Get test
     get_rels = oms_crud_tool.get_relationships(
@@ -132,8 +132,8 @@ def test_relationship_crud(test_relationships):
     assert update_relationship.name == new_relationship_name
 
 
-def test_attribute_crud(test_attrs):
-    attribute = test_attrs[0]
+def test_attribute_crud(attrs):
+    attribute = attrs[0]
 
     # Get test
     get_attrs = oms_crud_tool.get_attributes(
