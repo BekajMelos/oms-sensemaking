@@ -143,9 +143,7 @@ def test_geo_controller_without_provider_config(
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
     default_watercraft_config: dict,
-    provider_1_aircraft_config: dict,
     source1: SourceSource,
-    source2: SourceSource,
     oms_node: NodeNode,
     track_points: list[Point],
 ):
@@ -223,8 +221,6 @@ def test_geo_controller_with_provider_config(
     mock_api_track_client: APITrack,
     mock_track_get_or_create: Callable,
     mock_geo_controller: GeospatialSensemakerController,
-    default_aircraft_config: dict,
-    default_watercraft_config: dict,
     provider_1_aircraft_config: dict,
     source1: SourceSource,
     source2: SourceSource,
