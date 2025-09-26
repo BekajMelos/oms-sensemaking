@@ -83,20 +83,17 @@ def source2() -> SourceSource:
 
 
 @pytest.fixture
-def oms_node(source1) -> NodeNode:
+def oms_node() -> NodeNode:
     return NodeNode.model_construct(
         id=uuid4(),
         name="test",
-        sourceId=source1.id,
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         acm=DEFAULT_ACM,
     )
 
 
 @pytest.fixture
-def track_points(source1) -> list[Point]:
-    node_uuid = uuid4()
-
+def track_points(source1, oms_node) -> list[Point]:
     # unimportant point
     points = [
         Point(
@@ -104,7 +101,7 @@ def track_points(source1) -> list[Point]:
             location=shapely.Point(-0.030890, 51.509420).wkt,
             altitude=None,
             detection_time=datetime.fromisoformat("2024-03-20T12:00:00-04:00"),
-            node_id=node_uuid,
+            node_id=oms_node.id,
             node_version=1,
             observation_id=uuid4(),
             observation_version=1,
@@ -116,7 +113,7 @@ def track_points(source1) -> list[Point]:
             location=shapely.Point(-0.040890, 51.509420).wkt,
             altitude=None,
             detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
-            node_id=node_uuid,
+            node_id=oms_node.id,
             node_version=1,
             observation_id=uuid4(),
             observation_version=1,
@@ -234,11 +231,10 @@ def test_geo_controller_with_provider_config(
 
     source_irrelevant_provider = source1
     source_relevant_provider = source2
-    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source_irrelevant_provider)
 
     # mock track creation
     track_uuid = uuid4()
-    track = Track(DEFAULT_ACM, track_points, uuid4(), "", [], track_uuid)
+    track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
 
     mock_track_get_or_create.return_value = (track, None)
 
