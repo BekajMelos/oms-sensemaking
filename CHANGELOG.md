@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Improved on failing integration tests for the crud tool.
 
 ### Removed
 - Removed "localstack" docker container and other references.
