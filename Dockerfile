@@ -123,10 +123,6 @@ ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
 
-ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
-
-ARG EPEL_GPG_URL="https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8"
-
 ENV MODULE_NAME=oms_sensemaking.service
 
 # dump the Python traceback for segfaults and other signals
@@ -188,24 +184,6 @@ dnf install -y \
   python3.12-devel \
   procps-ng
 
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
-    dnf config-manager --set-enabled epel; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    mkdir -p /etc/pki/rpm-gpg && \
-    curl -fsSL ${EPEL_GPG_URL} -o /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
-    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 && \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
-    sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
-    sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
-    dnf clean all; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf install -y geos-devel && \
-dnf clean all
-
 # install app
 pip install .
 
@@ -215,7 +193,7 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3.12-devel geos-devel && \
+dnf remove -y gcc python3.12-devel && \
 dnf autoremove -y && \
 dnf clean all
 
