@@ -68,9 +68,6 @@ pipeline {
                             echo "trusted-host = artifactory.code.dodiis.mil" >> /tmp/venv/pip.conf
 
                             pip install -U pip wheel setuptools_scm
-
-                            git status
-                            git diff
                         '''
                     }
                 }
