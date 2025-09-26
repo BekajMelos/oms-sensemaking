@@ -12,6 +12,15 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Removed "localstack" docker container and other references.
+
+## [0.13.1] - 2025-09-19
+
+### Added
+- Ontology Service
+
+### Changed
+- Reverted In or Out of Garrison custom query
 
 ## [0.13.0] - 2025-09-16
 

@@ -46,7 +46,6 @@
 
 | Variable Name           | Example                                             | Description                           | Docker Compose |
 |:------------------------|:----------------------------------------------------|:--------------------------------------|:--------------:|
-| `AWS_ENDPOINT_URL`      | `http://localhost:4566` or `http://localstack:4566` or `http://<your_ip>:4566` | AWS Endpoint                          | No             |
 | `AWS_ACCESS_KEY_ID`     | `FAKE`                                              | AWS Access Key                        | No             |
 | `AWS_SECRET_ACCESS_KEY` | `FAKE`                                              | AWS Secret Key                        | No             |
 | `AWS_REGION_NAME`       | `us-east-1`                                         | AWS Region                            | No             |
@@ -104,7 +103,6 @@
 | `SIMILAR_TRACKS`                                    | `True`                                                                                            | Toggle on/off Similar Track Calculations                       | No             |
 | `N_TRACKS`                                          | `5`                                                                                               | Number of similar tracks to return                             | No             |
 | `WITHIN_METERS`                                     | `3000.0`                                                                                          | Used to define the search space for potential similar tracks   | No             |
-| `SQS_GEO_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger`          | Geospatial SQS Queue URL                                       | Yes            |
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
 | `TOGGLE_ADD_GARRISON_RULE`                          | `True`                                                                                            | Turn the Garrison Rule On/Off                                  | Yes            |
 | `TOGGLE_INCURSION_RULE`                             | `True`                                                                                            | Turn the Incursion Rule On/Off                                 | Yes            |
@@ -122,13 +120,11 @@
 | `INFERENCE_IN_GARRISON_ACTIVITY_STATE`              | `IN_GARRISON`                                                                                     | In Garrison Activity State                                     | No             |
 | `INFERENCE_OUT_OF_GARRISON_ACTIVITY_STATE`          | `OUT_OF_GARRISON`                                                                                 | Out of Garrison Activity State                                 | No             |
 | `GARRISON_DISTANCE_KILOMETERS`                      | `2000`                                                                                            | Distance to use for the Out of Garrison Rule                   | No             |
-| `SQS_RES_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger`             | Resolution SQS Queue URL                                       | Yes            |
 | `ENABLE_RESOLUTION_SENSEMAKER`                      | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `RESOLUTION_SENSEMAKER_TAG`                         | `resolution_tag`                                                                                  | Tag for OMSB objects from the resolution sensemaker            | No             |
 | `RESOLUTION_RELATIONSHIP_NAME`                      | `Same As`                                                                                         | Relationship name for resolution sensemaker suggestions        | No             |
 | `RESOLUTION_RELATIONSHIP_IRI`                       | `https://foundry.ai.mil/MIDB/V3.3/relates_to`                                                     | Iri to set for the Resolution Finding URL                      | No             |
 | `DUPLICATE_OBJECT_IRIS_FILE_PATH`                   | `./data/duplicate_object_iris.json`                                                               | Path to file containing duplicate object iris dictionary       | No             |
-| `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`     | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger`              | Mil Symbol SQS Queue URL                                       | Yes            |
 | `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS`             | `'["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]'`                                            | List of Affiliation IRIs to enrich from                        | No             |
 | `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
@@ -138,6 +134,10 @@
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
+| `TTL_CACHE_SIZE` | `1024` | Max items in a given TTL Cache | No |
+| `TTL_CACHE_SECONDS` | `3600` | Max time to live in a given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SIZE` | `1024` | Max items in OMS CRUD Tool's given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SECONDS` | `3600` | Max time to live in OMS CRUD Tool's given TTL Cache | No |
 | `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |

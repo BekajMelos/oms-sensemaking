@@ -207,3 +207,35 @@ def ts_acm() -> dict:
         "f_clearance": ["ts"],
         "f_sci_ctrls": ["tk"],
     }
+
+
+def rollup_unclass_acm_3_0() -> dict:
+    return {
+        "version": "3.0",
+        "classif_type": "US",
+        "classif": "U",
+        "owner_prod": ["USA"],
+        "non_us_ctrls": [],
+        "sci_ctrls": [],
+        "disponly_to": [""],
+        "dissem_ctrls": [],
+        "non_ic": [],
+        "rel_to": [],
+        "fgi_open": [],
+        "fgi_protect": [],
+        "portion": "U//DISPLAY ONLY",
+        "banner": "UNCLASSIFIED//DISPLAY ONLY",
+        "dissem_countries": [],
+        "accms": [],
+        "macs": [],
+        "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
+        "share": {"users": [], "projects": {}},
+        "f_clearance": ["u"],
+        "f_sci_ctrls": [],
+        "f_accms": [],
+        "f_oc_org": [],
+        "f_regions": [],
+        "f_missions": [],
+        "f_share": [],
+        "f_macs": [],
+    }

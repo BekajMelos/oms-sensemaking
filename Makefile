@@ -102,7 +102,6 @@ distclean: clean  ## Purge all generated content
 
 nuke: down
 	@docker volume rm -f oms-sensemaking_doccano-db
-	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 	@docker volume rm -f oms-sensemaking_elasticsearch

@@ -1,4 +1,0 @@
-{
-  "RawMessageDelivery": "true",
-  "FilterPolicy": "{\"objectType\": [\"ATTRIBUTE\", \"NODE\"], \"action\": [\"CREATE\", \"RESTORE\", \"UPDATE\"]}"
-}

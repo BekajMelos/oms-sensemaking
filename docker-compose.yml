@@ -138,23 +138,6 @@ services:
     profiles:
       - local
 
-  localstack:
-    hostname: localstack
-    image: localstack/localstack:3.4.0
-    ports:
-      - "127.0.0.1:4566:4566"            # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
-    environment:
-      - DEBUG=${DEBUG-}
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - OMSB_SQS_QUEUE_CONFIG=geoSensemakerTrigger,inferenceSensemakerTrigger,resolutionTrigger,milSymbolTrigger
-    volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-localstack}:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./docker/localstack:/etc/localstack/init/ready.d"
-    profiles:
-      - local
-
   aac2:
 #    hostname: aac2
 #    container_name: aac2
@@ -323,7 +306,6 @@ services:
       - tools
 
 volumes:
-  localstack:
   pgadmin:
   postgis:
   elasticsearch:
