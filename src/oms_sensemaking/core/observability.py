@@ -2,6 +2,7 @@
 
 import logging
 import time
+from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from functools import wraps
 from typing import Optional
@@ -20,7 +21,51 @@ from oms_sensemaking.config import SETTINGS
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class TelemetryManager:
+class BaseTelemetryManager(ABC):
+    """Base class for telemetry management."""
+
+    @abstractmethod
+    def initialize(self):
+        """Initialize telemetry systems."""
+        pass
+
+    @abstractmethod
+    def instrument_fastapi(self, app):
+        """Instrument FastAPI application."""
+        pass
+
+    @abstractmethod
+    def get_tracer(self):
+        """Get the current tracer instance."""
+        pass
+
+    @abstractmethod
+    def get_current_trace_id(self) -> Optional[str]:
+        """Get the current trace ID for exemplars."""
+        pass
+
+
+class NoOpTelemetryManager(BaseTelemetryManager):
+    """No-op implementation of TelemetryManager for when telemetry is disabled."""
+
+    def initialize(self):
+        """No-op initialization."""
+        pass
+
+    def instrument_fastapi(self, app):
+        """No-op FastAPI instrumentation."""
+        pass
+
+    def get_tracer(self):
+        """No-op tracer getter."""
+        return None
+
+    def get_current_trace_id(self) -> Optional[str]:
+        """No-op trace ID getter."""
+        return None
+
+
+class TelemetryManager(BaseTelemetryManager):
     """Manages OpenTelemetry tracing and Prometheus metrics."""
 
     _instance = None
@@ -37,10 +82,6 @@ class TelemetryManager:
 
     def initialize(self):
         """Initialize OpenTelemetry tracing and Prometheus metrics."""
-        if not SETTINGS.enable_telemetry:
-            logging.info("Observability is disabled in configuration")
-            return
-
         if self._initialized:
             logging.info("Observability already initialized")
             return
@@ -74,9 +115,6 @@ class TelemetryManager:
 
     def instrument_fastapi(self, app):
         """Instrument FastAPI application with OpenTelemetry."""
-        if not SETTINGS.enable_telemetry:
-            return
-
         try:
             FastAPIInstrumentor.instrument_app(app)
             logging.info("FastAPI instrumented with OpenTelemetry")
@@ -98,8 +136,8 @@ class TelemetryManager:
         return None
 
 
-# Global instance of TelemetryManager
-telemetry_manager = TelemetryManager()
+# Global instance of TelemetryManager - conditionally use NoOp or real implementation
+telemetry_manager: BaseTelemetryManager = TelemetryManager() if SETTINGS.enable_telemetry else NoOpTelemetryManager()
 
 
 # Prometheus metrics with exemplars
@@ -153,9 +191,6 @@ def get_current_trace_id() -> Optional[str]:
 
 def record_request_metrics(method: str, path: str, status_code: int, duration: float):
     """Record request metrics with trace exemplars."""
-    if not SETTINGS.enable_telemetry:
-        return
-
     try:
         trace_id = get_current_trace_id()
         exemplar = {"TraceID": trace_id} if trace_id else None
@@ -174,9 +209,6 @@ def record_request_metrics(method: str, path: str, status_code: int, duration: f
 
 def record_queue_processing_time(queue_name: str, processing_time_seconds: float):
     """Record queue processing time with trace exemplars."""
-    if not SETTINGS.enable_telemetry:
-        return
-
     try:
         trace_id = get_current_trace_id()
         exemplar = {"TraceID": trace_id} if trace_id else None
@@ -193,9 +225,6 @@ def record_queue_processing_time(queue_name: str, processing_time_seconds: float
 
 def record_event_processed(queue_name: str):
     """Record event processed counter."""
-    if not SETTINGS.enable_telemetry:
-        return
-
     try:
         EVENTS_PROCESSED.labels(queue_name=queue_name, app_name="oms-sensemaking").inc()
 
@@ -207,9 +236,6 @@ def record_event_processed(queue_name: str):
 
 def record_event_failed(queue_name: str):
     """Record event failed counter."""
-    if not SETTINGS.enable_telemetry:
-        return
-
     try:
         EVENTS_FAILED.labels(queue_name=queue_name, app_name="oms-sensemaking").inc()
 
@@ -221,9 +247,6 @@ def record_event_failed(queue_name: str):
 
 def record_processing_completion(queue_name: str, start_time: float, success: bool = True):
     """Record processing completion with timing and success/failure."""
-    if not SETTINGS.enable_telemetry:
-        return
-
     try:
         processing_time = time.time() - start_time
 
@@ -279,10 +302,6 @@ def metrics_endpoint(request: Request) -> Response:
 @asynccontextmanager
 async def trace_span(name: str, attributes: Optional[dict] = None):
     """Context manager for creating trace spans."""
-    if not SETTINGS.enable_telemetry:
-        yield
-        return
-
     tracer = telemetry_manager.get_tracer()
     if not tracer:
         yield

@@ -119,6 +119,7 @@ class GeospatialSensemakerController(SensemakerController):
         else:
             return UUID(id)
 
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
