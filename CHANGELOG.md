@@ -11,6 +11,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+
+## [0.14.0] - 2025-09-29
+
+### Fixed
+- Improved on failing integration tests for the crud tool.
+
+### Removed
 - Removed "localstack" docker container and other references.
 
 ## [0.13.1] - 2025-09-19
