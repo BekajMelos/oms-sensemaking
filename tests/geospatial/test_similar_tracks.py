@@ -150,9 +150,8 @@ def similar_points(test_node):
 
 
 @pytest.fixture
-def sim_track_sm():
-    sm = SimilarTracksSensemaker()
-    sm.config = {
+def geo_config():
+    config = {
         "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
         "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
         "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
@@ -167,6 +166,14 @@ def sim_track_sm():
         "max_potential_duplicate_time_diff_seconds": 30,
         "within_meters": 3000.0,
     }
+
+    return config
+
+
+@pytest.fixture
+def sim_track_sm(geo_config):
+    sm = SimilarTracksSensemaker()
+    sm.config = geo_config
     return sm
 
 
