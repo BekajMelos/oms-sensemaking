@@ -3,7 +3,7 @@ SHELL := /bin/bash
 include .env
 export
 
-.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up tools
+.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up tools load-incursions
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -108,3 +108,6 @@ nuke: down
 
 refresh: nuke  # Purge all generated content and restart
 	docker compose --profile local up --build -d
+
+load-incursions:
+	python scripts/load_test/main.py
