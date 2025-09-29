@@ -9,6 +9,12 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+
+### Removed
+
+## [0.14.0] - 2025-09-29
+
+### Fixed
 - Improved on failing integration tests for the crud tool.
 
 ### Removed
