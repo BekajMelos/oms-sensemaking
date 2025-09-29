@@ -61,7 +61,7 @@ def test_potential_match_post_init():
         "max_potential_duplicate_time_diff_seconds": 10,
         "max_lag_lead_duration_seconds": 20,
     }
-    now = datetime.utcnow()
+    now = datetime.now(datetime.timezone.utc)
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
         vehicle_id2=uuid4(),
@@ -84,7 +84,7 @@ def test_potential_match_tentative_add():
         "valid_observed_threshold_seconds": 5,
         "min_lag_lead_duration_seconds": 2,
     }
-    now = datetime.utcnow()
+    now = datetime.now(datetime.timezone.utc)
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
         vehicle_id2=uuid4(),
@@ -105,7 +105,7 @@ def test_potential_match_tentative_add():
 
 def test_check_valid_cotravel_duration():
     config = {"min_cotravel_duration_seconds": 10, "max_potential_duplicate_time_diff_seconds": 30}
-    now = datetime.utcnow()
+    now = datetime.now(datetime.timezone.utc)
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
         vehicle_id2=uuid4(),
@@ -132,8 +132,8 @@ def test_cotravel_post_init():
     c = Cotravel(
         track1=mock_track,
         track2=mock_track,
-        start_time=datetime.utcnow(),
-        last_time=datetime.utcnow(),
+        start_time=datetime.now(datetime.timezone.utc),
+        last_time=datetime.now(datetime.timezone.utc),
         cotravel_type=CotravelType.cotravel,
     )
 
@@ -152,8 +152,8 @@ def test_cotravel_to_geojson():
     c = Cotravel(
         track1=mock_track,
         track2=mock_track,
-        start_time=datetime.utcnow(),
-        last_time=datetime.utcnow(),
+        start_time=datetime.now(datetime.timezone.utc),
+        last_time=datetime.now(datetime.timezone.utc),
         cotravel_type=CotravelType.cotravel,
     )
 
@@ -168,7 +168,7 @@ def test_colocation_str():
         acm=DEFAULT_ACM,
         location="POINT (-87.63520 41.85677)",
         altitude=5,
-        detection_time=datetime.utcnow(),
+        detection_time=datetime.now(datetime.timezone.utc),
         node_id=node_id,
         node_version=1,
         observation_id="obs_id1",
@@ -180,7 +180,7 @@ def test_colocation_str():
         acm=DEFAULT_ACM,
         location="POINT (-87.67096 41.85733)",
         altitude=100,
-        detection_time=datetime.utcnow() + timedelta(seconds=10),
+        detection_time=datetime.now(datetime.timezone.utc) + timedelta(seconds=10),
         node_id=node_id,
         node_version=1,
         observation_id="obs_id2",
