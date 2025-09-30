@@ -34,7 +34,7 @@ pipeline {
         POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
         EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
 
-        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : 'latest'}"
+        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
 
         TRANSCRYPT_PW = credentials('omsb-transcrypt-key')
     }
@@ -90,6 +90,7 @@ pipeline {
                     }
                     steps {
                         sh '''
+                            git stash
                             git config --unset core.hookspath
                             bin/transcrypt -f -F -y || true
                             bin/transcrypt -c aes-256-cbc -p ${TRANSCRYPT_PW} -y
