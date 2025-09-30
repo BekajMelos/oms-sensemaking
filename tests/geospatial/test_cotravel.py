@@ -57,79 +57,37 @@ def test_cotravel_type_get_name():
 
 
 @pytest.mark.parametrize(
-    "start_time1, start_time2, last_time1, last_time2",
+    "start_time1, start_time2, last_time1, last_time2, expected_true_cotravel, expected_cotravel_type",
     [
         (
             datetime.utcnow(),
             datetime.utcnow() + timedelta(seconds=5),
             datetime.utcnow(),
             datetime.utcnow() + timedelta(seconds=5),
+            True,
+            CotravelType.potential_duplicate,
         ),
-    ],
-)
-def test_potential_match_post_init(start_time1, start_time2, last_time1, last_time2):
-    config = {
-        "max_potential_duplicate_time_diff_seconds": 10,
-        "max_lag_lead_duration_seconds": 20,
-    }
-    pm = PotentialMatch(
-        vehicle_id1=uuid4(),
-        vehicle_id2=uuid4(),
-        start_time1=start_time1,
-        start_time2=start_time2,
-        last_time1=last_time1,
-        last_time2=last_time2,
-        track_id1=uuid4(),
-        track_id2=uuid4(),
-        config=config,
-    )
-    assert pm.is_true_cotravel is True
-    assert pm.cotravel_type == CotravelType.potential_duplicate
-
-
-@pytest.mark.parametrize(
-    "start_time1, start_time2, last_time1, last_time2",
-    [
         (
             datetime.utcnow(),
             datetime.utcnow() + timedelta(seconds=15),
             datetime.utcnow() + timedelta(seconds=17),
             datetime.utcnow() + timedelta(seconds=30),
+            True,
+            CotravelType.cotravel,
         ),
-    ],
-)
-def test_potential_match_post_init_cotravel(start_time1, start_time2, last_time1, last_time2):
-    config = {
-        "max_potential_duplicate_time_diff_seconds": 10,
-        "max_lag_lead_duration_seconds": 20,
-    }
-    pm = PotentialMatch(
-        vehicle_id1=uuid4(),
-        vehicle_id2=uuid4(),
-        start_time1=start_time1,
-        start_time2=start_time2,
-        last_time1=last_time1,
-        last_time2=last_time2,
-        track_id1=uuid4(),
-        track_id2=uuid4(),
-        config=config,
-    )
-    assert pm.is_true_cotravel is True
-    assert pm.cotravel_type == CotravelType.cotravel
-
-
-@pytest.mark.parametrize(
-    "start_time1, start_time2, last_time1, last_time2",
-    [
         (
             datetime.utcnow(),
             datetime.utcnow() + timedelta(seconds=30),
             datetime.utcnow() + timedelta(seconds=17),
             datetime.utcnow() + timedelta(seconds=80),
+            False,
+            CotravelType.lag_lead,
         ),
     ],
 )
-def test_potential_match_post_init_laglead(start_time1, start_time2, last_time1, last_time2):
+def test_potential_match_post_init(
+    start_time1, start_time2, last_time1, last_time2, expected_true_cotravel, expected_cotravel_type
+):
     config = {
         "max_potential_duplicate_time_diff_seconds": 10,
         "max_lag_lead_duration_seconds": 20,
@@ -145,22 +103,23 @@ def test_potential_match_post_init_laglead(start_time1, start_time2, last_time1,
         track_id2=uuid4(),
         config=config,
     )
-    assert pm.is_true_cotravel is False
-    assert pm.cotravel_type == CotravelType.lag_lead
+    assert pm.is_true_cotravel is expected_true_cotravel
+    assert pm.cotravel_type == expected_cotravel_type
 
 
 @pytest.mark.parametrize(
-    "start_time1, start_time2, last_time1, last_time2",
+    "start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration",
     [
         (
             datetime.utcnow(),
             datetime.utcnow(),
             datetime.utcnow() + timedelta(seconds=15),
             datetime.utcnow() + timedelta(seconds=15),
+            True,
         ),
     ],
 )
-def test_check_valid_cotravel_duration(start_time1, start_time2, last_time1, last_time2):
+def test_check_valid_cotravel_duration(start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration):
     config = {"min_cotravel_duration_seconds": 10, "max_potential_duplicate_time_diff_seconds": 30}
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
@@ -173,7 +132,7 @@ def test_check_valid_cotravel_duration(start_time1, start_time2, last_time1, las
         track_id2=uuid4(),
         config=config,
     )
-    assert pm.check_valid_cotravel_duration() is True
+    assert pm.check_valid_cotravel_duration() is valid_cotravel_duration
 
 
 @pytest.mark.parametrize(
