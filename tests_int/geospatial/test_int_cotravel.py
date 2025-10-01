@@ -26,37 +26,10 @@ from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.geospatial.sensemakers.cotravel import Cotravel, CotravelType
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import Finding, FindingType
+from tests_int.conftest import rollup_unclass_acm_3_0
+from tests_int.geospatial.helper import TimeLocation
 
-ROLLUP_DEFAULT_ACM = {
-    "version": "3.0",
-    "classif_type": "US",
-    "classif": "U",
-    "owner_prod": ["USA"],
-    "non_us_ctrls": [],
-    "sci_ctrls": [],
-    "disponly_to": [""],
-    "dissem_ctrls": [],
-    "non_ic": [],
-    "rel_to": [],
-    "fgi_open": [],
-    "fgi_protect": [],
-    "portion": "U//DISPLAY ONLY",
-    "banner": "UNCLASSIFIED//DISPLAY ONLY",
-    "dissem_countries": [],
-    "accms": [],
-    "macs": [],
-    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
-    "share": {"users": [], "projects": {}},
-    "f_clearance": ["u"],
-    "f_sci_ctrls": [],
-    "f_accms": [],
-    "f_oc_org": [],
-    "f_regions": [],
-    "f_missions": [],
-    "f_share": [],
-    "f_macs": [],
-}
-
+ROLLUP_DEFAULT_ACM = rollup_unclass_acm_3_0()
 NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
@@ -261,6 +234,15 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
     yield db
 
 
+def get_geospatial_labels(sensemaker: CotravelSensemaker):
+    return [
+        SETTINGS.sm_inferenced_label,
+        SETTINGS.geospatial_sm_label,
+        SETTINGS.cotravel_sm_label,
+        sensemaker.version_string,
+    ]
+
+
 def test_cotravel_success(
     mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool, aircraft_geo_config: dict
 ):
@@ -268,44 +250,9 @@ def test_cotravel_success(
     track_uuid = uuid4()
 
     # 10 minutes behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:05:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        observation_confidence=Confidence.HIGH,
-        source_id=uuid4(),
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:15:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        observation_confidence=Confidence.HIGH,
-        source_id=uuid4(),
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:25:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        observation_confidence=Confidence.HIGH,
-        source_id=uuid4(),
-    )
+    p1 = TimeLocation("POINT (-0.148931 51.484423)", "2024-03-20T12:05:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (-0.186849 51.465229)", "2024-03-20T12:15:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (-0.225258 51.476589)", "2024-03-20T12:25:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -338,12 +285,7 @@ def test_cotravel_success(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -354,12 +296,7 @@ def test_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -372,12 +309,7 @@ def test_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID1,
@@ -396,12 +328,7 @@ def test_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -428,44 +355,9 @@ def make_potential_duplicate_track() -> Track:
     track_id = uuid4()
 
     # <30 seconds behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:27-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:10:28-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:29-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation("POINT (-0.148931 51.484423)", "2024-03-20T12:00:27-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (-0.186849 51.465229)", "2024-03-20T12:10:28-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (-0.225258 51.476589)", "2024-03-20T12:20:29-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -508,12 +400,7 @@ def test_potential_duplicate_success(
     mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=[SETTINGS.geo_sensemaker_event_tag],
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=node_id,
             endNodeId=NODE_UUID1,
@@ -603,44 +490,9 @@ def test_potential_duplicate_failure(
     track_id = uuid4()
 
     # average time behind is >30s
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:00:30-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:10:30-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:20:31-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation("POINT (-0.148931 51.484423)", "2024-03-20T12:00:30-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (-0.186849 51.465229)", "2024-03-20T12:10:30-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (-0.225258 51.476589)", "2024-03-20T12:20:31-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -676,44 +528,9 @@ def test_multiple_cotravel_success(
     track_uuid = uuid4()
 
     # 10 minutes behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (2.289577 41.467812)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-08-20T16:39:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (2.217169 41.399955)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-08-20T16:49:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (2.183750 41.356071)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-08-20T16:59:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation("POINT (2.289577 41.467812)", "2024-08-20T16:39:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (2.217169 41.399955)", "2024-08-20T16:49:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (2.183750 41.356071)", "2024-08-20T16:59:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -756,12 +573,7 @@ def test_multiple_cotravel_success(
             name=SETTINGS.lag_lead_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -773,12 +585,7 @@ def test_multiple_cotravel_success(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -789,12 +596,7 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -807,12 +609,7 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID2,
@@ -825,12 +622,7 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -843,12 +635,7 @@ def test_multiple_cotravel_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID3,
@@ -868,12 +655,7 @@ def test_multiple_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             sourceId=p1.source_id,
             geometry=lag_lead.to_geojson(),
             nodeId=cotravel_node_id,
@@ -890,12 +672,7 @@ def test_multiple_cotravel_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -924,44 +701,9 @@ def test_lag_lead_success(
     track_uuid = uuid4()
 
     # 35 minutes behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:35:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:45:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T12:55:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation("POINT (-0.148931 51.484423)", "2024-03-20T12:35:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (-0.186849 51.465229)", "2024-03-20T12:45:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (-0.225258 51.476589)", "2024-03-20T12:55:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -994,12 +736,7 @@ def test_lag_lead_success(
             name=SETTINGS.lag_lead_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -1010,12 +747,7 @@ def test_lag_lead_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -1028,12 +760,7 @@ def test_lag_lead_success(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID1,
@@ -1052,12 +779,7 @@ def test_lag_lead_success(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,
@@ -1079,51 +801,14 @@ def test_lag_lead_success(
     assert findings[0].algorithm_configuration
 
 
-def test_cotravel_too_far_behind(
-    mock_oms_client: MagicMock, tester_db: Session, mock_oms_crud_tool: OmsCrudTool, aircraft_geo_config: dict
-):
+def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrudTool, aircraft_geo_config: dict):
     node_id = uuid4()
     track_uuid = uuid4()
 
     # 95 minutes behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.148931 51.484423)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:35:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.186849 51.465229)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:45:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (-0.225258 51.476589)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-03-20T13:55:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p1 = TimeLocation("POINT (-0.148931 51.484423)", "2024-03-20T13:35:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (-0.186849 51.465229)", "2024-03-20T13:45:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (-0.225258 51.476589)", "2024-03-20T13:55:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -1146,58 +831,11 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     track_uuid = uuid4()
 
     # 10 minutes behind fixture track
-    p1 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (15.650729 38.252533)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-09-10T05:10:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p2 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (15.610534 38.228556)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-09-10T05:20:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
-    p3 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (15.594253 38.185378)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-09-10T05:30:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
-
+    p1 = TimeLocation("POINT (15.650729 38.252533)", "2024-09-10T05:10:00-04:00").create_node_point(node_id)
+    p2 = TimeLocation("POINT (15.610534 38.228556)", "2024-09-10T05:20:00-04:00").create_node_point(node_id)
+    p3 = TimeLocation("POINT (15.594253 38.185378)", "2024-09-10T05:30:00-04:00").create_node_point(node_id)
     # past observational threshold so shouldn't be added
-    p4 = Point(
-        acm=DEFAULT_ACM,
-        location="POINT (15.578989 38.142175)",
-        altitude=None,
-        detection_time=datetime.fromisoformat("2024-09-10T05:46:00-04:00"),
-        node_id=node_id,
-        node_version=1,
-        observation_id=uuid4(),
-        observation_version=1,
-        source_id=uuid4(),
-        observation_confidence=Confidence.HIGH,
-    )
+    p4 = TimeLocation("POINT (15.578989 38.142175)", "2024-09-10T05:46:00-04:00").create_node_point(node_id)
 
     # Create Track Object
     track = Track(
@@ -1234,12 +872,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             name=SETTINGS.cotravel_event_name,
             tier=ObjectTier.DERIVATIVE,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_event_node_iri,
             ifcCodes=set(),
             isNso=True,
@@ -1250,12 +883,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=node_id,
@@ -1268,12 +896,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
             startNodeId=cotravel_node_id,
             endNodeId=NODE_UUID2,
@@ -1292,12 +915,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             attributeType=AttributeType.GEOSPATIAL,
             confidence=Confidence.HIGH,
             tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.cotravel_sm_label,
-                sensemaker.version_string,
-            ],
+            labels=get_geospatial_labels(sensemaker),
             sourceId=p1.source_id,
             geometry=cotravel.to_geojson(),
             nodeId=cotravel_node_id,

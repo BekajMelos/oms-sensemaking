@@ -5,12 +5,22 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Ensure automated tests have 80% coverage
+- Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 
 ### Changed
 
 ### Fixed
 
 ### Removed
+
+## [0.14.0] - 2025-09-29
+
+### Fixed
+- Improved on failing integration tests for the crud tool.
+
+### Removed
+- Removed "localstack" docker container and other references.
 
 ## [0.13.1] - 2025-09-19
 
