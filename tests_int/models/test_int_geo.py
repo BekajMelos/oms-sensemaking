@@ -15,7 +15,7 @@ from sqlalchemy.exc import StatementError
 from sqlalchemy.orm import Session
 
 from oms_sensemaking.models.geo import Point, Track, get_track
-from tests_int.geospatial.test_similar_tracks import ROLLUP_DEFAULT_ACM
+from tests_int.geospatial.test_int_similar_tracks import ROLLUP_DEFAULT_ACM
 
 ATTR_ID_FFX: UUID = UUID("f604f7d3-b78d-49af-a2cf-75eae08cec52")
 NODE_ID_FFX: UUID = UUID("6796b293-e0b2-4ba3-a361-c59c6e07248b")

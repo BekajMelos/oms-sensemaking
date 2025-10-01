@@ -76,6 +76,11 @@ Ask a teammate for guidance.
 - Comment on the merge request if you have any questions or
   concerns
 
+  - When the Developer responsible for the Pull Request has responded
+    adaquately the Commenter should mark the conversation as resolved;
+    Devs should not resolve comments themselves unless they are trivial
+    or the Commenter **clearly** considers the matter resolved.
+
 - Use your best judgement before approving merge requests
 
   + If you are satisfied with the changes, add your stamp of approval.
@@ -84,8 +89,8 @@ Ask a teammate for guidance.
 
 ### Merging Pull Requests
 
-The author of the Pull Request should be responsible for merging, once there is
-an approval.
+The author of the Pull Request should be responsible for merging, once there are
+**two** approvals.
 
 If the merge can succeed automatically, you will be presented with options
 for what type of merge commit you would like to create. In addition to selecting
