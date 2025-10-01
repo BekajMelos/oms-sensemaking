@@ -106,7 +106,7 @@ def mock_source():
     return mock_source_obj
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def test_originator() -> Generator[Any, Any, None]:
     """Create a real Originator in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
@@ -118,8 +118,10 @@ def test_originator() -> Generator[Any, Any, None]:
 
     yield originator
 
+    oms_crud_tool.delete_originator(originator_id=originator.id)
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="function")
 def test_provider(test_originator) -> Generator[Any, Any, None]:
     """Create a real Provider in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
@@ -136,9 +138,10 @@ def test_provider(test_originator) -> Generator[Any, Any, None]:
     )
 
     yield provider
+    oms_crud_tool.delete_provider(provider_id=provider.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, None]:
     """Create a real Source in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
@@ -159,6 +162,7 @@ def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, Non
     )
 
     yield source
+    oms_crud_tool.delete_source(source_id=source.id)
 
 
 @pytest.fixture
