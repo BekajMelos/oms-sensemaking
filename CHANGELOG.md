@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 
 ### Changed
 
