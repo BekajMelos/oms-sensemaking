@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed `make nuke` target so that it now purges all volumes assosiated with oms-sensemaking.
+
 ### Removed
 
 ## [0.14.0] - 2025-09-29
