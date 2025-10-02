@@ -92,7 +92,7 @@ pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
 	@docker compose up pgadmin -d
 
 tools: ## start dev tools (kill it with: docker-compose --profile dev down)
-	@@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
 	docker compose --profile dev --profile tools up -d
 
 clean: ## Purge build artifacts
