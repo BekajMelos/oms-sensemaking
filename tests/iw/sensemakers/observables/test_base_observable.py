@@ -21,7 +21,7 @@ from oms_sensemaking.iw.sensemakers.observables.base_observable import (
 )
 
 
-class TestableBaseObservable(BaseObservable):
+class ConcreteBaseObservable(BaseObservable):
     """concrete implementation for testing abstract BaseObservable"""
 
     def update_data(self):
@@ -82,7 +82,7 @@ class TestBaseObservable:
     @pytest.fixture
     def base_observable(self, valid_time_bounds):
         """create a testable BaseObservable instance"""
-        return TestableBaseObservable(
+        return ConcreteBaseObservable(
             queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedCount=5
         )
 
@@ -97,19 +97,19 @@ class TestBaseObservable:
         with pytest.raises(
             ValueError, match="At least one of fullyObservedCount or fullyObservedPercentage is required"
         ):
-            TestableBaseObservable(queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds)
+            ConcreteBaseObservable(queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds)
 
     def test_base_observable_percentage_validation(self, valid_time_bounds):
         """test percentage validation"""
         # valid percentage
-        observable = TestableBaseObservable(
+        observable = ConcreteBaseObservable(
             queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedPercentage=80
         )
         assert observable.fully_observed_percentage == 80
 
         # invalid percentage > 100
         with pytest.raises(ValueError):
-            TestableBaseObservable(
+            ConcreteBaseObservable(
                 queryType=ObservableQueryType.geofence, timeBounds=valid_time_bounds, fullyObservedPercentage=150
             )
 
@@ -227,7 +227,7 @@ class TestBaseObservable:
         result = base_observable.determine_status(2, 10)
         assert result == SETTINGS.iw_settings.observable_statuses["not_observed"]
 
-    @patch.object(TestableBaseObservable, "get_status_attr")
+    @patch.object(ConcreteBaseObservable, "get_status_attr")
     def test_update_status_no_change(self, mock_get_status_attr, base_observable, mock_oms_client):
         """test update_status method when status doesn't change"""
         # setup
@@ -246,7 +246,7 @@ class TestBaseObservable:
         # verify that update_attribute was NOT called since status didn't change
         mock_oms_client.update_attribute.assert_not_called()
 
-    @patch.object(TestableBaseObservable, "get_status_attr")
+    @patch.object(ConcreteBaseObservable, "get_status_attr")
     def test_update_status_with_change(self, mock_get_status_attr, base_observable, mock_oms_client):
         """test update_status method when status changes"""
         # setup
