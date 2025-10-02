@@ -46,8 +46,6 @@
     4. Run `make refresh`. This may take a few minutes.
       * You can follow the `graphql` logs with `make dockerlogs c=graphql`
           * Look for "OMS Bridge Started!"
-      * You can follow the `localstack` logs with `make dockerlogs c=localstack`
-          * Look for "Ready."
       * When restarting `oms-bridge` the next time, you use `make dockerrefresh`
 5. Trigger Sensemaker execution
     1. For RMQ Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):

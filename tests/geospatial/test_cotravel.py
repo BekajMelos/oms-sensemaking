@@ -53,74 +53,136 @@ def test_cotravel_type_get_name():
     assert CotravelType.get_name(CotravelType.cotravel) == "Cotravel"
     assert CotravelType.get_name(CotravelType.lag_lead) == "LagLead"
     with pytest.raises(ValueError):
-        CotravelType.get_name("invalid")  # type: ignore
+        CotravelType.get_name("invalid")
 
 
-def test_potential_match_post_init():
+@pytest.mark.parametrize(
+    "start_time1, start_time2, last_time1, last_time2, expected_true_cotravel, expected_cotravel_type",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=5),
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=5),
+            True,
+            CotravelType.potential_duplicate,
+        ),
+        (
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=15),
+            datetime.utcnow() + timedelta(seconds=17),
+            datetime.utcnow() + timedelta(seconds=30),
+            True,
+            CotravelType.cotravel,
+        ),
+        (
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=30),
+            datetime.utcnow() + timedelta(seconds=17),
+            datetime.utcnow() + timedelta(seconds=80),
+            False,
+            CotravelType.lag_lead,
+        ),
+    ],
+)
+def test_potential_match_post_init(
+    start_time1, start_time2, last_time1, last_time2, expected_true_cotravel, expected_cotravel_type
+):
     config = {
         "max_potential_duplicate_time_diff_seconds": 10,
         "max_lag_lead_duration_seconds": 20,
     }
-    now = datetime.utcnow()
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
         vehicle_id2=uuid4(),
-        start_time1=now,
-        start_time2=now + timedelta(seconds=5),
-        last_time1=now,
-        last_time2=now + timedelta(seconds=5),
+        start_time1=start_time1,
+        start_time2=start_time2,
+        last_time1=last_time1,
+        last_time2=last_time2,
         track_id1=uuid4(),
         track_id2=uuid4(),
         config=config,
     )
-    assert pm.is_true_cotravel is True
-    assert pm.cotravel_type == CotravelType.potential_duplicate
+    assert pm.is_true_cotravel is expected_true_cotravel
+    assert pm.cotravel_type == expected_cotravel_type
 
 
-def test_potential_match_tentative_add():
+@pytest.mark.parametrize(
+    "start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=15),
+            datetime.utcnow() + timedelta(seconds=15),
+            True,
+        ),
+    ],
+)
+def test_check_valid_cotravel_duration(start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration):
+    config = {"min_cotravel_duration_seconds": 10, "max_potential_duplicate_time_diff_seconds": 30}
+    pm = PotentialMatch(
+        vehicle_id1=uuid4(),
+        vehicle_id2=uuid4(),
+        start_time1=start_time1,
+        start_time2=start_time2,
+        last_time1=last_time1,
+        last_time2=last_time2,
+        track_id1=uuid4(),
+        track_id2=uuid4(),
+        config=config,
+    )
+    assert pm.check_valid_cotravel_duration() is valid_cotravel_duration
+
+
+@pytest.mark.parametrize(
+    "start_time1, start_time2, last_time1, last_time2, tenadd_time1, tenadd_time2",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow(),
+            datetime.utcnow(),
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=3),
+            datetime.utcnow() + timedelta(seconds=3),
+        ),
+    ],
+)
+def test_potential_match_tentative_add(start_time1, start_time2, last_time1, last_time2, tenadd_time1, tenadd_time2):
     config = {
         "max_potential_duplicate_time_diff_seconds": 10,
         "max_lag_lead_duration_seconds": 20,
         "valid_observed_threshold_seconds": 5,
         "min_lag_lead_duration_seconds": 2,
     }
-    now = datetime.utcnow()
     pm = PotentialMatch(
         vehicle_id1=uuid4(),
         vehicle_id2=uuid4(),
-        start_time1=now,
-        start_time2=now,
-        last_time1=now,
-        last_time2=now,
+        start_time1=start_time1,
+        start_time2=start_time2,
+        last_time1=last_time1,
+        last_time2=last_time2,
         track_id1=uuid4(),
         track_id2=uuid4(),
         config=config,
     )
 
-    updated = pm.tentative_add(now + timedelta(seconds=3), now + timedelta(seconds=3))
+    updated = pm.tentative_add(tenadd_time1, tenadd_time2)
     assert updated
     assert pm.num_points == 1
     assert isinstance(pm.total_time_diff, timedelta)
 
 
-def test_check_valid_cotravel_duration():
-    config = {"min_cotravel_duration_seconds": 10, "max_potential_duplicate_time_diff_seconds": 30}
-    now = datetime.utcnow()
-    pm = PotentialMatch(
-        vehicle_id1=uuid4(),
-        vehicle_id2=uuid4(),
-        start_time1=now,
-        start_time2=now,
-        last_time1=now + timedelta(seconds=15),
-        last_time2=now + timedelta(seconds=15),
-        track_id1=uuid4(),
-        track_id2=uuid4(),
-        config=config,
-    )
-    assert pm.check_valid_cotravel_duration() is True
-
-
-def test_cotravel_post_init():
+@pytest.mark.parametrize(
+    "start_time, last_time",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow(),
+        ),
+    ],
+)
+def test_cotravel_post_init(start_time, last_time):
     # Mock Track and Point
     mock_point = MagicMock()
     mock_point.coordinates = (0.0, 0.0)
@@ -132,8 +194,8 @@ def test_cotravel_post_init():
     c = Cotravel(
         track1=mock_track,
         track2=mock_track,
-        start_time=datetime.utcnow(),
-        last_time=datetime.utcnow(),
+        start_time=start_time,
+        last_time=last_time,
         cotravel_type=CotravelType.cotravel,
     )
 
@@ -142,7 +204,46 @@ def test_cotravel_post_init():
     assert len(c.geometry.geoms) == 2
 
 
-def test_cotravel_to_geojson():
+@pytest.mark.parametrize(
+    "start_time, last_time",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow(),
+        ),
+    ],
+)
+def test_cotravel_get_acm(start_time, last_time):
+    # Mock Track and Point
+    mock_point = MagicMock()
+    mock_point.coordinates = (0.0, 0.0)
+    mock_point.acm = {"some": "data"}
+
+    mock_track = MagicMock()
+    mock_track.points = [mock_point, mock_point]
+
+    c = Cotravel(
+        track1=mock_track,
+        track2=mock_track,
+        start_time=start_time,
+        last_time=last_time,
+        cotravel_type=CotravelType.cotravel,
+    )
+
+    with patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup", return_value={"some": "data"}):
+        assert c.get_acm() == {"some": "data"}
+
+
+@pytest.mark.parametrize(
+    "start_time, last_time",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow(),
+        ),
+    ],
+)
+def test_cotravel_to_geojson(start_time, last_time):
     mock_point = MagicMock()
     mock_point.coordinates = (1.0, 2.0)
 
@@ -152,23 +253,33 @@ def test_cotravel_to_geojson():
     c = Cotravel(
         track1=mock_track,
         track2=mock_track,
-        start_time=datetime.utcnow(),
-        last_time=datetime.utcnow(),
+        start_time=start_time,
+        last_time=last_time,
         cotravel_type=CotravelType.cotravel,
     )
 
     geojson = c.to_geojson()
     assert geojson["type"] == "MultiLineString"
     assert geojson["coordinates"][0] == [(1.0, 2.0), (1.0, 2.0)]
+    assert geojson["coordinates"][1] == [(1.0, 2.0), (1.0, 2.0)]
 
 
-def test_colocation_str():
+@pytest.mark.parametrize(
+    "detection_time_p1, detection_time_p2",
+    [
+        (
+            datetime.utcnow(),
+            datetime.utcnow() + timedelta(seconds=10),
+        ),
+    ],
+)
+def test_colocation_str(detection_time_p1, detection_time_p2):
     node_id = uuid4()
     p1 = Point(
         acm=DEFAULT_ACM,
         location="POINT (-87.63520 41.85677)",
         altitude=5,
-        detection_time=datetime.utcnow(),
+        detection_time=detection_time_p1,
         node_id=node_id,
         node_version=1,
         observation_id="obs_id1",
@@ -180,7 +291,7 @@ def test_colocation_str():
         acm=DEFAULT_ACM,
         location="POINT (-87.67096 41.85733)",
         altitude=100,
-        detection_time=datetime.utcnow() + timedelta(seconds=10),
+        detection_time=detection_time_p2,
         node_id=node_id,
         node_version=1,
         observation_id="obs_id2",
@@ -276,3 +387,66 @@ def test_publish_calls_correct_method(sensemaker, sample_track):
     with patch.object(sensemaker, "publish_potential_duplicate") as mock_pub_dup:
         sensemaker.publish(sample_track, cotravel)
         mock_pub_dup.assert_called_once()
+
+
+def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sample_track):
+    # Arrange
+    cotravel = MagicMock()
+    cotravel.track1.node_id = "track1-id"
+    cotravel.track2.node_id = "track2-id"
+    cotravel.get_acm.return_value = {"acm": "fake"}
+
+    sensemaker.publish_potential_duplicate(sample_track, cotravel)
+
+    # Assert
+    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
+    args, _ = sensemaker.oms_crud_tool.publish_relationships.call_args
+    [relationship_input] = args[0]
+
+    assert relationship_input.startNodeId == "track1-id"
+    assert relationship_input.endNodeId == "track2-id"
+    assert relationship_input.acm == {"acm": "fake"}
+    assert relationship_input.sourceId == sample_track.points[0].source_id
+
+
+def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_track):
+    # Arrange
+    cotravel = MagicMock()
+    cotravel.cotravel_type = CotravelType.cotravel
+    cotravel.track1.node_id = "track1-id"
+    cotravel.track2.node_id = "track2-id"
+    cotravel.get_acm.return_value = {"acm": "fake"}
+    cotravel.start_time = "start"
+    cotravel.last_time = "end"
+    cotravel.to_geojson.return_value = {"type": "LineString"}
+
+    # Fake published node with an ID
+    published_node = MagicMock()
+    published_node.id = "node-id"
+
+    sensemaker.oms_crud_tool.create_node.return_value = published_node
+
+    # Act
+    sensemaker.publish_cotravel(sample_track, cotravel)
+
+    # Assert: node creation
+    sensemaker.oms_crud_tool.create_node.assert_called_once()
+    create_node_input = sensemaker.oms_crud_tool.create_node.call_args.kwargs["node_input"]
+    assert create_node_input.name == "Cotravel"
+    assert create_node_input.acm == {"acm": "fake"}
+
+    # Assert: relationships published
+    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
+    relationships = sensemaker.oms_crud_tool.publish_relationships.call_args[0][0]
+    assert len(relationships) == 2
+    assert relationships[0].startNodeId == "node-id"
+    assert relationships[0].endNodeId == "track1-id"
+    assert relationships[1].endNodeId == "track2-id"
+
+    # Assert: attribute published
+    sensemaker.oms_crud_tool.publish_attributes.assert_called_once()
+    [attribute_input] = sensemaker.oms_crud_tool.publish_attributes.call_args[0][0]
+    assert attribute_input.nodeId == "node-id"
+    assert attribute_input.geometry == {"type": "LineString"}
+    assert attribute_input.valueStart == "start"
+    assert attribute_input.valueEnd == "end"

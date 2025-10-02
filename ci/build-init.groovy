@@ -31,9 +31,6 @@ pipeline {
         IMAGE_NAME="dpaas/ubi8-ccp"
         IMAGE_VERSION="8.10"
 
-        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
-        EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
-
         APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
 
         TRANSCRYPT_PW = credentials('omsb-transcrypt-key')
@@ -122,8 +119,6 @@ pipeline {
                                 --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                                 --build-arg VCS_REF=$(git rev-parse HEAD) \
                                 --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
-                                --build-arg POSTGRES_REPOSITORY=${POSTGRES_REPOSITORY} \
-                                --build-arg EPEL_REPOSITORY=${EPEL_REPOSITORY} \
                                 --secret id=mynetrc,src=.netrc \
                                 --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
                                 .

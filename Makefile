@@ -18,10 +18,10 @@ install: ## Run upgrades and installations to prepare the repository
 	pre-commit install
 
 test: ## Run all tests
-	python -m pytest $(PYTEST_FLAGS)
+	python -m pytest $(PYTEST_FLAGS) --cov-fail-under=80
 
 unit-test: ## Run unit tests
-	python -m pytest tests $(PYTEST_FLAGS)
+	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=80
 
 int-test: ## Run integration tests
 	python -m pytest tests_int $(PYTEST_FLAGS)
@@ -102,7 +102,6 @@ distclean: clean  ## Purge all generated content
 
 nuke: down
 	@docker volume rm -f oms-sensemaking_doccano-db
-	@docker volume rm -f oms-sensemaking_localstack
 	@docker volume rm -f oms-sensemaking_pgadmin
 	@docker volume rm -f oms-sensemaking_postgis
 	@docker volume rm -f oms-sensemaking_elasticsearch
