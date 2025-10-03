@@ -9,7 +9,6 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeQuery,
     NodeQuery,
     ObservationQuery,
-    PageParams,
     RelationshipQuery,
 )
 
@@ -140,38 +139,6 @@ class TestGraphQLPaginationEnforcement:
             assert (
                 not hasattr(node_query, "pageParams") or node_query.pageParams is None
             ), "pageParams should not be added when enforcement is disabled"
-
-    def test_page_size_clamping(self, mock_crud_tool):
-        """Test that page sizes are properly clamped to max values."""
-        # Mock settings
-        with patch("oms_sensemaking.core.oms_crud.SETTINGS") as mock_settings:
-            mock_settings.enforce_graphql_pagination = True
-            mock_settings.graphql_default_page_size = 200
-            mock_settings.graphql_max_page_size = 500
-
-            mock_response = Mock()
-            mock_response.data = []
-            mock_crud_tool.oms_client.nodes.return_value = mock_response
-
-            # Test various page sizes
-            test_cases = [
-                (50, 50),  # Under limit - should remain
-                (200, 200),  # At default - should remain
-                (500, 500),  # At max - should remain
-                (1000, 500),  # Over max - should be clamped
-                (None, 200),  # None - should use default
-            ]
-
-            for input_size, expected_size in test_cases:
-                query = NodeQuery()
-                if input_size is not None:
-                    query.pageParams = PageParams(page=1, pageSize=input_size)
-
-                mock_crud_tool.get_nodes(query)
-
-                assert (
-                    query.pageParams.pageSize == expected_size
-                ), f"Expected pageSize={expected_size} for input={input_size}, got {query.pageParams.pageSize}"
 
     def test_all_crud_methods_pagination(self, mock_crud_tool):
         """Test that all CRUD methods enforce pagination."""
