@@ -74,16 +74,13 @@ list-versions: ## Display the tagged versions
 	@git tag -n
 
 up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
-	docker compose --profile local up -d ${DOCKER_FLAGS}
+	docker compose up -d ${DOCKER_FLAGS}
 
-metrics-up: ## Start oms-sensemaking with Prometheus and Grafana (includes local profile)
-	docker compose --profile local --profile metrics up -d ${DOCKER_FLAGS}
+stop: ## Stop oms-sensemaking docker environment
+	docker compose stop
 
-stop: ## Stop oms-sensemaking docker environment (includes metrics)
-	docker compose --profile dev --profile local --profile metrics stop
-
-down: ## Stop oms-sensemaking docker environment and remove containers (includes metrics)
-	docker compose --profile dev --profile local --profile metrics down
+down: ## Stop oms-sensemaking docker environment and remove containers
+	docker compose down
 
 shell: ## Open a shell inside the oms_sensemaking container
 	@docker compose exec oms_sensemaking /bin/bash
@@ -92,9 +89,10 @@ psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
 
 pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
-	docker compose --profile dev up pgadmin -d
+	@docker compose up pgadmin -d
 
 tools: ## start dev tools (kill it with: docker-compose --profile dev down)
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
 	docker compose --profile dev --profile tools up -d
 
 clean: ## Purge build artifacts
@@ -103,13 +101,10 @@ clean: ## Purge build artifacts
 distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
-nuke: down
-	@docker volume rm -f oms-sensemaking_doccano-db
-	@docker volume rm -f oms-sensemaking_pgadmin
-	@docker volume rm -f oms-sensemaking_postgis
-	@docker volume rm -f oms-sensemaking_elasticsearch
-	@docker volume rm -f oms-sensemaking_grafana_data
-	@docker volume rm -f oms-sensemaking_prometheus_data
+nuke:
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
+	docker compose down -v
 
 refresh: nuke  # Purge all generated content and restart
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
 	docker compose --profile local up --build -d
