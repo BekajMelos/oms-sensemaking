@@ -46,10 +46,6 @@
         "STATUS_LISTS": {
             "A": ["anticipated", "planned"],
             "P": ["present"],
-            "C": ["fully capable"],
-            "D": ["damaged"],
-            "X": ["destroyed"],
-            "F": ["full to capacity"],
             "*": ["present"],
             "-": ["present"]
         },
