@@ -364,7 +364,6 @@ class Settings(BaseSettings):
     # GraphQL query pagination controls (enforce bounded responses)
     enforce_graphql_pagination: bool = Field(True, description="Force pagination on collection queries.")
     graphql_default_page_size: int = Field(200, description="Default page size when none is provided.")
-    graphql_max_page_size: int = Field(500, description="Upper bound on allowed page size.")
 
     # Geospatial Sensemaking Settings
     geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",

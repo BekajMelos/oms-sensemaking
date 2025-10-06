@@ -87,6 +87,15 @@ class OmsCrudTool(BaseClient):
             pkcs12_password=SETTINGS.pkcs12_password,
         )
 
+    def _ensure_pagination_params(self, query_obj) -> None:
+        """Ensure pagination parameters are set on query objects if pagination is enforced."""
+        if SETTINGS.enforce_graphql_pagination:
+            page_params = getattr(query_obj, "pageParams", None)
+            if not page_params:
+                query_obj.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
+            else:
+                query_obj.pageParams.page = query_obj.pageParams.page or 1
+
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
         """
         Publish the Nodes to OMS
@@ -199,13 +208,7 @@ class OmsCrudTool(BaseClient):
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
         # enforce pagination bounds if configured
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(node_info, "pageParams", None)
-            if not page_params:
-                node_info.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # ensure page is set if pageParams exists
-                page_params.page = page_params.page or 1
+        self._ensure_pagination_params(node_info)
         nodes = self.oms_client.nodes(query=node_info)
         # basic observability of returned volume
         count = len(nodes.data or [])
@@ -214,52 +217,28 @@ class OmsCrudTool(BaseClient):
 
     def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
         """Get existing Relationships from OMS"""
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(relationship_info, "pageParams", None)
-            if not page_params:
-                relationship_info.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # ensure page is set if pageParams exists
-                relationship_info.pageParams.page = relationship_info.pageParams.page or 1
+        self._ensure_pagination_params(relationship_info)
         relationships = self.oms_client.relationships(query=relationship_info)
         LOGGER.debug("GraphQL relationships fetched: %d", len(relationships.data or []))
         return relationships
 
     def get_attributes(self, attribute_info: AttributeQuery) -> AttributesAttributes:
         """Get existing Attributes from OMS"""
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(attribute_info, "pageParams", None)
-            if not page_params:
-                attribute_info.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # ensure page is set if pageParams exists
-                attribute_info.pageParams.page = attribute_info.pageParams.page or 1
+        self._ensure_pagination_params(attribute_info)
         attributes = self.oms_client.attributes(query=attribute_info)
         LOGGER.debug("GraphQL attributes fetched: %d", len(attributes.data or []))
         return attributes
 
     def get_activities(self, activity_info: ActivityQuery) -> ActivitiesActivities:
         """Get existing Activities from OMS"""
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(activity_info, "pageParams", None)
-            if not page_params:
-                activity_info.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # ensure page is set if pageParams exists
-                activity_info.pageParams.page = activity_info.pageParams.page or 1
+        self._ensure_pagination_params(activity_info)
         activities = self.oms_client.activities(query=activity_info)
         LOGGER.debug("GraphQL activities fetched: %d", len(activities.data or []))
         return activities
 
     def get_observations(self, observation_info: ObservationQuery) -> ObservationsObservations:
         """Get existing Observations from OMS"""
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(observation_info, "pageParams", None)
-            if not page_params:
-                observation_info.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # ensure page is set if pageParams exists
-                observation_info.pageParams.page = observation_info.pageParams.page or 1
+        self._ensure_pagination_params(observation_info)
         observations = self.oms_client.observations(query=observation_info)
         LOGGER.debug("GraphQL observations fetched: %d", len(observations.data or []))
         return observations

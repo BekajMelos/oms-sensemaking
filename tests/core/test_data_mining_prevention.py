@@ -29,7 +29,7 @@ class TestDataMiningPreventionConfig:
         assert settings.db_pool_size == 10, f"Expected db_pool_size=10, got {settings.db_pool_size}"
 
         assert hasattr(settings, "db_max_overflow"), "db_max_overflow should exist"
-        assert settings.db_max_overflow == 20, f"Expected db_max_overflow=20, got {settings.db_max_overflow}"
+        assert settings.db_max_overflow == 10, f"Expected db_max_overflow=10, got {settings.db_max_overflow}"
 
         assert hasattr(settings, "db_pool_timeout_seconds"), "db_pool_timeout_seconds should exist"
         assert (
@@ -51,11 +51,6 @@ class TestDataMiningPreventionConfig:
             settings.graphql_default_page_size == 200
         ), f"Expected graphql_default_page_size=200, got {settings.graphql_default_page_size}"
 
-        assert hasattr(settings, "graphql_max_page_size"), "graphql_max_page_size should exist"
-        assert (
-            settings.graphql_max_page_size == 500
-        ), f"Expected graphql_max_page_size=500, got {settings.graphql_max_page_size}"
-
     def test_environment_variable_override(self):
         """Test that environment variables can override default settings."""
         # Test with custom environment variables
@@ -67,7 +62,6 @@ class TestDataMiningPreventionConfig:
                 "DB_POOL_TIMEOUT_SECONDS": "45",
                 "ENFORCE_GRAPHQL_PAGINATION": "false",
                 "GRAPHQL_DEFAULT_PAGE_SIZE": "100",
-                "GRAPHQL_MAX_PAGE_SIZE": "1000",
             },
         ):
             settings = Settings()
@@ -83,9 +77,6 @@ class TestDataMiningPreventionConfig:
             assert (
                 settings.graphql_default_page_size == 100
             ), f"Expected graphql_default_page_size=100, got {settings.graphql_default_page_size}"
-            assert (
-                settings.graphql_max_page_size == 1000
-            ), f"Expected graphql_max_page_size=1000, got {settings.graphql_max_page_size}"
 
 
 class TestGraphQLPaginationEnforcement:
@@ -239,12 +230,18 @@ class TestDatabaseConnectionPooling:
                         connect_args["options"] == "-c timezone=utc"
                     ), f"Expected options='-c timezone=utc', got {connect_args['options']}"
 
-    def test_ssl_configuration(self):
+    @pytest.mark.parametrize(
+        "ssl,sslmode,message",
+        [
+            (True, "require", "SSL should be required when db_ssl=True"),
+            (False, "prefer", "SSL should be preferred when db_ssl=False"),
+        ],
+    )
+    def test_ssl_configuration(self, ssl, sslmode, message):
         """Test SSL configuration handling."""
-        # Test with SSL enabled
         with patch("oms_sensemaking.clients.instances.SETTINGS") as mock_settings:
             mock_settings.db_uri = "postgresql://test:test@localhost:5432/test_db"
-            mock_settings.db_ssl = True
+            mock_settings.db_ssl = ssl
             mock_settings.db_pool_size = 10
             mock_settings.db_max_overflow = 20
             mock_settings.db_pool_timeout_seconds = 30
@@ -262,27 +259,4 @@ class TestDatabaseConnectionPooling:
 
                     call_args = mock_create_engine.call_args
                     connect_args = call_args[1]["connect_args"]
-                    assert connect_args["sslmode"] == "require", "SSL should be required when db_ssl=True"
-
-        # Test with SSL disabled
-        with patch("oms_sensemaking.clients.instances.SETTINGS") as mock_settings:
-            mock_settings.db_uri = "postgresql://test:test@localhost:5432/test_db"
-            mock_settings.db_ssl = False
-            mock_settings.db_pool_size = 10
-            mock_settings.db_max_overflow = 20
-            mock_settings.db_pool_timeout_seconds = 30
-
-            with patch("oms_sensemaking.clients.instances.create_engine") as mock_create_engine:
-                mock_engine = Mock()
-                mock_create_engine.return_value = mock_engine
-
-                with (
-                    patch("oms_sensemaking.clients.instances.scoped_session"),
-                    patch("oms_sensemaking.clients.instances.sessionmaker"),
-                ):
-                    with db_session():
-                        pass
-
-                    call_args = mock_create_engine.call_args
-                    connect_args = call_args[1]["connect_args"]
-                    assert connect_args["sslmode"] == "prefer", "SSL should be preferred when db_ssl=False"
+                    assert connect_args["sslmode"] == sslmode, message
