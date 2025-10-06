@@ -114,6 +114,7 @@ omit = [
     '**/__main__.py',
     '*/test*'
 ]
+relative_files = true
 
 
 [tool.coverage.report]

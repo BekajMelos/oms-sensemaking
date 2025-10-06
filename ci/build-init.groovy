@@ -30,6 +30,10 @@ pipeline {
 
         IMAGE_NAME="dpaas/ubi8-ccp"
         IMAGE_VERSION="8.10"
+
+        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
+
+        TRANSCRYPT_PW = credentials('omsb-transcrypt-key')
     }
 
     stages {
@@ -64,10 +68,6 @@ pipeline {
 
                             pip install -U pip wheel setuptools_scm
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Install') {
@@ -79,10 +79,6 @@ pipeline {
                             . /tmp/venv/bin/activate
                             pip install -e ".[dev,docs,test,build]"
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Test') {
@@ -91,6 +87,11 @@ pipeline {
                     }
                     steps {
                         sh '''
+                            git stash
+                            git config --unset core.hookspath
+                            bin/transcrypt -f -F -y || true
+                            bin/transcrypt -c aes-256-cbc -p ${TRANSCRYPT_PW} -y
+                            cp .env.template .env
                             . /tmp/venv/bin/activate
                             python -m pytest tests --cov-report=xml || true
                         '''
@@ -133,7 +134,7 @@ pipeline {
                     ca: '',
                     cert: '',
                     dockerAddress: 'unix:///var/run/docker.sock',
-                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}",
+                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION}",
                     key: '',
                     logLevel: 'info',
                     podmanPath: '',
@@ -166,6 +167,7 @@ pipeline {
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.login=${SONARQUBE_API_KEY} \
                         -Dsonar.projectKey=${SONARQUBE_PROJECT} \
+                        -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                         -Dsonar.python.coverage.reportPaths=coverage.xml
