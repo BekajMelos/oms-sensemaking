@@ -101,7 +101,7 @@ def test_process_data(
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
-    assert code_b.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSP------*****"
 
     # case 2
     sensemaker.get_context = mock.MagicMock(
@@ -122,7 +122,7 @@ def test_process_data(
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SSAX------*****"
-    assert code_b.new_symbol_id_code == "SSAX------*****"
+    assert code_b.new_symbol_id_code == "SSAP------*****"
 
     # case 3
     sensemaker.get_context = mock.MagicMock(
@@ -483,7 +483,7 @@ def test_dimension_enrichment(
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
-    assert code_b.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAP------*****"
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
@@ -516,7 +516,7 @@ def test_acms(
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
-    assert code_b.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSP------*****"
     mock_aac_client.get_acm_rollup.assert_any_call(
         [
             {"ACM": ts_acm},
@@ -567,7 +567,7 @@ def test_controlling_affiliation_enrichment(
     assert len(symbols) == 3
     assert symbols[0].new_symbol_id_code == "10-0-0-01-3-0-00-000000-00-00"
     assert symbols[1].new_symbol_id_code == "SPAD------*****"
-    assert symbols[2].new_symbol_id_code == "SPAD------*****"
+    assert symbols[2].new_symbol_id_code == "SPAP------*****"
     mock_oms_crud_tool.get_nodes.assert_not_called()
 
     ### Test actually checking controlling node affiliations
@@ -584,5 +584,5 @@ def test_controlling_affiliation_enrichment(
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
-    assert code_b.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAP------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()

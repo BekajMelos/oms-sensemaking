@@ -106,19 +106,19 @@ def test_convert_to_2525b(mil_symbol_rules):
     """Test converting C to B"""
 
     code_c = MilSymbolMaker.make("suaf------*****", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------*****"
 
     code_c = MilSymbolMaker.make("SsSa------*****", mil_symbol_rules)
     assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SSSA------*****"
 
     code_c = MilSymbolMaker.make("SUUD------*****", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUUD------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUUP------*****"
 
     code_c = MilSymbolMaker.make("SNGC------*****", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SNGC------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SNGP------*****"
 
     code_c = MilSymbolMaker.make("sngc------*****", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SNGC------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SNGP------*****"
 
     code_c = MilSymbolMaker.make("s---------*****", mil_symbol_rules)
     assert to_2525b(code_c, mil_symbol_rules).formatted_code == "S---------*****"
@@ -132,30 +132,30 @@ def test_convert_to_2525b(mil_symbol_rules):
 
 def test_convert_to_2525b_sym_mod(mil_symbol_rules):
     code_c = MilSymbolMaker.make("suaf------fn***", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------*****"
 
     code_c = MilSymbolMaker.make("suaf------GN***", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------*****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------*****"
 
     code_c = MilSymbolMaker.make("suaf------gI***", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------GI***"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------GI***"
 
     code_c = MilSymbolMaker.make("suaf-------a***", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF-------A***"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP-------A***"
 
     code_c = MilSymbolMaker.make("suaf-------b***", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF-------B***"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP-------B***"
 
     code_c = MilSymbolMaker.make("suaf------b****", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------B****"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------B****"
 
 
 def test_convert_to_2525b_ob(mil_symbol_rules):
     code_c = MilSymbolMaker.make("suaf------****G", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****G"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------****G"
 
     code_c = MilSymbolMaker.make("suaf------****c", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****C"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------****C"
 
     code_c = MilSymbolMaker.make("suaf------****E", mil_symbol_rules)
-    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAF------****E"
+    assert to_2525b(code_c, mil_symbol_rules).formatted_code == "SUAP------****E"
