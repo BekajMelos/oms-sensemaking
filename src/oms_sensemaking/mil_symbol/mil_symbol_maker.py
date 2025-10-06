@@ -4,6 +4,7 @@ import logging
 import re
 from typing import Dict
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.mil_symbol.mil_symbol_std import MilSymbol
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
@@ -43,10 +44,26 @@ class MilSymbolMaker:
                 == MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE
             ):
                 # receive 2525B
-                return MilSymbol2525B(symbol_id_code, settings)
+                b_code = MilSymbol2525B(symbol_id_code, settings)
+                if (
+                    b_code.code[MilSymbol2525B.MIL_SYM_2525_B_C_STATUS_IDX]
+                    == MilSymbol2525B.INVALID_UNKNOWN_STATUS_CODE
+                ):
+                    b_code.update_code(
+                        MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX, SETTINGS.mil_symbol_settings.b_c_placeholders[1]
+                    )
+                return b_code
             else:
                 # receive 2525C
-                return MilSymbol2525C(symbol_id_code, settings)
+                c_code = MilSymbol2525C(symbol_id_code, settings)
+                if (
+                    c_code.code[MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX]
+                    == MilSymbol2525C.INVALID_UNKNOWN_STATUS_CODE
+                ):
+                    c_code.update_code(
+                        MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX, SETTINGS.mil_symbol_settings.b_c_placeholders[1]
+                    )
+                return c_code
 
         LOGGER.warning(f"Unsupported SIDC for {symbol_id_code}")
         return None
