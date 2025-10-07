@@ -76,7 +76,8 @@ class MilSymbolMaker:
                 )
                 not in settings["MIL_SYMBOL_2525D"]["AMPLIFIER_LISTS"]
             ):
-                raise KeyError("Invalid starting 2525D symbol Id code")
+                LOGGER.warning(f"Invalid starting 2525D symbol Id code: {symbol_id_code}")
+                raise KeyError()
         elif format_flag == "b":
             if (
                 symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
@@ -93,7 +94,8 @@ class MilSymbolMaker:
                 or symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
                 not in settings["MIL_SYMBOL_2525B"]["ORDER_OF_BATTLE"]
             ):
-                raise KeyError("Invalid starting 2525B symbol Id code")
+                LOGGER.warning(f"Invalid starting 2525B symbol Id code: {symbol_id_code}")
+                raise KeyError()
         else:
             if (
                 symbol_id_code[MilSymbol2525C.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
@@ -110,5 +112,6 @@ class MilSymbolMaker:
                 or symbol_id_code[MilSymbol2525C.MIL_SYM_2525_B_C_ORDER_OF_BATTLE_IDX]
                 not in settings["MIL_SYMBOL_2525C"]["ORDER_OF_BATTLE"]
             ):
-                raise KeyError("Invalid starting 2525C symbol Id code")
+                LOGGER.warning(f"Invalid starting 2525C symbol Id code: {symbol_id_code}")
+                raise KeyError()
         return None
