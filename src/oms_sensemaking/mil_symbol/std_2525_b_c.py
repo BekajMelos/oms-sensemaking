@@ -21,7 +21,6 @@ class MilSymbol2525BandC(MilSymbol):
     """
 
     UNKNOWN_DIMENSION_CODE = "Z"
-    INVALID_UNKNOWN_STATUS_CODE = "U"
 
     # E.g.  SUZP------*****
     MIL_SYM_2525_B_C_STD_IDENTITY_IDX = 1
