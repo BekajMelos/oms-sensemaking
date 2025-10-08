@@ -31,8 +31,9 @@ pipeline {
         IMAGE_NAME="dpaas/ubi8-ccp"
         IMAGE_VERSION="8.10"
 
-        POSTGRES_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/postgres-remote"
-        EPEL_REPOSITORY = "https://artifactory.code.dodiis.mil/artifactory/epel-remote"
+        APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
+
+        TRANSCRYPT_PW = credentials('omsb-transcrypt-key')
     }
 
     stages {
@@ -67,10 +68,6 @@ pipeline {
 
                             pip install -U pip wheel setuptools_scm
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Install') {
@@ -82,10 +79,6 @@ pipeline {
                             . /tmp/venv/bin/activate
                             pip install -e ".[dev,docs,test,build]"
                         '''
-
-                        script {
-                            env.APP_VERSION = sh(script: '/tmp/venv/bin/python -m setuptools_scm', returnStdout: true).trim()
-                        }
                     }
                 }
                 stage('Test') {
@@ -94,6 +87,11 @@ pipeline {
                     }
                     steps {
                         sh '''
+                            git stash
+                            git config --unset core.hookspath
+                            bin/transcrypt -f -F -y || true
+                            bin/transcrypt -c aes-256-cbc -p ${TRANSCRYPT_PW} -y
+                            cp .env.template .env
                             . /tmp/venv/bin/activate
                             python -m pytest tests --cov-report=xml || true
                         '''
@@ -121,8 +119,6 @@ pipeline {
                                 --build-arg APP_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
                                 --build-arg VCS_REF=$(git rev-parse HEAD) \
                                 --build-arg PIP_INDEX_URL=${artUrl}/api/pypi/pypi/simple \
-                                --build-arg POSTGRES_REPOSITORY=${POSTGRES_REPOSITORY} \
-                                --build-arg EPEL_REPOSITORY=${EPEL_REPOSITORY} \
                                 --secret id=mynetrc,src=.netrc \
                                 --secret id=cacert,src=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
                                 .
@@ -138,7 +134,7 @@ pipeline {
                     ca: '',
                     cert: '',
                     dockerAddress: 'unix:///var/run/docker.sock',
-                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}",
+                    image: "${artDockerUrl}/${DOCKER_PROD_IMAGE}:${APP_VERSION}",
                     key: '',
                     logLevel: 'info',
                     podmanPath: '',
@@ -171,6 +167,7 @@ pipeline {
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.login=${SONARQUBE_API_KEY} \
                         -Dsonar.projectKey=${SONARQUBE_PROJECT} \
+                        -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                         -Dsonar.python.coverage.reportPaths=coverage.xml

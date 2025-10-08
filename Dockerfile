@@ -55,8 +55,6 @@ ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
-ARG POSTGRES_REPOSITORY="https://download.postgresql.org/pub/repos/yum"
-
 ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
@@ -95,19 +93,6 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --set python3 /usr/bin/python3.12 \
 && alternatives --set pip /usr/bin/pip3.12
 
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-libs-17.6-1PGDG.rhel8.aarch64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-aarch64/postgresql17-17.6-1PGDG.rhel8.aarch64.rpm; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-libs-17.6-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install --nogpgcheck ${POSTGRES_REPOSITORY}/17/redhat/rhel-8-x86_64/postgresql17-17.6-1PGDG.rhel8.x86_64.rpm; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf -qy module disable postgresql || true && \
-dnf -y install postgresql17
-
 # prepare file system
 mkdir -p $APP_HOME
 chown $USER_NAME:$GROUP_NAME $APP_HOME
@@ -117,7 +102,6 @@ chmod 774 $APP_HOME
 dnf clean all
 update-ca-trust
 EOF
-ENV PATH="/usr/pgsql-17/bin:${PATH}"
 
 FROM python-base AS app
 
@@ -138,8 +122,6 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
-
-ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -202,21 +184,6 @@ dnf install -y \
   python3.12-devel \
   procps-ng
 
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
-    dnf config-manager --set-enabled epel; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    dnf install -y --nogpgcheck ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm && \
-    sed -i 's|^metalink=.*|#metalink=disabled|' /etc/yum.repos.d/epel.repo && \
-    sed -i "s|^#baseurl=.*|baseurl=${EPEL_REPOSITORY}/epel/8/Everything/x86_64/|" /etc/yum.repos.d/epel.repo && \
-    dnf clean all; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf install -y geos-devel && \
-dnf clean all
-
 # install app
 pip install .
 
@@ -226,7 +193,7 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3-devel geos-devel && \
+dnf remove -y gcc python3.12-devel && \
 dnf autoremove -y && \
 dnf clean all
 

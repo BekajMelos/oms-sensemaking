@@ -5,10 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Ensure automated tests have 80% coverage
+- Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 
 ### Changed
 
 ### Fixed
+
+- Fixed `make nuke` target so that it now purges all volumes assosiated with oms-sensemaking.
+
+### Removed
+
+## [0.14.0] - 2025-09-29
+
+### Fixed
+- Improved on failing integration tests for the crud tool.
 
 ### Removed
 - Removed "localstack" docker container and other references.
@@ -48,6 +59,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
+- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment

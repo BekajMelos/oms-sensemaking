@@ -8,6 +8,7 @@ from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeN
 
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
+from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 
@@ -124,6 +125,7 @@ class SensemakerController:
         """
         return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
 
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -133,7 +135,6 @@ class SensemakerController:
 
         :param event: The event to process.
         """
-
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
         try:
@@ -160,6 +161,7 @@ class SensemakerController:
                     _ = future.result()
 
                 executor.shutdown(wait=True)
+
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
             self.err_logger.log_error(

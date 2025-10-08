@@ -11,7 +11,7 @@ from urllib.parse import quote_plus, urlparse
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
-from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
+from pydantic import BaseModel, Field, PostgresDsn, TypeAdapter, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
@@ -19,6 +19,53 @@ PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 LOGGER = logging.getLogger(__name__)
 
 load_dotenv()
+
+class _OCAttribs(BaseModel):
+    """
+    Representation of the oc_attribs block, used in the Audit Log Error ACM schema.
+    """
+
+    orgs: list[str] = Field(default_factory=list)
+    missions: list[str] = Field(default_factory=list)
+    regions: list[str] = Field(default_factory=list)
+
+class AuditLogErrorAcmModel(BaseModel):
+    """
+    Representation of the Audit Log Error ACM json structure.
+    """
+
+    version: str
+    classif: str
+    owner_prod: list[str] = Field(default_factory=list)
+    atom_energy: list[str] = Field(default_factory=list)
+    sar_id: list[str] = Field(default_factory=list)
+    sci_ctrls: list[str] = Field(default_factory=list)
+    disponly_to: list[str] = Field(default_factory=list)
+    dissem_ctrls: list[str] = Field(default_factory=list)
+    non_ic: list[str] = Field(default_factory=list)
+    rel_to: list[str] = Field(default_factory=list)
+    fgi_open: list[str] = Field(default_factory=list)
+    fgi_protect: list[str] = Field(default_factory=list)
+    portion: str
+    banner: str
+    dissem_countries: list[str] = Field(default_factory=list)
+    accms: list[str] = Field(default_factory=list)
+    macs: list[str] = Field(default_factory=list)
+    oc_attribs: list[_OCAttribs] = Field(default_factory=lambda: [_OCAttribs()])
+    f_clearance: list[str] = Field(default_factory=list)
+    f_sci_ctrls: list[str] = Field(default_factory=list)
+    f_accms: list[str] = Field(default_factory=list)
+    f_oc_org: list[str] = Field(default_factory=list)
+    f_regions: list[str] = Field(default_factory=list)
+    f_missions: list[str] = Field(default_factory=list)
+    f_share: list[str] = Field(default_factory=list)
+    f_sar_id: list[str] = Field(default_factory=list)
+    f_atom_energy: list[str] = Field(default_factory=list)
+    f_macs: list[str] = Field(default_factory=list)
+    disp_only: str = ""
+
+_ACM_ADAPTER = TypeAdapter(AuditLogErrorAcmModel)
+
 
 class CommonVars:
     '''
@@ -254,6 +301,7 @@ class Settings(BaseSettings):
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
+    toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
         [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
@@ -475,6 +523,19 @@ class Settings(BaseSettings):
 
     rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
 
+    enable_telemetry: bool = Field(
+        default=True, description="Enable OpenTelemetry metrics collection"
+    )
+
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
+    )
+    otel_service_name: str = Field(
+        default="oms-sensemaking", description="OpenTelemetry service name"
+    )
+    otel_traces_sampler: str = Field(
+        default="always_on", description="OpenTelemetry traces sampler"
+    )
     user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
 
     @computed_field  # type: ignore
@@ -486,10 +547,12 @@ class Settings(BaseSettings):
 
     @computed_field  # type: ignore
     @cached_property
-    def audit_log_error_acm(self) -> dict[str, str]:
+    def audit_log_error_acm(self) -> dict[str, Any]:
         """Return classification as json from audit_log_error_json_file_path"""
         with open(self.audit_log_error_json_file_path, encoding="utf-8") as fd:
-            return json.load(fd)
+            data = json.load(fd)
+        acm_model = _ACM_ADAPTER.validate_python(data)
+        return acm_model.model_dump()
 
     def load_audit_log_event_error_acm(self):
         """Load audit event log error classification from file

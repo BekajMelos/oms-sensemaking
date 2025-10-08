@@ -4,6 +4,7 @@
 # Generated Files
 # --------------------
 build
+coverage.xml
 dist
 htmlcov
 site
