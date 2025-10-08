@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -60,26 +60,26 @@ def test_cotravel_type_get_name():
     "start_time1, start_time2, last_time1, last_time2, expected_true_cotravel, expected_cotravel_type",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=5),
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=5),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=5),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=5),
             True,
             CotravelType.potential_duplicate,
         ),
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=15),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=17),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=30),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=15),
+            datetime.now(timezone.utc) + timedelta(seconds=17),
+            datetime.now(timezone.utc) + timedelta(seconds=30),
             True,
             CotravelType.cotravel,
         ),
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=30),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=17),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=80),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=30),
+            datetime.now(timezone.utc) + timedelta(seconds=17),
+            datetime.now(timezone.utc) + timedelta(seconds=80),
             False,
             CotravelType.lag_lead,
         ),
@@ -139,12 +139,12 @@ def test_check_valid_cotravel_duration(start_time1, start_time2, last_time1, las
     "start_time1, start_time2, last_time1, last_time2, tenadd_time1, tenadd_time2",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=3),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=3),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=3),
+            datetime.now(timezone.utc) + timedelta(seconds=3),
         ),
     ],
 )
@@ -177,8 +177,8 @@ def test_potential_match_tentative_add(start_time1, start_time2, last_time1, las
     "start_time, last_time",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
         ),
     ],
 )
@@ -208,8 +208,8 @@ def test_cotravel_post_init(start_time, last_time):
     "start_time, last_time",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
         ),
     ],
 )
@@ -238,8 +238,8 @@ def test_cotravel_get_acm(start_time, last_time):
     "start_time, last_time",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc),
         ),
     ],
 )
@@ -268,8 +268,8 @@ def test_cotravel_to_geojson(start_time, last_time):
     "detection_time_p1, detection_time_p2",
     [
         (
-            datetime.now(datetime.timezone.utc),
-            datetime.now(datetime.timezone.utc) + timedelta(seconds=10),
+            datetime.now(timezone.utc),
+            datetime.now(timezone.utc) + timedelta(seconds=10),
         ),
     ],
 )
