@@ -19,7 +19,6 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeRelationshipSubQuery,
     NodesNodes,
     ObjectTier,
-    OntologyClassOntologyClass,
     RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
@@ -29,6 +28,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateNodeUpdateNode,
 )
 
+from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
@@ -73,7 +73,7 @@ class MilSymbolSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool, ontology_service: OntologyService) -> None:
         """Create a new instance of MilSymbolSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -81,6 +81,7 @@ class MilSymbolSensemaker(Sensemaker):
         self.config = SETTINGS.mil_symbol_settings.model_dump()
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
+        self._ontology_service = ontology_service
 
     def process_data(
         self, oms_object: AttributeAttribute | NodeNode, config: dict | None = None
@@ -129,9 +130,9 @@ class MilSymbolSensemaker(Sensemaker):
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code
 
-        LOGGER.info(f"2525D before enrichment: {code_2525d.formatted_code}")
-        LOGGER.info(f"2525C before enrichment: {code_2525c.formatted_code}")
-        LOGGER.info(f"2525B before enrichment: {code_2525b.formatted_code}")
+        LOGGER.info(f"Parsed 2525D for {oms_node.id}")
+        LOGGER.info(f"Parsed 2525C for {oms_node.id}")
+        LOGGER.info(f"Parsed 2525B for {oms_node.id}")
 
         # Get OMS data to enrich codes
         context_attr = self.get_context(oms_node)
@@ -144,16 +145,15 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
 
-        LOGGER.info(f"Enriched 2525B: {code_2525b.formatted_code}")
-        LOGGER.info(f"Enriched 2525C: {code_2525c.formatted_code}")
-        LOGGER.info(f"Enriched 2525D: {code_2525d.formatted_code}")
+        LOGGER.info(f"Enriched 2525B for {oms_node.id}")
+        LOGGER.info(f"Enriched 2525C for {oms_node.id}")
+        LOGGER.info(f"Enriched 2525D for {oms_node.id}")
 
         symbol_code_update_d = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525d.formatted_code,
             acm=code_2525d.get_acm(),
         )
-
         symbol_code_update_c = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525c.formatted_code,
@@ -207,21 +207,7 @@ class MilSymbolSensemaker(Sensemaker):
         :param iri: Iri to search for
         :return: Closest parent iri with a defaultSymbolIdCode
         """
-        ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(iri=iri)
-        if not ontology_class:
-            return None
-
-        current_symbol_id_code = ontology_class.defaultSymbolIdCode
-        if current_symbol_id_code:
-            return current_symbol_id_code
-
-        if not ontology_class.parentOntologyClasses:
-            return None
-
-        # If multiple parent Iris, just get the first one
-        super_class_iri: str = ontology_class.parentOntologyClasses[0].iri
-
-        return self.get_default_symbol_id_code(super_class_iri)
+        return self._ontology_service.get_default_symbol_id_code(iri)
 
     def get_context(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """Get context for this node. Find an attribute with exercise, reality, or simulation iri and a truthy value
@@ -321,26 +307,7 @@ class MilSymbolSensemaker(Sensemaker):
         :param oms_node: Node to grab the status for
         :return: The Node's ancestor's iri list
         """
-
-        # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
-
-        iris = []
-        has_parent = True
-        current_iri = oms_node.classIri
-        while has_parent:
-            ontology_class: Optional[OntologyClassOntologyClass] = self.oms_crud_tool.get_ontology_class(
-                iri=current_iri
-            )
-
-            if not ontology_class or not ontology_class.parentOntologyClasses:
-                break
-
-            # If multiple parent Iris, just get the first one
-            parent_iri = ontology_class.parentOntologyClasses[0].iri
-            iris.append(parent_iri)
-            current_iri = parent_iri
-
-        return iris
+        return self._ontology_service.mil_symbol_get_node_ancestors_iris(oms_node)
 
     def get_echelon(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """
@@ -388,6 +355,7 @@ class MilSymbolSensemaker(Sensemaker):
                     self.oms_crud_tool.update_attribute(update_attribute_input)
             except ValueError:
                 LOGGER.exception("Unable to update Icon Attributes.")
+                raise
         else:
             for symbol_code_update in symbol_code_updates:
                 attribute: CreateAttributeInput = CreateAttributeInput(
@@ -434,11 +402,8 @@ class MilSymbolSensemaker(Sensemaker):
             if oms_object.nodeId is None:
                 LOGGER.warning("Node not found. Unable to check for MilSymbol enrichment.")
                 return None
-            try:
-                return self.oms_crud_tool.get_node(oms_object.nodeId)
-            except Exception as e:
-                LOGGER.warning(f"Failed to get node: {e}")
-                return None
+
+            return self.oms_crud_tool.get_node(oms_object.nodeId)
         else:
             LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
             return None

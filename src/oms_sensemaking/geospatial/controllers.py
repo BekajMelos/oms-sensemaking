@@ -8,19 +8,21 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from operator import attrgetter
-from queue import SimpleQueue
 from threading import Event, Timer
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
+from oms_sdk.generated.generated_graphql_client import NodeNode
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
-from shapely import LineString
 
 from oms_sensemaking.clients.instances import aac_client, db_session
+from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
+from oms_sensemaking.core.exceptions import TrackLengthError
+from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker, LoiterSensemaker, SimilarTracksSensemaker
@@ -43,9 +45,11 @@ class GeospatialSensemakerController(SensemakerController):
     This class manages a collection of geospatial sensemakers.
     """
 
-    def __init__(self, event_consumer: AuditLogEventConsumer) -> None:
+    def __init__(
+        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
+    ) -> None:
         """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer)
+        super().__init__(event_consumer, err_logger)
 
         # initialize buffer
         self.track_times: dict[UUID, datetime | None] = {}
@@ -53,6 +57,7 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
         self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
         self.track_node_buffer: dict[UUID, list[Point]] = defaultdict(list)
+        self._ontology_service = ontology_service
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -103,6 +108,18 @@ class GeospatialSensemakerController(SensemakerController):
 
         super().stop()
 
+    @with_metrics_collection
+    def _ensure_uuid(self, id) -> UUID:
+        """
+        Function used to ensure that ids used
+        in operations are of type UUID
+        """
+        if type(id) is UUID:
+            return id
+        else:
+            return UUID(id)
+
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -149,13 +166,13 @@ class GeospatialSensemakerController(SensemakerController):
                 db.expire_on_commit = False
                 # create a point in the oms_sensemaking db, including the vehicle node_id
                 point = is_new = None
-                LOGGER.info(f' coordinates: Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})')
+                LOGGER.info(f"Parsed coordinates for {oms_obs.id}")
                 try:
                     point, is_new = Point.get_or_create(
                         db,
-                        defaults=dict(
-                            acm=oms_obs.acm,
-                            altitude=None,
+                        defaults={
+                            "acm": oms_obs.acm,
+                            "altitude": None,
                             # The below altitude setting can cause Shapely methods to fail if only some points have
                             #   a Z coordinate. Mismatched coordinate array lengths (2 vs 3) will break the LineString
                             #   and MultiLineString methods used by sensemakers to output results. This must be dealt
@@ -163,15 +180,15 @@ class GeospatialSensemakerController(SensemakerController):
                             # altitude=oms_obs.geometry["coordinates"][2]
                             # if oms_obs.geometry["coordinates"][2:]
                             # else None,
-                            detection_time=point_data["detection_time"],
-                            node_version=int(node_version),
-                            observation_version=int(oms_obs.version),
-                        ),
+                            "detection_time": point_data["detection_time"],
+                            "node_version": int(node_version),
+                            "observation_version": int(oms_obs.version),
+                        },
                         location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
-                        node_id=oms_obs.nodeId if type(oms_obs.nodeId) is UUID else UUID(oms_obs.nodeId),
-                        observation_id=oms_obs.id if type(oms_obs.id) is UUID else UUID(oms_obs.id),
+                        node_id=self._ensure_uuid(oms_obs.nodeId),
+                        observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,
-                        source_id=oms_obs.sourceId if type(oms_obs.sourceId) is UUID else UUID(oms_obs.sourceId),
+                        source_id=self._ensure_uuid(oms_obs.sourceId),
                         # TODO: Multiply by source weight if available
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
@@ -207,111 +224,135 @@ class GeospatialSensemakerController(SensemakerController):
                 LOGGER.debug("Checking buffer for %s", track_uuid)
                 if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
                     LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
-                    with db_session() as db:
-                        db.expire_on_commit = False
-                        try:
-                            points = self.track_node_buffer[track_uuid]
-                            points.sort(key=attrgetter("detection_time"))
-
-                            # Get the IRI hierarchy for the node
-                            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
-                            ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
-
-                            time_bins = self.bin_points_for_track(points)
-
-                            for binned_points in time_bins.values():
-                                # since we split the track points into bins, each bin needs an id
-                                sub_track_id = uuid4()
-                                LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
-
-                                for csf in self.common_sense_filters:
-                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                        LOGGER.debug(
-                                            "Running common sense filter %s on single points in track %s",
-                                            csf.name,
-                                            sub_track_id,
-                                        )
-                                        binned_points = csf.filter_points(binned_points)
-                                # Execute a track weaver on the buffered Points
-                                # and save the new Track with the chosen UUID
-                                weaved_track = self.track_weaver.execute(binned_points)
-                                for csf in self.common_sense_filters:
-                                    if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
-                                        LOGGER.debug(
-                                            "Running common sense filter %s on point deltas in track %s",
-                                            csf.name,
-                                            sub_track_id,
-                                        )
-                                        weaved_track.points = csf.filter_point_deltas(weaved_track.points)
-                                # Abort and do not clear buffer if final track has less than 2 points
-                                if len(weaved_track.points) < 2:
-                                    continue
-                                track_dict = {
-                                    "points": weaved_track.points,
-                                    "node_id": weaved_track.node_id,
-                                    "algorithm": weaved_track.algorithm,
-                                    "observation_ids": weaved_track.observation_ids,
-                                    "acm": aac_client.get_acm_rollup(
-                                        [{"ACM": point.acm} for point in weaved_track.points]
-                                    ),
-                                }
-                                track, _ = Track.get_or_create(
-                                    session=db,
-                                    defaults=track_dict,
-                                    track_uuid=sub_track_id,
-                                )
-                                LOGGER.info(f"Track completed: {sub_track_id}")
-                                oms_track = APITrack(track).create_oms_track()
-                                LOGGER.info(f"OMS Track published: {oms_track.id}")
-                                self.log_track_comparison(points=binned_points, track=track)
-                        except Exception:
-                            # Track doesn't have enough points. Ignore and remove from buffer until it gets more points
-                            LOGGER.error(traceback.format_exc())
-                            self.track_times[track_uuid] = None
-                            continue
-
-                    try:
-                        # temp fix to prevent UnboundLocalError on `track`
-                        node = self.oms_crud_tool.get_node(track.node_id)
-
-                        provider_id = None
-                        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
-
-                        # Fetch source/provider id from last (can be any) point in track
-                        if len(track.points):
-                            source_id = track.points[-1].source_id
-                            source = self.oms_crud_tool.get_source(source_id=source_id)
-                            if source:
-                                provider_id = source.providerId
-
-                        provider_config = (
-                            self.config.get(provider_id, default_config) if provider_id else default_config
-                        )
-                        geo_config = GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
-
-                        with ThreadPoolExecutor() as executor:
-                            futures = []
-                            for sensemaker in self._registry.values():
-                                future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                                futures.append(future)
-
-                            # make sure errors are caught
-                            for future in as_completed(futures):
-                                _ = future.result()
-                    except Exception:
-                        LOGGER.exception("Error encountered while processing %s from buffer", track_uuid)
-                    finally:
-                        self.track_times[track_uuid] = None  # mark for removal
-                        self.track_node_buffer.pop(track_uuid)
-                        for key, value in list(self.node_track_mapping.items()):
-                            if value == track_uuid:
-                                del self.node_track_mapping[key]
+                    process_track_status = self._process_track(track_uuid)
+                    if not process_track_status:
+                        continue
                 else:
                     LOGGER.debug("track_uuid %s is still active in the buffer", track_uuid)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
             self.buffer_autoflush.start()
+
+    def _process_track(self, track_uuid: UUID) -> bool:
+        """
+        Function used to generate and process and track
+        """
+        try:
+            try:
+                track = self._generate_track(track_uuid)
+            except TrackLengthError:
+                LOGGER.exception(
+                    ("Track doesn't have enough points. Ignore and remove from buffer until " "it gets more points")
+                )
+                self.track_times[track_uuid] = None
+                return False
+
+            geo_config = self._get_geo_config(track)
+
+            with ThreadPoolExecutor() as executor:
+                futures = []
+                for sensemaker in self._registry.values():
+                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                    futures.append(future)
+
+                # make sure errors are caught
+                for future in as_completed(futures):
+                    _ = future.result()
+        except Exception as e:
+            LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
+        finally:
+            self.track_times[track_uuid] = None  # mark for removal
+            self.track_node_buffer.pop(track_uuid)
+            for key, value in list(self.node_track_mapping.items()):
+                if value == track_uuid:
+                    del self.node_track_mapping[key]
+        return True
+
+    def _generate_track(self, track_uuid: UUID) -> Track:
+        """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
+        Then runs the common sense filters and track weaver.
+
+        :param track_uuid: UUID of the track
+        :return: Created Track object
+        """
+
+        track = None
+
+        points = self.track_node_buffer[track_uuid]
+        points.sort(key=attrgetter("detection_time"))
+
+        # Get the IRI hierarchy for the node
+        try:
+            oms_node = self.oms_crud_tool.get_node(points[0].node_id)
+        except IndexError as e:
+            raise TrackLengthError(e) from e
+
+        ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
+
+        time_bins = self.bin_points_for_track(points)
+        csf_funcs = GeoCSFTrackPointHelpers(cs_filters=self.common_sense_filters)
+        for binned_points in time_bins.values():
+            # since we split the track points into bins, each bin needs an id
+            sub_track_id = uuid4()
+            LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+
+            binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
+            # Execute a track weaver on the buffered Points
+            # and save the new Track with the chosen UUID
+            weaved_track = self.track_weaver.execute(binned_points)
+
+            weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
+            # Abort and do not clear buffer if final track has less than 2 points
+            if len(weaved_track.points) < 2:
+                continue
+            track_dict = {
+                "points": weaved_track.points,
+                "node_id": weaved_track.node_id,
+                "algorithm": weaved_track.algorithm,
+                "observation_ids": weaved_track.observation_ids,
+                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
+            }
+
+            with db_session() as db:
+                db.expire_on_commit = False
+                track, _ = Track.get_or_create(
+                    session=db,
+                    defaults=track_dict,
+                    track_uuid=sub_track_id,
+                )
+
+            LOGGER.info(f"Track completed: {sub_track_id}")
+            oms_track = APITrack(track).create_oms_track()
+            LOGGER.info(f"OMS Track published: {oms_track.id}")
+
+        if not track:
+            raise TrackLengthError("Not enough points for track.") from None
+
+        return track
+
+    def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
+        """Get the geo config for this track based on the provider and node type
+
+        :param track: Track to process
+        :return: GeospatialSensemakerConfig settings for this track and vehicle
+        """
+
+        node = self.oms_crud_tool.get_node(track.node_id)
+
+        provider_id = None
+        default_config = self.config.get(SETTINGS.geo_sensemaker_config_default_provider_id, {})
+
+        # Fetch source/provider id from last (can be any) point in track
+        if len(track.points):
+            source_id = track.points[-1].source_id
+            source = self.oms_crud_tool.get_source(source_id=str(source_id))
+            if source:
+                provider_id = source.providerId
+
+        provider_config = self.config.get(provider_id, default_config) if provider_id else default_config
+
+        return GeospatialSensemakerConfig(**provider_config.get(node.classIri, {}))
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
@@ -340,70 +381,13 @@ class GeospatialSensemakerController(SensemakerController):
         :param oms_node: Node to grab the status for
         :return: The Node's ancestor's iri list
         """
-
-        iris = set()
-        iris_to_check: SimpleQueue = SimpleQueue()
-        iris_to_check.put_nowait(oms_node.classIri)
-        while not iris_to_check.empty():
-            current_iri = iris_to_check.get_nowait()
-            ontology_class: OntologyClassOntologyClass | None = self.oms_crud_tool.get_ontology_class(iri=current_iri)
-
-            if not ontology_class or not ontology_class.parentOntologyClasses:
-                continue
-
-            for parent_ontology_class in ontology_class.parentOntologyClasses:
-                iris.add(parent_ontology_class.iri)
-                iris_to_check.put_nowait(parent_ontology_class.iri)
-
-        return iris
-
-    @classmethod
-    def log_track_comparison(cls, points: list[Point], track: Track):
-        LOGGER.debug("GeoJSON features:")
-        LOGGER.debug(
-            json.dumps(
-                {
-                    "type": "FeatureCollection",
-                    "features": [
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Original Points",
-                                "num_points": len(points),
-                                "stroke": "#ff0000",
-                                "stroke-width": 2,
-                                "stroke-opacity": 1,
-                            },
-                            "geometry": LineString([point.coordinates for point in points]).__geo_interface__,
-                            "id": 0,
-                        },
-                        {
-                            "type": "Feature",
-                            "properties": {
-                                "name": "Weaved Track",
-                                "algorithm": track.algorithm,
-                                "num_points": len(track.points),
-                                "average_point_weight": round(
-                                    sum(p.weight for p in track.points) / len(track.points), 2
-                                ),
-                                "stroke": "#00ff1e",
-                                "stroke-width": 2,
-                                "stroke-opacity": 1,
-                            },
-                            "geometry": LineString([point.coordinates for point in track.points]).__geo_interface__,
-                            "id": 1,
-                        },
-                    ],
-                }
-            )
-        )
+        return self._ontology_service.geospatial_get_node_ancestors_iris(oms_node)
 
     def is_generated_track(self, obs: ObservationObservation):
         return hasattr(obs, "labels") and obs.labels is not None and SETTINGS.sm_connected_track in obs.labels
 
     def bin_points_for_track(self, points: list[Point]):
         points.reverse()
-        # for key, group in groupby(points, lambda x: x // track_timeframe):
         time_bins = {
             k: list(g)
             for k, g in groupby(
@@ -414,6 +398,38 @@ class GeospatialSensemakerController(SensemakerController):
         for key in time_bins:
             time_bins[key].reverse()
         return time_bins
+
+
+class GeoCSFTrackPointHelpers:
+    def __init__(self, cs_filters: list[CommonSenseFilter]) -> None:
+        self.common_sense_filters = cs_filters
+
+    def csf_single_track_points(
+        self, ancestor_iris: set[str], binned_points: list[Point], sub_track_id: UUID
+    ) -> list[Point]:
+        """
+        Run commense sense filter on single point part of a track
+        """
+        for csf in self.common_sense_filters:
+            if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                LOGGER.debug(
+                    "Running common sense filter %s on single points in track %s",
+                    csf.name,
+                    sub_track_id,
+                )
+                binned_points = csf.filter_points(binned_points)
+        return binned_points
+
+    def csf_track_point_deltas(self, ancestor_iris: set[str], sub_track_id: UUID, weaved_track: Track) -> Track:
+        for csf in self.common_sense_filters:
+            if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
+                LOGGER.debug(
+                    "Running common sense filter %s on point deltas in track %s",
+                    csf.name,
+                    sub_track_id,
+                )
+                weaved_track.points = csf.filter_point_deltas(weaved_track.points)
+        return weaved_track
 
 
 class GeoQueueFilter(EventFilter):

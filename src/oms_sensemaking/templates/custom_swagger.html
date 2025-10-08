@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMS Sensemaking Service</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: monospace;
+        }
+        
+        .dod-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .warning-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .warning-title {
+            color: #c80000;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .warning-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .warning-bullets {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .warning-bullets ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .warning-bullets li {
+            margin-bottom: 10px;
+        }
+        
+        .warning-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
+        
+        .btn-agree {
+            background-color: #00c853;
+            color: white;
+            border-color: #00c853;
+        }
+        
+        .btn-agree:hover {
+            background-color: #0bd15e;
+            border-color: #0bd15e;
+        }
+        
+        .btn-disagree {
+            background-color: #c80000;
+            color: white;
+            border-color: #c80000;
+        }
+        
+        .btn-disagree:hover {
+            background-color: #df0b0b;
+            border-color: #df0b0b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #swagger-ui {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        #swagger-ui.visible {
+            opacity: 1;
+        }
+        
+        .classification-banner {
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.64);
+            font-size: 12px;
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 24px;
+            background-color: CLASSIFICATION_BANNER_COLOR;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .classification-banner.bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: auto;
+        }
+        
+        #swagger-ui {
+            margin-top: 24px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Classification Banner -->
+    <div class="classification-banner">CLASSIFICATION_BANNER_TEXT</div>
+    
+    <!-- DoD Warning Popup -->
+    <div id="dod-warning" class="dod-warning">
+        <div class="warning-content">
+            <div class="warning-title">U.S. Department of Defense Warning Statement</div>
+            
+            <div class="warning-text">
+                You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only. By using this IS (which includes any device attached to this IS), you consent to the following conditions:
+            </div>
+            
+            <div class="warning-bullets">
+                <ul>
+                    <li>The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.</li>
+                    <li>At any time, the USG may inspect and seize data stored on this IS.</li>
+                    <li>Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.</li>
+                    <li>This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.</li>
+                    <li>Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.</li>
+                </ul>
+            </div>
+            
+            <div class="warning-buttons">
+                <button class="btn btn-disagree" onclick="disagree()">Disagree</button>
+                <button class="btn btn-agree" onclick="agree()">Agree</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Swagger UI Container -->
+        <div id="swagger-ui"></div>
+    </div>
+    
+    <!-- Bottom Classification Banner -->
+    <div class="classification-banner bottom">CLASSIFICATION_BANNER_TEXT</div>
+    
+    <script>
+        function agree() {
+            document.getElementById('dod-warning').classList.add('hidden');
+            document.getElementById('swagger-ui').classList.add('visible');
+            loadSwaggerUI();
+        }
+        
+        function disagree() {
+            window.close();
+            alert('Access denied. You must agree to the warning statement to use this system.');
+        }
+        
+        function loadSwaggerUI() {
+            const currentPath = window.location.pathname;
+            let openapiUrl;
+            
+            if (currentPath.endsWith('/docs') || currentPath.endsWith('/docs/')) {
+                const basePath = currentPath.replace(/\/docs\/?$/, '');
+                openapiUrl = basePath + '/openapi.json';
+            } else {
+                openapiUrl = currentPath.replace(/\/$/, '') + '/openapi.json';
+            }
+            
+            const ui = SwaggerUIBundle({
+                url: openapiUrl,
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.presets.standalone
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                tryItOutEnabled: true
+            });
+        }
+    </script>
+    
+    <link rel="stylesheet" type="text/css" href="./static-offline-docs/swagger-ui.css" />
+    <script src="./static-offline-docs/swagger-ui-bundle.js"></script>
+</body>
+</html> 

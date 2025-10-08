@@ -4,6 +4,7 @@
 # Generated Files
 # --------------------
 build
+coverage.xml
 dist
 htmlcov
 site
@@ -25,7 +26,7 @@ pytest.xml
 *.tsv
 *.gz
 !*ser.gz
-
+.scannerwork
 
 # --------------------
 # IDE Cruft

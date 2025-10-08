@@ -4,7 +4,11 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
+from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
+
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
+from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 
@@ -14,7 +18,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class SensemakerController:
     """Base class for sensemaker controllers."""
 
-    def __init__(self, event_consumer: AuditLogEventConsumer, *args, **kwargs) -> None:
+    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, *args, **kwargs) -> None:
         """
         Create a new instance of the SensemakerController.
 
@@ -51,6 +55,8 @@ class SensemakerController:
         self.lock: Lock = Lock()
         self.stopped: Event = Event()
         self.oms_crud_tool: OmsCrudTool = OmsCrudTool()
+
+        self.err_logger = err_logger
 
         self.stopped.set()  # start off in the "stopped" state
 
@@ -110,6 +116,16 @@ class SensemakerController:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
+    def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
+        """
+        Given an OMS data object's ID, get the object we'll pass to the sensemaker
+
+        :param event: the object whose creation, update, or deletion we need to process
+        :return: None if no object exists, or the OMS Object if it's a type we handle
+        """
+        return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+
+    @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound OMS event.
@@ -119,13 +135,19 @@ class SensemakerController:
 
         :param event: The event to process.
         """
-
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
-        # extract info from OMS via API calls
-        oms_obj = self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
+        try:
+            # extract info from OMS via API calls
+            oms_obj = self.get_oms_data(event)
+        except Exception as e:
+            message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
+            self.err_logger.log_error(event, message, __name__, e, None)
+            return False
+
         if not oms_obj:
-            return True
+            LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
+            return False
 
         try:
             with ThreadPoolExecutor() as executor:
@@ -139,8 +161,16 @@ class SensemakerController:
                     _ = future.result()
 
                 executor.shutdown(wait=True)
-        except Exception:
-            LOGGER.exception(f"Error encountered while processing object {event.objectId}")
+
+        except Exception as e:
+            message = f"Error encountered while processing object {event.objectId}: {str(e)}"
+            self.err_logger.log_error(
+                event,
+                message,
+                __name__,
+                e,
+                oms_obj.acm,
+            )
 
         return True
 

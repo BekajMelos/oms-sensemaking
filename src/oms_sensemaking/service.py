@@ -1,22 +1,33 @@
 """oms-sensemaking microservice."""
 
+import html
+import json
 import logging
+import os
+import sys
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
+from pathlib import Path
 from threading import Thread
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
-from oms_sensemaking.api.routers import aac, about, health, nlp, rdf
+from oms_sensemaking.api.middleware.request_logger import RequestLogger
+from oms_sensemaking.api.routers import aac, about, health, rdf, test
+from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
-from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
+from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
+from oms_sensemaking.core.middleware import MetricsMiddleware
+from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
+from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
 from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
 
@@ -24,28 +35,48 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 dictConfig(LogConfig().model_dump())  # initialize logging
 
+# Initialize observability system
+initialize_observability()
+
 
 def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
+
+    err_logger: ErrorLogger | RethrowErrorLogger = ErrorLogger()
+    if SETTINGS.rethrow_errors_enabled:
+        err_logger = RethrowErrorLogger(err_logger)
+
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(
-            RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
+            RabbitMQListener(
+                "GeoRMQListener",
+                SETTINGS.rmq_geo_queue_name,
+                event_filter=GeoQueueFilter(),
+            ),
+            err_logger,
+            ontology_service,
         ),
         InferenceSensemakerController(
             RabbitMQListener(
                 "InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter()
-            )
+            ),
+            err_logger,
         ),
         ResolutionSensemakerController(
-            RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter())
+            RabbitMQListener(
+                "ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter()
+            ),
+            err_logger,
         ),
         MilSymbolSensemakerController(
             RabbitMQListener(
                 "MilSymbolRMQListener",
                 SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
                 event_filter=MilSymbolQueueFilter(),
-            )
+            ),
+            err_logger,
         ),
+        ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 
     return controllers
@@ -62,6 +93,13 @@ async def lifespan(application: FastAPI):
     """
     # startup
     LOGGER.info("Initializing sensemaker controllers")
+    try:
+        aac_client.wait_until_ready()
+        oms_crud_tool.wait_until_ready()
+        ping_db_host_wait()
+        ping_db()
+    except Exception as ex:
+        LOGGER.warning(f"Dependency readiness checks encountered an issue: {ex}")
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
@@ -103,18 +141,49 @@ def create_app(config: Settings) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
         root_path=config.root_path,
-        docs_url="/",
+        docs_url=None,
     )
+
+    @application.get("/", response_class=HTMLResponse)
+    async def custom_swagger_ui():
+        """Serve custom Swagger UI with DoD warning."""
+        template_path = Path(__file__).parent / "templates" / "custom_swagger.html"
+        if template_path.exists():
+            template_content = template_path.read_text()
+
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_TEXT", html.escape(config.classification_banner_text)
+            )
+            template_content = template_content.replace(
+                "CLASSIFICATION_BANNER_COLOR", html.escape(config.classification_banner_color)
+            )
+
+            return HTMLResponse(content=template_content, media_type="text/html")
+        else:
+            return HTMLResponse(content="<h1>Template not found</h1>", media_type="text/html")
 
     # initialize gzip middleware
     application.add_middleware(GZipMiddleware, minimum_size=config.gzip_minimum_size)
+    application.add_middleware(RequestLogger)
+
+    # Add metrics middleware
+    application.add_middleware(MetricsMiddleware)
 
     # configure routes
     application.include_router(about.router)
     application.include_router(aac.router, prefix="/aac")
-    application.include_router(nlp.router, prefix="/nlp", tags=["NLP"])
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
+
+    # Include test endpoints only if enabled
+    if config.toggle_test_endpoints:
+        application.include_router(test.router, prefix="/test", tags=["test"])
+
+    # Mount metrics endpoint
+    application.add_route("/metrics", metrics_endpoint)
+
+    # Instrument with OpenTelemetry
+    instrument_fastapi(application)
 
     # ensure exceptions are formatted as JSON
     application.add_exception_handler(Exception, handle_exception)
@@ -122,4 +191,23 @@ def create_app(config: Settings) -> FastAPI:
     return application
 
 
+def check_aoi_file_path() -> None:
+    """Check for valid areas of interest directory"""
+    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
+        LOGGER.error(f"{SETTINGS.inference_incursion_areas_of_interest_path} is not a valid directory.")
+        sys.exit("The areas of interest directory is incorrect or does not exist.")
+
+
+def initialize_settings() -> None:
+    """Initialize Settings"""
+    try:
+        SETTINGS.load_audit_log_event_error_acm()
+        _ = SETTINGS.user_dn_whitelist
+        check_aoi_file_path()
+    except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
+        LOGGER.error("Unable to initialize settings: %s", e)
+        sys.exit("An error occurred during initialization.")
+
+
+initialize_settings()
 app: FastAPI = create_app(SETTINGS)

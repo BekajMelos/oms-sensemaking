@@ -11,11 +11,16 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import load_dotenv
+from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
+    CreateOriginatorInput,
+    CreateProviderInput,
     CreateSourceCreateSource,
+    CreateSourceInput,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
-from sqlalchemy.orm.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -28,18 +33,11 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 if not SETTINGS.db_uri.endswith("_test"):
     SETTINGS.db_uri = f"{SETTINGS.db_uri}_test"
 
-# the session generator should initialized after the config hack above
-from oms_sensemaking.clients.instances import SessionLocal
-
 # alembic configuration
 alembic_cfg: Config = Config(str(Path.joinpath(PROJECT_PATH, "alembic.ini")))
 alembic_cfg.set_main_option("script_location", str(Path.joinpath(PROJECT_PATH, "migrations")))
 escaped_uri = SETTINGS.db_uri.replace("%", "%%")
 alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
-
-# NLP Configuration
-if SETTINGS.corenlp_host != SETTINGS.corenlp_localhost:
-    SETTINGS.corenlp_host = SETTINGS.corenlp_localhost
 
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
@@ -53,11 +51,9 @@ if not SETTINGS.create_source_if_none:
 if not SETTINGS.create_provider_if_none:
     SETTINGS.create_provider_if_none = True
 
-SETTINGS.nlp_tags = ["SMOKE_TEST_TAG", "SENSEMAKING_NLP"]
-
 
 @pytest.fixture(scope="function")
-def db() -> Generator[Session, Any, None]:
+def session_local():
     """
     Get a database session generator.
 
@@ -68,18 +64,33 @@ def db() -> Generator[Session, Any, None]:
 
     It is intended on being used as a pytest fixture.
     """
+
     # run database migrations
     command.upgrade(alembic_cfg, "head")
 
-    db: Session = SessionLocal()
+    # TODO reuse from instances.py?
+    db_engine = create_engine(
+        SETTINGS.db_uri,  # type: ignore
+        pool_pre_ping=True,
+        connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
+    )
+
+    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
+
+    yield SessionLocal
+
+    # purge database tables
+    command.downgrade(alembic_cfg, "base")
+
+
+@pytest.fixture(scope="function")
+def db(session_local) -> Generator[Session, Any, None]:
+    db: Session = session_local()
 
     try:
         yield db
     finally:
         db.close()
-
-    # purge database tables
-    command.downgrade(alembic_cfg, "base")
 
 
 @pytest.fixture
@@ -87,11 +98,71 @@ def mock_oms_client():
     return mock.MagicMock(spec=Client)
 
 
-@pytest.fixture(scope="session")
-def mock_source() -> Generator[CreateSourceCreateSource, Any, None]:
+@pytest.fixture
+def mock_source():
+    """Mock source fixture for tests that need a source object."""
+    mock_source_obj = mock.MagicMock(spec=CreateSourceCreateSource)
+    mock_source_obj.id = "mock-source-id"
+    return mock_source_obj
+
+
+@pytest.fixture(scope="function")
+def test_originator() -> Generator[Any, Any, None]:
+    """Create a real Originator in OMS for integration tests."""
     oms_crud_tool = OmsCrudTool()
-    source = oms_crud_tool.create_test_source()
+    originator_name = "int_test_originator"
+
+    originator = oms_crud_tool.create_originator(
+        CreateOriginatorInput(name=originator_name, description="Integration Test", acm=DEFAULT_ACM, tags=[])
+    )
+
+    yield originator
+
+    oms_crud_tool.delete_originator(originator_id=originator.id)
+
+
+@pytest.fixture(scope="function")
+def test_provider(test_originator) -> Generator[Any, Any, None]:
+    """Create a real Provider in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    provider_name = "int_test_provider"
+
+    provider = oms_crud_tool.create_provider(
+        CreateProviderInput(
+            name=provider_name,
+            description="Integration Test",
+            originatorId=test_originator.id,
+            acm=DEFAULT_ACM,
+            tags=[],
+        )
+    )
+
+    yield provider
+    oms_crud_tool.delete_provider(provider_id=provider.id)
+
+
+@pytest.fixture(scope="function")
+def create_source(test_provider) -> Generator[CreateSourceCreateSource, Any, None]:
+    """Create a real Source in OMS for integration tests."""
+    oms_crud_tool = OmsCrudTool()
+    source_name = "int_test_source"
+
+    source = oms_crud_tool.create_source(
+        CreateSourceInput(
+            name=source_name,
+            description="Integration Test",
+            providerId=test_provider.id,
+            acm=DEFAULT_ACM,
+            identifier="int_test_identifier",
+            dateOfReport="2004-05-23T00:00:00-04:00",
+            dateOfInformation="2004-05-23T00:00:00-04:00",
+            dataAcm=DEFAULT_ACM,
+            tags=[],
+        )
+    )
+
     yield source
+    oms_crud_tool.delete_source(source_id=source.id)
 
 
 @pytest.fixture
@@ -139,4 +210,36 @@ def ts_acm() -> dict:
         "dissem_countries": ["USA"],
         "f_clearance": ["ts"],
         "f_sci_ctrls": ["tk"],
+    }
+
+
+def rollup_unclass_acm_3_0() -> dict:
+    return {
+        "version": "3.0",
+        "classif_type": "US",
+        "classif": "U",
+        "owner_prod": ["USA"],
+        "non_us_ctrls": [],
+        "sci_ctrls": [],
+        "disponly_to": [""],
+        "dissem_ctrls": [],
+        "non_ic": [],
+        "rel_to": [],
+        "fgi_open": [],
+        "fgi_protect": [],
+        "portion": "U//DISPLAY ONLY",
+        "banner": "UNCLASSIFIED//DISPLAY ONLY",
+        "dissem_countries": [],
+        "accms": [],
+        "macs": [],
+        "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
+        "share": {"users": [], "projects": {}},
+        "f_clearance": ["u"],
+        "f_sci_ctrls": [],
+        "f_accms": [],
+        "f_oc_org": [],
+        "f_regions": [],
+        "f_missions": [],
+        "f_share": [],
+        "f_macs": [],
     }

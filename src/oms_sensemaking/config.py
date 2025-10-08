@@ -1,18 +1,81 @@
 """Application configuration."""
+import json
+import logging
 import os
+import re
+from datetime import timedelta
+from functools import cached_property
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from dotenv import load_dotenv
 from oms_sdk.generated.generated_graphql_client import Confidence
-from pydantic import BaseModel, Field, PostgresDsn, ValidationInfo, computed_field, field_validator
+from pydantic import BaseModel, Field, PostgresDsn, TypeAdapter, ValidationInfo, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_PATH: Path = Path(__file__).parent.parent.parent
 
+LOGGER = logging.getLogger(__name__)
+
 load_dotenv()
 
+class _OCAttribs(BaseModel):
+    """
+    Representation of the oc_attribs block, used in the Audit Log Error ACM schema.
+    """
+
+    orgs: list[str] = Field(default_factory=list)
+    missions: list[str] = Field(default_factory=list)
+    regions: list[str] = Field(default_factory=list)
+
+class AuditLogErrorAcmModel(BaseModel):
+    """
+    Representation of the Audit Log Error ACM json structure.
+    """
+
+    version: str
+    classif: str
+    owner_prod: list[str] = Field(default_factory=list)
+    atom_energy: list[str] = Field(default_factory=list)
+    sar_id: list[str] = Field(default_factory=list)
+    sci_ctrls: list[str] = Field(default_factory=list)
+    disponly_to: list[str] = Field(default_factory=list)
+    dissem_ctrls: list[str] = Field(default_factory=list)
+    non_ic: list[str] = Field(default_factory=list)
+    rel_to: list[str] = Field(default_factory=list)
+    fgi_open: list[str] = Field(default_factory=list)
+    fgi_protect: list[str] = Field(default_factory=list)
+    portion: str
+    banner: str
+    dissem_countries: list[str] = Field(default_factory=list)
+    accms: list[str] = Field(default_factory=list)
+    macs: list[str] = Field(default_factory=list)
+    oc_attribs: list[_OCAttribs] = Field(default_factory=lambda: [_OCAttribs()])
+    f_clearance: list[str] = Field(default_factory=list)
+    f_sci_ctrls: list[str] = Field(default_factory=list)
+    f_accms: list[str] = Field(default_factory=list)
+    f_oc_org: list[str] = Field(default_factory=list)
+    f_regions: list[str] = Field(default_factory=list)
+    f_missions: list[str] = Field(default_factory=list)
+    f_share: list[str] = Field(default_factory=list)
+    f_sar_id: list[str] = Field(default_factory=list)
+    f_atom_energy: list[str] = Field(default_factory=list)
+    f_macs: list[str] = Field(default_factory=list)
+    disp_only: str = ""
+
+_ACM_ADAPTER = TypeAdapter(AuditLogErrorAcmModel)
+
+
+class CommonVars:
+    '''
+    Class for ommon values used throughout config.py to get rid of
+    SonarQube code smells for duplicated values
+    '''
+    has_text_value_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"
+    base_oms_sensemaking_tag = "Atoms Sensemaking"
+    intentional_act_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct"
+    has_coords_iri = "https://foundry.ai.mil/ontology/4901-001/hasCoordinates"
 
 class LogConfig(BaseSettings):
     """Logging configuration to be set for the server."""
@@ -24,7 +87,7 @@ class LogConfig(BaseSettings):
     log_format: str = "{asctime:<20s}{levelname:<8s}{threadName:<32s} {name}: {message}"
     log_format_class: str = "logging.Formatter"
     log_format_style: str = "{"  # https://docs.python.org/3/howto/logging.html#formatters
-    log_level: str = Field("WARNING", alias='app_log_level')
+    log_level: str = Field("INFO", alias='app_log_level')
 
     handlers: dict[str, dict] = {
         "default": {
@@ -71,6 +134,21 @@ class LogConfig(BaseSettings):
                 "level": self.log_level,
                 "propagate": True
             },
+            "uvicorn": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.error": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
+            "uvicorn.access": {
+                "handlers": ["default"],
+                "level": self.log_level,
+                "propagate": False
+            },
             "oms_sdk": {
                 "level": self.log_level
             },
@@ -91,10 +169,10 @@ class LogConfig(BaseSettings):
 
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value",
+        CommonVars.has_text_value_iri,
         description="Military Symbol Sensemaker tags")
     mil_symbol_sensemaker_tags: list[str] = Field(
-        ["Oms Sensemaking", "Military Symbol Sensemaker"],
+        [CommonVars.base_oms_sensemaking_tag, "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
     rmq_mil_symbol_queue_name: str = Field(
@@ -115,7 +193,7 @@ class MilSymbolSettings(BaseModel):
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
     attribute_code_iris: list[str] = Field(
-        ["http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"],
+        [CommonVars.has_text_value_iri],
         description="Attribute Iris for full mil symbol codes")
 
     # 2525B and 2525C placeholders
@@ -146,6 +224,39 @@ class MilSymbolSettings(BaseModel):
 
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
+# IW Settings
+class IWSettings(BaseModel):
+    """Settings for I&W"""
+
+    max_observables_to_process: int = Field(500, description="Max page size to limit observations query")
+
+    observable_query_interval: timedelta = Field(
+        timedelta(minutes=15),
+        description="Minutes between each observable query"
+    )
+
+    observable_statuses: dict = Field({
+        "unknown": "Unknown",
+        "not_observed": "Not Observed",
+        "partially_observed": "Partially Observed",
+        "fully_observed": "Observed"
+    }, description="Status options for the observable")
+
+    observable_config_attribute_iri: str = Field(
+        CommonVars.has_text_value_iri,
+        description="Config attribute used to read the settings of an observable query")
+
+    observable_status_attribute_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/hasOperationalStatus",
+        description="Status attribute used to indicate the status of an observable")
+
+    observable_location_attribute_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000140",
+        description="Location attribute used to identify the boundary of an observable")
+
+    observable_associated_with_relationship_iri: str = Field(
+        "https://oms.dodiis.ic.gov/ontology/p-0000000034",
+        description="Relationship used to associate an observable with an object")
 
 class Settings(BaseSettings):
     """Settings class."""
@@ -161,15 +272,10 @@ class Settings(BaseSettings):
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
 
     # General IRIs
-    url_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/InformationSource", description="URL IRI")
-    # ^Place holder IRI
-    identifier_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasObjectID", description="Identifier IRI")
-    # ^Place holder IRI
-    text_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/nonspecificObject", description="Text IRI")
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
-    maximum_oms_api_calls: int = Field(500,
+    maximum_oms_api_calls: int = Field(5000,
                                        description="Maximum amount of requests made to the OMS API per time period")
     oms_api_call_period_seconds: int = Field(30,
                                              description="Alloted amount of time for maximum OMS API calls to be made")
@@ -187,38 +293,43 @@ class Settings(BaseSettings):
     mil_sym_sm_label: str = Field("MILITARY_SYMBOL_SM", description="Label for mil sym sensemaking data")
     res_sm_label: str = Field("RESOLUTION_SM", description="Label for resolution sensemaking data")
 
+    # Classification Banner Settings
+    classification_banner_text: str = Field("UNCLASSIFIED", description="Text to display in the classification banner")
+    classification_banner_color: str = Field("#00c853", description="Background color for the classification banner")
+
     # Inference Settings
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
+    toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Data"], description="Inference Sensemaker tags"
+        [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
     incursion_tags: list[str] = Field(
-        ["Oms Sensemaking", "Inferred Data", "Incursion"], description="Incursion tags"
+        [CommonVars.base_oms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
     )
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
     )
     inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest.json", description="Path to areas of interest file"
+        "./data/areas_of_interest", description="Path to areas of interest file"
     )
     inference_incursion_class_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct", description="IRI for incursion class"
+        CommonVars.intentional_act_iri, description="IRI for incursion class"
     )
     inference_incursion_attribute_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+        CommonVars.has_coords_iri,
         description="IRI for incursion attribute"
     )
     inference_geo_attribute_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/hasCoordinates", description="IRI for geo attribute"
+        CommonVars.has_coords_iri, description="IRI for geo attribute"
     )
     inference_garrisoned_in_iri: str = Field(
         "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
         description="IRI for relationship between an object and its garrison"
     )
     inference_garrison_class_iri: str = Field(
-        "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+        CommonVars.intentional_act_iri,
         description="IRI for garrison activity class"
     )
     inference_in_garrison_activity_name: str = Field(
@@ -235,60 +346,11 @@ class Settings(BaseSettings):
     )
     garrison_distance_kilometers: int = 2000
 
-    # NLP Settings
-    corenlp_localhost: str = Field("localhost:9000",
-                              description="Host and port for CoreNLP when running local script.")
-    corenlp_host: str = Field("host.docker.internal:9000",
-                                   description="Host and port for CoreNLP.")
-    nlp_configuration: dict = Field(
-        {"NER Model": "Default CoreNLP NER", "Relationship Extraction Model": "Default CoreNLP Relation Extraction"},
-        description="Configuration of the NLP NER/Relationship extraction algorithm"
-    )
-    algorithm_version: str = Field(os.getenv("NLP_SENSEMAKER_VERSION") or "", description="NLP Sensemaker version")
-    nlp_algorithm_name: str = Field("NER/Relationship Extraction", description="NLP algorithm name")
-    nlp_tags: list[str] = Field(["SENSEMAKING_NLP"], description="Tags describing origin of node")
-    corenlp_client_props: dict = Field(
-        {
-            "annotators": "tokenize, pos, lemma, ner, depparse, relation",
-            "outputFormat": "text",
-            "ner.model": "ner-model.ser.gz",
-            "relation.model": "relation-model.ser.gz"
-        },
-        description="Properties to instantiate the CoreNLP client with."
-    )
-
-    # NLP Node IRIs (change once custom model is trained)
-    nlp_node_iris: dict = Field({
-            "Person": "http://www.ontologyrepository.com/CommonCoreOntologies/Person",
-            "Organization": "http://www.ontologyrepository.com/CommonCoreOntologies/Organization",
-            "Location": "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-            "Document": "http://www.ontologyrepository.com/CommonCoreOntologies/InformationContentEntity",
-            "Date": "https://foundry.ai.mil/NIEM/v5.2/DateType",
-            "Entity": "http://purl.obolibrary.org/obo/BFO_0000001",
-        },
-        description="Dictionary of NLP Node IRIs"
-        )
-    nlp_default_node_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000001", description="Default NLP Node IRI")
-
-    # NLP Relationship IRIs
-    nlp_relationship_iris: dict = Field({
-            "Work_For": "https://foundry.ai.mil/ontology/4901-001/operationallyControlledBy",
-            "Live_In": "http://purl.obolibrary.org/obo/BFO_0000171",
-            "OrgBased_In": "http://purl.obolibrary.org/obo/BFO_0000170",
-            "Located_In": "http://purl.obolibrary.org/obo/BFO_0000171",
-            "Document_Contains_Entity": "http://www.ontologyrepository.com/CommonCoreOntologies/describes",
-            "Relates_To": "http://www.ontologyrepository.com/CommonCoreOntologies/is_about", # Placeholder IRI
-        },
-        description="Dictionary of NLP Relationship IRIs"
-        )
-    nlp_default_relationship_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/is_about",
-                                              description="Default NLP Relationship IRI") # Placeholder IRI
-
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
     db_port: str = Field("5432", description="Database port.")
-    db_user: str = Field("appuser", description="Database user.")
-    db_password: str = Field("password", description="Database user's password.")
+    db_user: str = Field(description="Database user.")
+    db_password: str = Field(description="Database user's password.")
     db_schema: str = Field("oms_sensemaking", description="Database schema name.")
     db_uri: str | None = Field(
         None, description="Database connection URI. This is an alternative to configuring the independent components."
@@ -336,11 +398,11 @@ class Settings(BaseSettings):
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
     loiter_event_name: str = Field("LoiterEvent", description="Name prefix for OMSB Loiter Event Nodes")
-    loiter_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+    loiter_event_node_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Loiter Event Node IRI")
     loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Loiter Event Node to Track Relationship IRI")
-    loiter_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+    loiter_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Loiter Event Node Geo Attribute IRI")
 
     # Cotravel Settings
@@ -350,11 +412,11 @@ class Settings(BaseSettings):
                                                        description="Name for OMSB Potential Duplicate")
     cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
     lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
-    cotravel_event_node_iri: str = Field("http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct",
+    cotravel_event_node_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/hasCoordinates",
+    cotravel_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Cotravel Event Node Geo Attribute IRI")
     cotravel_track_to_event_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")
@@ -367,8 +429,8 @@ class Settings(BaseSettings):
     rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
     rabbitmq_port: int = Field(5672, description="RabbitMQ port")
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")
-    rabbitmq_username: str = Field("oms-bridge", description="RabbitMQ username")
-    rabbitmq_password: str = Field("BugsBunny24", description="RabbitMQ password")
+    rabbitmq_username: str = Field(description="RabbitMQ username")
+    rabbitmq_password: str = Field(description="RabbitMQ password")
     rabbitmq_prefetch_count: int = Field(200, description="RabbitMQ prefetch count")
 
     rmq_read_wait_seconds: int = Field(5, description="How long to wait when waiting for RMQ messages")
@@ -403,22 +465,33 @@ class Settings(BaseSettings):
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
 
+    iw_settings: IWSettings = IWSettings()
+    observables: bool = Field(True, description="Toggle on/off Observable updates")
 
+    # Connectivity ping settings
+    ping_timeout_seconds: float = Field(3.0, description="Default timeout in seconds for service ping checks")
+    ping_wait_retries: int = Field(5, description="Default number of retries when waiting for service readiness")
+    ping_wait_delay_seconds: float = Field(2.0, description="Delay between readiness retries in seconds")
+
+    ttl_cache_size: int = Field(1024, description="Max items in a given TTL Cache")
+    ttl_cache_seconds: int = Field(3600, description="Max time to live in a given TTL Cache")
+    oms_crud_ttl_cache_size: int = Field(1024, description="Max items in OMS CRUD Tool's given TTL Cache")
+    oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in OMS CRUD Tool's given TTL Cache")
     omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-23", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
-    user_dn: str = Field("cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us", description="User DN")
-    cacert_path: str | None = Field(
+    user_dn: str = Field(description="User DN")
+    aac_cacert_path: str | None = Field(
         None,
-        description="Optional path to a CA cert",
+        description="Optional path to a CA cert for AAC",
         examples=[None, "/opt/common/pki/cacert.pem"])
     cert_path: str | None = Field(
-        "/opt/common/pki/server.public",
+        None,
         description="Path to service user cert",
         examples=[None, "/opt/common/pki/sensemaking.pem"]
     )
     key_path: str | None = Field(
-        "/opt/common/pki/server.private",
+        None,
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
     )
@@ -443,6 +516,51 @@ class Settings(BaseSettings):
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
     sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
+    enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
+    audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
+    audit_log_error_json_file_path: str = Field(
+        "./data/audit_log_error_acm.json",
+        description="Path to the audit event log error classification file")
+
+    rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
+
+    enable_telemetry: bool = Field(
+        default=True, description="Enable OpenTelemetry metrics collection"
+    )
+
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
+    )
+    otel_service_name: str = Field(
+        default="oms-sensemaking", description="OpenTelemetry service name"
+    )
+    otel_traces_sampler: str = Field(
+        default="always_on", description="OpenTelemetry traces sampler"
+    )
+    user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
+
+    @computed_field  # type: ignore
+    @cached_property
+    def user_dn_whitelist(self) -> list[str]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(SETTINGS.user_dn_whitelist_path, "r") as fd:
+            return fd.read().lower().splitlines()
+
+    @computed_field  # type: ignore
+    @cached_property
+    def audit_log_error_acm(self) -> dict[str, Any]:
+        """Return classification as json from audit_log_error_json_file_path"""
+        with open(self.audit_log_error_json_file_path, encoding="utf-8") as fd:
+            data = json.load(fd)
+        acm_model = _ACM_ADAPTER.validate_python(data)
+        return acm_model.model_dump()
+
+    def load_audit_log_event_error_acm(self):
+        """Load audit event log error classification from file
+        This should be done on startup to ensure file exists
+        """
+        if SETTINGS.audit_log_error_acm:
+            LOGGER.info("Loaded audit log error classification")
 
     @computed_field  # type: ignore
     @property
@@ -453,6 +571,42 @@ class Settings(BaseSettings):
             Confidence.MODERATE: self.confidence_weight_moderate,
             Confidence.LOW: self.confidence_weight_low,
         }
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_host(self) -> str:
+        """OMSB hostname or IP address derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no hostname found")
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def omsb_port(self) -> int:
+        """OMSB port derived from omsb_url."""
+        parsed = urlparse(self.omsb_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
+        return parsed.port
+
+    @computed_field  # type: ignore
+    @property
+    def aac_host(self) -> str:
+        """AAC hostname or IP address derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        if parsed.hostname is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no hostname found")
+        return parsed.hostname
+
+    @computed_field  # type: ignore
+    @property
+    def aac_port(self) -> int:
+        """AAC port derived from aac_url."""
+        parsed = urlparse(self.aac_url)
+        if parsed.port is None:
+            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
+        return parsed.port
 
     @field_validator("db_uri", mode="before")
     @classmethod
@@ -483,6 +637,22 @@ class Settings(BaseSettings):
             port=int(values.get(f"{settings_prefix}port") or 5432),
             path=values.get(f"{settings_prefix}schema") or ""
         ).unicode_string()
+
+    @field_validator("classification_banner_text", mode="before")
+    @classmethod
+    def validate_classification_banner_text(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner text does not contain HTML."""
+        if re.search(r"<[^>]*>", field_value):
+            raise ValueError("Classification banner text cannot contain HTML.")
+        return field_value
+
+    @field_validator("classification_banner_color", mode="before")
+    @classmethod
+    def validate_classification_banner_color(cls, field_value: str, info: ValidationInfo) -> str:
+        """Validate that the classification banner color is a valid hex color."""
+        if not re.match(r"^#([A-Fa-f0-9]{3}){1,2}$", field_value):
+            raise ValueError("Classification banner color must be a valid hex color (e.g., #00c853).")
+        return field_value
 
 
 SETTINGS: Settings = Settings()

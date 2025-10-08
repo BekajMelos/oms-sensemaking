@@ -64,6 +64,8 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from oms_sensemaking.clients.instances import ontology_service
+from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter
 from oms_sensemaking.inference.controllers import InferenceQueueFilter
@@ -184,7 +186,9 @@ def run_geospatial(args: Namespace) -> None:
     from oms_sensemaking.geospatial.controllers import GeospatialSensemakerController
 
     geo = GeospatialSensemakerController(
-        RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter())
+        RabbitMQListener("GeoRMQListener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()),
+        RethrowErrorLogger(ErrorLogger()),
+        ontology_service=ontology_service,
     )
 
     start_controller_and_wait(geo)
@@ -196,7 +200,10 @@ def run_inference() -> None:
     from oms_sensemaking.inference.controllers import InferenceSensemakerController
 
     inference = InferenceSensemakerController(
-        RabbitMQListener("InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter())
+        RabbitMQListener(
+            "InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter()
+        ),
+        RethrowErrorLogger(ErrorLogger()),
     )
 
     start_controller_and_wait(inference)

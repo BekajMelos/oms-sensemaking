@@ -6,18 +6,112 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Async OMS Client
+- Ensure automated tests have 80% coverage
+- Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 
 ### Changed
 
 ### Fixed
 
+- Fixed `make nuke` target so that it now purges all volumes assosiated with oms-sensemaking.
+
 ### Removed
+
+## [0.14.0] - 2025-09-29
+
+### Fixed
+- Improved on failing integration tests for the crud tool.
+
+### Removed
+- Removed "localstack" docker container and other references.
+
+## [0.13.1] - 2025-09-19
+
+### Added
+- Ontology Service
+
+### Changed
+- Reverted In or Out of Garrison custom query
+
+## [0.13.0] - 2025-09-16
+
+### Added
+- Implemented IP logging to meet V-222470 standards
+- Added more unit tests to the code base to acheive a code coverage of at least 80%
+
+### Changed
+- Integrate custom query in InOrOutOfGarrison to reduce complexity.
+- Refactored code in compliance to SonarQube scans
+- Updated logs to not print potentially classified data
+- Replaced geolib with pygeohash and updated python and system packages to mitigate some prisma issues
+- Separated CACERT_PATH into AAC_CACERT_PATH and ATOMS_CACERT_PATH
+
+### Fixed
+- Issues with parsing certain envvars within the .env
+- Issue with loading Swagger Docs content
+
+## [0.12.1] - 2025-09-09
+
+### Fixed
+- Incorrect pgsql version being added to PATH was updated to version 17 to commincate with the database in deployed environments
+
+## [0.12.0] - 2025-09-08
+
+### Added
+- Log request header information
+- Added authorization for POST /aac/clear endpoint
+- OpenTelemetry integration for queue processing time and event counting metrics
+
+### Changed
+- Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
+- Changed the SwaggerUI imports to be the static local versions instead of online imports
+- Only use private pypi package registries
+- Updated Sensemaking's Postgres version to 17 for the local dev environment and client installed in the Docker image
+- Reverted Incursion rule code to read areas of interest files from a directory instead of raw string paths
+- Updated ATOMS dependency to Grimlock-INC-30
+
+### Fixed
+- Fixed bug causing multiple incursions to be created
+
+### Removed
+Removed the NLP feature from the code base to comply with STIG V-222518
+
+## [0.11.1] - 2025-08-25
+
+### Added
+
+### Changed
+
+### Fixed
+- Had to change structure of how area of interest files are read due to helm chart conflit
+
+### Removed
+
+## [0.11.0] - 2025-08-25
+
+### Added
+- Capabilities for the Incursion rule to read in .kml/.kmz formatted files as areas of interest
+- Logic for processing search queries in the Observable Sensemaker
+- Added timestamps to fast api log
+
+### Changed
+- Incursion rule now reads areas of interest files from a directory in bulk
+- Certain Incursion rule logic was moved into models and classes for improved readability and future development
+- Updated ATOMS dependency to Grimlock-INC-29
+
+### Fixed
+
+### Removed
+- Unused data directory
 
 ## [0.10.0] - 2025-08-11
 
 ### Added
 - Endpoint to clear Local AAC Cache
 - Script to create transfer bundles
+- CronEventEmitter, which emits fake Audit Log Events on a set interval
+- Observable Sensemaker, which processes all observables every 15 minutes
+- Implemented geofence logic, other observable types to be implemented
 
 ### Changed
 - Updated Inference Sensemaker to only accept Observation Audit Log Events
@@ -25,6 +119,11 @@ All notable changes to this project will be documented in this file.
 the "incurring" node.
 - Removed the "v" prefix from version identifiers
 - Changed Sensemaking Docker image to a UBI8/RHEL8 based image
+- Updated `docker/postgis/initdb.d` scripts to use environment variables rather than hard-coded values. Refactored `.sql` scripts to `.sh` scripts.
+- Custom Classification Bars
+- DOD Consent Popup
+
+### Changed
 
 ### Fixed
 - SSL issues with AAC cache transport
@@ -59,6 +158,7 @@ the "incurring" node.
 ## [0.8.0] - 2025-07-14
 
 ### Added
+- Added AuditLogError database table to store errors
 - Expanded further on Mil Symbol configuration to encompass various symbol Id formats found high side
 - Added the ability for the Mil Symbol sensemaker to enrich echelon in symbol Id codes
 

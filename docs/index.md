@@ -21,14 +21,14 @@
         # ----------------------------------------
         # Sensemaker Database
         # ----------------------------------------
+        POSTGRES_USER=postgres
         POSTGRES_PASSWORD=password
-        PGPASSWORD=password
 
         # ----------------------------------------
         # OMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=Grimlock-INC-23
+        OMSB_VERSION=Grimlock-INC-30
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 

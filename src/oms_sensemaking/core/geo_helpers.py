@@ -1,16 +1,62 @@
 """Module with geo helper functions"""
 
 import json
+import logging
+import os
 
+import pygeohash as pgh
 from geopy.distance import geodesic
 from geopy.point import Point
 
+from oms_sensemaking.core.kml_reader import KMLReader
 
-def features_list_from_geojson(path_to_geojson_file: str):
-    """Load features from a geojson file"""
-    with open(path_to_geojson_file, "r") as file:
-        features = json.load(file)["features"]
-    return features
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+def gather_area_of_interest_data(paths_to_aoi_data: str):
+    """
+    A function that gathers all of the data from the individual
+    geoJSON files found in the specified directory.
+
+    :return: An array containing a list of dictionarys
+    """
+    areas_of_interest: list[dict | None] = []
+    kml_reader = KMLReader()
+    for file in os.listdir(paths_to_aoi_data):
+        file_path = os.path.join(paths_to_aoi_data, file)
+        if not os.path.isfile(file_path):
+            continue
+        try:
+            if file_path.endswith(".json"):
+                json_aois = get_aois_from_json(file_path)
+                areas_of_interest.extend(json_aois)
+            elif file_path.endswith(".kml"):
+                features = kml_reader.parse_kml_file(file_path)
+                areas_of_interest.extend(features)
+            elif file_path.endswith(".kmz"):
+                features = kml_reader.parse_kmz_file(file_path)
+                areas_of_interest.extend(features)
+            else:
+                LOGGER.warning(f"Unsupported file type: {file_path}")
+        except json.JSONDecodeError as e:
+            LOGGER.error(f"Invalid json {file_path}: {e}")
+    return areas_of_interest
+
+
+def get_aois_from_json(file_path: str):
+    aois = []
+    with open(file_path, "r") as f:
+        data = json.load(f)
+        if data.get("type") == "FeatureCollection" and "features" in data:
+            aois.extend([f for f in data["features"] if is_valid_geometry_type_json(f)])
+        elif data.get("type") == "Feature" and is_valid_geometry_type_json(data):
+            aois.append(data)
+    return aois
+
+
+def is_valid_geometry_type_json(feature: dict):
+    geom = feature.get("geometry", {})
+    return geom.get("type") in {"Polygon", "MultiPolygon"}
 
 
 def generate_circle_points_geographical(center_lat, center_lon, radius_km, num_points=100):
@@ -37,3 +83,22 @@ def generate_circle_points_geographical(center_lat, center_lon, radius_km, num_p
     if points:
         points.append(points[0])  # close the ring for a polygon
     return points
+
+
+def get_geohash_neighbors(geohash: str) -> list[str]:
+    """Get neghboring geohashes to the given geohash
+
+    :param geohash: Middle geohash to get neighbors for
+    :return: List of adjacent geohashes
+    """
+
+    n = pgh.get_adjacent(geohash, "top")
+    s = pgh.get_adjacent(geohash, "bottom")
+    e = pgh.get_adjacent(geohash, "right")
+    w = pgh.get_adjacent(geohash, "left")
+    nw = pgh.get_adjacent(w, "top")
+    ne = pgh.get_adjacent(e, "top")
+    sw = pgh.get_adjacent(w, "bottom")
+    se = pgh.get_adjacent(e, "bottom")
+
+    return [n, s, e, w, nw, ne, sw, se]

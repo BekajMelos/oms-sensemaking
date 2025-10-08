@@ -8,12 +8,14 @@
 
 ##### Service Variables
 
-| Variable Name       | Example                     | Description                                                    | Docker Compose |
-|:--------------------|:----------------------------|:---------------------------------------------------------------|:--------------:|
-| `APP_LOG_LEVEL`     | `DEBUG`                     | Option to set log level                                        | Yes            |
-| `RELOAD_APP`        | `1`                         | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
-| `ROOT_PATH`         | `/services/sensemaking/1.0` | BaseUrl for serving the project at                             | No             |
-| `UVICORN_ROOT_PATH` | `/services/sensemaking/1.0` | Uvicorn baseUrl for serving the project                        | Yes            |
+| Variable Name          | Example                                                 | Description                                                    | Docker Compose |
+|:-----------------------|:--------------------------------------------------------|:---------------------------------------------------------------|:--------------:|
+| `APP_LOG_LEVEL`        | `DEBUG`                                                 | Option to set log level                                        | Yes            |
+| `RELOAD_APP`           | `1`                                                     | Option to watch for changes and reload service (i.e. dev mode) | Yes            |
+| `ROOT_PATH`            | `/services/sensemaking/1.0`                             | BaseUrl for serving the project at                             | No             |
+| `UVICORN_ROOT_PATH`    | `/services/sensemaking/1.0`                             | Uvicorn baseUrl for serving the project                        | Yes            |
+| `UVICORN_SSL_KEYFILE`  | `/opt/common/pki/server.private`                        | Uvicorn baseUrl for serving the project                        | Yes            |
+| `UVICORN_SSL_KEYFILE`  | `/opt/common/pki/server.private`                        | Uvicorn baseUrl for serving the project                        | Yes            |
 
 
 ##### Database Settings
@@ -24,27 +26,26 @@
 > tool, and [pgAdmin].
 
 
-| Variable Name                 | Example                           | Description                                           | Docker Compose |
-|:------------------------------|:----------------------------------|:------------------------------------------------------|:--------------:|
-| `DB_HOST`                     | `postgis`                         | The database hostname                                 | No             |
-| `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                | Yes            |
-| `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                 | Yes            |
-| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                     | Yes            |
-| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admmin user           | Yes            |
-| `POSTGRES_PORT`           | `5432`                         | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests).           | Yes            |
-| `PGUSER`                      | `appuser`                         | [psql] The *regular* PostgreSQL user                  | Yes            |
-| `PGPASSWORD`                  | `xxxxxx`                          | [psql] The password for the *regular* PostgreSQL user | Yes            |
-| `PGDATABASE`                  | `oms_sensemaking`                 | [psql] The database to connect to                     | Yes            |
-| `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.     | Yes            |
-| `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin]The password for the default pgAdmin user.   | Yes            |
-| `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin]A login banner for pgAdmin                   | Yes            |
+| Variable Name                 | Example                           | Description                                                                                                   | Docker Compose |
+|:------------------------------|:----------------------------------|:--------------------------------------------------------------------------------------------------------------|:--------------:|
+| `DB_HOST`                     | `postgis`                         | The database hostname                                                                                         | No             |
+| `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                                                                        | Yes            |
+| `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                                                                         | Yes            |
+| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                                                                             | Yes            |
+| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admin user                                                                    | Yes            |
+| `POSTGRES_PORT`               | `5432`                            | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests). | Yes            |
+| `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.                                                             | Yes            |
+| `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin]The password for the default pgAdmin user.                                                           | Yes            |
+| `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin]A login banner for pgAdmin                                                                           | Yes            |
+| `DB_NAME`                     | `oms_sensemaking`                 | The name for the oms_sensemaking database.                                                                    | Yes            |
+| `DB_NAME_OMSB`                | `omsb_db`                         | The name for the omsb_db database.                                                                            | Yes            |
+| `DB_TEMPLATE`                 | `template_postgis`                | The template used in the creation of the application database.                                                | Yes            |
 
 
 ##### AWS Settings
 
 | Variable Name           | Example                                             | Description                           | Docker Compose |
 |:------------------------|:----------------------------------------------------|:--------------------------------------|:--------------:|
-| `AWS_ENDPOINT_URL`      | `http://localhost:4566` or `http://localstack:4566` or `http://<your_ip>:4566` | AWS Endpoint                          | No             |
 | `AWS_ACCESS_KEY_ID`     | `FAKE`                                              | AWS Access Key                        | No             |
 | `AWS_SECRET_ACCESS_KEY` | `FAKE`                                              | AWS Secret Key                        | No             |
 | `AWS_REGION_NAME`       | `us-east-1`                                         | AWS Region                            | No             |
@@ -56,12 +57,12 @@
 
 | Variable Name  | Example                                            | Description               | Docker Compose |
 |:---------------|:---------------------------------------------------|:--------------------------|:--------------:|
-| `OMSB_VERSION` | `Grimlock-INC-23`                                  | The version of oms-bridge | Yes            |
+| `OMSB_VERSION` | `Grimlock-INC-30`                                  | The version of oms-bridge | Yes            |
 | `OMSB_URL`     | `https://localhost:8020/graphql`                   | URL for OMSB              | No             |
 | `USER_DN`      | `cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us` | User DN                   | No             |
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
-| `CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `ATOMS_CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
 | `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
 
@@ -70,7 +71,7 @@
 |:-------------------------|:---------------------------------------------------|:--------------------------|:--------------:|
 | `CERT_PATH`              | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`               | `./pki/test10.key`                                 | Path to User Key          | No             |
-| `CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `AAC_CACERT_PATH`            | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
 | `AAC_VERIFICATION_MODE`  | `True`                                             | Verify CA bundle of AAC   | No             |
 | `AAC_CACHE_ENABLED`      | `True`                                             | Cache AAC Requests        | No             |
 
@@ -88,7 +89,6 @@
 | `APPLY_COMMON_SENSE_FILTERS`                        | `TRUE`                                                                                            | Toggle on/off Common Sense Filtering                           | No             |
 | `TRACK_WEAVER_ALGORITHM`                            |`naive`                                                             | The track weaver algorith to use              | No             |
 | `TIME_BIN_SIZE_SECONDS`                            |`60`                                                             | Length of time bins in seconds for grouping points in track weaver              | No             |
-
 | `COMMON_SENSE_FILTER_RULES_FILE_PATH`               | `./data/common_sense_filter_rules.json`                                                           | Path to the Common Sense Filter Rules config file              | No             |
 | `CONFIDENCE_WEIGHT_UNKNOWN`                         | `0.5`                                                                                             | Weight to give points with UNKNOWN observation confidence      | No             |
 | `CONFIDENCE_WEIGHT_HIGH`                            | `1.0`                                                                                             | Weight to give points with HIGH observation confidence         | No             |
@@ -103,14 +103,11 @@
 | `SIMILAR_TRACKS`                                    | `True`                                                                                            | Toggle on/off Similar Track Calculations                       | No             |
 | `N_TRACKS`                                          | `5`                                                                                               | Number of similar tracks to return                             | No             |
 | `WITHIN_METERS`                                     | `3000.0`                                                                                          | Used to define the search space for potential similar tracks   | No             |
-| `SQS_GEO_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/geoSensemakerTrigger`          | Geospatial SQS Queue URL                                       | Yes            |
 | `GENERATE_INFERENCES`                               | `True`                                                                                            | Turn the Inference Sensemaker On/Off                           | Yes            |
 | `TOGGLE_ADD_GARRISON_RULE`                          | `True`                                                                                            | Turn the Garrison Rule On/Off                                  | Yes            |
 | `TOGGLE_INCURSION_RULE`                             | `True`                                                                                            | Turn the Incursion Rule On/Off                                 | Yes            |
-| `CORENLP_EXPOSE_PORT`                               | `9000`                                                                                            | Port to use for the core-nlp service. When set, this will expose the port to the host | Yes |
-| `CORENLP_HOST`                                      | `localhost:9000`                                                                                  | Host and port to connect to Core NLP                           | Yes            |
 | `INFERENCE_TAGS`                                    | `'["Oms Sensemaking", "Inferred Data"]'`                                                          | Tags Inference Sensemaker adds to data                         | No             |
-| `INFERENCE_INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
+| `INCURSION_TAGS`                          | `'["Oms Sensemaking", "Inferred Data", "Incursion"]'`                                             | Incursion Tags                                                 | No             |
 | `INFERENCE_INCURSION_ATTRIBUTE_IRI`                 | `https://blackcape.io/PLACEHOLDER/Incursion`                                                      | Iri to apply for the Incursion Attribute                       | No             |
 | `INFERENCE_INCURSION_CLASS_IRI`                     | `http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct`                           | Iri to apply for the Incursion Activity class                  | No             |
 | `INFERENCE_INCURSION_ACTIVITY_STATE`                | `UNKNOWN`                                                                                         | Incursion Activity State                                       | No             |
@@ -123,13 +120,11 @@
 | `INFERENCE_IN_GARRISON_ACTIVITY_STATE`              | `IN_GARRISON`                                                                                     | In Garrison Activity State                                     | No             |
 | `INFERENCE_OUT_OF_GARRISON_ACTIVITY_STATE`          | `OUT_OF_GARRISON`                                                                                 | Out of Garrison Activity State                                 | No             |
 | `GARRISON_DISTANCE_KILOMETERS`                      | `2000`                                                                                            | Distance to use for the Out of Garrison Rule                   | No             |
-| `SQS_RES_QUEUE_URL`                                 | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/resolutionTrigger`             | Resolution SQS Queue URL                                       | Yes            |
 | `ENABLE_RESOLUTION_SENSEMAKER`                      | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `RESOLUTION_SENSEMAKER_TAG`                         | `resolution_tag`                                                                                  | Tag for OMSB objects from the resolution sensemaker            | No             |
 | `RESOLUTION_RELATIONSHIP_NAME`                      | `Same As`                                                                                         | Relationship name for resolution sensemaker suggestions        | No             |
 | `RESOLUTION_RELATIONSHIP_IRI`                       | `https://foundry.ai.mil/MIDB/V3.3/relates_to`                                                     | Iri to set for the Resolution Finding URL                      | No             |
 | `DUPLICATE_OBJECT_IRIS_FILE_PATH`                   | `./data/duplicate_object_iris.json`                                                               | Path to file containing duplicate object iris dictionary       | No             |
-| `MIL_SYMBOL_SETTINGS__SQS_MIL_SYMBOL_QUEUE_URL`     | `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/milSymbolTrigger`              | Mil Symbol SQS Queue URL                                       | Yes            |
 | `MIL_SYMBOL_SETTINGS__ENABLE_MIL_SYMBOL_SENSEMAKER` | `True`                                                                                            | Toggle on/off Entity Resolution                                | No             |
 | `MIL_SYMBOL_SETTINGS__AFFILIATION_IRIS`             | `'["https://foundry.ai.mil/MIDB_GST/v1/Affiliation"]'`                                            | List of Affiliation IRIs to enrich from                        | No             |
 | `MIL_SYMBOL_SETTINGS__STATUS_IRIS`                  | `'["https://foundry.ai.mil/DICO/v3.1.0/Condition"]'`                                              | List of Status IRIs to enrich from                             | No             |
@@ -139,7 +134,25 @@
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `MAXIMUM_OMS_API_CALLS`                    | `500`                     | Maximum amount of calls allowed to be made to OMS within a given time period                       | No             |
 | `OMS_API_CALL_PERIOD_SECONDS`                    | `120`                     | Alloted amount of time for maximum OMS API calls to be made                       | No             |
+| `TTL_CACHE_SIZE` | `1024` | Max items in a given TTL Cache | No |
+| `TTL_CACHE_SECONDS` | `3600` | Max time to live in a given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SIZE` | `1024` | Max items in OMS CRUD Tool's given TTL Cache | No |
+| `OMS_CRUD_TTL_CACHE_SECONDS` | `3600` | Max time to live in OMS CRUD Tool's given TTL Cache | No |
+| `MIL_SYMBOL_SETTINGS__ECHELON_IRIS`                    | `'["https://oms.dodiis.ic.gov/ontology/p-0000000029"]'`                     | Echelon IRI                       | No             |
+| `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`       | `'["-", "*"]'`                     | Possible placeholder values for 2525B and 2525C codes                | No             |
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
 | `AAC_CACHE_ENABLED`       | `True`                     | Boolean to enable Local AAC Caching                | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`       | `300`                     | How long for responses to persist in Local AAC Cache before expiring                | No             |
 | `SM_TEST_TAGS`            | `["SM_TEST_TAG"] | Tag to apply to data created during tests | No |
+| `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
+| `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
+| `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |
+| `USER_DN_WHITELIST_PATH`                    | `./data/whitelist.txt`                     | File path to the user whitelist for privileged requests                       | No             |
+
+
+##### UI/Display Settings
+
+| Variable Name                    | Example                           | Description                                                    | Docker Compose |
+|:---------------------------------|:----------------------------------|:---------------------------------------------------------------|:--------------:|
+| `CLASSIFICATION_BANNER_TEXT`     | `UNCLASSIFIED`                    | Text to display in the classification banner                   | No             |
+| `CLASSIFICATION_BANNER_COLOR`    | `#00c853`                         | Background color for the classification banner                 | No             |

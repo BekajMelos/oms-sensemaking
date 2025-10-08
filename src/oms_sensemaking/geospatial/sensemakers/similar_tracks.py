@@ -7,13 +7,13 @@ from queue import PriorityQueue
 from typing import Any
 
 from geoalchemy2.types import Geography
-from geolib import geohash
 from sqlalchemy import and_, desc, func, join, select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.sql import cast
 
-from oms_sensemaking.clients.instances import db_engine, db_session
+from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.geo_helpers import get_geohash_neighbors
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.geospatial.models.group_by_track_id_projection import GroupByTrackIdProjection
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
@@ -105,7 +105,6 @@ class SimilarTracksSensemaker(Sensemaker):
         ref_track_geohash_set: set[str] = self.get_buffered_geohash_set(data.points)
 
         # query for tracks that start and end within the QUERY_DISTANCE
-        LOGGER.debug(f"Reference track has first {first} and last {last} points")
         similar_track_groups: list[GroupByTrackIdProjection] = self.query_for_similar_tracks(
             first.coordinates, last.coordinates, self.config["within_meters"]
         )
@@ -152,7 +151,8 @@ class SimilarTracksSensemaker(Sensemaker):
         # Unions of two sets
         union = len(ref_track_geohash_set.union(eval_track_geohash_set))
         score = intersection / union
-        LOGGER.debug(f"Overall similarity for {eval_track_geohash_set}, {score}")
+        # can we do this
+        LOGGER.debug(f"Overall similarity for tracks {score}")
         return ComparisonResult(track_uuid, score)
 
     @classmethod
@@ -189,7 +189,7 @@ class SimilarTracksSensemaker(Sensemaker):
             base_geohash = point_geohash[0:-1]
             buffered_geohash_set.add(base_geohash)
 
-            neighbors = geohash.neighbours(base_geohash)
+            neighbors = get_geohash_neighbors(base_geohash)
             for neighbor in neighbors:
                 buffered_geohash_set.add(neighbor)
 
@@ -311,13 +311,13 @@ class SimilarTracksSensemaker(Sensemaker):
             start_geojson = {"type": "Point", "coordinates": first}
 
             start_query = generate_query(Point.detection_time, start_geojson)
-            LOGGER.debug(f"Start bookend query {start_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            LOGGER.debug(f"Start bookend query {start_query.compile(db.bind, compile_kwargs={'literal_binds':True})}")
             res = db.execute(start_query)
             start_groups = res.all()
 
             end_geojson = {"type": "Point", "coordinates": last}
             end_query = generate_query(desc(Point.detection_time), end_geojson)
-            LOGGER.debug(f"End bookend query {end_query.compile(db_engine, compile_kwargs={'literal_binds':True})}")
+            LOGGER.debug(f"End bookend query {end_query.compile(db.bind, compile_kwargs={'literal_binds':True})}")
             res = db.execute(end_query)
             end_groups = res.all()
 

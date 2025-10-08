@@ -20,6 +20,8 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipRelationship,
     TimeQuery,
     UpdateActivityInput,
+    UpdateUuidList,
+    UuidQueryByList,
 )
 from pytest_mock import MockerFixture
 
@@ -460,7 +462,7 @@ def test_update_in_garrison(
     garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
     mock_get_observations.assert_called_with(
         ObservationQuery(
-            nodeId=["initial_object_id"],
+            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
             startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
             endTime=TimeQuery(lte="2025-01-01T00:00:00+00:00"),
             geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT),
@@ -471,7 +473,7 @@ def test_update_in_garrison(
             id=in_garrison_activity2.id,
             startTime=in_garrison_activity2.startTime,
             endTime=in_garrison_activity2.endTime,
-            addObservationIds=[observational_node.id],
+            observationIds=UpdateUuidList(add=[observational_node.id]),
             nodeId=observational_node.nodeId,
         )
     )
@@ -527,7 +529,7 @@ def test_update_out_garrison(
 
     mock_get_observations.assert_called_with(
         ObservationQuery(
-            nodeId=["initial_object_id"],
+            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
             startTime=TimeQuery(gte="2024-01-01T00:00:00+00:00"),
             endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
             geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS),
@@ -538,7 +540,7 @@ def test_update_out_garrison(
             id=out_garrison_activity1.id,
             startTime=observational_node2.startTime,
             endTime=out_garrison_activity1.endTime,
-            addObservationIds=[observational_node2.id],
+            observationIds=UpdateUuidList(add=[observational_node2.id]),
             nodeId=observational_node2.nodeId,
         )
     )

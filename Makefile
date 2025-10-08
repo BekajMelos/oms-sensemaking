@@ -3,7 +3,7 @@ SHELL := /bin/bash
 include .env
 export
 
-.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up
+.PHONY: build build-docker build-docs clean distclean down fix format help lint lint-stats no-oms nuke pgadmin psql shell test up metrics-up
 
 ## NOTE: Add this to your .bashrc to enable make target tab completion
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
@@ -18,10 +18,10 @@ install: ## Run upgrades and installations to prepare the repository
 	pre-commit install
 
 test: ## Run all tests
-	python -m pytest $(PYTEST_FLAGS)
+	python -m pytest $(PYTEST_FLAGS) --cov-fail-under=80
 
 unit-test: ## Run unit tests
-	python -m pytest tests $(PYTEST_FLAGS)
+	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=80
 
 int-test: ## Run integration tests
 	python -m pytest tests_int $(PYTEST_FLAGS)
@@ -57,6 +57,7 @@ build-docker:  ## Build docker image
           --build-arg BUILD_DATE=$(shell date +%Y%m%d%H%M) \
           --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 		  --build-arg PIP_INDEX_URL=${PIP_INDEX} \
+		  --build-arg PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX} \
           --no-cache \
           -t oms_sensemaking:latest \
           --secret id=mynetrc,src=$${HOME}/.netrc \
@@ -73,13 +74,13 @@ list-versions: ## Display the tagged versions
 	@git tag -n
 
 up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
-	docker compose --profile local up -d ${DOCKER_FLAGS}
+	docker compose up -d ${DOCKER_FLAGS}
 
 stop: ## Stop oms-sensemaking docker environment
-	docker compose --profile dev --profile local stop
+	docker compose stop
 
 down: ## Stop oms-sensemaking docker environment and remove containers
-	docker compose --profile dev --profile local down
+	docker compose down
 
 shell: ## Open a shell inside the oms_sensemaking container
 	@docker compose exec oms_sensemaking /bin/bash
@@ -88,7 +89,11 @@ psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
 
 pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
-	docker compose --profile dev up pgadmin -d
+	@docker compose up pgadmin -d
+
+tools: ## start dev tools (kill it with: docker-compose --profile dev down)
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
+	docker compose --profile dev --profile tools up -d
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
@@ -96,12 +101,10 @@ clean: ## Purge build artifacts
 distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
-nuke: down
-	@docker volume rm -f oms-sensemaking_doccano-db
-	@docker volume rm -f oms-sensemaking_localstack
-	@docker volume rm -f oms-sensemaking_pgadmin
-	@docker volume rm -f oms-sensemaking_postgis
-	@docker volume rm -f oms-sensemaking_elasticsearch
+nuke:
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
+	docker compose down -v
 
 refresh: nuke  # Purge all generated content and restart
+	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
 	docker compose --profile local up --build -d

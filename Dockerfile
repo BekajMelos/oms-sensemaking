@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-#
 # This Dockerfile provides a multi-stage build for a UBI8 based image with
 # Python 3.12. The first build stage sets up UBI8 and Python 3.12, while the second
 # build stage installs the application and it's dependencies.
@@ -57,8 +55,6 @@ ARG GROUP_NAME="${GROUP_NAME:-$USER_NAME}"
 
 ARG VENVS_DIR=/opt/virtualenvs
 
-ARG POSTGRES_REPOSITORY="https://download.postgresql.org/pub/repos/yum"
-
 ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
@@ -83,7 +79,6 @@ useradd \
   $USER_NAME
 
 # install core dependencies
-dnf -y update && \
 dnf install -y \
   ca-certificates \
   curl \
@@ -91,24 +86,12 @@ dnf install -y \
   tar
 
 dnf install -y python3.12 python3.12-pip
+pip3 uninstall setuptools -y
 rm -f /usr/local/bin/pip /usr/local/bin/pip3 || true
 alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 100 \
 && alternatives --set python3 /usr/bin/python3.12 \
 && alternatives --set pip /usr/bin/pip3.12
-
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-libs-16.4-1PGDG.rhel8.aarch64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-aarch64/postgresql16-16.4-1PGDG.rhel8.aarch64.rpm; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-libs-16.4-1PGDG.rhel8.x86_64.rpm && \
-    dnf -y install ${POSTGRES_REPOSITORY}/16/redhat/rhel-8.10-x86_64/postgresql16-16.4-1PGDG.rhel8.x86_64.rpm; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf -qy module disable postgresql || true && \
-dnf -y install postgresql16
 
 # prepare file system
 mkdir -p $APP_HOME
@@ -117,8 +100,8 @@ chmod 774 $APP_HOME
 
 # clean up os packages
 dnf clean all
+update-ca-trust
 EOF
-ENV PATH="/usr/pgsql-16/bin:${PATH}"
 
 FROM python-base AS app
 
@@ -130,8 +113,7 @@ ARG VCS_REF
 
 ARG PIP_INDEX_URL
 
-# fallback to public PyPI
-ARG PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+ARG PIP_EXTRA_INDEX_URL
 
 # disable pip cache
 ARG PIP_NO_CACHE_DIR=1
@@ -140,8 +122,6 @@ ARG PIP_NO_CACHE_DIR=1
 ARG PIP_PROGRESS_BAR=off
 
 ARG SETUPTOOLS_SCM_PRETEND_VERSION_FOR_OMS_SENSEMAKING=${APP_VERSION}
-
-ARG EPEL_REPOSITORY="https://dl.fedoraproject.org/pub"
 
 ENV MODULE_NAME=oms_sensemaking.service
 
@@ -169,6 +149,7 @@ ENV UVICORN_ROOT_PATH=${UVICORN_ROOT_PATH:-}
 COPY --chown=appuser:appuser migrations ${APP_HOME}/migrations
 COPY --chown=appuser:appuser src ${APP_HOME}/src
 COPY --chown=appuser:appuser data ${APP_HOME}/data
+COPY --chown=appuser:appuser src/oms_sensemaking/templates ${APP_HOME}/src/oms_sensemaking/templates
 COPY --chown=appuser:appuser --chmod=644 alembic.ini pyproject.toml README.md ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 prestart.sh ${APP_HOME}
 COPY --chown=appuser:appuser --chmod=755 docker/start.sh docker/healthcheck.sh /
@@ -190,12 +171,9 @@ if [ -f /root/ca-certificate.crt ]; then
   cp /root/ca-certificate.crt /etc/ssl/certs/ca-certificates.crt
 fi
 
-# configure package manager
-dnf -y update
-
 # update core Python packaging tools
 export PIP_NO_INPUT=1
-python3 -m pip install --upgrade pip wheel
+python3 -m pip install --upgrade pip wheel setuptools
 
 # install application's system dependencies
 dnf install -y \
@@ -203,20 +181,8 @@ dnf install -y \
   git \
   jq \
   gcc \
-  python3-devel \
+  python3.12-devel \
   procps-ng
-
-ARCH=$(uname -m) && \
-if [ "$ARCH" = "aarch64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/aarch64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
-elif [ "$ARCH" = "x86_64" ]; then \
-    dnf install -y ${EPEL_REPOSITORY}/epel/8/Everything/x86_64/Packages/e/epel-release-8-22.el8.noarch.rpm; \
-else \
-    echo "Unsupported architecture: $ARCH" && exit 1; \
-fi && \
-dnf config-manager --set-enabled epel && \
-dnf install -y geos-devel && \
-dnf clean all
 
 # install app
 pip install .
@@ -227,9 +193,24 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3-devel geos-devel && \
+dnf remove -y gcc python3.12-devel && \
 dnf autoremove -y && \
 dnf clean all
+
+# remove old python packages (prisma)
+rm -rf /usr/lib/python3.6/site-packages/urllib3*
+rm -rf /usr/lib/python3.6/site-packages/setuptools*
+
+# delete private keys in documentation (prisma)
+rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
+rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
+
+rm -rf /usr/lib/python3.12/site-packages/pip*
+rm -rf /usr/lib/python6/site-packages/pip*
+rm -rf /usr/bin/pip*
+rm -rf /usr/local/bin/pip*
+rm -rf /usr/local/lib/python3.12/site-packages/pip*
+
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"
