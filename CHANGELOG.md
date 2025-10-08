@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
 - Added data mining prevention techniques based off of core's implementations
+- OpenTelemetry integration for queue processing time and event counting metrics
+
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment
 - Changed the SwaggerUI imports to be the static local versions instead of online imports

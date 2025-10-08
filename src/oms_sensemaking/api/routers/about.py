@@ -16,4 +16,8 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 def about() -> AppInfo:
     """Return service information."""
     LOGGER.info("Version endpoint requested", extra={"endpoint": "/version.json", "version": __version__})
-    return AppInfo(title=__title__, version=__version__, description=__description__)
+
+    # Create AppInfo object
+    app_info = AppInfo(title=__title__, version=__version__, description=__description__)
+
+    return app_info
