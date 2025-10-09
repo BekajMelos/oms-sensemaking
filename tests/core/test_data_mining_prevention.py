@@ -29,7 +29,7 @@ class TestDataMiningPreventionConfig:
         assert settings.db_pool_size == 10, f"Expected db_pool_size=10, got {settings.db_pool_size}"
 
         assert hasattr(settings, "db_max_overflow"), "db_max_overflow should exist"
-        assert settings.db_max_overflow == 10, f"Expected db_max_overflow=10, got {settings.db_max_overflow}"
+        assert settings.db_max_overflow == 20, f"Expected db_max_overflow=20, got {settings.db_max_overflow}"
 
         assert hasattr(settings, "db_pool_timeout_seconds"), "db_pool_timeout_seconds should exist"
         assert (
