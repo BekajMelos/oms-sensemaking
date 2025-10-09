@@ -240,7 +240,7 @@ class GeospatialSensemakerController(SensemakerController):
         """
         try:
             try:
-                track = self._generate_track(track_uuid)
+                tracks = self._generate_track(track_uuid)
             except TrackLengthError:
                 LOGGER.exception(
                     ("Track doesn't have enough points. Ignore and remove from buffer until " "it gets more points")
@@ -248,17 +248,19 @@ class GeospatialSensemakerController(SensemakerController):
                 self.track_times[track_uuid] = None
                 return False
 
-            geo_config = self._get_geo_config(track)
+            # Run sensemakers on all created tracks
+            for track in tracks:
+                geo_config = self._get_geo_config(track)
 
-            with ThreadPoolExecutor() as executor:
-                futures = []
-                for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    futures.append(future)
+                with ThreadPoolExecutor() as executor:
+                    futures = []
+                    for sensemaker in self._registry.values():
+                        future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                        futures.append(future)
 
-                # make sure errors are caught
-                for future in as_completed(futures):
-                    _ = future.result()
+                    # make sure errors are caught
+                    for future in as_completed(futures):
+                        _ = future.result()
         except Exception as e:
             LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
         finally:
@@ -269,15 +271,15 @@ class GeospatialSensemakerController(SensemakerController):
                     del self.node_track_mapping[key]
         return True
 
-    def _generate_track(self, track_uuid: UUID) -> Track:
-        """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
+    def _generate_track(self, track_uuid: UUID) -> list[Track]:
+        """Generate Track objects. Splits the full track into max_track_time_length_seconds time intervals.
         Then runs the common sense filters and track weaver.
 
         :param track_uuid: UUID of the track
-        :return: Created Track object
+        :return: List of created Track objects
         """
 
-        track = None
+        tracks = []
 
         points = self.track_node_buffer[track_uuid]
         points.sort(key=attrgetter("detection_time"))
@@ -326,10 +328,12 @@ class GeospatialSensemakerController(SensemakerController):
             oms_track = APITrack(track).create_oms_track()
             LOGGER.info(f"OMS Track published: {oms_track.id}")
 
-        if not track:
+            tracks.append(track)
+
+        if not tracks:
             raise TrackLengthError("Not enough points for track.") from None
 
-        return track
+        return tracks
 
     def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:
         """Get the geo config for this track based on the provider and node type
