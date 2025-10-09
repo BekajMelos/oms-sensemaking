@@ -126,10 +126,10 @@ class MilSymbolSensemaker(Sensemaker):
                 code_2525d = to_2525d(code_2525c, self.settings)
             else:
                 return []
-        except KeyError:
+        except KeyError as e:
             LOGGER.warning(
-                f"symbol Id code: ${symbol_id_code} from object: ${oms_object.id} \
-                           is invalid and cannot be processed by the MilSybmol Sensemaker"
+                f"symbol Id code: {symbol_id_code} is invalid and cannot be processed by"
+                f"the MilSybmol Sensemaker because of the following character: {e.args[0]}"
             )
             return []
 
