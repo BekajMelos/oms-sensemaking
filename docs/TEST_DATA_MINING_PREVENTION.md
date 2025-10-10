@@ -10,7 +10,7 @@
 
 ```bash
 # Test everything at once
-echo "Testing database pooling..." && curl -k -s https://localhost:5001/healthcheck > /dev/null && echo "Creating test data..." && ./scripts/insert_test_data.sh > /dev/null && echo "Testing pagination..." && curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" https://localhost:5001/resolver/omsb-guide-local/oms-000000000000 > /dev/null && echo "Testing rate limiting..." && for i in {1..5}; do curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" https://localhost:5001/resolver/omsb-guide-local/oms-000000000000 > /dev/null & done; wait && echo "All tests completed - check that requests work without errors"
+echo "Testing database pooling..." && curl -k -s https://localhost:5001/healthcheck > /dev/null && echo "Creating test data..." && ./scripts/insert_test_data.sh > /dev/null && echo "Testing pagination..." && curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" "https://localhost:8020/graphql" -H "Content-Type: application/json" -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 10 } }) { data { id name guideId } } }"}' > /dev/null && echo "Testing rate limiting..." && for i in {1..5}; do curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" "https://localhost:8020/graphql" -H "Content-Type: application/json" -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 10 } }) { data { id name guideId } } }"}' > /dev/null & done; wait && echo "All tests completed - check that requests work without errors"
 ```
 
 ## Individual Tests
@@ -35,9 +35,17 @@ curl -k -s https://localhost:5001/healthcheck
 # Create test data first
 ./scripts/insert_test_data.sh
 
-# Test pagination with real data
+# Test pagination with real data - query for multiple nodes to test pagination limits
 curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" \
-  https://localhost:5001/resolver/omsb-guide-local/oms-000000000000
+  "https://localhost:8020/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 10 } }) { data { id name guideId } } }"}'
+
+# Test data mining prevention - try to request a very large page size
+curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" \
+  "https://localhost:8020/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 1000000 } }) { data { id name guideId } } }"}'
 ```
 
 **Success indicator:** Request returns data successfully. Pagination is enforced automatically by the system.
@@ -51,7 +59,9 @@ curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" \
 # Make many requests quickly
 for i in {1..10}; do 
   curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" \
-    https://localhost:5001/resolver/omsb-guide-local/oms-000000000000 > /dev/null & 
+    "https://localhost:8020/graphql" \
+    -H "Content-Type: application/json" \
+    -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 10 } }) { data { id name guideId } } }"}' > /dev/null & 
 done; wait
 ```
 
@@ -64,7 +74,9 @@ done; wait
 **Test:**
 ```bash
 curl -k -s -H "user_dn: cn=test10,ou=jade,ou=meme,o=bia,st=maryland,c=us" \
-  https://localhost:5001/resolver/omsb-guide-local/oms-000000000000
+  "https://localhost:8020/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "query { nodes(query: { pageParams: { page: 1, pageSize: 10 } }) { data { id name guideId } } }"}'
 ```
 
 ## Verify Prevention Measures Are Working

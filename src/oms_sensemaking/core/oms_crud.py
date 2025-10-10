@@ -94,7 +94,19 @@ class OmsCrudTool(BaseClient):
             if not page_params:
                 query_obj.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
             else:
-                query_obj.pageParams.page = query_obj.pageParams.page or 1
+                # Ensure page is set (defaults to 1 if not provided)
+                if not hasattr(query_obj.pageParams, "page") or query_obj.pageParams.page is None:
+                    query_obj.pageParams.page = 1
+                # Validate and limit pageSize to prevent data mining
+                if not hasattr(query_obj.pageParams, "pageSize") or query_obj.pageParams.pageSize is None:
+                    query_obj.pageParams.pageSize = SETTINGS.graphql_default_page_size
+                elif query_obj.pageParams.pageSize > SETTINGS.graphql_default_page_size:
+                    LOGGER.warning(
+                        "Page size %d exceeds maximum allowed %d, limiting to default size",
+                        query_obj.pageParams.pageSize,
+                        SETTINGS.graphql_default_page_size,
+                    )
+                    query_obj.pageParams.pageSize = SETTINGS.graphql_default_page_size
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
         """
@@ -210,9 +222,7 @@ class OmsCrudTool(BaseClient):
         # enforce pagination bounds if configured
         self._ensure_pagination_params(node_info)
         nodes = self.oms_client.nodes(query=node_info)
-        # basic observability of returned volume
-        count = len(nodes.data or [])
-        LOGGER.debug("GraphQL nodes fetched: %d", count)
+        LOGGER.debug("GraphQL nodes fetched: %d", len(nodes.data or []))
         return nodes
 
     def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
