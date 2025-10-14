@@ -87,7 +87,9 @@ class OmsCrudTool(BaseClient):
             pkcs12_password=SETTINGS.pkcs12_password,
         )
 
-    def _ensure_pagination_params(self, query_obj) -> None:
+    def _ensure_pagination_params(
+        self, query_obj: Union[NodeQuery, RelationshipQuery, AttributeQuery, ActivityQuery, ObservationQuery]
+    ) -> None:
         """Ensure pagination parameters are set on query objects if pagination is enforced."""
         if SETTINGS.enforce_graphql_pagination:
             page_params = getattr(query_obj, "pageParams", None)
