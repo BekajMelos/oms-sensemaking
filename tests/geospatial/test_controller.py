@@ -134,12 +134,12 @@ def track_points(source1) -> list[Point]:
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_config(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
     mock_aac_client1: AacClient,
     mock_aac_client2: AacClient,
     mock_api_track_client: APITrack,
-    mock_track_get_or_create: Callable,
+    mock_track_get_or_create: mock.MagicMock,
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
     default_watercraft_config: dict,
@@ -273,8 +273,8 @@ def test_track_too_short1(
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_generate_track_too_short(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
     mock_aac_client1: AacClient,
     mock_aac_client2: AacClient,
     mock_geo_controller: GeospatialSensemakerController,
@@ -302,3 +302,162 @@ def test_generate_track_too_short(
     # call flush buffer. Should raise exception
     with pytest.raises(TrackLengthError):
         mock_geo_controller._generate_track(track_uuid=track_uuid)
+
+
+@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
+@mock.patch("oms_sensemaking.models.geo.aac_client")
+@mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
+@mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
+@mock.patch("oms_sensemaking.models.geo.Track.get_or_create")
+def test_generate_track_splits_long_tracks(
+    mock_get_or_create: mock.MagicMock,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
+    mock_aac_client1: AacClient,
+    mock_aac_client2: AacClient,
+    mock_geo_controller: GeospatialSensemakerController,
+    source1: SourceSource,
+    oms_node: NodeNode,
+    track_points: list[Point],
+):
+    """Test that tracks spanning more than max_track_time_length_seconds are split into multiple tracks."""
+    # register the sensemaker without starting the listener
+    mock_geo_controller.register("geo", CotravelSensemaker(OmsCrudTool()))
+
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source1)
+
+    # mock track creation
+    track_uuid = uuid4()
+
+    # Create points spanning more than the max track time (7 days by default)
+    # Add points at day 0, 3, 6, 9, 12 (should create 2 tracks: 0-6 days and 9-12 days)
+    base_time = datetime.now(tz=timezone.utc)
+    long_track_points = []
+    for i, day_offset in enumerate([0, 3, 6, 9, 12]):
+        point = Point(
+            node_id=oms_node.id,
+            node_version=1,
+            source_id=source1.id,
+            observation_id=uuid4(),
+            observation_version=1,
+            observation_confidence=Confidence.HIGH,
+            location=f"POINT({-74.0 + i * 0.1} {40.0 + i * 0.1})",
+            altitude=0.0,
+            detection_time=base_time + timedelta(days=day_offset),
+            acm=DEFAULT_ACM,
+            weight=1.0,
+        )
+        long_track_points.append(point)
+
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: long_track_points}
+    mock_geo_controller.track_times = {track_uuid: base_time}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+
+    # Mock Track.get_or_create to return mock tracks
+    mock_track1 = mock.MagicMock()
+    mock_track1.points = long_track_points[:3]  # First 3 points (days 0, 3, 6)
+    mock_track2 = mock.MagicMock()
+    mock_track2.points = long_track_points[3:]  # Last 2 points (days 9, 12)
+
+    # Mock get_or_create to return different tracks for different calls
+    mock_get_or_create.side_effect = [(mock_track1, True), (mock_track2, True)]
+
+    # Mock the APITrack.create_oms_track method to return a mock track
+    mock_oms_track = mock.MagicMock()
+    mock_oms_track.id = uuid4()
+    with mock.patch("oms_sensemaking.dao.track.APITrack.create_oms_track", return_value=mock_oms_track):
+        # call _generate_track - should return multiple tracks
+        tracks = mock_geo_controller._generate_track(track_uuid=track_uuid)
+
+    # Should return 2 tracks (split at 7-day boundary)
+    assert len(tracks) == 2
+
+    # First track should have points from days 0, 3, 6
+    first_track = tracks[0]
+    assert len(first_track.points) == 3
+    assert first_track.points[0].detection_time == base_time
+    assert first_track.points[1].detection_time == base_time + timedelta(days=3)
+    assert first_track.points[2].detection_time == base_time + timedelta(days=6)
+
+    # Second track should have points from days 9, 12
+    second_track = tracks[1]
+    assert len(second_track.points) == 2
+    assert second_track.points[0].detection_time == base_time + timedelta(days=9)
+    assert second_track.points[1].detection_time == base_time + timedelta(days=12)
+
+
+@mock.patch("oms_sensemaking.geospatial.controllers.aac_client")
+@mock.patch("oms_sensemaking.models.geo.aac_client")
+@mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
+@mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
+@mock.patch("oms_sensemaking.models.geo.Track.get_or_create")
+def test_process_track_runs_sensemakers_on_all_split_tracks(
+    mock_get_or_create: mock.MagicMock,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
+    mock_aac_client1: AacClient,
+    mock_aac_client2: AacClient,
+    mock_geo_controller: GeospatialSensemakerController,
+    source1: SourceSource,
+    oms_node: NodeNode,
+    track_points: list[Point],
+):
+    """Test that sensemakers run on all tracks created after splitting."""
+    # register the sensemaker without starting the listener
+    mock_sensemaker = CotravelSensemaker(OmsCrudTool())
+    mock_geo_controller.register("geo", mock_sensemaker)
+
+    mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
+    mock_geo_controller.oms_crud_tool.get_source = mock.MagicMock(return_value=source1)
+
+    # mock track creation
+    track_uuid = uuid4()
+
+    # Create points spanning more than the max track time (7 days by default)
+    base_time = datetime.now(tz=timezone.utc)
+    long_track_points = []
+    for i, day_offset in enumerate([0, 3, 6, 9, 12]):
+        point = Point(
+            node_id=oms_node.id,
+            node_version=1,
+            source_id=source1.id,
+            observation_id=uuid4(),
+            observation_version=1,
+            observation_confidence=Confidence.HIGH,
+            location=f"POINT({-74.0 + i * 0.1} {40.0 + i * 0.1})",
+            altitude=0.0,
+            detection_time=base_time + timedelta(days=day_offset),
+            acm=DEFAULT_ACM,
+            weight=1.0,
+        )
+        long_track_points.append(point)
+
+    # set up track buffer
+    mock_geo_controller.track_node_buffer = {track_uuid: long_track_points}
+    mock_geo_controller.track_times = {track_uuid: base_time}
+    mock_geo_controller.get_node_ancestors_iris = mock.MagicMock(return_value=set())
+
+    # Mock Track.get_or_create to return mock tracks
+    mock_track1 = mock.MagicMock()
+    mock_track1.points = long_track_points[:3]  # First 3 points (days 0, 3, 6)
+    mock_track2 = mock.MagicMock()
+    mock_track2.points = long_track_points[3:]  # Last 2 points (days 9, 12)
+
+    # Mock get_or_create to return different tracks for different calls
+    mock_get_or_create.side_effect = [(mock_track1, True), (mock_track2, True)]
+
+    # Mock the APITrack.create_oms_track method to return a mock track
+    mock_oms_track = mock.MagicMock()
+    mock_oms_track.id = uuid4()
+
+    with mock.patch("oms_sensemaking.dao.track.APITrack.create_oms_track", return_value=mock_oms_track):
+        # call _process_track - should process both split tracks
+        result = mock_geo_controller._process_track(track_uuid)
+
+    # Should return True (successful processing)
+    assert result is True
+
+    # Verify that Track.get_or_create was called twice (once for each split track)
+    assert mock_get_or_create.call_count == 2

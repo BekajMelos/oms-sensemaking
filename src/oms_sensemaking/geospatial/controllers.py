@@ -248,19 +248,16 @@ class GeospatialSensemakerController(SensemakerController):
                 self.track_times[track_uuid] = None
                 return False
 
-            # Run sensemakers on all created tracks
-            for track in tracks:
-                geo_config = self._get_geo_config(track)
-
-                with ThreadPoolExecutor() as executor:
-                    futures = []
+            futures = []
+            with ThreadPoolExecutor() as executor:
+                for track in tracks:
+                    geo_config = self._get_geo_config(track)
                     for sensemaker in self._registry.values():
                         future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
                         futures.append(future)
 
-                    # make sure errors are caught
-                    for future in as_completed(futures):
-                        _ = future.result()
+                for future in as_completed(futures):
+                    _ = future.result()
         except Exception as e:
             LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
         finally:
