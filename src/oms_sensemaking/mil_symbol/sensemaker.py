@@ -30,6 +30,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
@@ -127,11 +128,10 @@ class MilSymbolSensemaker(Sensemaker):
             else:
                 return []
         except KeyError as e:
-            LOGGER.warning(
-                f"symbol Id code: {symbol_id_code} is invalid and cannot be processed by"
-                f"the MilSybmol Sensemaker because of the following character: {e.args[0]}"
-            )
-            return []
+            raise MilSymbolInvalidIdCharError(
+                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by"
+                f"the MilSymbol Sensemaker because of the following character: {e.args[0]}"
+            ) from e
 
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code

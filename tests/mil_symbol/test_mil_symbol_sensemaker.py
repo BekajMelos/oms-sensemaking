@@ -19,6 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 
@@ -586,3 +587,32 @@ def test_controlling_affiliation_enrichment(
     assert code_c.new_symbol_id_code == "SHAD------*****"
     assert code_b.new_symbol_id_code == "SHAP------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()
+
+
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+def test_milsym_invalid_char_error(
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
+):
+    sensemaker = build_sensemaker
+    ### Mocks
+    ## Mock getting acm
+    mock_get_acm.return_value = DEFAULT_ACM
+
+    # case 1
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
+    sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
+    oms_node.symbolIdCode = "10-0-0-89-0-0-32-000000-00-00"  # 89 is invalid
+    oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
+
+    with pytest.raises(MilSymbolInvalidIdCharError) as exc_info:
+        sensemaker.process_data(oms_node)
+    assert "is invalid and cannot be processed" in str(exc_info.value)
