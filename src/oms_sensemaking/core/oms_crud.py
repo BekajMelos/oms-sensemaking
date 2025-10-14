@@ -341,6 +341,15 @@ class OmsCrudTool(BaseClient):
         warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
 
+    def get_mil_symbol_attr(
+        self, node_id: str, context_iris: list[str], status_iris: list[str], echelon_iris: list[str]
+    ):
+        context_query = AttributeQuery(nodeIds=[node_id], attributeIris=context_iris)
+        status_query = AttributeQuery(nodeIds=[node_id], attributeIris=status_iris)
+        echelon_query = AttributeQuery(nodeIds=[node_id], attributeIris=echelon_iris)
+
+        return self.oms_client.mil_symbol_attributes(context_query, status_query, echelon_query)
+
     def get_nodes_by_tags(self, tags: list[str], page: PageParams) -> NodesNodes:
         """Get nodes from OMS filtered by tag"""
         query = NodeQuery(tags=tags, pageParams=page)

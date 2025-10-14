@@ -63,6 +63,7 @@
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
 | `ATOMS_CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `ATOMS_CLIENT_VERIFY_SSL`  | `True`                                 | Whether the service will verify ssl connections to the ATOMS API       | No             |
 | `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
 | `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
 

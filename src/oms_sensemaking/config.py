@@ -495,6 +495,16 @@ class Settings(BaseSettings):
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
     )
+    atoms_cacert_path: str | None = Field(
+        None,
+        description="Path to pem formatted self signed cert or private ssl cert",
+        examples=[None, "/opt/common/pki/trusted.crt"]
+    )
+    atoms_client_verify_ssl: bool | None = Field(
+        True,
+        description="Whether to verify the private ssl certificate",
+        examples=[True, False]
+    )
     pkcs12_path: str | None = Field(
         None,
         description="Optional path to a pkcs12 cert",

@@ -15,7 +15,7 @@ from oms_sdk.generated.generated_async_graphql_client import (
 )
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.async_oms_crud import AsyncOmsCrudTool
+from oms_sensemaking.core.async_atoms_crud import AsyncOmsCrudTool
 from oms_sensemaking.core.oms_crud import OmsCrudTool as SyncOmsCrudTool
 
 
