@@ -46,10 +46,6 @@
         "STATUS_LISTS": {
             "A": ["anticipated", "planned"],
             "P": ["present"],
-            "C": ["fully capable"],
-            "D": ["damaged"],
-            "X": ["destroyed"],
-            "F": ["full to capacity"],
             "*": ["present"],
             "-": ["present"]
         },
@@ -210,7 +206,9 @@
             "C": ["civilian ob"],
             "G": ["ground ob"],
             "N": ["maritime ob"],
-            "S": ["strategic force related"]
+            "S": ["strategic force related"],
+            "*": ["null", "unknown"],
+            "-": ["null", "unknown"]
         }
     },
     "MIL_SYMBOL_2525C": {
@@ -432,7 +430,9 @@
             "C": ["civilian ob"],
             "G": ["ground ob"],
             "N": ["maritime ob"],
-            "S": ["strategic force related"]
+            "S": ["strategic force related"],
+            "*": ["null", "unknown"],
+            "-": ["null", "unknown"]
         }
     },
     "MIL_SYMBOL_2525D": {
@@ -510,7 +510,20 @@
             "23": ["army"],
             "24": ["army group", "front"],
             "25": ["region", "theater"],
-            "26": ["command"]
+            "26": ["command"],
+            "31": ["mobility wheeled", "limited cross country"],
+            "32": ["mobility cross country"],
+            "33": ["mobility tracked"],
+            "34": ["mobility wheeled and tracked combination"],
+            "35": ["mobility towed"],
+            "36": ["mobility rail"],
+            "37": ["mobility pack animals"],
+            "41": ["mobility over the snow"],
+            "42": ["mobility sled"],
+            "51": ["mobility barge"],
+            "52": ["mobility amphibious"],
+            "61": ["towed array short"],
+            "62": ["towed array long"]
         }
     }
 }
