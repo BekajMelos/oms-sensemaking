@@ -5,8 +5,8 @@ Load Testing is a process of seeing how well the application performs with more 
 ## Setup
 
 Activate Python:
-```shell
-  source .venv/bin/activate
+```
+source .venv/bin/activate
 ```
 Add the `metrics` profile to `.env`:
 
@@ -18,8 +18,16 @@ Run `make up` to ensure the Prometheus and Grafana services spin up.
 
 ## Run a load test
 
-```shell
-  make load-incursions
+Run a load test of ATOMS entities (default: 100 units). 
+
+```
+make load-incursions
+```
+
+To customize the number of units:
+
+```
+make load-incursions limit=10000
 ```
 
 ## View performance metrics

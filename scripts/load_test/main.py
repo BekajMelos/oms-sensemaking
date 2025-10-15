@@ -1,3 +1,4 @@
+import argparse
 import random
 from abc import ABC, abstractmethod
 from typing import Protocol
@@ -322,8 +323,20 @@ def observe_units(units: list[Unit], sourcing: Sourcing):
 
 
 if __name__ == "__main__":
-    print("running load test")
-    limit = 10
+    parser = argparse.ArgumentParser(
+        description="Load test script for creating units, garrisons, and observations in ATOMS Sensemaking."
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=100,
+        help="Number of units/garrisons/observations to create (default: 100)",
+    )
+
+    args = parser.parse_args()
+    limit = args.limit
+
+    print(f"Running load test with limit={limit}")
     units = create_units(limit)
     sourcing: Sourcing = create_sourcing()
     garrisons = create_garrisons(limit, sourcing)

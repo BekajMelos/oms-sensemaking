@@ -9,6 +9,8 @@ export
 ##    complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
 ## Reference: https://stackoverflow.com/a/38415982
 
+limit ?= 100
+
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -110,4 +112,4 @@ refresh: nuke  # Purge all generated content and restart
 	docker compose --profile local up --build -d
 
 load-incursions:
-	python scripts/load_test/main.py
+	python scripts/load_test/main.py --limit $(limit)
