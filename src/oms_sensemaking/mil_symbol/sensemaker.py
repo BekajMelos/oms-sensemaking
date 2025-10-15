@@ -30,6 +30,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
@@ -111,21 +112,26 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525d = None
 
         mil_symbol = MilSymbolMaker.make(symbol_id_code, self.settings)
-
-        if isinstance(mil_symbol, MilSymbol2525D):
-            code_2525d = mil_symbol
-            code_2525c = to_2525c(code_2525d, self.settings)
-            code_2525b = to_2525b(code_2525c, self.settings)
-        elif isinstance(mil_symbol, MilSymbol2525C):
-            code_2525c = mil_symbol
-            code_2525b = to_2525b(code_2525c, self.settings)
-            code_2525d = to_2525d(code_2525c, self.settings)
-        elif isinstance(mil_symbol, MilSymbol2525B):
-            code_2525b = mil_symbol
-            code_2525c = to_2525c(code_2525b, self.settings)
-            code_2525d = to_2525d(code_2525c, self.settings)
-        else:
-            return []
+        try:
+            if isinstance(mil_symbol, MilSymbol2525D):
+                code_2525d = mil_symbol
+                code_2525c = to_2525c(code_2525d, self.settings)
+                code_2525b = to_2525b(code_2525c, self.settings)
+            elif isinstance(mil_symbol, MilSymbol2525C):
+                code_2525c = mil_symbol
+                code_2525b = to_2525b(code_2525c, self.settings)
+                code_2525d = to_2525d(code_2525c, self.settings)
+            elif isinstance(mil_symbol, MilSymbol2525B):
+                code_2525b = mil_symbol
+                code_2525c = to_2525c(code_2525b, self.settings)
+                code_2525d = to_2525d(code_2525c, self.settings)
+            else:
+                return []
+        except KeyError as e:
+            raise MilSymbolInvalidIdCharError(
+                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by"
+                f"the MilSymbol Sensemaker because of the following character: {e.args[0]}"
+            ) from e
 
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code
