@@ -25,6 +25,11 @@ services:
       # misc.
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
       RELOAD_APP: ${RELOAD_APP:-1}
+      
+      # OpenTelemetry configuration
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_SERVICE_NAME: oms-sensemaking
+      OTEL_TRACES_SAMPLER: always_on
     volumes:
       - .:/app
       - ./etc/pki:/opt/common/pki
@@ -295,6 +300,64 @@ services:
     profiles:
       - local
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090" 
+    volumes:
+      - './docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml' # Custom config
+      - 'prometheus_data:/prometheus'
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+      - '--web.enable-otlp-receiver'
+      - '--enable-feature=native-histograms'
+    restart: always
+    profiles:
+      - metrics
+
+  grafana:
+    image: grafana/grafana:12.0.0
+    container_name: grafana
+    restart: always
+    ports:
+      - "3001:3000" 
+    env_file:
+      - docker/grafana/grafana.env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+      - GF_AUTH_ORG_ROLE=${GF_AUTH_ORG_ROLE}
+    volumes:
+      - "./docker/grafana/dashboards/:/etc/grafana/provisioning/dashboards/"
+      - "./docker/grafana/datasources/:/etc/grafana/provisioning/datasources/"
+      - "./docker/grafana/grafana.ini:/etc/grafana/grafana.ini"
+      - "grafana_data:/var/lib/grafana"
+    depends_on:
+      - prometheus 
+      - tempo
+    profiles:
+      - metrics
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - "./docker/tempo/tempo.yaml:/etc/tempo.yaml"
+    ports:
+      - "3200:3200"   # tempo
+      - "4317:4317"   # otlp grpc
+      - "4318:4318"   # otlp http
+    profiles:
+      - metrics
   sonarqube:
     container_name: sonarqube
     image: ${DOCKER_REGISTRY}/sonarqube:9.9.8-community
@@ -309,6 +372,8 @@ volumes:
   pgadmin:
   postgis:
   elasticsearch:
+  prometheus_data:
+  grafana_data:
 
 secrets:
   mynetrc:

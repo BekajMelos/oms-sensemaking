@@ -301,6 +301,7 @@ class Settings(BaseSettings):
     generate_inferences: bool = Field(True, description="Turn the Inference Sensemaker on and off")
     toggle_add_garrison_rule: bool = Field(True, description="Toggle on/off Add Garrison Attr. Rule")
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
+    toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
         [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
@@ -522,6 +523,19 @@ class Settings(BaseSettings):
 
     rethrow_errors_enabled: bool = Field(True, description="Enable rethrowing of sensemaking errors")
 
+    enable_telemetry: bool = Field(
+        default=True, description="Enable OpenTelemetry metrics collection"
+    )
+
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
+    )
+    otel_service_name: str = Field(
+        default="oms-sensemaking", description="OpenTelemetry service name"
+    )
+    otel_traces_sampler: str = Field(
+        default="always_on", description="OpenTelemetry traces sampler"
+    )
     user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
 
     @computed_field  # type: ignore
