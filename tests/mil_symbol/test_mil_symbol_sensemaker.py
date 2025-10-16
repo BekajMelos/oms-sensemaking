@@ -586,3 +586,22 @@ def test_controlling_affiliation_enrichment(
     assert code_c.new_symbol_id_code == "SHAD------*****"
     assert code_b.new_symbol_id_code == "SHAD------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "tags, expected_value, message",
+    [
+        ([], False, "expected untagged object to not have mil symbol tags"),
+        (
+            SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            True,
+            "expected object tagged with mil symbol tags to have the mil symbol tags",
+        ),
+    ],
+)
+def test_has_mil_symbol_sensemaker_tags(
+    tags: list[str], expected_value, message: str, build_sensemaker: MilSymbolSensemaker
+):
+    sensemaker = build_sensemaker
+    actual = sensemaker.has_mil_symbol_sensemaker_tags(tags)
+    assert actual == expected_value, message
