@@ -17,6 +17,14 @@ from ..config import SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+db_engine = create_engine(
+    SETTINGS.db_uri,  # type: ignore
+    pool_pre_ping=True,
+    connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
+)
+
+SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
+
 
 @contextmanager
 def db_session() -> Iterator[Session]:
@@ -31,14 +39,6 @@ def db_session() -> Iterator[Session]:
             db.add(some_orm_model)
             db.commit()
     """
-
-    db_engine = create_engine(
-        SETTINGS.db_uri,  # type: ignore
-        pool_pre_ping=True,
-        connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
-    )
-
-    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
 
     db = SessionLocal()
 
