@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Corrected the Jenkins build job for the Sensemaking image which occasionaly created incorrect versions
 - Allow test coverage portion of the Jenkins pipeline to run and post results to SonarQube in AIDE
 - Fixed MilSymbol Sensemaker bug where an invalid character part of a symbol Id code would be processed and cause errors in the service
+- Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker-trigger processing performance. 
 
 ### Removed
 
