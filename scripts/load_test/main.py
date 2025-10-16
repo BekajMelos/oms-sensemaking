@@ -1,5 +1,6 @@
 import argparse
 import random
+import uuid
 from abc import ABC, abstractmethod
 from typing import Protocol
 
@@ -230,8 +231,11 @@ def create_units(limit) -> list[Unit]:
 
 
 def create_sourcing() -> Sourcing:
+    unique_suffix = uuid.uuid4().hex[:8]
     try:
-        originator_input = CreateOriginatorInput(name="originator", description="descr", tags=[], acm=DEFAULT_ACM)
+        originator_input = CreateOriginatorInput(
+            name=f"originator-{unique_suffix}", description="descr", tags=[], acm=DEFAULT_ACM
+        )
         orig = atoms_client.client.create_originator(originator_input)
     except GraphQLClientGraphQLMultiError as e:
         if len(e.errors) == 1 and e.errors[0].message == "An object already exists with the given unique key":
@@ -240,7 +244,7 @@ def create_sourcing() -> Sourcing:
             raise e
     try:
         provider_input = CreateProviderInput(
-            name="provider", description="descr", originatorId=orig.id, acm=DEFAULT_ACM
+            name=f"provider-{unique_suffix}", description="descr", originatorId=orig.id, acm=DEFAULT_ACM
         )
         prov = atoms_client.client.create_provider(provider_input)
     except GraphQLClientGraphQLMultiError as e:
@@ -253,7 +257,7 @@ def create_sourcing() -> Sourcing:
             name="source",
             providerId=prov.id,
             acm=DEFAULT_ACM,
-            identifier="https://dev.com",
+            identifier=f"https://dev.com/loadtest/{unique_suffix}",
             dataAcm=DEFAULT_ACM,
             dateOfReport="2023-01-01T00:00:00+00:00",
             dateOfInformation="2023-01-01T00:00:00+00:00",
