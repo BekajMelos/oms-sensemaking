@@ -9,3 +9,9 @@ class TrackLengthError(SensemakingError):
     """
     Tracks must have at least two points
     """
+
+
+class MilSymbolInvalidIdCharError(SensemakingError):
+    """
+    All characters within a MylSymbol Id must be valid
+    """
