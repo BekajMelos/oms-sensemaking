@@ -291,20 +291,19 @@ class GeospatialSensemakerController(SensemakerController):
 
         time_bins = self.bin_points_for_track(points)
         csf_funcs = GeoCSFTrackPointHelpers(cs_filters=self.common_sense_filters)
-        for binned_points in time_bins.values():
-            # since we split the track points into bins, each bin needs an id
+
+        if len(time_bins) == 1:
+            binned_points = list(time_bins.values())[0]
             sub_track_id = uuid4()
-            LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+            LOGGER.debug(f"Single time bin {sub_track_id} from {track_uuid}")
 
             binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
-            # Execute a track weaver on the buffered Points
-            # and save the new Track with the chosen UUID
             weaved_track = self.track_weaver.execute(binned_points)
 
             weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
-            # Abort and do not clear buffer if final track has less than 2 points
             if len(weaved_track.points) < 2:
-                continue
+                raise TrackLengthError("Not enough points for track.") from None
+
             track_dict = {
                 "points": weaved_track.points,
                 "node_id": weaved_track.node_id,
@@ -326,6 +325,40 @@ class GeospatialSensemakerController(SensemakerController):
             LOGGER.info(f"OMS Track published: {oms_track.id}")
 
             tracks.append(track)
+        else:
+            for binned_points in time_bins.values():
+                sub_track_id = uuid4()
+                LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+
+                binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
+
+                weaved_track = self.track_weaver.execute(binned_points)
+
+                weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
+                if len(weaved_track.points) < 2:
+                    continue
+
+                track_dict = {
+                    "points": weaved_track.points,
+                    "node_id": weaved_track.node_id,
+                    "algorithm": weaved_track.algorithm,
+                    "observation_ids": weaved_track.observation_ids,
+                    "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
+                }
+
+                with db_session() as db:
+                    db.expire_on_commit = False
+                    track, _ = Track.get_or_create(
+                        session=db,
+                        defaults=track_dict,
+                        track_uuid=sub_track_id,
+                    )
+
+                LOGGER.info(f"Track completed: {sub_track_id}")
+                oms_track = APITrack(track).create_oms_track()
+                LOGGER.info(f"OMS Track published: {oms_track.id}")
+
+                tracks.append(track)
 
         if not tracks:
             raise TrackLengthError("Not enough points for track.") from None
