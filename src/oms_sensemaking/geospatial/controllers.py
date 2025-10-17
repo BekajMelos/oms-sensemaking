@@ -2,7 +2,6 @@
 
 import json
 import logging
-import time
 import traceback
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -34,20 +33,6 @@ from oms_sensemaking.models.geo import (
 )
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class PerformanceEvent:
-    def __init__(self, event_desc: str) -> None:
-        self.event_desc = event_desc
-        self.event_time = time.perf_counter()
-        LOGGER.warning(f"\n\n{self.event_desc}")
-
-
-class PerformanceEvaluator:
-    def evaluate(self, event1: PerformanceEvent, event2: PerformanceEvent):
-        LOGGER.warning(f"Evaluating elapsed time between {event1.event_desc} and {event2.event_desc}")
-        elaspsed_time = event2.event_time - event1.event_time
-        LOGGER.warning(f"Elapsed Time was: {elaspsed_time:.6f} seconds")
 
 
 class GeospatialSensemakerController(SensemakerController):
@@ -87,8 +72,6 @@ class GeospatialSensemakerController(SensemakerController):
         with open(SETTINGS.geo_sensemaker_config_file_path) as fd:
             geo_config = json.load(fd)
         self.config: dict = geo_config
-
-        self.pe = PerformanceEvaluator()
 
     def start(self) -> None:
         """Start the controller."""
@@ -214,14 +197,11 @@ class GeospatialSensemakerController(SensemakerController):
                 if point:
                     if not is_new:
                         LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-                    locking = PerformanceEvent("Locking the thread")
                     with self.lock:
                         # we just received the point, so set the track_id time to now in the buffer
                         self.track_times[track_uuid] = now
                         self.track_node_buffer[track_uuid].append(point)
                         success = True
-                    unlocking = PerformanceEvent("Unlocking the thread")
-                    self.pe.evaluate(locking, unlocking)
         return success
 
     def flush_buffer(self) -> None:
