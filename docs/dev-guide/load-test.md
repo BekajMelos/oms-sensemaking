@@ -21,13 +21,13 @@ Run `make up` to ensure the Prometheus and Grafana services spin up.
 Run a load test of ATOMS entities (default: 100 units). 
 
 ```
-make load-incursions
+make load-out-of-garrison
 ```
 
 To customize the number of units:
 
 ```
-make load-incursions limit=10000
+make load-out-of-garrison limit=10000
 ```
 
 ## View performance metrics
