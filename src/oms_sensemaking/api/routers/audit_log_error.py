@@ -1,25 +1,27 @@
 """Rest Endpoint for Audit Log Error"""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
-from oms_sensemaking.clients.instances import aac_client
-from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.clients.audit_log_error_client import AuditLogErrorClient
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 router: APIRouter = APIRouter()
 
 
-@router.post("/audit")
-def get_audit_log_errors(user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]) -> Response:
-    """Clear Local AAC Cache. Available to Authorized Users Only"""
-    LOGGER.info("Clearing Local AAC Cache. User %s", user_dn)
-    if SETTINGS.aac_cache_enabled:
-        aac_client.clear_cache()
-    else:
-        raise HTTPException(400, detail="Local AAC Cache not enabled. Unable to clear cache.")
-    return Response(status_code=204)
+@router.get("/audit")
+@router.get("/audit.{exception_name}")
+def get_audit_log_errors(
+    user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)], exception_name: Optional[str] = None
+) -> Response:
+    """View Audit Error Logs"""
+    LOGGER.info("Displaying Audit Error Logs to Whitelisted user. User %s", user_dn)
+    audit_log_error_client = AuditLogErrorClient()
+    errors = audit_log_error_client.get_audit_log_errors(exception_name)
+    if not errors:
+        raise HTTPException(404, detail="Unable to display Audit Log Errors.")
+    return errors
