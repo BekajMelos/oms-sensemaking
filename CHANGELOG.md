@@ -8,12 +8,17 @@ All notable changes to this project will be documented in this file.
 - Async OMS Client
 - Ensure automated tests have 80% coverage
 - Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
+- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
+- Removed Postgres Client and EPEL repository installation in Dockerfile
 
 ### Fixed
 
 - Fixed `make nuke` target so that it now purges all volumes assosiated with oms-sensemaking.
+- Corrected the Jenkins build job for the Sensemaking image which occasionaly created incorrect versions
+- Allow test coverage portion of the Jenkins pipeline to run and post results to SonarQube in AIDE
+- Fixed MilSymbol Sensemaker bug where an invalid character part of a symbol Id code would be processed and cause errors in the service
 
 ### Removed
 
@@ -60,7 +65,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Log request header information
 - Added authorization for POST /aac/clear endpoint
-- OpenTelemetry integration for queue processing time and event counting metrics
 
 ### Changed
 - Dockerfile and related build files are now ready to build UBI8 based images for Sensemaking in the AIDE environment

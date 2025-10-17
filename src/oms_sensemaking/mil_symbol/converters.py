@@ -24,8 +24,12 @@ def to_2525b(code_2525c: MilSymbol2525C, settings: Dict) -> MilSymbol2525B:
 
     # convert status, when starting with C, corresponding B will match status
     status = code_2525c.code[MilSymbol2525C.MIL_SYM_2525_B_C_STATUS_IDX]
-    code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_STATUS_IDX, status)
-    LOGGER.debug("Converted status from C to B")
+    status_list_c = settings["MIL_SYMBOL_2525C"]["STATUS_LISTS"][status]
+    for code, status_list_b in settings["MIL_SYMBOL_2525B"]["STATUS_LISTS"].items():
+        if set(status_list_c) & set(status_list_b) and code == status:
+            code_2525b.update_code(MilSymbol2525B.MIL_SYM_2525_B_C_STATUS_IDX, status)
+            LOGGER.debug("Converted status from C to B")
+            break
 
     # convert sym modifier, when starting with C, corresponding B may/may not match sym modifier
     # Due to command sym modifier codes existing in C, but not in B

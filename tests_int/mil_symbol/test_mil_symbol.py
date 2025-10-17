@@ -424,7 +424,7 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_he
     )
 
     assert len(findings) == 3
-    new_id_codes_case = ["10-0-1-30-3-0-00-000000-00-00", "SUSD------*****", "SOSD------*****"]
+    new_id_codes_case = ["10-0-1-30-3-0-00-000000-00-00", "SUSD------*****", "SOSP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
@@ -480,7 +480,7 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_he
     )
 
     assert len(findings) == 3
-    new_id_codes_case = ["10-0-1-30-3-0-32-000000-00-00", "SUSD------*****", "SOSD------*****"]
+    new_id_codes_case = ["10-0-1-30-3-0-32-000000-00-00", "SUSD------*****", "SOSP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
@@ -506,7 +506,7 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
     sensemaker = helper.sensemaker
 
     oms_node = create_node(
-        oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGD------*****"
+        oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
     sensemaker.get_context = mock.MagicMock(
         return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
@@ -534,7 +534,7 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
     )
 
     assert len(findings) == 3
-    new_id_codes_case = ["10-0-1-10-4-0-00-000000-00-00", "SUGX------*****", "SOGX------*****"]
+    new_id_codes_case = ["10-0-1-10-4-0-00-000000-00-00", "SUGX------*****", "SOGP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
@@ -560,7 +560,7 @@ def test_echelon_enrichment(mock_source, db, build_helper):
     sensemaker = helper.sensemaker
 
     oms_node = create_node(
-        oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGD------*****"
+        oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
     sensemaker.get_context = mock.MagicMock(
         return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
@@ -591,7 +591,7 @@ def test_echelon_enrichment(mock_source, db, build_helper):
     )
 
     assert len(findings) == 3
-    new_id_codes_case = ["10-0-1-10-4-0-11-000000-00-00", "SUGX------*A***", "SOGX------*A***"]
+    new_id_codes_case = ["10-0-1-10-4-0-11-000000-00-00", "SUGX------*A***", "SOGP------*A***"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
     for symbol in symbols:
