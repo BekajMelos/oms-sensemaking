@@ -87,6 +87,8 @@ class OmsCrudTool(BaseClient):
             key_path=SETTINGS.key_path,
             pkcs12_path=SETTINGS.pkcs12_path,
             pkcs12_password=SETTINGS.pkcs12_password,
+            ssl_cert_file_path=SETTINGS.atoms_cacert_path,
+            verify_ssl=SETTINGS.atoms_client_verify_ssl,
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:

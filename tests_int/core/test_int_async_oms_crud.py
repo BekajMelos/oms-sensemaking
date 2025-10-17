@@ -15,13 +15,13 @@ from oms_sdk.generated.generated_async_graphql_client import (
 )
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.async_atoms_crud import AsyncOmsCrudTool
+from oms_sensemaking.core.async_atoms_crud import AsyncAtomsCrudTool
 from oms_sensemaking.core.oms_crud import OmsCrudTool as SyncOmsCrudTool
 
 
 @pytest.fixture
-def oms_crud_tool():
-    return AsyncOmsCrudTool()
+def atoms_crud_tool():
+    return AsyncAtomsCrudTool()
 
 
 @pytest.fixture
@@ -80,13 +80,13 @@ def cleanup_data(inject_tags, sync_oms_crud_tool):
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def starter_graph(oms_crud_tool, node_input, cleanup_data):
-    node = await oms_crud_tool.create_node(node_input)
+async def starter_graph(atoms_crud_tool, node_input, cleanup_data):
+    node = await atoms_crud_tool.create_node(node_input)
 
     originator_input = CreateOriginatorInput(
         name="Test Originator", description="originator desc", tags=SETTINGS.sm_test_tags, acm=DEFAULT_ACM
     )
-    originator = await oms_crud_tool.create_originator(originator_input)
+    originator = await atoms_crud_tool.create_originator(originator_input)
     provider_input = CreateProviderInput(
         name="Test Provider",
         description="provider desc",
@@ -95,7 +95,7 @@ async def starter_graph(oms_crud_tool, node_input, cleanup_data):
         defaultAcm=DEFAULT_ACM,
         acm=DEFAULT_ACM,
     )
-    provider = await oms_crud_tool.create_provider(provider_input)
+    provider = await atoms_crud_tool.create_provider(provider_input)
     source_input = CreateSourceInput(
         name="Test Source",
         description="source desc",
@@ -107,7 +107,7 @@ async def starter_graph(oms_crud_tool, node_input, cleanup_data):
         identifier="nlp_test_identifier",
         dataAcm=DEFAULT_ACM,
     )
-    source = await oms_crud_tool.create_source(source_input)
+    source = await atoms_crud_tool.create_source(source_input)
 
     yield SimpleTestGraph(node, originator, provider, source)
 
@@ -127,14 +127,14 @@ class SimpleTestGraph:
 
 
 @pytest.mark.asyncio
-async def test_create_node(cleanup_data, oms_crud_tool, node_input):
-    response = await oms_crud_tool.create_node(node_input)
+async def test_create_node(cleanup_data, atoms_crud_tool, node_input):
+    response = await atoms_crud_tool.create_node(node_input)
 
     assert response.id
 
 
 @pytest.mark.asyncio
-async def test_create_observation(oms_crud_tool, starter_graph):
+async def test_create_observation(atoms_crud_tool, starter_graph):
     async for graph in starter_graph:
         obs_input = CreateObservationInput(
             acm=DEFAULT_ACM,
@@ -150,13 +150,13 @@ async def test_create_observation(oms_crud_tool, starter_graph):
             sourceId=graph.source.id,
         )
 
-        obs = await oms_crud_tool.create_observation(obs_input)
+        obs = await atoms_crud_tool.create_observation(obs_input)
 
         assert obs.id
 
 
 @pytest.mark.asyncio
-async def test_create_activity(oms_crud_tool, starter_graph):
+async def test_create_activity(atoms_crud_tool, starter_graph):
     async for graph in starter_graph:
         activity_input = CreateActivityInput(
             name="test activity",
@@ -170,6 +170,6 @@ async def test_create_activity(oms_crud_tool, starter_graph):
             state="UNKNOWN",
         )
 
-        activity = await oms_crud_tool.create_activity(activity_input)
+        activity = await atoms_crud_tool.create_activity(activity_input)
 
         assert activity.id
