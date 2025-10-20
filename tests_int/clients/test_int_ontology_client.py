@@ -24,4 +24,4 @@ def test_get_ontology_class():
     cached_time = end_time - start_time
 
     assert res.name == "Planned Act"
-    assert cached_time * 1000 < uncached_time
+    assert f"{cached_time:.8f}" * 1000 < f"{uncached_time:.8f}"
