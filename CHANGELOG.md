@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Removed Postgres Client and EPEL repository installation in Dockerfile
+- Updated ATOMS dependency to Grimlock-INC-33
 
 ### Fixed
 
