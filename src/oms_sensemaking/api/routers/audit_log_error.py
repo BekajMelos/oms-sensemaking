@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.clients.audit_log_error_client import AuditLogErrorClient
@@ -14,14 +14,16 @@ router: APIRouter = APIRouter()
 
 
 @router.get("/audit")
-@router.get("/audit.{exception_name}")
 def get_audit_log_errors(
-    user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)], exception_name: Optional[str] = None
+    user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)],
+    exception_name: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    pagesize: int = Query(25, ge=1, le=100),
 ) -> Response:
     """View Audit Error Logs"""
     LOGGER.info("Displaying Audit Error Logs to Whitelisted user. User %s", user_dn)
     audit_log_error_client = AuditLogErrorClient()
-    errors = audit_log_error_client.get_audit_log_errors(exception_name)
+    errors = audit_log_error_client.get_audit_log_errors(exception_name, page, pagesize)
     if not errors:
         raise HTTPException(404, detail="Unable to display Audit Log Errors.")
     return errors
