@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 import shapely
 from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode, SourceSource
+from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode, ObservationObservation, SourceSource
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
@@ -291,3 +291,11 @@ def test_track_too_short1(
     assert caplog.records[-1].message == (
         "Track doesn't have enough points. Ignore and remove from buffer until it gets more points"
     )
+
+
+def test_observations_can_make_tracks(mocker: MockerFixture, mock_geo_controller: GeospatialSensemakerController):
+    mock_obs = mocker.MagicMock(spec=ObservationObservation)
+    mock_obs.geometry = {"type": "point", "coordinates": [2.3522, 48.8566]}
+    mock_geo_controller.oms_crud_tool.get_observation = mocker.Mock(spec=ObservationObservation, return_value=mock_obs)
+    obs = mock_geo_controller.get_oms_observation("some-id")
+    assert obs == mock_obs

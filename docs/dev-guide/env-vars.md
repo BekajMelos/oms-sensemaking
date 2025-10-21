@@ -63,6 +63,7 @@
 | `CERT_PATH`    | `./pki/test10.pem`                                 | Path to User PEM          | No             |
 | `KEY_PATH`     | `./pki/test10.key`                                 | Path to User Key          | No             |
 | `ATOMS_CACERT_PATH`  | `./etc/cacert.pem`                                 | Path to CA Cert PEM       | No             |
+| `ATOMS_CLIENT_VERIFY_SSL`  | `True`                                 | Whether the service will verify ssl connections to the ATOMS API       | No             |
 | `PKCS12_PATH`  | `./etc/sensemaking_cert.pfx`                       | Path to PKCS12 Cert       | No             |
 | `PKCS12_PASSWORD`| `P@55w0rd`                                       | Password for PKCS12 Cert  | No             |
 
@@ -143,6 +144,7 @@
 | `RABBITMQ_PREFETCH_COUNT`                    | `200`                     | RabbitMQ prefetch count                       | No             |
 | `AAC_CACHE_ENABLED`       | `True`                     | Boolean to enable Local AAC Caching                | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`       | `300`                     | How long for responses to persist in Local AAC Cache before expiring                | No             |
+| `SM_TEST_TAGS`            | `["SM_TEST_TAG"] | Tag to apply to data created during tests | No |
 | `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                     | Enable audit log error logging                       | No             |
 | `AUDIT_LOG_ERROR_MAX_TB_CHARS`                    | `200`                     | Number of characters allowed in the audit log traceback                       | No             |
 | `AUDIT_LOG_ERROR_ACM_JSON_FILE_PATH`                    | `./data/audit_log_error.json`                     | Classification to set as default for Audit Log Errors                       | No             |

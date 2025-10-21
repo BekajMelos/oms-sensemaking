@@ -495,6 +495,16 @@ class Settings(BaseSettings):
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
     )
+    atoms_cacert_path: str | None = Field(
+        None,
+        description="Path to pem formatted self signed cert or private ssl cert",
+        examples=[None, "/opt/common/pki/trusted.crt"]
+    )
+    atoms_client_verify_ssl: bool | None = Field(
+        True,
+        description="Whether to verify the private ssl certificate",
+        examples=[True, False]
+    )
     pkcs12_path: str | None = Field(
         None,
         description="Optional path to a pkcs12 cert",
@@ -515,6 +525,7 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
+    sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
     audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
     audit_log_error_json_file_path: str = Field(

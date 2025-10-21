@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Async OMS Client
 - Ensure automated tests have 80% coverage
 - Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 - OpenTelemetry integration for queue processing time and event counting metrics

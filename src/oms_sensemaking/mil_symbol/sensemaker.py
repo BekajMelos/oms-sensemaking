@@ -253,8 +253,29 @@ class MilSymbolSensemaker(Sensemaker):
         if oms_node.tier != ObjectTier.DERIVATIVE:
             return None
 
+        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
+
         # look for parent relationship
-        parent_nodes: NodesNodes = self.oms_crud_tool.get_nodes(
+        # TODO: we don't actually care about parentNode data,
+        # we should try to find a way to just get the nodeId and affiliation
+        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
+
+        if not parent_nodes.data:
+            return None
+
+        for node in parent_nodes.data:
+            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
+            )
+
+            if parent_affiliation_attrs:
+                return parent_affiliation_attrs[0]
+
+        return None
+
+    def _get_hierarchical_parent_node(self, oms_node: NodeNode) -> NodesNodes:
+        """Get the parent node according to a Controls or ControlledBy relationship"""
+        return self.oms_crud_tool.get_nodes(
             NodeQuery(
                 relationships=NodeRelationshipQuery(
                     or_=[
@@ -276,21 +297,6 @@ class MilSymbolSensemaker(Sensemaker):
                 )
             )
         )
-
-        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
-
-        if not parent_nodes.data:
-            return None
-
-        for node in parent_nodes.data:
-            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-            )
-
-            if parent_affiliation_attrs:
-                return parent_affiliation_attrs[0]
-
-        return None
 
     def get_status(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """Get status for this node.
