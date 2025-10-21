@@ -23,8 +23,7 @@ class MustPassAllInputFilter:
         self.filter_set = filter_set
 
     def passes_filter(self, audit_log_event: AuditLogEvent):
-        al = audit_log_event
-        return all(filter.passes_filter(al) for filter in self.filter_set)
+        return all(filter.passes_filter(audit_log_event) for filter in self.filter_set)
 
 
 class ObjectInputFilter:

@@ -17,9 +17,8 @@ class AuditLogHeaders:
     def __init__(self, iri) -> None:
         self.iri = iri
 
-
-def to_dict(self):
-    return {"iri": self.iri}
+    def to_dict(self):
+        return {"iri": self.iri}
 
 
 class DefaultHeaders(AuditLogHeaders):
