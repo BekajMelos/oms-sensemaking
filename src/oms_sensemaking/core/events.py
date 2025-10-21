@@ -26,6 +26,17 @@ from oms_sensemaking.core.observability import record_processing_failure, record
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
+class Properties(pika.spec.BasicProperties):
+    """Basic wrapper for encapsulating message properties from a consumer"""
+
+    pass
+
+
+class NullProperties(Properties):
+    def __init__(self):
+        self.headers = {}
+
+
 class AuditLogEvent:
     """Represents an audit log event from OMS."""
 
@@ -42,6 +53,18 @@ class AuditLogEvent:
         self.objectId: UUID = objectId
         self.objectType: ObjectType = objectType
         self.action: Action = action
+        self._properties = NullProperties()
+
+    @property
+    def properties(self):
+        return self._properties
+
+    @properties.setter
+    def properties(self, value: Properties):
+        """The setter for the properties"""
+        if not value:
+            raise ValueError("properties cannot be empty")
+        self._properties = value
 
     def to_json(self) -> str:
         """Return a JSON representation of the event."""
@@ -214,7 +237,9 @@ class RabbitMQListener(BaseRabbitMQListener):
         start_time = time()  # Record when we start processing
 
         try:
+            audit_log_properties: Properties = properties
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
+            audit_log.properties = audit_log_properties
             LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}: {audit_log.objectId}")
             object_id = audit_log.objectId
 
