@@ -30,6 +30,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
@@ -111,21 +112,26 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525d = None
 
         mil_symbol = MilSymbolMaker.make(symbol_id_code, self.settings)
-
-        if isinstance(mil_symbol, MilSymbol2525D):
-            code_2525d = mil_symbol
-            code_2525c = to_2525c(code_2525d, self.settings)
-            code_2525b = to_2525b(code_2525c, self.settings)
-        elif isinstance(mil_symbol, MilSymbol2525C):
-            code_2525c = mil_symbol
-            code_2525b = to_2525b(code_2525c, self.settings)
-            code_2525d = to_2525d(code_2525c, self.settings)
-        elif isinstance(mil_symbol, MilSymbol2525B):
-            code_2525b = mil_symbol
-            code_2525c = to_2525c(code_2525b, self.settings)
-            code_2525d = to_2525d(code_2525c, self.settings)
-        else:
-            return []
+        try:
+            if isinstance(mil_symbol, MilSymbol2525D):
+                code_2525d = mil_symbol
+                code_2525c = to_2525c(code_2525d, self.settings)
+                code_2525b = to_2525b(code_2525c, self.settings)
+            elif isinstance(mil_symbol, MilSymbol2525C):
+                code_2525c = mil_symbol
+                code_2525b = to_2525b(code_2525c, self.settings)
+                code_2525d = to_2525d(code_2525c, self.settings)
+            elif isinstance(mil_symbol, MilSymbol2525B):
+                code_2525b = mil_symbol
+                code_2525c = to_2525c(code_2525b, self.settings)
+                code_2525d = to_2525d(code_2525c, self.settings)
+            else:
+                return []
+        except KeyError as e:
+            raise MilSymbolInvalidIdCharError(
+                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by"
+                f"the MilSymbol Sensemaker because of the following character: {e.args[0]}"
+            ) from e
 
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code
@@ -247,8 +253,29 @@ class MilSymbolSensemaker(Sensemaker):
         if oms_node.tier != ObjectTier.DERIVATIVE:
             return None
 
+        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
+
         # look for parent relationship
-        parent_nodes: NodesNodes = self.oms_crud_tool.get_nodes(
+        # TODO: we don't actually care about parentNode data,
+        # we should try to find a way to just get the nodeId and affiliation
+        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
+
+        if not parent_nodes.data:
+            return None
+
+        for node in parent_nodes.data:
+            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
+            )
+
+            if parent_affiliation_attrs:
+                return parent_affiliation_attrs[0]
+
+        return None
+
+    def _get_hierarchical_parent_node(self, oms_node: NodeNode) -> NodesNodes:
+        """Get the parent node according to a Controls or ControlledBy relationship"""
+        return self.oms_crud_tool.get_nodes(
             NodeQuery(
                 relationships=NodeRelationshipQuery(
                     or_=[
@@ -270,21 +297,6 @@ class MilSymbolSensemaker(Sensemaker):
                 )
             )
         )
-
-        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
-
-        if not parent_nodes.data:
-            return None
-
-        for node in parent_nodes.data:
-            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-            )
-
-            if parent_affiliation_attrs:
-                return parent_affiliation_attrs[0]
-
-        return None
 
     def get_status(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """Get status for this node.

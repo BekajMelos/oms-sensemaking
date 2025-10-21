@@ -10,15 +10,19 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 class OntologyService(Protocol):
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
+        """Return an OntologyClass for the given IRI"""
         pass
 
     def geospatial_get_node_ancestors_iris(self, oms_node: NodeNode) -> set[str]:
+        """Return a unique set of ancestor IRIs"""
         pass
 
     def mil_symbol_get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
+        """Return a list of ancestor IRIs"""
         pass
 
     def get_default_symbol_id_code(self, iri: str) -> Optional[str]:
+        """Return the closest parent with a defaultSymbolIdCode in a hierarchy of OntologyClasses"""
         pass
 
 

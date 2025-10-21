@@ -20,6 +20,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 
@@ -102,7 +103,7 @@ def test_process_data(
     code_d, code_c, code_b = symbols1
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
-    assert code_b.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSP------*****"
 
     # case 2
     sensemaker.get_context = mock.MagicMock(
@@ -123,7 +124,7 @@ def test_process_data(
     code_d, code_c, code_b = symbols2
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SSAX------*****"
-    assert code_b.new_symbol_id_code == "SSAX------*****"
+    assert code_b.new_symbol_id_code == "SSAP------*****"
 
     # case 3
     sensemaker.get_context = mock.MagicMock(
@@ -497,7 +498,7 @@ def test_dimension_enrichment(
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
-    assert code_b.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAP------*****"
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
@@ -530,7 +531,7 @@ def test_acms(
     code_d, code_c, code_b = symbols
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
-    assert code_b.new_symbol_id_code == "SHSD------*****"
+    assert code_b.new_symbol_id_code == "SHSP------*****"
     mock_aac_client.get_acm_rollup.assert_any_call(
         [
             {"ACM": ts_acm},
@@ -581,7 +582,7 @@ def test_controlling_affiliation_enrichment(
     assert len(symbols) == 3
     assert symbols[0].new_symbol_id_code == "10-0-0-01-3-0-00-000000-00-00"
     assert symbols[1].new_symbol_id_code == "SPAD------*****"
-    assert symbols[2].new_symbol_id_code == "SPAD------*****"
+    assert symbols[2].new_symbol_id_code == "SPAP------*****"
     mock_oms_crud_tool.get_nodes.assert_not_called()
 
     ### Test actually checking controlling node affiliations
@@ -598,5 +599,53 @@ def test_controlling_affiliation_enrichment(
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SHAD------*****"
-    assert code_b.new_symbol_id_code == "SHAD------*****"
+    assert code_b.new_symbol_id_code == "SHAP------*****"
     mock_oms_crud_tool.get_nodes.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "tags, expected_value, message",
+    [
+        ([], False, "expected untagged object to not have mil symbol tags"),
+        (
+            SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            True,
+            "expected object tagged with mil symbol tags to have the mil symbol tags",
+        ),
+    ],
+)
+def test_has_mil_symbol_sensemaker_tags(
+    tags: list[str], expected_value, message: str, build_sensemaker: MilSymbolSensemaker
+):
+    sensemaker = build_sensemaker
+    actual = sensemaker.has_mil_symbol_sensemaker_tags(tags)
+    assert actual == expected_value, message
+
+
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+def test_milsym_invalid_char_error(
+    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
+):
+    sensemaker = build_sensemaker
+    ### Mocks
+    ## Mock getting acm
+    mock_get_acm.return_value = DEFAULT_ACM
+
+    # case 1
+    sensemaker.get_context = mock.MagicMock(
+        return_value=create_attribute(
+            attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+        )
+    )
+    sensemaker.get_affiliation = mock.MagicMock(return_value=create_attribute(attribute_value="hostile"))
+    sensemaker.get_status = mock.MagicMock(return_value=create_attribute(attribute_value="damaged"))
+    sensemaker.get_node_ancestors_iris = mock.MagicMock(
+        return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
+    )
+    mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
+    oms_node.symbolIdCode = "10-0-0-89-0-0-32-000000-00-00"  # 89 is invalid
+    oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
+
+    with pytest.raises(MilSymbolInvalidIdCharError) as exc_info:
+        sensemaker.process_data(oms_node)
+    assert "is invalid and cannot be processed" in str(exc_info.value)
