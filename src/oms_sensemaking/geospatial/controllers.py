@@ -2,7 +2,6 @@
 
 import json
 import logging
-import traceback
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -124,84 +123,72 @@ class GeospatialSensemakerController(SensemakerController):
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
         """
-        now: datetime = datetime.now(tz=timezone.utc)
-
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
-        # extract info from OMS via API calls
-        oms_obs: ObservationObservation | None = self.get_oms_observation(event.objectId)
-
-        # we expect an observation. If one doesn't exist, we can ignore the point.
+        # Retrieve observation
+        oms_obs = self.get_oms_observation(event.objectId)
         if not oms_obs:
             return True
 
-        # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
-        # we need to create a track_id for it so we can add future points for that vehicle/track
-        if oms_obs.nodeId not in self.node_track_mapping:
-            self.node_track_mapping[oms_obs.nodeId] = uuid4()
-
-        # we should not process/split generated tracks into more tracks
+        # Skip generated tracks
         if self.is_generated_track(oms_obs):
             return True
 
-        # set the current track_id to the track linked to the node (vehicle) in question
-        track_uuid = self.node_track_mapping[oms_obs.nodeId]
+        # Ensure node has associated track ID
+        track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
 
-        try:
-            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
-            node_version = node.version
-        except AttributeError:
+        # Retrieve node version
+        node = self.oms_crud_tool.get_node(oms_obs.nodeId)
+        node_version = getattr(node, "version", None)
+        if node_version is None:
             LOGGER.warning("No node found. Unable to process observation.")
             return False
 
+        # Decompose geometry into point(s)
         obs_geo_data = decompose_observation_geometry(oms_obs)
+        if not obs_geo_data:
+            LOGGER.warning("No geometry found for observation %s", oms_obs.id)
+            return False
 
         success = False
         with db_session() as db:
+            db.expire_on_commit = False
+
             for point_data in obs_geo_data:
-                # we're still using the point object for detections, so don't expire it
-                db.expire_on_commit = False
-                # create a point in the oms_sensemaking db, including the vehicle node_id
-                point = is_new = None
-                LOGGER.info(f"Parsed coordinates for {oms_obs.id}")
+                LOGGER.debug(f"Parsed coordinates for {oms_obs.id}")
+                # NOTE: Altitude intentionally disabled: Shapely fails with mixed 2D/3D coordinate arrays.
+                #   Enable once geometry normalization supports consistent altitude data.
                 try:
                     point, is_new = Point.get_or_create(
                         db,
                         defaults={
                             "acm": oms_obs.acm,
                             "altitude": None,
-                            # The below altitude setting can cause Shapely methods to fail if only some points have
-                            #   a Z coordinate. Mismatched coordinate array lengths (2 vs 3) will break the LineString
-                            #   and MultiLineString methods used by sensemakers to output results. This must be dealt
-                            #   with before we can handle unreliable altitudes in OMS observations.
-                            # altitude=oms_obs.geometry["coordinates"][2]
-                            # if oms_obs.geometry["coordinates"][2:]
-                            # else None,
                             "detection_time": point_data["detection_time"],
                             "node_version": int(node_version),
                             "observation_version": int(oms_obs.version),
                         },
-                        location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
+                        location=f'Point({point_data["coordinates"][0]} {point_data["coordinates"][1]})',
                         node_id=self._ensure_uuid(oms_obs.nodeId),
                         observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,
                         source_id=self._ensure_uuid(oms_obs.sourceId),
-                        # TODO: Multiply by source weight if available
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
                 except Exception:
-                    LOGGER.error("Unable to process point.")
-                    LOGGER.error(traceback.format_exc())
+                    LOGGER.exception("Unable to process point for observation %s", oms_obs.id)
                     continue
 
-                if point:
-                    if not is_new:
-                        LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-                    with self.lock:
-                        # we just received the point, so set the track_id time to now in the buffer
-                        self.track_times[track_uuid] = now
-                        self.track_node_buffer[track_uuid].append(point)
-                        success = True
+                if not point:
+                    continue
+
+                if not is_new:
+                    LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+
+                with self.lock:
+                    self.track_times[track_uuid] = datetime.now(tz=timezone.utc)
+                    self.track_node_buffer[track_uuid].append(point)
+                    success = True
         return success
 
     def flush_buffer(self) -> None:
