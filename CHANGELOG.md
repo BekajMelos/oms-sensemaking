@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Ensure automated tests have 80% coverage
 - Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
 - OpenTelemetry integration for queue processing time and event counting metrics
+- Filter Mil Symbol Attribute Inputs based on IRI before we rehydrate them
 
 ### Changed
 - Removed Postgres Client and EPEL repository installation in Dockerfile
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Allow test coverage portion of the Jenkins pipeline to run and post results to SonarQube in AIDE
 - Fixed MilSymbol Sensemaker bug where an invalid character part of a symbol Id code would be processed and cause errors in the service
 - Fixed issue with the open telemetry unit tests not work propererly when the services weren't running
+
 ### Removed
 
 ## [0.14.0] - 2025-09-29
