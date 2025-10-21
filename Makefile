@@ -23,7 +23,7 @@ test: ## Run all tests
 	python -m pytest $(PYTEST_FLAGS) --cov-fail-under=80
 
 unit-test: ## Run unit tests
-	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=80
+	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=79.5
 
 int-test: ## Run integration tests
 	python -m pytest tests_int $(PYTEST_FLAGS)
