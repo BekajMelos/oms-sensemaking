@@ -37,6 +37,13 @@ class MilSymbolSensemakerController(SensemakerController):
 
 
 class MilSymbolQueueFilter(EventFilter):
+    def __init__(self) -> None:
+        self.handled_iris = itertools.chain(
+            SETTINGS.mil_symbol_settings.affiliation_iris,
+            SETTINGS.mil_symbol_settings.echelon_iris,
+            SETTINGS.mil_symbol_settings.status_iris,
+        )
+
     def passes_filter(self, audit_event: AuditLogEvent):
         return self.passes_node_filter(audit_event) or self.passes_attribute_filter(audit_event)
 
@@ -46,13 +53,9 @@ class MilSymbolQueueFilter(EventFilter):
 
     def passes_attribute_filter(self, audit_event: AuditLogEvent):
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value]
-        handled_iris = itertools.chain(
-            SETTINGS.mil_symbol_settings.affiliation_iris,
-            SETTINGS.mil_symbol_settings.echelon_iris,
-            SETTINGS.mil_symbol_settings.status_iris,
-        )
+
         return (
             audit_event.objectType == ObjectType.ATTRIBUTE.value
             and audit_event.action in handled_event_types
-            and audit_event.properties.headers.get("iri", "") in handled_iris
+            and audit_event.headers.iri in self.handled_iris
         )
