@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.15.0] - 2025-10-21
+
+### Added
 - Async OMS Client
 - Ensure automated tests have 80% coverage
 - Added Pydantic models and a TypeAdapter to validate the `audit_log_error_acm` loaded from JSON.
