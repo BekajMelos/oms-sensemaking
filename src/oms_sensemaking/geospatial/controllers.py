@@ -193,26 +193,27 @@ class GeospatialSensemakerController(SensemakerController):
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.info("Checking Track Buffer Expirations")
+        LOGGER.debug("Checking Track Buffer Expirations")
         now: datetime = datetime.now(tz=timezone.utc)
+        expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
+        expired_tracks = []
 
         with self.lock:
-            # purge stale keys
+            # Identify expired tracks in thread-safe snapshot
             self.track_times = {key: val for key, val in self.track_times.items() if val is not None}
+            expired_tracks = [
+                track_uuid
+                for track_uuid, last_updated_at in self.track_times.items()
+                if last_updated_at + expire_threshold < now
+            ]
 
-            for track_uuid, last_updated_at in self.track_times.items():
-                if last_updated_at is None:
-                    LOGGER.warning("Skipping Track(track_uuid=%s)", track_uuid)
-                    continue
+        if expired_tracks:
+            LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
 
-                LOGGER.debug("Checking buffer for %s", track_uuid)
-                if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
-                    LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
-                    process_track_status = self._process_track(track_uuid)
-                    if not process_track_status:
-                        continue
-                else:
-                    LOGGER.debug("track_uuid %s is still active in the buffer", track_uuid)
+        # Process expired tracks outside the lock
+        for track_uuid in expired_tracks:
+            LOGGER.debug("Processing expired track %s", track_uuid)
+            self._process_track(track_uuid)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
