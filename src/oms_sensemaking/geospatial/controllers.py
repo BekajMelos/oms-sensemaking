@@ -204,7 +204,7 @@ class GeospatialSensemakerController(SensemakerController):
             expired_tracks = [
                 track_uuid
                 for track_uuid, last_updated_at in self.track_times.items()
-                if last_updated_at + expire_threshold < now
+                if last_updated_at is not None and last_updated_at + expire_threshold < now
             ]
 
         if expired_tracks:
