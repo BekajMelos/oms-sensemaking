@@ -21,9 +21,16 @@ from pika.channel import Channel
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+class Properties(pika.spec.BasicProperties):
+    """Basic wrapper for encapsulating message properties from a consumer"""
+
+    pass
 
 
 class AuditLogEvent:
@@ -42,6 +49,18 @@ class AuditLogEvent:
         self.objectId: UUID = objectId
         self.objectType: ObjectType = objectType
         self.action: Action = action
+        self._headers: AuditLogHeaders = DefaultHeaders()
+
+    @property
+    def headers(self):
+        return self._headers
+
+    @headers.setter
+    def headers(self, value: AuditLogHeaders):
+        """The setter for the headers"""
+        if not value:
+            raise ValueError("headers cannot be empty")
+        self._headers = value
 
     def to_json(self) -> str:
         """Return a JSON representation of the event."""
@@ -215,6 +234,7 @@ class RabbitMQListener(BaseRabbitMQListener):
 
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
+            audit_log.headers = HeaderParser().parse(properties)
             LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}: {audit_log.objectId}")
             object_id = audit_log.objectId
 

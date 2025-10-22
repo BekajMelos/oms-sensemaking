@@ -288,7 +288,7 @@ class GeospatialSensemakerController(SensemakerController):
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
-        Given an OMS Observation ID, get the OMS Observation.
+        Given an OMS Observation ID, get the OMS Observation.  Ensure it is an observation we can use to make a track
 
         :param observation_id: ID of the observation
         :return: None if no observation exists, or the OMS Observation
