@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Sync client unable to connect due to CA File ssl auth errors
+
 ### Removed
 
 ## [0.15.0] - 2025-10-21
