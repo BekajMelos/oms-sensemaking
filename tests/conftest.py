@@ -17,6 +17,16 @@ load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
 
 
+@pytest.fixture(scope="session", autouse=True)
+def mock_observability_initialization():
+    """Mock observability initialization to prevent actual telemetry connections during tests."""
+    with (
+        mock.patch("oms_sensemaking.core.observability.TelemetryManager.initialize"),
+        mock.patch("oms_sensemaking.core.observability.OTLPSpanExporter"),
+    ):
+        yield
+
+
 @pytest.fixture
 def ts_acm():
     acm = {

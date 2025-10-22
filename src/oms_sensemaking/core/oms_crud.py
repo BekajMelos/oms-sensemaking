@@ -39,6 +39,8 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationObservation,
     ObservationQuery,
     ObservationsObservations,
+    ObservationsWithProviderObservations,
+    ObservationWithProviderObservation,
     OntologyClassOntologyClass,
     OriginatorQuery,
     OriginatorsOriginators,
@@ -85,6 +87,8 @@ class OmsCrudTool(BaseClient):
             key_path=SETTINGS.key_path,
             pkcs12_path=SETTINGS.pkcs12_path,
             pkcs12_password=SETTINGS.pkcs12_password,
+            # ssl_cert_file_path=SETTINGS.atoms_cacert_path,
+            # verify_ssl=SETTINGS.atoms_client_verify_ssl,
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
@@ -299,12 +303,6 @@ class OmsCrudTool(BaseClient):
     def delete_source(self, source_id) -> bool:
         return self.oms_client.delete_source(DeleteByIdInput(id=source_id))
 
-    def delete_observation(self, observation_id) -> bool:
-        return self.oms_client.delete_observation(DeleteByIdInput(id=observation_id))
-
-    def delete_activity(self, activity_id) -> bool:
-        return self.oms_client.delete_activity(DeleteByIdInput(id=activity_id))
-
     def get_node_attribute_by_iri(self, node_id: UUID, iris: List[str]) -> List[AttributeAttribute]:
         """
         Given a node id and a list of IRIs, get the attribute values from OMS
@@ -344,3 +342,132 @@ class OmsCrudTool(BaseClient):
         """
         warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
+
+    def get_mil_symbol_attr(
+        self, node_id: str, context_iris: list[str], status_iris: list[str], echelon_iris: list[str]
+    ):
+        context_query = AttributeQuery(nodeIds=[node_id], attributeIris=context_iris)
+        status_query = AttributeQuery(nodeIds=[node_id], attributeIris=status_iris)
+        echelon_query = AttributeQuery(nodeIds=[node_id], attributeIris=echelon_iris)
+
+        return self.oms_client.mil_symbol_attributes(context_query, status_query, echelon_query)
+
+    def get_nodes_by_tags(self, tags: list[str], page: PageParams) -> NodesNodes:
+        """Get nodes from OMS filtered by tag"""
+        query = NodeQuery(tags=tags, pageParams=page)
+        return self.get_nodes(query)
+
+    def get_observation_with_provider(self, id: UUID) -> Optional[ObservationWithProviderObservation]:
+        """ "Get existing Observation with Provider info from OMS"""
+        observation_with_provider = self.oms_client.observation_with_provider(IdQuery(id=id))
+        return observation_with_provider
+
+    def get_observations_with_provider(
+        self, observation_info: ObservationQuery
+    ) -> Optional[ObservationsWithProviderObservations]:
+        """Get existing Observations with Provider info from OMS"""
+        observations_with_provider = self.oms_client.observations_with_provider(query=observation_info)
+        return observations_with_provider
+
+    def delete_nodes_by_tags(self, tags: list[str]):
+        """Delete nodes that match provided tags"""
+        query = NodeQuery(tags=tags)
+        while True:
+            response = self.oms_client.nodes(query)
+            nodes = response and response.data
+            for node in nodes:
+                self.delete_node(node.id)
+            if len(nodes) == 0:
+                break
+
+    def delete_providers_by_tags(self, tags: list[str]):
+        """Delete Providers that match the given tags"""
+        query = ProviderQuery(tags=tags)
+        while True:
+            response = self.oms_client.providers(query)
+            providers = response and response.data
+            for provider in providers:
+                self.delete_provider(provider.id)
+            if len(providers) == 0:
+                break
+
+    def delete_originators_by_tags(self, tags: list[str]):
+        """Delete Originators that match the given tags"""
+        query = OriginatorQuery(tags=tags)
+        while True:
+            response = self.oms_client.originators(query)
+            originators = response and response.data
+            for originator in originators:
+                self.delete_originator(originator.id)
+            if len(originators) == 0:
+                break
+
+    def delete_sources_by_tags(self, tags: list[str]):
+        """Delete Sources that match the given tags"""
+        query = SourceQuery(tags=tags)
+        while True:
+            response = self.oms_client.sources(query)
+            sources = response and response.data
+            for source in sources:
+                self.delete_source(source.id)
+            if len(sources) == 0:
+                break
+
+    def delete_activity(self, activity_id) -> bool:
+        return self.oms_client.delete_activity(DeleteByIdInput(id=activity_id))
+
+    def delete_observation(self, observation_id) -> bool:
+        return self.oms_client.delete_observation(DeleteByIdInput(id=observation_id))
+
+    def delete_observations_by_node_ids(self, node_ids: list[UUID]):
+        """Delete all observations associated with nodes"""
+        # todo also make this a uuidquerybylist
+        query = ObservationQuery(nodeIds=UuidQueryByList(in_=node_ids))
+        while True:
+            response = self.get_observations(query)
+            observations = response and response.data
+            for observation in observations:
+                self.delete_observation(observation.id)
+            if len(observations) == 0:
+                break
+
+    def delete_observations_by_node_tags(self, tags: list[str]):
+        """Delete all observations whose nodes can be found with the specifed tags"""
+        page = 1
+        while True:
+            page_param = PageParams(page=page)
+            node_res = self.get_nodes_by_tags(tags, page_param)
+            node_ids = [node.id for node in node_res.data]
+            while len(node_ids):
+                query = ObservationQuery(nodeIds=UuidQueryByList(in_=node_ids))
+                response = self.oms_client.observations(query)
+                observations = response and response.data
+                for observation in observations:
+                    self.delete_observation(observation.id)
+                if len(observations) == 0:
+                    break
+            page += 1
+            if len(node_ids) == 0:
+                break
+
+    def delete_observations_by_tags(self, tags: list[str]):
+        """Delete Observations that match the given tags"""
+        query = ObservationQuery(tags=tags)
+        while True:
+            response = self.oms_client.observations(query)
+            observations = response and response.data
+            for observation in observations:
+                self.delete_observation(observation.id)
+            if len(observations) == 0:
+                break
+
+    def delete_activities_by_tags(self, tags: list[str]):
+        """Delete Activities that match the given tags"""
+        query = ActivityQuery(tags=tags)
+        while True:
+            response = self.oms_client.activities(query)
+            activities = response and response.data
+            for activity in activities:
+                self.delete_activity(activity.id)
+            if len(activities) == 0:
+                break

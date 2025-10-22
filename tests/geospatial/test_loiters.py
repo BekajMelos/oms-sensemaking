@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 from uuid import uuid4
 
@@ -206,23 +206,23 @@ def test_track(mocker: MockerFixture, processed_points, test_node):
 
 
 def test_pot_loiter_init():
-    start_time = datetime.utcnow()
-    latest_time = datetime.utcnow() + timedelta(seconds=10)
+    start_time = datetime.now(timezone.utc)
+    latest_time = datetime.now(timezone.utc) + timedelta(seconds=10)
     test_pot_loiter = PotentialLoiter(start_time, latest_time)
     assert test_pot_loiter.start_time == start_time
     assert test_pot_loiter.latest_time == latest_time
 
 
 def test__str__pot_loiter():
-    start_time = datetime.utcnow()
-    latest_time = datetime.utcnow() + timedelta(seconds=10)
+    start_time = datetime.now(timezone.utc)
+    latest_time = datetime.now(timezone.utc) + timedelta(seconds=10)
     test_pot_loiter = PotentialLoiter(start_time, latest_time)
     assert test_pot_loiter.__str__() == str(test_pot_loiter.__dict__)
 
 
 def test__repr__pot_loiter():
-    start_time = datetime.utcnow()
-    latest_time = datetime.utcnow() + timedelta(seconds=10)
+    start_time = datetime.now(timezone.utc)
+    latest_time = datetime.now(timezone.utc) + timedelta(seconds=10)
     test_pot_loiter = PotentialLoiter(start_time, latest_time)
     assert test_pot_loiter.__repr__() == test_pot_loiter.__str__()
 
