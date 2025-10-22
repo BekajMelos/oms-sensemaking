@@ -193,7 +193,7 @@ class GeospatialSensemakerController(SensemakerController):
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.debug("Checking Track Buffer Expirations")
+        LOGGER.debug("Checking for expired tracks in the buffer cache.")
         now: datetime = datetime.now(tz=timezone.utc)
         expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
         expired_tracks = []
@@ -210,9 +210,8 @@ class GeospatialSensemakerController(SensemakerController):
         if expired_tracks:
             LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
 
-        # Process expired tracks outside the lock
         for track_uuid in expired_tracks:
-            LOGGER.debug("Processing expired track %s", track_uuid)
+            # Process expired tracks
             self._process_track(track_uuid)
 
         if self.autoflush_enabled:
@@ -221,39 +220,47 @@ class GeospatialSensemakerController(SensemakerController):
 
     def _process_track(self, track_uuid: UUID) -> bool:
         """
-        Function used to generate and process and track
+        Generate and process a completed track once its buffer has expired.
+        Safely clean in-memory buffers.
+
+        :param track_uuid: track ID
         """
+        LOGGER.debug("Processing track %s", track_uuid)
+
         try:
             try:
+                # Attempt to build the full track from buffered points
                 track = self._track_generator.generate_track(
-                    track_uuid, self.track_weaver, self.common_sense_filters, self.track_node_buffer, self.oms_crud_tool
+                    track_uuid,
+                    self.track_weaver,
+                    self.common_sense_filters,
+                    self.track_node_buffer,
+                    self.oms_crud_tool,
                 )
             except TrackLengthError:
-                LOGGER.exception(
-                    ("Track doesn't have enough points. Ignore and remove from buffer until it gets more points")
-                )
-                self.track_times[track_uuid] = None
+                LOGGER.warning("Track %s doesn't have enough points; removing from buffer.", track_uuid)
+                with self.lock:
+                    self.track_times[track_uuid] = None
                 return False
 
             geo_config = self._get_geo_config(track)
 
             with ThreadPoolExecutor() as executor:
-                futures = []
-                for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    futures.append(future)
-
-                # make sure errors are caught
+                futures = [
+                    executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                    for sensemaker in self._registry.values()
+                ]
                 for future in as_completed(futures):
                     _ = future.result()
-        except Exception as e:
-            LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
+        except Exception:
+            LOGGER.exception("Unexpected error processing track %s", track_uuid)
         finally:
-            self.track_times[track_uuid] = None  # mark for removal
-            self.track_node_buffer.pop(track_uuid)
-            for key, value in list(self.node_track_mapping.items()):
-                if value == track_uuid:
-                    del self.node_track_mapping[key]
+            with self.lock:
+                # Thread-safe cleanup of expired track data
+                self.track_times[track_uuid] = None
+                self.track_node_buffer.pop(track_uuid)
+                self.node_track_mapping = {k: v for k, v in self.node_track_mapping.items() if v != track_uuid}
+
         return True
 
     def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:

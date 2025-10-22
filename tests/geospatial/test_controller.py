@@ -288,6 +288,4 @@ def test_track_too_short1(
 
     # call flush buffer
     mock_geo_controller.flush_buffer()
-    assert caplog.records[-1].message == (
-        "Track doesn't have enough points. Ignore and remove from buffer until it gets more points"
-    )
+    assert caplog.records[-1].message == (f"Track {track_uuid} doesn't have enough points; removing from buffer.")
