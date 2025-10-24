@@ -7,7 +7,8 @@ A quick development guide for `atoms-sensemaking`.
   - [Services](#services)
   - [Manage Containers](#manage-containers)
   - [Code Quality](#code-quality)
-  - [Testing](#testing)
+  - [Code Testing](#code-testing)
+  - [API Testing](#api-testing-postman)
 - [Utilities](#utilities)
 
 ## Setup
@@ -38,16 +39,14 @@ Ask a teammate for supplemental references to:
 - Lint code: `make fix`
 - Lint check: `make lint`
 
-### Testing
+### Code Testing
 
 - Run unit and integration tests: `make test`
 
-#### Postman
+### API Testing (Postman)
 
-The sensemaking team uses Postman for API testing.
-
-Under "Import", select the [postman](../../postman) directory to import the `Sensemaking OMS Localhost` environment and
-the `Sensemaking Smoke Tests`.
+In [Postman](https://www.postman.com/downloads/), "Import" the [postman](../../postman) directory. 
+Use the `Sensemaking OMS Localhost` environment while running the `Sensemaking Smoke Tests`.
 
 ## Utilities
 
