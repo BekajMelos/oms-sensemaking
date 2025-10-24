@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
 - Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers. 
 
+- Sync client unable to connect due to CA File ssl auth errors
+
 ### Removed
 
 ## [0.15.0] - 2025-10-21
