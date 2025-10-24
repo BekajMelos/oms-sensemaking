@@ -52,3 +52,6 @@ the `Sensemaking Smoke Tests`.
 ## Utilities
 
 See the [scripts](../../scripts) directory for various developer utilites.
+
+- [Load Testing & Queue Performance Metrics](load-test.md)
+- [pgAdmin](http://localhost:5050) for Postgres: `make pgadmin`
