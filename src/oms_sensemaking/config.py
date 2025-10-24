@@ -549,6 +549,14 @@ class Settings(BaseSettings):
     )
     user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
 
+    default_aac_port: int | None = Field(
+        default=None, description="The default connection port for the AAC client"
+    )
+
+    default_atoms_port: int | None = Field(
+        default=None, description="The default connection port for the Atoms client"
+    )
+
     @computed_field  # type: ignore
     @cached_property
     def user_dn_whitelist(self) -> list[str]:
@@ -597,7 +605,13 @@ class Settings(BaseSettings):
         """OMSB port derived from omsb_url."""
         parsed = urlparse(self.omsb_url)
         if parsed.port is None:
-            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
+            if self.default_atoms_port is not None:
+                LOGGER.warning(
+                    "Unable to parse port number from the given ATOMS URL. Using default port."
+                    )
+                return self.default_atoms_port
+            else:
+                raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
         return parsed.port
 
     @computed_field  # type: ignore
@@ -615,7 +629,13 @@ class Settings(BaseSettings):
         """AAC port derived from aac_url."""
         parsed = urlparse(self.aac_url)
         if parsed.port is None:
-            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
+            if self.default_aac_port is not None:
+                LOGGER.warning(
+                    "Unable to parse port number from the given AAC URL. Using default port."
+                    )
+                return self.default_aac_port
+            else:
+                raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
         return parsed.port
 
     @field_validator("db_uri", mode="before")
