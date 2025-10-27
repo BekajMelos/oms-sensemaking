@@ -55,6 +55,13 @@ Create and activate the virtual environment:
   source .venv/bin/activate
 ```
 
+Verify installation:
+
+```
+which python3  # should point to .venv/bin/python3
+python -V      # should match .python-version
+```
+
 Install dependencies:
 
 ```bash
