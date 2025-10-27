@@ -28,7 +28,7 @@
         # OMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=Grimlock-INC-30
+        OMSB_VERSION=Grimlock-INC-33
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 
@@ -40,9 +40,5 @@
     docs can be found [here].
 
     > To stop the OMS Sensemaking Docker environment, run `docker compose down`
-
-Alternatively, there is also a [command line interface] to the individual
-sensemaker categories.
-
+   
 [here]: https://localhost:5001/docs
-[command line interface]: dev-guide/cli.md

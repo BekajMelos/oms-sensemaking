@@ -14,6 +14,7 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
+from oms_sensemaking.core.event_model import AuditLogHeaders
 from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.controllers import (
@@ -135,6 +136,7 @@ def test_passes_filter_returns_true_for_handled_event():
     event1 = AuditLogEvent(
         userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
     )
+    event1.headers = AuditLogHeaders(SETTINGS.mil_symbol_settings.status_iris[0])
     event2 = AuditLogEvent(
         userId="user1", objectId=uuid4(), objectType=ObjectType.NODE.value, action=Action.CREATE.value
     )

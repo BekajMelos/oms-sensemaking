@@ -477,8 +477,8 @@ class Settings(BaseSettings):
     ttl_cache_seconds: int = Field(3600, description="Max time to live in a given TTL Cache")
     oms_crud_ttl_cache_size: int = Field(1024, description="Max items in OMS CRUD Tool's given TTL Cache")
     oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in OMS CRUD Tool's given TTL Cache")
-    omsb_url: str = Field("https://omsb2:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-30", description="OMSB Version")
+    omsb_url: str = Field("https://graphql:8443/graphql", description="URL for OMSB")
+    omsb_version: str = Field("Grimlock-INC-33", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     aac_cacert_path: str | None = Field(
@@ -494,6 +494,16 @@ class Settings(BaseSettings):
         None,
         description="Path to service user key",
         examples=[None, "/opt/common/pki/sensemaking.key"]
+    )
+    atoms_cacert_path: str | None = Field(
+        None,
+        description="Path to pem formatted self signed cert or private ssl cert",
+        examples=[None, "/opt/common/pki/trusted.crt"]
+    )
+    atoms_client_verify_ssl: bool | None = Field(
+        True,
+        description="Whether to verify the private ssl certificate",
+        examples=[True, False]
     )
     pkcs12_path: str | None = Field(
         None,
@@ -515,6 +525,7 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
+    sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
     audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
     audit_log_error_json_file_path: str = Field(
@@ -537,6 +548,14 @@ class Settings(BaseSettings):
         default="always_on", description="OpenTelemetry traces sampler"
     )
     user_dn_whitelist_path: str = Field("./data/whitelist.txt", description="Path to User Whitelist")
+
+    default_aac_port: int | None = Field(
+        default=None, description="The default connection port for the AAC client"
+    )
+
+    default_atoms_port: int | None = Field(
+        default=None, description="The default connection port for the Atoms client"
+    )
 
     @computed_field  # type: ignore
     @cached_property
@@ -586,7 +605,13 @@ class Settings(BaseSettings):
         """OMSB port derived from omsb_url."""
         parsed = urlparse(self.omsb_url)
         if parsed.port is None:
-            raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
+            if self.default_atoms_port is not None:
+                LOGGER.warning(
+                    "Unable to parse port number from the given ATOMS URL. Using default port."
+                    )
+                return self.default_atoms_port
+            else:
+                raise ValueError(f"Invalid OMSB URL: {self.omsb_url} - no port found")
         return parsed.port
 
     @computed_field  # type: ignore
@@ -604,7 +629,13 @@ class Settings(BaseSettings):
         """AAC port derived from aac_url."""
         parsed = urlparse(self.aac_url)
         if parsed.port is None:
-            raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
+            if self.default_aac_port is not None:
+                LOGGER.warning(
+                    "Unable to parse port number from the given AAC URL. Using default port."
+                    )
+                return self.default_aac_port
+            else:
+                raise ValueError(f"Invalid AAC URL: {self.aac_url} - no port found")
         return parsed.port
 
     @field_validator("db_uri", mode="before")
