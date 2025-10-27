@@ -27,6 +27,7 @@ from sqlalchemy import select
 from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
@@ -158,6 +159,12 @@ def attr_echelon_data(
 
 
 @pytest.fixture
+def attribute_retriever() -> GetMilSymbolAttributes:
+    retriever = mock.Mock(spec=GetMilSymbolAttributes)
+    return retriever
+
+
+@pytest.fixture
 def build_helper(mil_symbol_rules):
     oms_crud_tool = OmsCrudTool()
     ontology_service = OntologyClient(oms_crud_tool)
@@ -166,7 +173,9 @@ def build_helper(mil_symbol_rules):
     oms_crud_tool.create_attribute = mock.MagicMock()
     oms_crud_tool.update_node = mock.MagicMock()
 
-    return FixtureHelper(oms_crud_tool, MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool, ontology_service))
+    return FixtureHelper(
+        oms_crud_tool, MilSymbolSensemaker(mil_symbol_rules, oms_crud_tool, ontology_service, attribute_retriever)
+    )
 
 
 def test_execute(mock_source, db, build_helper):

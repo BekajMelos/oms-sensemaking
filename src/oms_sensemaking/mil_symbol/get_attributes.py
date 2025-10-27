@@ -1,14 +1,17 @@
-"""Military Symbol Sensemakers."""
-
 import logging
-from typing import List, Optional, Protocol
+from abc import ABC, abstractmethod
+from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     MilSymbolAttributeFields,
     NodeNode,
+    NodeQuery,
+    NodeRelationshipQuery,
+    NodeRelationshipSubQuery,
     NodesNodes,
     ObjectTier,
+    RelationshipDirection,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -17,15 +20,67 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 LOGGER = logging.getLogger(__name__)
 
 
-class GetMilSymbolAttributes(Protocol):
-    def get_all_mil_sym_attrs_for_enrichment(self, oms_node: NodeNode):
-        pass
-
-
-class GetAllAttributesAtOnce(GetMilSymbolAttributes):
+class GetMilSymbolAttributes(ABC):
     def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
         self.oms_crud_tool = oms_crud_tool
 
+    @abstractmethod
+    def get_all_mil_sym_attrs_for_enrichment(self, oms_node: NodeNode):
+        raise NotImplementedError
+
+    def _get_hierarchical_parent_node(self, oms_node: NodeNode) -> NodesNodes:
+        """Get the parent node according to a Controls or ControlledBy relationship"""
+        return self.oms_crud_tool.get_nodes(
+            NodeQuery(
+                relationships=NodeRelationshipQuery(
+                    or_=[
+                        NodeRelationshipQuery(
+                            hasMatch=NodeRelationshipSubQuery(
+                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
+                                relatedNodeIds=[oms_node.id],
+                                direction=RelationshipDirection.OUTGOING,
+                            )
+                        ),
+                        NodeRelationshipQuery(
+                            hasMatch=NodeRelationshipSubQuery(
+                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
+                                relatedNodeIds=[oms_node.id],
+                                direction=RelationshipDirection.INCOMING,
+                            )
+                        ),
+                    ]
+                )
+            )
+        )
+
+    def get_affiliation_of_parent_nodes(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
+        """Get affiliation/standard identity for a node from its parent nodes.
+
+        :param oms_node: Node to grab the affiliation for
+        :return: The Node's standard identity
+        """
+        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
+
+        # look for parent relationship
+        # TODO: we don't actually care about parentNode data,
+        # we should try to find a way to just get the nodeId and affiliation
+        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
+
+        if not parent_nodes.data:
+            return None
+
+        for node in parent_nodes.data:
+            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
+                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
+            )
+
+            if parent_affiliation_attrs:
+                return parent_affiliation_attrs[0]
+
+        return None
+
+
+class GetAllAttributesAtOnce(GetMilSymbolAttributes):
     def get_all_mil_sym_attrs_for_enrichment(self, oms_node: NodeNode) -> list[None | MilSymbolAttributeFields]:
         enrichment_attributes: list[None | MilSymbolAttributeFields] = [None] * 4
         context_iris = (
@@ -67,9 +122,6 @@ class GetAllAttributesAtOnce(GetMilSymbolAttributes):
 
 
 class SequentialGetAllAttributes(GetMilSymbolAttributes):
-    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
-        self.oms_crud_tool = oms_crud_tool
-
     def get_all_mil_sym_attrs_for_enrichment(self, oms_node: NodeNode) -> list[None | MilSymbolAttributeFields]:
         context = self.get_context(oms_node)
         affiliation = self.get_affiliation(oms_node)
@@ -115,25 +167,7 @@ class SequentialGetAllAttributes(GetMilSymbolAttributes):
         if oms_node.tier != ObjectTier.DERIVATIVE:
             return None
 
-        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
-
-        # look for parent relationship
-        # TODO: we don't actually care about parentNode data,
-        # we should try to find a way to just get the nodeId and affiliation
-        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
-
-        if not parent_nodes.data:
-            return None
-
-        for node in parent_nodes.data:
-            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-            )
-
-            if parent_affiliation_attrs:
-                return parent_affiliation_attrs[0]
-
-        return None
+        return self.get_affiliation_of_parent_nodes(oms_node)
 
     def get_status(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """Get status for this node.

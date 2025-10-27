@@ -14,11 +14,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     NodeNode,
-    NodeQuery,
-    NodeRelationshipQuery,
-    NodeRelationshipSubQuery,
-    NodesNodes,
-    RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
     UpdateAttributeInput,
@@ -223,57 +218,6 @@ class MilSymbolSensemaker(Sensemaker):
         :return: Closest parent iri with a defaultSymbolIdCode
         """
         return self._ontology_service.get_default_symbol_id_code(iri)
-
-    def get_affiliation_of_parent_nodes(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """Get affiliation/standard identity for a node from its parent nodes.
-
-        :param oms_node: Node to grab the affiliation for
-        :return: The Node's standard identity
-        """
-        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
-
-        # look for parent relationship
-        # TODO: we don't actually care about parentNode data,
-        # we should try to find a way to just get the nodeId and affiliation
-        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
-
-        if not parent_nodes.data:
-            return None
-
-        for node in parent_nodes.data:
-            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-            )
-
-            if parent_affiliation_attrs:
-                return parent_affiliation_attrs[0]
-
-        return None
-
-    def _get_hierarchical_parent_node(self, oms_node: NodeNode) -> NodesNodes:
-        """Get the parent node according to a Controls or ControlledBy relationship"""
-        return self.oms_crud_tool.get_nodes(
-            NodeQuery(
-                relationships=NodeRelationshipQuery(
-                    or_=[
-                        NodeRelationshipQuery(
-                            hasMatch=NodeRelationshipSubQuery(
-                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
-                                relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.OUTGOING,
-                            )
-                        ),
-                        NodeRelationshipQuery(
-                            hasMatch=NodeRelationshipSubQuery(
-                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
-                                relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.INCOMING,
-                            )
-                        ),
-                    ]
-                )
-            )
-        )
 
     def get_node_ancestors_iris(self, oms_node: NodeNode) -> List[str]:
         """Get ancestor's iris.
