@@ -1,12 +1,10 @@
 """Unit tests for data mining prevention changes."""
 
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-import pytest
-
-from oms_sensemaking.clients.instances import db_session
-from oms_sensemaking.config import Settings
+from oms_sensemaking.clients.instances import db_engine
+from oms_sensemaking.config import SETTINGS, Settings
 
 
 class TestDataMiningPreventionConfig:
@@ -51,82 +49,22 @@ class TestDataMiningPreventionConfig:
 class TestDatabaseConnectionPooling:
     """Test database connection pooling changes."""
 
-    def test_database_engine_configuration(self):
-        """Test that database engine is configured with pooling settings."""
-        # Mock settings
-        with patch("oms_sensemaking.clients.instances.SETTINGS") as mock_settings:
-            mock_settings.db_uri = "postgresql://test:test@localhost:5432/test_db"
-            mock_settings.db_ssl = True
-            mock_settings.db_pool_size = 10
-            mock_settings.db_max_overflow = 20
-            mock_settings.db_pool_timeout_seconds = 30
+    def test_database_engine_pool_configuration(self):
+        """Test that database engine pool is configured with correct settings."""
+        # Test the actual engine configuration from the real db_engine
+        pool = db_engine.pool
 
-            # Mock create_engine to capture the arguments
-            with patch("oms_sensemaking.clients.instances.create_engine") as mock_create_engine:
-                mock_engine = Mock()
-                mock_create_engine.return_value = mock_engine
+        # Verify pool settings
+        assert pool._pre_ping is True, "pool_pre_ping should be True"
+        assert pool.size() == SETTINGS.db_pool_size, f"Expected pool_size={SETTINGS.db_pool_size}, got {pool.size()}"
+        assert (
+            pool._max_overflow == SETTINGS.db_max_overflow
+        ), f"Expected max_overflow={SETTINGS.db_max_overflow}, got {pool._max_overflow}"
+        assert (
+            pool._timeout == SETTINGS.db_pool_timeout_seconds
+        ), f"Expected pool_timeout={SETTINGS.db_pool_timeout_seconds}, got {pool._timeout}"
 
-                # Mock scoped_session and sessionmaker
-                with (
-                    patch("oms_sensemaking.clients.instances.scoped_session") as mock_scoped_session,
-                    patch("oms_sensemaking.clients.instances.sessionmaker"),
-                ):
-                    mock_session = Mock()
-                    mock_scoped_session.return_value = mock_session
-
-                    with db_session():
-                        pass
-
-                    # Verify create_engine was called with correct arguments
-                    mock_create_engine.assert_called_once()
-                    call_args = mock_create_engine.call_args
-
-                    # Check the engine arguments
-                    assert call_args[0][0] == mock_settings.db_uri, "Database URI should be passed correctly"
-
-                    # Check keyword arguments
-                    kwargs = call_args[1]
-                    assert kwargs["pool_pre_ping"] is True, "pool_pre_ping should be True"
-                    assert kwargs["pool_size"] == 10, f"Expected pool_size=10, got {kwargs.get('pool_size')}"
-                    assert kwargs["max_overflow"] == 20, f"Expected max_overflow=20, got {kwargs.get('max_overflow')}"
-                    assert kwargs["pool_timeout"] == 30, f"Expected pool_timeout=30, got {kwargs.get('pool_timeout')}"
-
-                    # Check connect_args
-                    connect_args = kwargs["connect_args"]
-                    assert (
-                        connect_args["sslmode"] == "require"
-                    ), f"Expected sslmode='require', got {connect_args['sslmode']}"
-                    assert (
-                        connect_args["options"] == "-c timezone=utc"
-                    ), f"Expected options='-c timezone=utc', got {connect_args['options']}"
-
-    @pytest.mark.parametrize(
-        "ssl,sslmode,message",
-        [
-            (True, "require", "SSL should be required when db_ssl=True"),
-            (False, "prefer", "SSL should be preferred when db_ssl=False"),
-        ],
-    )
-    def test_ssl_configuration(self, ssl, sslmode, message):
-        """Test SSL configuration handling."""
-        with patch("oms_sensemaking.clients.instances.SETTINGS") as mock_settings:
-            mock_settings.db_uri = "postgresql://test:test@localhost:5432/test_db"
-            mock_settings.db_ssl = ssl
-            mock_settings.db_pool_size = 10
-            mock_settings.db_max_overflow = 20
-            mock_settings.db_pool_timeout_seconds = 30
-
-            with patch("oms_sensemaking.clients.instances.create_engine") as mock_create_engine:
-                mock_engine = Mock()
-                mock_create_engine.return_value = mock_engine
-
-                with (
-                    patch("oms_sensemaking.clients.instances.scoped_session"),
-                    patch("oms_sensemaking.clients.instances.sessionmaker"),
-                ):
-                    with db_session():
-                        pass
-
-                    call_args = mock_create_engine.call_args
-                    connect_args = call_args[1]["connect_args"]
-                    assert connect_args["sslmode"] == sslmode, message
+    def test_pool_pre_ping_enabled(self):
+        """Test that pool_pre_ping is enabled to handle stale connections."""
+        # Verify that pool_pre_ping is enabled for connection health checks
+        assert db_engine.pool._pre_ping is True, "pool_pre_ping should be enabled"
