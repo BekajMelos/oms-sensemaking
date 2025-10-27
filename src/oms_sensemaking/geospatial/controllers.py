@@ -237,7 +237,7 @@ class GeospatialSensemakerController(SensemakerController):
         """
         try:
             try:
-                track = self._track_generator.generate_track(
+                tracks = self._track_generator.generate_track(
                     track_uuid, self.track_weaver, self.common_sense_filters, self.track_node_buffer, self.oms_crud_tool
                 )
             except TrackLengthError:
@@ -249,10 +249,11 @@ class GeospatialSensemakerController(SensemakerController):
 
             futures = []
             with ThreadPoolExecutor() as executor:
-                geo_config = self._get_geo_config(track)
-                for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    futures.append(future)
+                for track in tracks:
+                    geo_config = self._get_geo_config(track)
+                    for sensemaker in self._registry.values():
+                        future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                        futures.append(future)
 
                 for future in as_completed(futures):
                     _ = future.result()
