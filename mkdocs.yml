@@ -13,7 +13,6 @@ nav:
       - Development Environment: dev-guide/dev.md
       - Packaging & Versioning: dev-guide/packaging.md
       - Environment Variables: dev-guide/env-vars.md
-      - CLI: dev-guide/cli.md
       - Integration: dev-guide/integration.md
       - Cookbook: dev-guide/cookbook/
   - Code Reference: reference/
