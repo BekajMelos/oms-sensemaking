@@ -96,6 +96,47 @@ def attr_status_data(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) 
     return status_data
 
 
+@pytest.fixture
+def mock_all_attributes():
+    mock_all = mock.MagicMock()
+
+    def make_attr(value):
+        attr = mock.MagicMock()
+        attr.attributeValue = value
+        return attr
+
+    mock_all.context.data = [make_attr("true")]
+    mock_all.affiliation.data = [make_attr("ally")]
+    mock_all.status.data = [make_attr("active")]
+    mock_all.echelon.data = [make_attr("battalion")]
+
+    return mock_all
+
+
+def test_get_all_mil_sym_attrs_for_enrichment(oms_node, mock_all_attributes, build_sensemaker):
+    sensemaker = build_sensemaker
+
+    mock_settings = mock.MagicMock()
+    mock_settings.mil_symbol_settings.affiliation_iris = ["affiliation_iri"]
+    mock_settings.mil_symbol_settings.is_exercise_context_iris = ["exercise"]
+    mock_settings.mil_symbol_settings.is_reality_context_iris = ["reality"]
+    mock_settings.mil_symbol_settings.is_simulation_context_iris = ["simulation"]
+    mock_settings.mil_symbol_settings.status_iris = ["status"]
+    mock_settings.mil_symbol_settings.echelon_iris = ["echelon"]
+
+    sensemaker.oms_crud_tool.get_mil_symbol_attr = mock.MagicMock(return_value=mock_all_attributes)
+
+    # --- Execute ---
+    result = sensemaker.get_all_mil_sym_attrs_for_enrichment(oms_node)
+
+    # --- Verify ---
+    assert len(result) == 4
+    assert result[0].attributeValue == "true"
+    assert result[1].attributeValue == "ally"
+    assert result[2].attributeValue == "active"
+    assert result[3].attributeValue == "battalion"
+
+
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_process_data(
     mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
