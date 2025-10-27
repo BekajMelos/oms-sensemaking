@@ -25,7 +25,7 @@ services:
       # misc.
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
       RELOAD_APP: ${RELOAD_APP:-1}
-      
+
       # OpenTelemetry configuration
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       OTEL_SERVICE_NAME: oms-sensemaking
@@ -116,7 +116,7 @@ services:
   #       but it may try to resolve the hostnames, which results in a stack
   #       trace being logged. This can be ignored, since the purpose of this
   #       configuration is to provide a minimal omsb for development & testing.
-  omsb2:
+  graphql:
     image: ${DOCKER_REGISTRY}/aio4/dev/services/oms/oms-bridge:${OMSB_VERSION}
     environment:
       # PostgreSQL/PostGIS variables
@@ -304,7 +304,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     ports:
-      - "9090:9090" 
+      - "9090:9090"
     volumes:
       - './docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml' # Custom config
       - 'prometheus_data:/prometheus'
@@ -326,7 +326,7 @@ services:
     container_name: grafana
     restart: always
     ports:
-      - "3001:3000" 
+      - "3001:3000"
     env_file:
       - docker/grafana/grafana.env
     environment:
@@ -341,7 +341,7 @@ services:
       - "./docker/grafana/grafana.ini:/etc/grafana/grafana.ini"
       - "grafana_data:/var/lib/grafana"
     depends_on:
-      - prometheus 
+      - prometheus
       - tempo
     profiles:
       - metrics
