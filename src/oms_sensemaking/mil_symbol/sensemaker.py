@@ -243,9 +243,8 @@ class MilSymbolSensemaker(Sensemaker):
         not_derivative = None
         if affiliation_data:
             enrichment_attributes[1] = affiliation_data[0]
-        elif enrichment_attributes[1] is None:
-            if oms_node.tier != ObjectTier.DERIVATIVE:
-                not_derivative = True
+        elif enrichment_attributes[1] is None and oms_node.tier != ObjectTier.DERIVATIVE:
+            not_derivative = True
         elif enrichment_attributes[1] is None and not_derivative is None:
             enrichment_attributes[1] = self.get_affiliation_of_parent_nodes(oms_node)
         # Status logic
@@ -259,7 +258,7 @@ class MilSymbolSensemaker(Sensemaker):
         return enrichment_attributes
 
     def get_affiliation_of_parent_nodes(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """Get affiliation/standard identity for this node.
+        """Get affiliation/standard identity for a node from its parent nodes.
 
         :param oms_node: Node to grab the affiliation for
         :return: The Node's standard identity
