@@ -4,17 +4,9 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from oms_sdk.generated.generated_graphql_client import (
-    ActivityQuery,
-    AttributeQuery,
-    NodeQuery,
-    ObservationQuery,
-    RelationshipQuery,
-)
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import Settings
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 
 class TestDataMiningPreventionConfig:
@@ -36,21 +28,6 @@ class TestDataMiningPreventionConfig:
             settings.db_pool_timeout_seconds == 30
         ), f"Expected db_pool_timeout_seconds=30, got {settings.db_pool_timeout_seconds}"
 
-    def test_graphql_pagination_settings_exist(self):
-        """Test that GraphQL pagination settings are properly configured."""
-        settings = Settings()
-
-        # Check pagination settings exist with correct defaults
-        assert hasattr(settings, "enforce_graphql_pagination"), "enforce_graphql_pagination should exist"
-        assert (
-            settings.enforce_graphql_pagination is True
-        ), f"Expected enforce_graphql_pagination=True, got {settings.enforce_graphql_pagination}"
-
-        assert hasattr(settings, "graphql_default_page_size"), "graphql_default_page_size should exist"
-        assert (
-            settings.graphql_default_page_size == 200
-        ), f"Expected graphql_default_page_size=200, got {settings.graphql_default_page_size}"
-
     def test_environment_variable_override(self):
         """Test that environment variables can override default settings."""
         # Test with custom environment variables
@@ -60,8 +37,6 @@ class TestDataMiningPreventionConfig:
                 "DB_POOL_SIZE": "15",
                 "DB_MAX_OVERFLOW": "25",
                 "DB_POOL_TIMEOUT_SECONDS": "45",
-                "ENFORCE_GRAPHQL_PAGINATION": "false",
-                "GRAPHQL_DEFAULT_PAGE_SIZE": "100",
             },
         ):
             settings = Settings()
@@ -71,111 +46,6 @@ class TestDataMiningPreventionConfig:
             assert (
                 settings.db_pool_timeout_seconds == 45
             ), f"Expected db_pool_timeout_seconds=45, got {settings.db_pool_timeout_seconds}"
-            assert (
-                settings.enforce_graphql_pagination is False
-            ), f"Expected enforce_graphql_pagination=False, got {settings.enforce_graphql_pagination}"
-            assert (
-                settings.graphql_default_page_size == 100
-            ), f"Expected graphql_default_page_size=100, got {settings.graphql_default_page_size}"
-
-
-class TestGraphQLPaginationEnforcement:
-    """Test GraphQL pagination enforcement in OmsCrudTool."""
-
-    @pytest.fixture
-    def mock_crud_tool(self):
-        """Create a mock OmsCrudTool for testing."""
-        with patch("oms_sensemaking.core.oms_crud.get_generated_graphql_client") as mock_client:
-            mock_client.return_value = Mock()
-            return OmsCrudTool()
-
-    def test_pagination_enforcement_enabled(self, mock_crud_tool):
-        """Test pagination enforcement when enabled."""
-        # Mock settings to enable pagination
-        with patch("oms_sensemaking.core.oms_crud.SETTINGS") as mock_settings:
-            mock_settings.enforce_graphql_pagination = True
-            mock_settings.graphql_default_page_size = 200
-            mock_settings.graphql_max_page_size = 500
-
-            # Test get_nodes with no page params
-            node_query = NodeQuery()
-            mock_response = Mock()
-            mock_response.data = [Mock() for _ in range(150)]
-            mock_crud_tool.oms_client.nodes.return_value = mock_response
-
-            mock_crud_tool.get_nodes(node_query)
-
-            # Verify page params were added
-            assert hasattr(node_query, "pageParams"), "pageParams should be added to query"
-            assert node_query.pageParams.page == 1, f"Expected page=1, got {node_query.pageParams.page}"
-            assert node_query.pageParams.pageSize == 200, f"Expected pageSize=200, got {node_query.pageParams.pageSize}"
-
-    def test_pagination_enforcement_disabled(self, mock_crud_tool):
-        """Test that pagination is not enforced when disabled."""
-        # Mock settings to disable pagination
-        with patch("oms_sensemaking.core.oms_crud.SETTINGS") as mock_settings:
-            mock_settings.enforce_graphql_pagination = False
-            mock_settings.graphql_default_page_size = 200
-            mock_settings.graphql_max_page_size = 500
-
-            # Test get_nodes with no page params
-            node_query = NodeQuery()
-            mock_response = Mock()
-            mock_response.data = [Mock() for _ in range(150)]
-            mock_crud_tool.oms_client.nodes.return_value = mock_response
-
-            mock_crud_tool.get_nodes(node_query)
-
-            # Verify page params were NOT added
-            assert (
-                not hasattr(node_query, "pageParams") or node_query.pageParams is None
-            ), "pageParams should not be added when enforcement is disabled"
-
-    def test_all_crud_methods_pagination(self, mock_crud_tool):
-        """Test that all CRUD methods enforce pagination."""
-        # Mock settings to enable pagination
-        with patch("oms_sensemaking.core.oms_crud.SETTINGS") as mock_settings:
-            mock_settings.enforce_graphql_pagination = True
-            mock_settings.graphql_default_page_size = 100
-            mock_settings.graphql_max_page_size = 300
-
-            # Mock responses
-            mock_nodes = Mock()
-            mock_nodes.data = [Mock() for _ in range(50)]
-            mock_relationships = Mock()
-            mock_relationships.data = [Mock() for _ in range(50)]
-            mock_attributes = Mock()
-            mock_attributes.data = [Mock() for _ in range(50)]
-            mock_activities = Mock()
-            mock_activities.data = [Mock() for _ in range(50)]
-            mock_observations = Mock()
-            mock_observations.data = [Mock() for _ in range(50)]
-
-            mock_crud_tool.oms_client.nodes.return_value = mock_nodes
-            mock_crud_tool.oms_client.relationships.return_value = mock_relationships
-            mock_crud_tool.oms_client.attributes.return_value = mock_attributes
-            mock_crud_tool.oms_client.activities.return_value = mock_activities
-            mock_crud_tool.oms_client.observations.return_value = mock_observations
-
-            # Test all methods
-            methods_to_test = [
-                ("get_nodes", NodeQuery()),
-                ("get_relationships", RelationshipQuery()),
-                ("get_attributes", AttributeQuery()),
-                ("get_activities", ActivityQuery()),
-                ("get_observations", ObservationQuery()),
-            ]
-
-            for method_name, query in methods_to_test:
-                method = getattr(mock_crud_tool, method_name)
-                method(query)
-
-                # Verify page params were added
-                assert hasattr(query, "pageParams"), f"pageParams should be added to {method_name} query"
-                assert query.pageParams.page == 1, f"Expected page=1 for {method_name}, got {query.pageParams.page}"
-                assert (
-                    query.pageParams.pageSize == 100
-                ), f"Expected pageSize=100 for {method_name}, got {query.pageParams.pageSize}"
 
 
 class TestDatabaseConnectionPooling:

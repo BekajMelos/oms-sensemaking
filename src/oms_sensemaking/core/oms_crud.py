@@ -91,29 +91,6 @@ class OmsCrudTool(BaseClient):
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
         )
 
-    def _ensure_pagination_params(
-        self, query_obj: Union[NodeQuery, RelationshipQuery, AttributeQuery, ActivityQuery, ObservationQuery]
-    ) -> None:
-        """Ensure pagination parameters are set on query objects if pagination is enforced."""
-        if SETTINGS.enforce_graphql_pagination:
-            page_params = getattr(query_obj, "pageParams", None)
-            if not page_params:
-                query_obj.pageParams = PageParams(page=1, pageSize=SETTINGS.graphql_default_page_size)
-            else:
-                # Ensure page is set (defaults to 1 if not provided)
-                if not hasattr(query_obj.pageParams, "page") or query_obj.pageParams.page is None:
-                    query_obj.pageParams.page = 1
-                # Validate and limit pageSize to prevent data mining
-                if not hasattr(query_obj.pageParams, "pageSize") or query_obj.pageParams.pageSize is None:
-                    query_obj.pageParams.pageSize = SETTINGS.graphql_default_page_size
-                elif query_obj.pageParams.pageSize > SETTINGS.graphql_default_page_size:
-                    LOGGER.warning(
-                        "Page size %d exceeds maximum allowed %d, limiting to default size",
-                        query_obj.pageParams.pageSize,
-                        SETTINGS.graphql_default_page_size,
-                    )
-                    query_obj.pageParams.pageSize = SETTINGS.graphql_default_page_size
-
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
         """
         Publish the Nodes to OMS
@@ -225,36 +202,30 @@ class OmsCrudTool(BaseClient):
 
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
-        # enforce pagination bounds if configured
-        self._ensure_pagination_params(node_info)
         nodes = self.oms_client.nodes(query=node_info)
         LOGGER.debug("GraphQL nodes fetched: %d", len(nodes.data or []))
         return nodes
 
     def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
         """Get existing Relationships from OMS"""
-        self._ensure_pagination_params(relationship_info)
         relationships = self.oms_client.relationships(query=relationship_info)
         LOGGER.debug("GraphQL relationships fetched: %d", len(relationships.data or []))
         return relationships
 
     def get_attributes(self, attribute_info: AttributeQuery) -> AttributesAttributes:
         """Get existing Attributes from OMS"""
-        self._ensure_pagination_params(attribute_info)
         attributes = self.oms_client.attributes(query=attribute_info)
         LOGGER.debug("GraphQL attributes fetched: %d", len(attributes.data or []))
         return attributes
 
     def get_activities(self, activity_info: ActivityQuery) -> ActivitiesActivities:
         """Get existing Activities from OMS"""
-        self._ensure_pagination_params(activity_info)
         activities = self.oms_client.activities(query=activity_info)
         LOGGER.debug("GraphQL activities fetched: %d", len(activities.data or []))
         return activities
 
     def get_observations(self, observation_info: ObservationQuery) -> ObservationsObservations:
         """Get existing Observations from OMS"""
-        self._ensure_pagination_params(observation_info)
         observations = self.oms_client.observations(query=observation_info)
         LOGGER.debug("GraphQL observations fetched: %d", len(observations.data or []))
         return observations

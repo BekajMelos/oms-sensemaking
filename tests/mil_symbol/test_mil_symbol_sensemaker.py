@@ -14,7 +14,6 @@ from oms_sdk.generated.generated_graphql_client import (
     NodesNodes,
     ObjectTier,
     OntologyClassOntologyClass,
-    PageParams,
 )
 
 from oms_sensemaking.clients.aac_client import AacClient
@@ -322,7 +321,6 @@ def test_get_context(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_
             + SETTINGS.mil_symbol_settings.is_exercise_context_iris
             + SETTINGS.mil_symbol_settings.is_simulation_context_iris,
             nodeIds=[oms_node.id],
-            pageParams=PageParams(page=1, pageSize=200, sortParams=None),
         )
     )
 
@@ -337,7 +335,6 @@ def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, bu
         query=AttributeQuery(
             attributeIris=SETTINGS.mil_symbol_settings.affiliation_iris,
             nodeIds=[oms_node.id],
-            pageParams=PageParams(page=1, pageSize=200, sortParams=None),
         )
     )
 
@@ -350,7 +347,6 @@ def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_s
         query=AttributeQuery(
             attributeIris=SETTINGS.mil_symbol_settings.status_iris,
             nodeIds=[oms_node.id],
-            pageParams=PageParams(page=1, pageSize=200, sortParams=None),
         )
     )
 
@@ -411,7 +407,6 @@ def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_
         query=AttributeQuery(
             attributeIris=SETTINGS.mil_symbol_settings.echelon_iris,
             nodeIds=[oms_node.id],
-            pageParams=PageParams(page=1, pageSize=200, sortParams=None),
         )
     )
 
