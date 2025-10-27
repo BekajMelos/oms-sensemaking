@@ -1,6 +1,7 @@
 """Geo Controller Unit Tests"""
 
 import logging
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from typing import Callable
@@ -18,6 +19,7 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
+from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
@@ -288,9 +290,7 @@ def test_track_too_short1(
 
     # call flush buffer
     mock_geo_controller.flush_buffer()
-    assert caplog.records[-1].message == (
-        "Track doesn't have enough points. Ignore and remove from buffer until it gets more points"
-    )
+    assert caplog.records[-1].message == (f"Track {track_uuid} doesn't have enough points; removing from buffer.")
 
 
 def test_observations_can_make_tracks(mocker: MockerFixture, mock_geo_controller: GeospatialSensemakerController):
@@ -299,3 +299,137 @@ def test_observations_can_make_tracks(mocker: MockerFixture, mock_geo_controller
     mock_geo_controller.oms_crud_tool.get_observation = mocker.Mock(spec=ObservationObservation, return_value=mock_obs)
     obs = mock_geo_controller.get_oms_observation("some-id")
     assert obs == mock_obs
+
+
+def test_handle_event_skips_generated_tracks(mocker, mock_geo_controller):
+    event = mocker.Mock()
+    event.objectId = uuid4()
+
+    obs = mocker.Mock()
+    obs.nodeId = uuid4()
+    obs.labels = [SETTINGS.sm_connected_track]
+    mocker.patch.object(mock_geo_controller, "get_oms_observation", return_value=obs)
+
+    handled = mock_geo_controller.handle_event(event)
+    assert handled is True
+
+
+def test_handle_event_no_observation_returns_true(mocker, mock_geo_controller):
+    event = mocker.Mock()
+    event.objectId = uuid4()
+    mocker.patch.object(mock_geo_controller, "get_oms_observation", return_value=None)
+
+    result = mock_geo_controller.handle_event(event)
+    assert result is True
+
+
+def test_handle_event_missing_geometry(mocker, mock_geo_controller, caplog):
+    event = mocker.Mock()
+    event.objectId = uuid4()
+
+    obs = mocker.Mock()
+    obs.nodeId = uuid4()
+    obs.labels = []
+    mocker.patch.object(mock_geo_controller, "get_oms_observation", return_value=obs)
+    mocker.patch("oms_sensemaking.geospatial.controllers.decompose_observation_geometry", return_value=None)
+
+    handled = mock_geo_controller.handle_event(event)
+    assert handled is False
+    assert "No geometry found for observation" in caplog.text
+
+
+def test_handle_event_adds_point_successfully(mocker, mock_geo_controller):
+    event = mocker.Mock()
+    event.objectId = uuid4()
+
+    obs = mocker.Mock()
+    obs.nodeId = uuid4()
+    obs.id = uuid4()
+    obs.sourceId = uuid4()
+    obs.version = 1
+    obs.confidence = "HIGH"
+    obs.acm = DEFAULT_ACM
+    obs.labels = []
+    mocker.patch.object(mock_geo_controller, "get_oms_observation", return_value=obs)
+
+    mocker.patch(
+        "oms_sensemaking.geospatial.controllers.decompose_observation_geometry",
+        return_value=[{"coordinates": [0, 0], "detection_time": datetime.now(timezone.utc)}],
+    )
+
+    node = mocker.Mock(version=1)
+    mock_geo_controller.oms_crud_tool.get_node = mocker.Mock(return_value=node)
+    mocker.patch(
+        "oms_sensemaking.models.geo.Point.get_or_create", return_value=(mock.Mock(observation_id=uuid4()), True)
+    )
+
+    success = mock_geo_controller.handle_event(event)
+    assert success
+    assert mock_geo_controller.track_node_buffer
+
+
+def test_concurrent_flush_buffer_thread_safety(mock_geo_controller):
+    # prepare buffer with several tracks
+    for _ in range(10):
+        track_uuid = uuid4()
+        mock_geo_controller.track_times[track_uuid] = datetime.now(tz=timezone.utc) - timedelta(seconds=999)
+        mock_geo_controller.track_node_buffer[track_uuid] = []
+
+    threads = [threading.Thread(target=mock_geo_controller.flush_buffer) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    # All expired tracks should be processed & cleaned
+    assert all(v is None for v in mock_geo_controller.track_times.values())
+
+
+def test_lock_is_used_during_flush_buffer(mocker, mock_geo_controller):
+    class SpyLock:
+        def __init__(self, real_lock):
+            self.real_lock = real_lock
+            self.enter_called = False
+
+        def __enter__(self):
+            self.enter_called = True
+            return self.real_lock.__enter__()
+
+        def __exit__(self, *args):
+            return self.real_lock.__exit__(*args)
+
+    spy_lock = SpyLock(threading.Lock())
+    mock_geo_controller.lock = spy_lock
+
+    mock_geo_controller.flush_buffer()
+
+    assert spy_lock.enter_called, "Expected flush_buffer() to use the lock"
+
+
+def test_process_track_too_short_triggers_cleanup(mocker, mock_geo_controller):
+    track_uuid = uuid4()
+    mock_geo_controller._track_generator.generate_track = mocker.Mock(side_effect=TrackLengthError)
+
+    # populate shared dicts
+    mock_geo_controller.track_times[track_uuid] = datetime.now(tz=timezone.utc)
+    mock_geo_controller.track_node_buffer[track_uuid] = []
+    mock_geo_controller.node_track_mapping[uuid4()] = track_uuid
+
+    result = mock_geo_controller._process_track(track_uuid)
+
+    assert result is False
+    assert track_uuid in mock_geo_controller.track_times
+    assert mock_geo_controller.track_times[track_uuid] is None
+
+
+def test_process_track_handles_unexpected_exception(mocker, mock_geo_controller):
+    track_uuid = uuid4()
+    mock_geo_controller._track_generator.generate_track = mocker.Mock(side_effect=RuntimeError("fail"))
+
+    mock_geo_controller.track_times[track_uuid] = datetime.now(tz=timezone.utc)
+    mock_geo_controller.track_node_buffer[track_uuid] = []
+    mock_geo_controller.node_track_mapping[uuid4()] = track_uuid
+
+    mock_geo_controller._process_track(track_uuid)
+    assert track_uuid in mock_geo_controller.track_times
+    assert mock_geo_controller.track_times[track_uuid] is None
