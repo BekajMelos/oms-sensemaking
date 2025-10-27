@@ -13,13 +13,11 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
     CreateNodeCreateNode,
-    MilSymbolAttributeFields,
     NodeNode,
     NodeQuery,
     NodeRelationshipQuery,
     NodeRelationshipSubQuery,
     NodesNodes,
-    ObjectTier,
     RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
@@ -35,6 +33,7 @@ from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
 from oms_sensemaking.mil_symbol.mil_symbol_maker import MilSymbolMaker
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
@@ -75,7 +74,13 @@ class MilSymbolSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool, ontology_service: OntologyService) -> None:
+    def __init__(
+        self,
+        settings: Dict,
+        oms_crud_tool: OmsCrudTool,
+        ontology_service: OntologyService,
+        attribute_retriever: GetMilSymbolAttributes,
+    ) -> None:
         """Create a new instance of MilSymbolSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -84,6 +89,7 @@ class MilSymbolSensemaker(Sensemaker):
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
         self._ontology_service = ontology_service
+        self._attribute_retriever = attribute_retriever
 
     def process_data(
         self, oms_object: AttributeAttribute | NodeNode, config: dict | None = None
@@ -142,7 +148,7 @@ class MilSymbolSensemaker(Sensemaker):
         LOGGER.info(f"Parsed 2525B for {oms_node.id}")
 
         # Get OMS data to enrich codes
-        enrichment_attributes = self.get_all_mil_sym_attrs_for_enrichment(oms_node)
+        enrichment_attributes = self._attribute_retriever.get_all_mil_sym_attrs_for_enrichment(oms_node)
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
         context_attr, affiliation_attr, status_attr, echelon_attr = (
             enrichment_attributes[0],
@@ -217,45 +223,6 @@ class MilSymbolSensemaker(Sensemaker):
         :return: Closest parent iri with a defaultSymbolIdCode
         """
         return self._ontology_service.get_default_symbol_id_code(iri)
-
-    def get_all_mil_sym_attrs_for_enrichment(self, oms_node: NodeNode) -> list[None | MilSymbolAttributeFields]:
-        enrichment_attributes: list[None | MilSymbolAttributeFields] = [None] * 4
-        context_iris = (
-            SETTINGS.mil_symbol_settings.is_exercise_context_iris
-            + SETTINGS.mil_symbol_settings.is_reality_context_iris
-            + SETTINGS.mil_symbol_settings.is_simulation_context_iris
-        )
-        all_attributes = self.oms_crud_tool.get_mil_symbol_attr(
-            oms_node.id,
-            SETTINGS.mil_symbol_settings.affiliation_iris,
-            context_iris,
-            SETTINGS.mil_symbol_settings.status_iris,
-            SETTINGS.mil_symbol_settings.echelon_iris,
-        )
-        # Context logic
-        context_data = all_attributes.context.data
-        if context_data:
-            for attr in context_data:
-                if attr.attributeValue.lower() == "true":
-                    enrichment_attributes[0] = attr
-        # Affiliation logic
-        affiliation_data = all_attributes.affiliation.data
-        not_derivative = None
-        if affiliation_data:
-            enrichment_attributes[1] = affiliation_data[0]
-        elif enrichment_attributes[1] is None and oms_node.tier != ObjectTier.DERIVATIVE:
-            not_derivative = True
-        elif enrichment_attributes[1] is None and not_derivative is None:
-            enrichment_attributes[1] = self.get_affiliation_of_parent_nodes(oms_node)
-        # Status logic
-        status_data = all_attributes.status.data
-        if status_data:
-            enrichment_attributes[2] = status_data[0]
-        # Echelon logic
-        echelon_data = all_attributes.echelon.data
-        if echelon_data:
-            enrichment_attributes[3] = echelon_data[0]
-        return enrichment_attributes
 
     def get_affiliation_of_parent_nodes(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
         """Get affiliation/standard identity for a node from its parent nodes.
