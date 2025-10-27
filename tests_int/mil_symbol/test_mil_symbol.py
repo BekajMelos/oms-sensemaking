@@ -12,6 +12,10 @@ from oms_sdk.generated.generated_graphql_client import (
     Confidence,
     CreateAttributeInput,
     CreateNodeInput,
+    MilSymbolAttributesAffiliationData,
+    MilSymbolAttributesContextData,
+    MilSymbolAttributesEchelonData,
+    MilSymbolAttributesStatusData,
     NodeNode,
     ObjectTier,
     RelationshipRelationship,
@@ -69,6 +73,90 @@ def create_attribute(
     return attr
 
 
+def attr_context_data(
+    oms_node: NodeNode,
+    attribute_iri: str,
+    attribute_value: str,
+    mock_source: SourceSource,
+    tags: Optional[List[str]] = None,
+) -> MilSymbolAttributesContextData:
+    attr = MilSymbolAttributesContextData.model_construct(
+        id=uuid4(),
+        attributeType=AttributeType.STRING,
+        attributeValue=attribute_value,
+        attributeIri=attribute_iri,
+        acm=DEFAULT_ACM,
+        sourceId=mock_source.id,
+        confidence=Confidence.HIGH,
+        nodeId=oms_node.id,
+        tags=tags,
+    )
+    return attr
+
+
+def attr_affiliation_data(
+    oms_node: NodeNode,
+    attribute_iri: str,
+    attribute_value: str,
+    mock_source: SourceSource,
+    tags: Optional[List[str]] = None,
+) -> MilSymbolAttributesAffiliationData:
+    attr = MilSymbolAttributesAffiliationData.model_construct(
+        id=uuid4(),
+        attributeType=AttributeType.STRING,
+        attributeValue=attribute_value,
+        attributeIri=attribute_iri,
+        acm=DEFAULT_ACM,
+        sourceId=mock_source.id,
+        confidence=Confidence.HIGH,
+        nodeId=oms_node.id,
+        tags=tags,
+    )
+    return attr
+
+
+def attr_status_data(
+    oms_node: NodeNode,
+    attribute_iri: str,
+    attribute_value: str,
+    mock_source: SourceSource,
+    tags: Optional[List[str]] = None,
+) -> MilSymbolAttributesStatusData:
+    attr = MilSymbolAttributesStatusData.model_construct(
+        id=uuid4(),
+        attributeType=AttributeType.STRING,
+        attributeValue=attribute_value,
+        attributeIri=attribute_iri,
+        acm=DEFAULT_ACM,
+        sourceId=mock_source.id,
+        confidence=Confidence.HIGH,
+        nodeId=oms_node.id,
+        tags=tags,
+    )
+    return attr
+
+
+def attr_echelon_data(
+    oms_node: NodeNode,
+    attribute_iri: str,
+    attribute_value: str,
+    mock_source: SourceSource,
+    tags: Optional[List[str]] = None,
+) -> MilSymbolAttributesEchelonData:
+    attr = MilSymbolAttributesEchelonData.model_construct(
+        id=uuid4(),
+        attributeType=AttributeType.STRING,
+        attributeValue=attribute_value,
+        attributeIri=attribute_iri,
+        acm=DEFAULT_ACM,
+        sourceId=mock_source.id,
+        confidence=Confidence.HIGH,
+        nodeId=oms_node.id,
+        tags=tags,
+    )
+    return attr
+
+
 @pytest.fixture
 def build_helper(mil_symbol_rules):
     oms_crud_tool = OmsCrudTool()
@@ -92,16 +180,13 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         "10-0-0-30-0-0-32-000000-00-00",
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", mock_source),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
@@ -143,18 +228,13 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
         "10-0-0-01-0-0-00-000000-00-00",
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", "true", mock_source
-        )
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", "true", mock_source),
+            attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", mock_source),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=[
@@ -176,7 +256,8 @@ def test_execute(mock_source, db, build_helper):
     )
 
     assert len(findings) == 6
-    new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAX------*****"]
+    print(findings)
+    new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case2)
 
     for symbol in symbols:
@@ -201,16 +282,13 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft",
         "10-0-0-01-0-0-00-000000-00-00",
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", mock_source),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
@@ -257,12 +335,13 @@ def test_execute(mock_source, db, build_helper):
 
     oms_attribute = create_attribute(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source)
 
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
@@ -317,12 +396,20 @@ def test_execute(mock_source, db, build_helper):
         tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
     )
 
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node,
+                SETTINGS.mil_symbol_settings.affiliation_iris[0],
+                "neutral",
+                mock_source,
+                # The sensemaker should ignore Attribute creates/updates it wrote
+                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
@@ -357,6 +444,16 @@ def test_execute(mock_source, db, build_helper):
     sensemaker.get_affiliation = mock.MagicMock(return_value=oms_attribute)
     sensemaker.get_status = mock.MagicMock(
         return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source)
+    )
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node, SETTINGS.mil_symbol_settings.symbol_attribute_iri, "SNPP------*****", mock_source
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
@@ -398,16 +495,15 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_he
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", "SUSP------*****"
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
@@ -454,16 +550,15 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_he
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         "10-0-0-30-0-0-32-000000-00-00",
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "damaged", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
@@ -508,16 +603,15 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source),
+            None,
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
 
@@ -562,21 +656,17 @@ def test_echelon_enrichment(mock_source, db, build_helper):
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
-    sensemaker.get_context = mock.MagicMock(
-        return_value=create_attribute(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source)
-    )
-    sensemaker.get_affiliation = mock.MagicMock(
-        return_value=create_attribute(
-            oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
-        )
-    )
-    sensemaker.get_status = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source)
+    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+        return_value=[
+            attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
+            attr_affiliation_data(
+                oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "none specified", mock_source
+            ),
+            attr_status_data(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "destroyed", mock_source),
+            attr_echelon_data(oms_node, SETTINGS.mil_symbol_settings.echelon_iris[0], "team", mock_source),
+        ]
     )
     sensemaker.get_node_ancestors_iris = mock.MagicMock(return_value=[])
-    sensemaker.get_echelon = mock.MagicMock(
-        return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.echelon_iris[0], "team", mock_source)
-    )
 
     symbols: List[SymbolCodeUpdate] = sensemaker.execute(oms_node)
     assert len(symbols) == 3
