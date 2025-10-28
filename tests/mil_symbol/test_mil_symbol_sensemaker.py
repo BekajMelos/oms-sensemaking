@@ -9,8 +9,12 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributesAttributes,
+    MilSymbolAttributes,
     MilSymbolAttributesAffiliationData,
+    MilSymbolAttributesContext,
     MilSymbolAttributesContextData,
+    MilSymbolAttributesEchelon,
+    MilSymbolAttributesStatus,
     MilSymbolAttributesStatusData,
     NodeNode,
     ObjectTier,
@@ -518,7 +522,7 @@ def test_acms(
     )
 
 
-@pytest.mark.skip("unable to mock method correctly")
+@pytest.mark.skip("cannot get the mock to work properly")
 @mock.patch("oms_sensemaking.mil_symbol.get_attributes.GetMilSymbolAttributes.get_affiliation_of_parent_nodes")
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_affiliation_fallback_to_parent_is_triggered(
@@ -535,17 +539,18 @@ def test_affiliation_fallback_to_parent_is_triggered(
     mock_get_acm.return_value = DEFAULT_ACM
     mock_get_affiliation.return_value = attr_affiliation_data(attribute_value="hostile")
 
-    mock_oms_crud_tool.get_node_attribute_by_iri = mock.MagicMock(side_effect=[[], []])
-
-    mock_all_attrs = mock.MagicMock()
-    mock_all_attrs.context.data = [
-        attr_context_data(attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true")
-    ]
-    mock_all_attrs.affiliation.data = None
-    mock_all_attrs.status.data = [attr_status_data(attribute_value="damaged")]
-    mock_all_attrs.echelon.data = None
-
-    mock_oms_crud_tool.get_mil_symbol_attr = mock.MagicMock(return_value=mock_all_attrs)
+    sensemaker.oms_crud_tool.get_mil_symbol_attr = mock.MagicMock(
+        return_value=MilSymbolAttributes.model_construct(
+            affiliation=MilSymbolAttributesContext.model_construct(data=None),
+            context=MilSymbolAttributesContext.model_construct(
+                data=attr_context_data(
+                    attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
+                )
+            ),
+            status=MilSymbolAttributesStatus.model_construct(data=attr_status_data(attribute_value="damaged")),
+            echelon=MilSymbolAttributesEchelon.model_construct(data=None),
+        )
+    )
 
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=[
@@ -555,6 +560,12 @@ def test_affiliation_fallback_to_parent_is_triggered(
         ]
     )
     mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
+
+    # Mock parent affiliation logic
+    mock_parent_affiliation = attr_affiliation_data(attribute_value="hostile")
+    sensemaker._attribute_retriever.get_affiliation_of_parent_nodes = mock.MagicMock(
+        return_value=mock_parent_affiliation
+    )
 
     oms_node.tier = ObjectTier.DERIVATIVE
     oms_node.symbolIdCode = "10-0-0-00-0-0-00-000000-00-00"

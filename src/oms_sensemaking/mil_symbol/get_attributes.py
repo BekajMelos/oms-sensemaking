@@ -38,14 +38,14 @@ class GetMilSymbolAttributes(ABC):
                             hasMatch=NodeRelationshipSubQuery(
                                 objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
                                 relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.OUTGOING,
+                                direction=RelationshipDirection.INCOMING,
                             )
                         ),
                         NodeRelationshipQuery(
                             hasMatch=NodeRelationshipSubQuery(
                                 objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
                                 relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.INCOMING,
+                                direction=RelationshipDirection.OUTGOING,
                             )
                         ),
                     ]
@@ -103,12 +103,9 @@ class GetAllAttributesAtOnce(GetMilSymbolAttributes):
                     enrichment_attributes[0] = attr
         # Affiliation logic
         affiliation_data = all_attributes.affiliation.data
-        not_derivative = None
         if affiliation_data:
             enrichment_attributes[1] = affiliation_data[0]
-        elif enrichment_attributes[1] is None and oms_node.tier != ObjectTier.DERIVATIVE:
-            not_derivative = True
-        elif enrichment_attributes[1] is None and not_derivative is None:
+        elif oms_node.tier is ObjectTier.DERIVATIVE:
             enrichment_attributes[1] = self.get_affiliation_of_parent_nodes(oms_node)
         # Status logic
         status_data = all_attributes.status.data

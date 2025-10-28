@@ -1,6 +1,5 @@
 """Military Symbol sensemaker controller."""
 
-import itertools
 import json
 import logging
 
@@ -49,10 +48,10 @@ class MilSymbolSensemakerController(SensemakerController):
 
 class MilSymbolQueueFilter(EventFilter):
     def __init__(self) -> None:
-        self.handled_iris = itertools.chain(
-            SETTINGS.mil_symbol_settings.affiliation_iris,
-            SETTINGS.mil_symbol_settings.echelon_iris,
-            SETTINGS.mil_symbol_settings.status_iris,
+        self.handled_iris = (
+            SETTINGS.mil_symbol_settings.affiliation_iris
+            + SETTINGS.mil_symbol_settings.echelon_iris
+            + SETTINGS.mil_symbol_settings.status_iris
         )
 
     def passes_filter(self, audit_event: AuditLogEvent):
