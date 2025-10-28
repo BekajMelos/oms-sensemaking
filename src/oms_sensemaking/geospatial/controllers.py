@@ -2,7 +2,6 @@
 
 import json
 import logging
-import traceback
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -124,108 +123,96 @@ class GeospatialSensemakerController(SensemakerController):
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
         """
-        now: datetime = datetime.now(tz=timezone.utc)
-
         LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
 
-        # extract info from OMS via API calls
-        oms_obs: ObservationObservation | None = self.get_oms_observation(event.objectId)
-
-        # we expect an observation. If one doesn't exist, we can ignore the point.
+        # Retrieve observation
+        oms_obs = self.get_oms_observation(event.objectId)
         if not oms_obs:
             return True
 
-        # if the vehicle node_id doesn't have a track linked to it, this is the first obs we received for it
-        # we need to create a track_id for it so we can add future points for that vehicle/track
-        if oms_obs.nodeId not in self.node_track_mapping:
-            self.node_track_mapping[oms_obs.nodeId] = uuid4()
-
-        # we should not process/split generated tracks into more tracks
+        # Skip generated tracks
         if self.is_generated_track(oms_obs):
             return True
 
-        # set the current track_id to the track linked to the node (vehicle) in question
-        track_uuid = self.node_track_mapping[oms_obs.nodeId]
+        # Ensure node has associated track ID
+        track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
 
-        try:
-            node = self.oms_crud_tool.get_node(oms_obs.nodeId)
-            node_version = node.version
-        except AttributeError:
+        # Retrieve node version
+        node = self.oms_crud_tool.get_node(oms_obs.nodeId)
+        node_version = getattr(node, "version", None)
+        if node_version is None:
             LOGGER.warning("No node found. Unable to process observation.")
             return False
 
+        # Decompose geometry into point(s)
         obs_geo_data = decompose_observation_geometry(oms_obs)
+        if not obs_geo_data:
+            LOGGER.warning("No geometry found for observation %s", oms_obs.id)
+            return False
 
         success = False
         with db_session() as db:
+            db.expire_on_commit = False
+
             for point_data in obs_geo_data:
-                # we're still using the point object for detections, so don't expire it
-                db.expire_on_commit = False
-                # create a point in the oms_sensemaking db, including the vehicle node_id
-                point = is_new = None
-                LOGGER.info(f"Parsed coordinates for {oms_obs.id}")
+                LOGGER.debug(f"Parsed coordinates for {oms_obs.id}")
+                # NOTE: Altitude intentionally disabled: Shapely fails with mixed 2D/3D coordinate arrays.
+                #   Enable once geometry normalization supports consistent altitude data.
                 try:
                     point, is_new = Point.get_or_create(
                         db,
                         defaults={
                             "acm": oms_obs.acm,
                             "altitude": None,
-                            # The below altitude setting can cause Shapely methods to fail if only some points have
-                            #   a Z coordinate. Mismatched coordinate array lengths (2 vs 3) will break the LineString
-                            #   and MultiLineString methods used by sensemakers to output results. This must be dealt
-                            #   with before we can handle unreliable altitudes in OMS observations.
-                            # altitude=oms_obs.geometry["coordinates"][2]
-                            # if oms_obs.geometry["coordinates"][2:]
-                            # else None,
                             "detection_time": point_data["detection_time"],
                             "node_version": int(node_version),
                             "observation_version": int(oms_obs.version),
                         },
-                        location=(f'Point({point_data["coordinates"][0]} ' f'{point_data["coordinates"][1]})'),
+                        location=f'Point({point_data["coordinates"][0]} {point_data["coordinates"][1]})',
                         node_id=self._ensure_uuid(oms_obs.nodeId),
                         observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,
                         source_id=self._ensure_uuid(oms_obs.sourceId),
-                        # TODO: Multiply by source weight if available
                         weight=self.confidence_weight_map[oms_obs.confidence],
                     )
                 except Exception:
-                    LOGGER.error("Unable to process point.")
-                    LOGGER.error(traceback.format_exc())
+                    LOGGER.exception("Unable to process point for observation %s", oms_obs.id)
                     continue
 
-                if point:
-                    if not is_new:
-                        LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
-                    with self.lock:
-                        # we just received the point, so set the track_id time to now in the buffer
-                        self.track_times[track_uuid] = now
-                        self.track_node_buffer[track_uuid].append(point)
-                        success = True
+                if not point:
+                    continue
+
+                if not is_new:
+                    LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
+
+                with self.lock:
+                    self.track_times[track_uuid] = datetime.now(tz=timezone.utc)
+                    self.track_node_buffer[track_uuid].append(point)
+                    success = True
         return success
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.info("Checking Track Buffer Expirations")
+        LOGGER.debug("Checking for expired tracks in the buffer cache.")
         now: datetime = datetime.now(tz=timezone.utc)
+        expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
+        expired_tracks = []
 
         with self.lock:
-            # purge stale keys
+            # Identify expired tracks in thread-safe snapshot
             self.track_times = {key: val for key, val in self.track_times.items() if val is not None}
+            expired_tracks = [
+                track_uuid
+                for track_uuid, last_updated_at in self.track_times.items()
+                if last_updated_at is not None and last_updated_at + expire_threshold < now
+            ]
 
-            for track_uuid, last_updated_at in self.track_times.items():
-                if last_updated_at is None:
-                    LOGGER.warning("Skipping Track(track_uuid=%s)", track_uuid)
-                    continue
+        if expired_tracks:
+            LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
 
-                LOGGER.debug("Checking buffer for %s", track_uuid)
-                if last_updated_at + timedelta(seconds=SETTINGS.cache_entry_expire_sec) < now:
-                    LOGGER.debug("track_uuid=%s is expired, processing from buffer.", track_uuid)
-                    process_track_status = self._process_track(track_uuid)
-                    if not process_track_status:
-                        continue
-                else:
-                    LOGGER.debug("track_uuid %s is still active in the buffer", track_uuid)
+        for track_uuid in expired_tracks:
+            # Process expired tracks
+            self._process_track(track_uuid)
 
         if self.autoflush_enabled:
             self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
@@ -233,39 +220,47 @@ class GeospatialSensemakerController(SensemakerController):
 
     def _process_track(self, track_uuid: UUID) -> bool:
         """
-        Function used to generate and process and track
+        Generate and process a completed track once its buffer has expired.
+        Safely clean in-memory buffers.
+
+        :param track_uuid: track ID
         """
+        LOGGER.debug("Processing track %s", track_uuid)
+
         try:
             try:
+                # Attempt to build the full track from buffered points
                 track = self._track_generator.generate_track(
-                    track_uuid, self.track_weaver, self.common_sense_filters, self.track_node_buffer, self.oms_crud_tool
+                    track_uuid,
+                    self.track_weaver,
+                    self.common_sense_filters,
+                    self.track_node_buffer,
+                    self.oms_crud_tool,
                 )
             except TrackLengthError:
-                LOGGER.exception(
-                    ("Track doesn't have enough points. Ignore and remove from buffer until it gets more points")
-                )
-                self.track_times[track_uuid] = None
+                LOGGER.warning("Track %s doesn't have enough points; removing from buffer.", track_uuid)
+                with self.lock:
+                    self.track_times[track_uuid] = None
                 return False
 
             geo_config = self._get_geo_config(track)
 
             with ThreadPoolExecutor() as executor:
-                futures = []
-                for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    futures.append(future)
-
-                # make sure errors are caught
+                futures = [
+                    executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                    for sensemaker in self._registry.values()
+                ]
                 for future in as_completed(futures):
                     _ = future.result()
-        except Exception as e:
-            LOGGER.exception("Error encountered while processing %s from buffer: %s", track_uuid, str(e))
+        except Exception:
+            LOGGER.exception("Unexpected error processing track %s", track_uuid)
         finally:
-            self.track_times[track_uuid] = None  # mark for removal
-            self.track_node_buffer.pop(track_uuid)
-            for key, value in list(self.node_track_mapping.items()):
-                if value == track_uuid:
-                    del self.node_track_mapping[key]
+            with self.lock:
+                # Thread-safe cleanup of expired track data
+                self.track_times[track_uuid] = None
+                self.track_node_buffer.pop(track_uuid)
+                self.node_track_mapping = {k: v for k, v in self.node_track_mapping.items() if v != track_uuid}
+
         return True
 
     def _get_geo_config(self, track: Track) -> GeospatialSensemakerConfig:

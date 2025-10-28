@@ -19,8 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateSourceInput,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -64,22 +63,19 @@ def session_local():
 
     It is intended on being used as a pytest fixture.
     """
+    # clear old connections in centralized engine
+    from oms_sensemaking.clients import instances
 
-    # run database migrations
+    instances.db_engine.dispose()
+
+    # run database migrations on test DB
     command.upgrade(alembic_cfg, "head")
 
-    # TODO reuse from instances.py?
-    db_engine = create_engine(
-        SETTINGS.db_uri,  # type: ignore
-        pool_pre_ping=True,
-        connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
-    )
+    # reuse centralized SessionLocal
+    yield instances.SessionLocal
 
-    SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
-
-    yield SessionLocal
-
-    # purge database tables
+    # dispose after schema teardown
+    instances.db_engine.dispose()
     command.downgrade(alembic_cfg, "base")
 
 
