@@ -189,7 +189,7 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         "10-0-0-30-0-0-32-000000-00-00",
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "hostile", mock_source),
@@ -237,7 +237,7 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
         "10-0-0-01-0-0-00-000000-00-00",
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction", "true", mock_source),
             attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "suspect", mock_source),
@@ -291,7 +291,7 @@ def test_execute(mock_source, db, build_helper):
         "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft",
         "10-0-0-01-0-0-00-000000-00-00",
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "friendly", mock_source),
@@ -344,7 +344,7 @@ def test_execute(mock_source, db, build_helper):
 
     oms_attribute = create_attribute(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source)
 
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(oms_node, SETTINGS.mil_symbol_settings.affiliation_iris[0], "neutral", mock_source),
@@ -405,7 +405,7 @@ def test_execute(mock_source, db, build_helper):
         tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
     )
 
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
@@ -454,7 +454,7 @@ def test_execute(mock_source, db, build_helper):
     sensemaker.get_status = mock.MagicMock(
         return_value=create_attribute(oms_node, SETTINGS.mil_symbol_settings.status_iris[0], "present", mock_source)
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
@@ -504,7 +504,7 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_he
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft", "SUSP------*****"
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
@@ -559,7 +559,7 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_he
         "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft",
         "10-0-0-30-0-0-32-000000-00-00",
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
@@ -612,7 +612,7 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
@@ -665,7 +665,7 @@ def test_echelon_enrichment(mock_source, db, build_helper):
     oms_node = create_node(
         oms_crud_tool, "http://www.ontologyrepository.com/CommonCoreOntologies/GroundVehicle", "SOGP------*****"
     )
-    sensemaker.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
+    sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
         return_value=[
             attr_context_data(oms_node, "https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", "true", mock_source),
             attr_affiliation_data(
