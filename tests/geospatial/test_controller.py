@@ -157,7 +157,7 @@ def test_geo_controller_with_default_provider_config(
         observation_ids=[],
         track_uuid=track.track_uuid,
     )
-    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
     # mock thread pool execution
     # Create a mock executor that returns a future with a known result
@@ -245,7 +245,7 @@ def test_geo_controller_with_provider_config(
         observation_ids=[],
         track_uuid=track.track_uuid,
     )
-    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
     # call flush buffer
     mock_geo_controller.flush_buffer()
