@@ -3,14 +3,14 @@
 import logging
 from typing import Optional
 
-from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.models.logs import AuditLogError
 
 LOGGER = logging.getLogger(__name__)
 
 
 class AuditLogErrorClient:
-    def get_audit_log_errors(self, exception_name: Optional[str], page: int, pagesize: int):
+    def get_audit_log_errors(self, user_dn, exception_name: Optional[str], page: int, pagesize: int):
         display = []
         with db_session() as db:
             query = db.query(AuditLogError).order_by(AuditLogError.created_at.desc())
@@ -18,24 +18,29 @@ class AuditLogErrorClient:
                 query = query.filter(AuditLogError.exception_name == exception_name)
 
             errors = query.limit(int(pagesize)).offset((int(page) - 1) * int(pagesize)).all()
-
-        for error in errors:
+        response = aac_client.check_access_for_acms(user_dn, [{"ACM": error.acm} for error in errors])
+        for i in range(len(response)):
+            access_errors_from_aac_response = response[i].get("Errors")
+            if access_errors_from_aac_response:
+                # Skip this index, do not include in final display list
+                continue
+            current_error_from_query = errors[i]
             display.append(
                 {
-                    "created_at": error.created_at,
-                    "id": error.id,
-                    "object_id": error.object_id,
-                    "object_type": error.object_type,
-                    "event_type": error.event_type,
-                    "module_name": error.module_name,
-                    "line_no": error.line_no,
-                    "function_name": error.function_name,
-                    "code": error.code,
-                    "exception_name": error.exception_name,
-                    "version": error.version,
-                    "message": error.message,
-                    "exc_text": error.exc_text,
-                    "acm": error.acm,
+                    "created_at": current_error_from_query.created_at,
+                    "id": current_error_from_query.id,
+                    "object_id": current_error_from_query.object_id,
+                    "object_type": current_error_from_query.object_type,
+                    "event_type": current_error_from_query.event_type,
+                    "module_name": current_error_from_query.module_name,
+                    "line_no": current_error_from_query.line_no,
+                    "function_name": current_error_from_query.function_name,
+                    "code": current_error_from_query.code,
+                    "exception_name": current_error_from_query.exception_name,
+                    "version": current_error_from_query.version,
+                    "message": current_error_from_query.message,
+                    "exc_text": current_error_from_query.exc_text,
+                    "acm": current_error_from_query.acm,
                 }
             )
         return display
