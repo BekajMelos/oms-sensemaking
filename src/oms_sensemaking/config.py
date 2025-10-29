@@ -362,10 +362,6 @@ class Settings(BaseSettings):
     db_max_overflow: int = Field(20, description="SQLAlchemy max overflow connections beyond the pool size.")
     db_pool_timeout_seconds: int = Field(30, description="Seconds to wait for a connection from the pool.")
 
-    # GraphQL query pagination controls (enforce bounded responses)
-    enforce_graphql_pagination: bool = Field(True, description="Force pagination on collection queries.")
-    graphql_default_page_size: int = Field(200, description="Default page size when none is provided.")
-
     # Geospatial Sensemaking Settings
     geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",
                                                  description="Path to the Geospatial Sensemaker Config")
