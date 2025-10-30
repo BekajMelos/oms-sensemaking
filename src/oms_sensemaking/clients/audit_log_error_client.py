@@ -11,13 +11,16 @@ LOGGER = logging.getLogger(__name__)
 
 class AuditLogErrorClient:
     def get_audit_log_errors(self, user_dn, exception_name: Optional[str], page: int, pagesize: int):
-        display = []
+        display: list[dict] = []
         with db_session() as db:
             query = db.query(AuditLogError).order_by(AuditLogError.created_at.desc())
             if exception_name:
                 query = query.filter(AuditLogError.exception_name == exception_name)
 
             errors = query.limit(int(pagesize)).offset((int(page) - 1) * int(pagesize)).all()
+        if not errors:
+            LOGGER.info("No Audit Error Logs to display")
+            return display
         response = aac_client.check_access_for_acms(user_dn, [{"ACM": error.acm} for error in errors])
         for i in range(len(response)):
             access_errors_from_aac_response = response[i].get("Errors")
