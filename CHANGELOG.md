@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- New API endpoint to view Audit Error Logs which get logged to the DB
 
 ### Changed
 
