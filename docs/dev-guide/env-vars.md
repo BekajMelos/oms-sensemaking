@@ -40,6 +40,10 @@
 | `DB_NAME`                     | `oms_sensemaking`                 | The name for the oms_sensemaking database.                                                                    | Yes            |
 | `DB_NAME_OMSB`                | `omsb_db`                         | The name for the omsb_db database.                                                                            | Yes            |
 | `DB_TEMPLATE`                 | `template_postgis`                | The template used in the creation of the application database.                                                | Yes            |
+| `DB_POOL_SIZE`                | `10`                              | SQLAlchemy connection pool size.                                                                              | No             |
+| `DB_MAX_OVERFLOW`             | `20`                              | SQLAlchemy max overflow connections beyond the pool size.                                                     | No             |
+| `DB_POOL_TIMEOUT_SECONDS`     | `30`                              | Seconds to wait for a connection from the pool.                                                               | No             |
+
 
 
 ##### AWS Settings
