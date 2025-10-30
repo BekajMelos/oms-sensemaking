@@ -97,9 +97,9 @@ def test_process_data(
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols1: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols1) == 3
+    code_d, code_c, code_b = symbols1
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
     assert code_b.new_symbol_id_code == "SHSP------*****"
@@ -118,9 +118,9 @@ def test_process_data(
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols2: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols2) == 3
+    code_d, code_c, code_b = symbols2
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SSAX------*****"
     assert code_b.new_symbol_id_code == "SSAP------*****"
@@ -139,9 +139,9 @@ def test_process_data(
     oms_node.symbolIdCode = "spzp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols3: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols3) == 3
+    code_d, code_c, code_b = symbols3
     assert code_d.new_symbol_id_code == "10-0-3-05-0-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SFPP------*****"
     assert code_b.new_symbol_id_code == "SFPP------*****"
@@ -332,7 +332,10 @@ def test_get_affiliation(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, bu
 
     sensemaker.get_affiliation(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
-        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.affiliation_iris, nodeIds=[oms_node.id])
+        query=AttributeQuery(
+            attributeIris=SETTINGS.mil_symbol_settings.affiliation_iris,
+            nodeIds=[oms_node.id],
+        )
     )
 
 
@@ -341,7 +344,10 @@ def test_get_status(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_s
 
     sensemaker.get_status(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
-        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.status_iris, nodeIds=[oms_node.id])
+        query=AttributeQuery(
+            attributeIris=SETTINGS.mil_symbol_settings.status_iris,
+            nodeIds=[oms_node.id],
+        )
     )
 
 
@@ -398,7 +404,10 @@ def test_get_echelon(mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_
 
     sensemaker.get_echelon(oms_node)
     mock_oms_crud_tool.oms_client.attributes.assert_called_with(
-        query=AttributeQuery(attributeIris=SETTINGS.mil_symbol_settings.echelon_iris, nodeIds=[oms_node.id])
+        query=AttributeQuery(
+            attributeIris=SETTINGS.mil_symbol_settings.echelon_iris,
+            nodeIds=[oms_node.id],
+        )
     )
 
 
@@ -578,9 +587,9 @@ def test_controlling_affiliation_enrichment(
     mock_oms_crud_tool.get_node_attribute_by_iri.side_effect = [[], [create_attribute(attribute_value="hostile")], []]
 
     oms_node.symbolIdCode = "10-0-0-00-0-0-00-000000-00-00"
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols2: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols2) == 3
+    code_d, code_c, code_b = symbols2
 
     # The parent IRI makes sure we get the correct dimension of 01
     assert code_d.new_symbol_id_code == "10-0-6-01-3-0-00-000000-00-00"
