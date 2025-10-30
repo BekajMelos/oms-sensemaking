@@ -127,9 +127,9 @@ def test_process_data(
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols1: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols1) == 3
+    code_d, code_c, code_b = symbols1
     assert code_d.new_symbol_id_code == "10-0-6-30-3-0-32-000000-00-00"
     assert code_c.new_symbol_id_code == "SHSD------*****"
     assert code_b.new_symbol_id_code == "SHSP------*****"
@@ -151,9 +151,9 @@ def test_process_data(
     oms_node.symbolIdCode = "10-0-0-01-0-0-00-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols2: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols2) == 3
+    code_d, code_c, code_b = symbols2
     assert code_d.new_symbol_id_code == "10-2-5-01-4-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SSAX------*****"
     assert code_b.new_symbol_id_code == "SSAP------*****"
@@ -173,9 +173,9 @@ def test_process_data(
     oms_node.symbolIdCode = "spzp------*****"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Spacecraft"
 
-    symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
-    assert len(symbols) == 3
-    code_d, code_c, code_b = symbols
+    symbols3: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
+    assert len(symbols3) == 3
+    code_d, code_c, code_b = symbols3
     assert code_d.new_symbol_id_code == "10-0-3-05-0-0-00-000000-00-00"
     assert code_c.new_symbol_id_code == "SFPP------*****"
     assert code_b.new_symbol_id_code == "SFPP------*****"

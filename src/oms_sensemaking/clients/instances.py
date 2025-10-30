@@ -20,6 +20,9 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 db_engine = create_engine(
     SETTINGS.db_uri,  # type: ignore
     pool_pre_ping=True,
+    pool_size=SETTINGS.db_pool_size,
+    max_overflow=SETTINGS.db_max_overflow,
+    pool_timeout=SETTINGS.db_pool_timeout_seconds,
     connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
 )
 

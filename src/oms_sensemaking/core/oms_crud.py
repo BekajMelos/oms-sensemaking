@@ -203,26 +203,31 @@ class OmsCrudTool(BaseClient):
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from OMS"""
         nodes = self.oms_client.nodes(query=node_info)
+        LOGGER.debug("GraphQL nodes fetched: %d", len(nodes.data or []))
         return nodes
 
     def get_relationships(self, relationship_info: RelationshipQuery) -> RelationshipsRelationships:
         """Get existing Relationships from OMS"""
         relationships = self.oms_client.relationships(query=relationship_info)
+        LOGGER.debug("GraphQL relationships fetched: %d", len(relationships.data or []))
         return relationships
 
     def get_attributes(self, attribute_info: AttributeQuery) -> AttributesAttributes:
         """Get existing Attributes from OMS"""
         attributes = self.oms_client.attributes(query=attribute_info)
+        LOGGER.debug("GraphQL attributes fetched: %d", len(attributes.data or []))
         return attributes
 
     def get_activities(self, activity_info: ActivityQuery) -> ActivitiesActivities:
         """Get existing Activities from OMS"""
         activities = self.oms_client.activities(query=activity_info)
+        LOGGER.debug("GraphQL activities fetched: %d", len(activities.data or []))
         return activities
 
     def get_observations(self, observation_info: ObservationQuery) -> ObservationsObservations:
         """Get existing Observations from OMS"""
         observations = self.oms_client.observations(query=observation_info)
+        LOGGER.debug("GraphQL observations fetched: %d", len(observations.data or []))
         return observations
 
     def get_source(self, source_id: str) -> SourceSource:
