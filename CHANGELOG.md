@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Changed formatting of logging statements from f-string to lazy logging % format
 
 ### Fixed
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
