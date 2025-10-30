@@ -37,9 +37,9 @@ def gather_area_of_interest_data(paths_to_aoi_data: str):
                 features = kml_reader.parse_kmz_file(file_path)
                 areas_of_interest.extend(features)
             else:
-                LOGGER.warning(f"Unsupported file type: {file_path}")
+                LOGGER.warning("Unsupported file type: %s", file_path)
         except json.JSONDecodeError as e:
-            LOGGER.error(f"Invalid json {file_path}: {e}")
+            LOGGER.error("Invalid json %s: %s", file_path, e)
     return areas_of_interest
 
 

@@ -135,7 +135,7 @@ class SensemakerController:
 
         :param event: The event to process.
         """
-        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
+        LOGGER.debug("Received AuditLogEvent(objectId=%s)", event.objectId)
 
         try:
             # extract info from OMS via API calls
@@ -146,7 +146,7 @@ class SensemakerController:
             return False
 
         if not oms_obj:
-            LOGGER.warning(f"Could not find {event.objectType} with id: {event.objectId}")
+            LOGGER.warning("Could not find %s with id: %s", event.objectType, event.objectId)
             return False
 
         try:

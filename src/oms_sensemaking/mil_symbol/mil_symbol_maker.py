@@ -48,5 +48,5 @@ class MilSymbolMaker:
                 # receive 2525C
                 return MilSymbol2525C(symbol_id_code, settings)
 
-        LOGGER.warning(f"Unsupported SIDC for {symbol_id_code}")
+        LOGGER.warning("Unsupported SIDC for %s", symbol_id_code)
         return None

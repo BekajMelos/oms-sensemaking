@@ -21,7 +21,7 @@ class Engine:
         :param rule: The rule to add
         """
 
-        LOGGER.debug(f"Adding {rule.get_name()}")
+        LOGGER.debug("Adding %s", rule.get_name())
         self._rules.append(rule)
 
     def execute_rules(self, rule_context: RuleContext):
@@ -55,4 +55,4 @@ class Engine:
             if prop and prop.id:
                 ids.append(prop.id)
 
-        LOGGER.info(f"Executing rules for rule_context with ids {ids}")
+        LOGGER.info("Executing rules for rule_context with ids %s", ids)

@@ -123,7 +123,7 @@ class GeospatialSensemakerController(SensemakerController):
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
         """
-        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
+        LOGGER.debug("Received AuditLogEvent(objectId=%s)", event.objectId)
 
         # Retrieve observation
         oms_obs = self.get_oms_observation(event.objectId)
@@ -155,7 +155,7 @@ class GeospatialSensemakerController(SensemakerController):
             db.expire_on_commit = False
 
             for point_data in obs_geo_data:
-                LOGGER.debug(f"Parsed coordinates for {oms_obs.id}")
+                LOGGER.debug("Parsed coordinates for %s", oms_obs.id)
                 # NOTE: Altitude intentionally disabled: Shapely fails with mixed 2D/3D coordinate arrays.
                 #   Enable once geometry normalization supports consistent altitude data.
                 try:

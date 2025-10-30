@@ -21,7 +21,14 @@ class RequestLogger(BaseHTTPMiddleware):
 
         conn_info = self._get_conn_info(request)
 
-        LOGGER.info(f"{request.method} {request.url} client: {conn_info.host}:{conn_info.port} headers: {headers}")
+        LOGGER.info(
+            "Request method: %s, URL: %s, client: %s:%s, headers: %s",
+            request.method,
+            request.url,
+            conn_info.host,
+            conn_info.port,
+            headers,
+        )
 
         return response
 

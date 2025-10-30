@@ -24,10 +24,10 @@ class BaseClient:
     def _resolve_host(self) -> str | None:
         try:
             resolved = socket.gethostbyname(self._host)
-            LOGGER.info(f"Resolved {self._service_name} host '{self._host}' to IP {resolved}:{self._port}")
+            LOGGER.info("Resolved %s host '%s' to IP %s:%s", self._service_name, self._host, resolved, self._port)
             return resolved
         except socket.gaierror as e:
-            LOGGER.warning(f"Failed to resolve host '{self._host}' for {self._service_name}: {e}")
+            LOGGER.warning("Failed to resolve host '%s' for %s: %s", self._host, self._service_name, e)
             return None
 
     def ping(self) -> bool:
@@ -36,10 +36,10 @@ class BaseClient:
         resolved = self._resolve_host() or self._host
         try:
             with socket.create_connection((resolved, self._port), timeout=SETTINGS.ping_timeout_seconds):
-                LOGGER.info(f"{self._service_name} connectivity check successful to {resolved}:{self._port}")
+                LOGGER.info("%s connectivity check successful to %s:%s", self._service_name, resolved, self._port)
                 return True
         except (TimeoutError, socket.gaierror, OSError) as ex:
-            LOGGER.warning(f"{self._service_name} connectivity check failed to {resolved}:{self._port}: {ex}")
+            LOGGER.warning("%s connectivity check failed to %s:%d: %s", self._service_name, resolved, self._port, ex)
             return False
 
     def wait_until_ready(self) -> bool:
@@ -55,9 +55,16 @@ class BaseClient:
             attempt += 1
             if attempt < retries:
                 LOGGER.warning(
-                    f"Failed to connect to {self._service_name} at {self._host}:{self._port}. "
-                    f"Retrying in {delay_seconds}s. Attempt {attempt + 1}/{retries}"
+                    "Failed to connect to %s at %s:%s. Retrying in %ds. Attempt %d/%d",
+                    self._service_name,
+                    self._host,
+                    self._port,
+                    delay_seconds,
+                    attempt + 1,
+                    retries,
                 )
                 time.sleep(delay_seconds)
-        LOGGER.error(f"Failed to connect to {self._service_name} at {self._host}:{self._port} after {retries} attempts")
+        LOGGER.error(
+            "Failed to connect to %s at %s:%s after %d attempts", self._service_name, self._host, self._port, retries
+        )
         return False

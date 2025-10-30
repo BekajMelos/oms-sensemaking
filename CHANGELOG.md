@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - New API endpoint to view Audit Error Logs which get logged to the DB
 
 ### Changed
+- Changed formatting of logging statements from f-string to lazy logging % format
 
 ### Fixed
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 

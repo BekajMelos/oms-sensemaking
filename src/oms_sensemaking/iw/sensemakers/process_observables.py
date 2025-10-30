@@ -46,7 +46,7 @@ def process_observables():
         )
 
         if not config_attributes.data:
-            LOGGER.error(f"No config found for observable {observable_node.id}")
+            LOGGER.error("No config found for observable %s", observable_node.id)
             continue
 
         # determine observable type and create appropriate instance
@@ -57,7 +57,7 @@ def process_observables():
             if query_type in QUERY_CLASS_MAP:
                 observable = QUERY_CLASS_MAP[query_type](**config_data)
             else:
-                LOGGER.error(f"Unsupported query type for observable {observable_node.id}: {query_type}")
+                LOGGER.error("Unsupported query type for observable %s: %s", observable_node.id, query_type)
                 continue
 
             # set instance properties
@@ -67,7 +67,7 @@ def process_observables():
             observable.update_data()
 
         except Exception as e:
-            LOGGER.error(f"Error processing observable {observable_node.id}: {e}")
+            LOGGER.error("Error processing observable %s: %s", observable_node.id, e)
 
 
 if __name__ == "__main__":

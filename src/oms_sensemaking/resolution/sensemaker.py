@@ -79,7 +79,7 @@ class ResolutionSensemaker(Sensemaker):
         """
         LOGGER.info("Running Resolution Sensemaker")
         # can we print value
-        LOGGER.debug(f"id: {attribute.id} attrIri: {attribute.attributeIri}")
+        LOGGER.debug("id: %s attrIri: %s", attribute.id, attribute.attributeIri)
 
         results = []
 
@@ -136,7 +136,7 @@ class ResolutionSensemaker(Sensemaker):
                 objectPropertyIri=SETTINGS.resolution_relationship_iri,
             )
             self.oms_crud_tool.create_relationship(rel)
-            LOGGER.info(f"Resolution Sensemaker found duplicates {current_node_id}, {node.id}")
+            LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, node.id)
 
         return dups
 
