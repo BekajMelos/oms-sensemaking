@@ -10,6 +10,7 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributesAttributes,
     MilSymbolAttributes,
+    MilSymbolAttributesAffiliation,
     MilSymbolAttributesAffiliationData,
     MilSymbolAttributesContext,
     MilSymbolAttributesContextData,
@@ -26,7 +27,7 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFactory, GetMilSymbolAttributes
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
 
 
@@ -66,8 +67,10 @@ def oms_object() -> AttributeAttribute:
 
 
 @pytest.fixture
-def attribute_retriever() -> GetMilSymbolAttributes:
-    retriever = mock.Mock(spec=GetMilSymbolAttributes)
+def attribute_retriever(mock_oms_crud_tool) -> GetMilSymbolAttributes:
+    retriever = GetMilSymbolAttributeFactory(mock_oms_crud_tool).get_attribute_retriever(
+        SETTINGS.mil_symbol_settings.mil_sym_attr_retriever
+    )
     return retriever
 
 
@@ -522,12 +525,9 @@ def test_acms(
     )
 
 
-@pytest.mark.skip("cannot get the mock to work properly")
-@mock.patch("oms_sensemaking.mil_symbol.get_attributes.GetMilSymbolAttributes.get_affiliation_of_parent_nodes")
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
 def test_affiliation_fallback_to_parent_is_triggered(
     mock_get_acm: AacClient,
-    mock_get_affiliation,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
     build_sensemaker: MilSymbolSensemaker,
@@ -537,20 +537,17 @@ def test_affiliation_fallback_to_parent_is_triggered(
     sensemaker = build_sensemaker
 
     mock_get_acm.return_value = DEFAULT_ACM
-    mock_get_affiliation.return_value = attr_affiliation_data(attribute_value="hostile")
 
-    sensemaker.oms_crud_tool.get_mil_symbol_attr = mock.MagicMock(
-        return_value=MilSymbolAttributes.model_construct(
-            affiliation=MilSymbolAttributesContext.model_construct(data=None),
-            context=MilSymbolAttributesContext.model_construct(
-                data=attr_context_data(
-                    attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true"
-                )
-            ),
-            status=MilSymbolAttributesStatus.model_construct(data=attr_status_data(attribute_value="damaged")),
-            echelon=MilSymbolAttributesEchelon.model_construct(data=None),
-        )
+    msa = MilSymbolAttributes.model_construct()
+    msa.affiliation = MilSymbolAttributesAffiliation.model_construct(data=None)
+    msa.context = MilSymbolAttributesContext.model_construct(
+        data=[
+            attr_context_data(attribute_iri="https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted", attribute_value="true")
+        ]
     )
+    msa.status = MilSymbolAttributesStatus.model_construct(data=[attr_status_data(attribute_value="damaged")])
+    msa.echelon = MilSymbolAttributesEchelon.model_construct(data=None)
+    sensemaker._attribute_retriever.oms_crud_tool.get_mil_symbol_attr = mock.MagicMock(return_value=msa)
 
     sensemaker.get_node_ancestors_iris = mock.MagicMock(
         return_value=[
@@ -572,10 +569,10 @@ def test_affiliation_fallback_to_parent_is_triggered(
 
     enrichment_attrs = sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment(oms_node)
 
-    mock_get_affiliation.assert_called_once_with(oms_node)
-    assert enrichment_attrs[1] == "hostile"
-    assert enrichment_attrs[0] is not None
-    assert enrichment_attrs[2] is not None
+    sensemaker._attribute_retriever.get_affiliation_of_parent_nodes.assert_called_once_with(oms_node)
+    assert enrichment_attrs[1].attributeValue == "hostile"
+    assert enrichment_attrs[0].attributeValue == "true"
+    assert enrichment_attrs[2].attributeValue == "damaged"
     assert enrichment_attrs[3] is None
 
     symbols: List[SymbolCodeUpdate] = sensemaker.process_data(oms_node)
