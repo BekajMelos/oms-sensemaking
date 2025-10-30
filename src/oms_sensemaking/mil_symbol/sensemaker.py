@@ -129,7 +129,7 @@ class MilSymbolSensemaker(Sensemaker):
                 return []
         except KeyError as e:
             raise MilSymbolInvalidIdCharError(
-                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by"
+                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by "
                 f"the MilSymbol Sensemaker because of the following character: {e.args[0]}"
             ) from e
 

@@ -17,7 +17,7 @@ from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
-from oms_sensemaking.api.routers import aac, about, health, rdf, test
+from oms_sensemaking.api.routers import aac, about, audit_log_error, health, rdf, test
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -174,6 +174,7 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(aac.router, prefix="/aac")
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
+    application.include_router(audit_log_error.router)
 
     # Include test endpoints only if enabled
     if config.toggle_test_endpoints:
