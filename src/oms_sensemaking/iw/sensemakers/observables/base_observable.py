@@ -147,7 +147,7 @@ class BaseObservable(BaseModel):
         """Update the status attribute based on observation counts."""
         self.ensure_initialized()
 
-        LOGGER.info(f"Observed {num_observed} of {total} objects which met criteria for observable {self.id}")
+        LOGGER.info("Observed %d of %d objects which met criteria for observable %s", num_observed, total, self.id)
 
         prev_status = self.get_status_attr()
         prev_status_value = prev_status.attributeValue if prev_status else ""
@@ -166,9 +166,12 @@ class BaseObservable(BaseModel):
             )
 
             LOGGER.info(
-                f"Updated status from {prev_status_value} to {new_status_value} "
-                f"for {self.query_type.value} observable {self.id}"
+                "Updated status from %s to %s for %s observable %s",
+                prev_status_value,
+                new_status_value,
+                self.query_type.value,
+                self.id,
             )
 
         else:
-            LOGGER.info(f"Status for {self.query_type.value} observable {self.id} remained as {prev_status_value}")
+            LOGGER.info("Status for %s observable %s remained as %s", self.query_type.value, self.id, prev_status_value)

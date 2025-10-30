@@ -67,7 +67,7 @@ def ping_db() -> bool:
         LOGGER.info("DB connectivity check successful")
         return True
     except Exception as ex:
-        LOGGER.warning(f"DB connectivity check failed: {ex}")
+        LOGGER.warning("DB connectivity check failed: %s", ex)
         return False
 
 
@@ -79,5 +79,5 @@ def ping_db_host_wait() -> bool:
         client = BaseClient(host, port, "Postgres")
         return client.wait_until_ready()
     except Exception as ex:
-        LOGGER.warning(f"DB host readiness check encountered an issue: {ex}")
+        LOGGER.warning("DB host readiness check encountered an issue: %s", ex)
         return False

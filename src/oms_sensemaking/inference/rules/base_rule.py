@@ -37,7 +37,7 @@ class BaseRule(ABC, SensemakerMetaData):
         :param rule_context: Generic object used to evaluate and execute the rule
         """
 
-        LOGGER.debug(f"Executing Rule {self.get_name()} with rule_context {rule_context}")
+        LOGGER.debug("Executing Rule %s with rule_context %s", self.get_name(), rule_context)
         if not self._has_action_already_ran(rule_context) and self._evaluate(rule_context):
             self._action(rule_context)
         return
@@ -77,7 +77,7 @@ class BaseRule(ABC, SensemakerMetaData):
         Pre running step for the action_already_taken method
         """
 
-        LOGGER.info(f"Determining if action already taken for rule {self.get_name()}")
+        LOGGER.info("Determining if action already taken for rule %s", self.get_name())
         return self.has_action_already_ran(rule_context)
 
     def _evaluate(self, rule_context: RuleContext) -> bool:
@@ -85,7 +85,7 @@ class BaseRule(ABC, SensemakerMetaData):
         Pre running step for the evaluate method
         """
 
-        LOGGER.info(f"Evaluating Rule {self.get_name()}")
+        LOGGER.info("Evaluating Rule %s", self.get_name())
         return self.evaluate(rule_context)
 
     def _action(self, rule_context: RuleContext) -> bool:
@@ -93,7 +93,7 @@ class BaseRule(ABC, SensemakerMetaData):
         Pre running step for the action method
         """
 
-        LOGGER.info(f"Executing Action for Rule {self.get_name()}")
+        LOGGER.info("Executing Action for Rule %s", self.get_name())
         self.executed_at = datetime.now(tz=timezone.utc)
         return self.action(rule_context)
 

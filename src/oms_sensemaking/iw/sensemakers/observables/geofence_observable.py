@@ -30,7 +30,7 @@ class GeofenceObservable(BaseObservable):
         # get status attribute
         status_attr = self.get_status_attr()
         if not status_attr:
-            LOGGER.error(f"No status attribute found for observable {self.id}")
+            LOGGER.error("No status attribute found for observable %s", self.id)
             return
 
         # get related object IDs
@@ -51,7 +51,7 @@ class GeofenceObservable(BaseObservable):
             )["location"]
 
         except Exception as e:
-            LOGGER.error(f"Unable to load geometry for observable {self.id}: {e}")
+            LOGGER.error("Unable to load geometry for observable %s: %s", self.id, e)
             return
 
         # get number of objects observed within bounds

@@ -182,16 +182,16 @@ class Sensemaker(ABC, SensemakerMetaData):
             self.setup()
             with self.lock:
                 self.executed_at = datetime.now(tz=timezone.utc)
-                LOGGER.info(f"Running {self.name} {self.version_string}")
+                LOGGER.info("Running %s %s", self.name, self.version_string)
                 results: Any = self.process_data(*data)
                 self.save_findings(results)
                 try:
                     if results:
                         self.publisher.publish(data, results)
                 except httpx.RequestError as exc:
-                    LOGGER.exception(f"An error occurred while requesting {exc.request.url!r}.")
+                    LOGGER.exception("An error occurred while requesting %r.", exc.request.url)
 
-                LOGGER.info(f"Sensemaker {self.name} {self.version_string} completed")
+                LOGGER.info("Sensemaker %s %s completed", self.name, self.version_string)
         finally:
             self.teardown()
 
@@ -222,7 +222,7 @@ class FindingWriter:
         """
 
         if finding_objects:
-            LOGGER.info(f"Saving findings from {alg_meta_data.name} {alg_meta_data.version_string} to DB")
+            LOGGER.info("Saving findings from %s %s to DB", alg_meta_data.name, alg_meta_data.version_string)
 
         findings: list = []
         for finding_object in finding_objects:

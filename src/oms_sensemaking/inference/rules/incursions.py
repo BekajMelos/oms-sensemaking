@@ -82,13 +82,13 @@ class Incursion(BaseRule):
 
         if feature_of_interest:
             # can we include geo?
-            LOGGER.debug(f"Incursion detected for Observation: {obs.id}")
+            LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
             existing_incursion_activities = oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
             matching_incursion_attribute_found = False
 
-            LOGGER.debug(f"{len(existing_incursion_activities)} Existing Incursion Activities")
+            LOGGER.debug("%d Existing Incursion Activities", len(existing_incursion_activities))
 
             for existing_incursion_activity in existing_incursion_activities:
                 if matching_incursion_attribute_found:
@@ -104,7 +104,7 @@ class Incursion(BaseRule):
                 attr_response = oms_crud_tool.get_attributes(attribute_query)
                 existing_incursion_attributes = attr_response.data
 
-                LOGGER.debug(f"{len(existing_incursion_attributes)} Existing Incursion Attributes")
+                LOGGER.debug("%d Existing Incursion Attributes", len(existing_incursion_attributes))
 
                 matching_incursion_attribute_found = self._check_existing_incursion_and_update(
                     obs,

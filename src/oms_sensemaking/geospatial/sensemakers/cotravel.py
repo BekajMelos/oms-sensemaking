@@ -216,7 +216,7 @@ class CotravelSensemaker(Sensemaker):
         :param config: Settings for this particular sensemaker run
         :return: List of discovered Cotravels
         """
-        LOGGER.debug(f"Detecting Cotravels for {data.node_id}")
+        LOGGER.debug("Detecting Cotravels for %s", data.node_id)
 
         # Update the config with specific geo settings
         self.config.update(config)
@@ -271,7 +271,7 @@ class CotravelSensemaker(Sensemaker):
 
         if cotravels:
             track_uuid = data.track_uuid
-            LOGGER.info(f"Found Cotravel(s) ({len(cotravels)}) in {track_uuid}")
+            LOGGER.info("Found Cotravel(s) (%d) in %s" % (len(cotravels), track_uuid))
 
         node = self.oms_crud_tool.get_node(id=data.node_id)
 
@@ -281,7 +281,7 @@ class CotravelSensemaker(Sensemaker):
                 # Potential Duplicate only valid on NSO nodes
                 cotravel.cotravel_type = CotravelType.cotravel
 
-            LOGGER.debug(f"Cotravel ({cotravel.cotravel_type}) geometry: {cotravel.geometry.wkt}")
+            LOGGER.debug("Cotravel (%s) geometry: %s" % (cotravel.cotravel_type, cotravel.geometry.wkt))
             self.publish(data, cotravel)
 
         return cotravels

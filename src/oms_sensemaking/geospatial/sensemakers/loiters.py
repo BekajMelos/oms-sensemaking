@@ -109,7 +109,7 @@ class LoiterSensemaker(Sensemaker):
         :param data: The track to analyze.
         :return: list[Loiter] list of loiter events found
         """
-        LOGGER.debug(f"Detecting Loiters in {data.node_id}")
+        LOGGER.debug("Detecting Loiters in %s", data.node_id)
 
         # Update the config with specific geo settings
         self.config.update(config)
@@ -138,7 +138,9 @@ class LoiterSensemaker(Sensemaker):
 
         if confirmed_loiters:
             track_uuid = data.track_uuid
-            LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_uuid}")
+            # LOGGER.info(f"Found Loiters ({len(confirmed_loiters)}) in {track_uuid}")
+            # LOGGER.info("Found Loiters (%d) in %s", (len(confirmed_loiters), track_uuid))
+            LOGGER.info("Found Loiters (%d) in %s", len(confirmed_loiters), track_uuid)
 
         for loiter in confirmed_loiters:
             self.publish_loiter(data, loiter)
