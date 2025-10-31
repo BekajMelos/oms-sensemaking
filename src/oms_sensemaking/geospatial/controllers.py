@@ -230,7 +230,7 @@ class GeospatialSensemakerController(SensemakerController):
         try:
             try:
                 # Attempt to build the full track from buffered points
-                track = self._track_generator.generate_track(
+                tracks = self._track_generator.generate_track(
                     track_uuid,
                     self.track_weaver,
                     self.common_sense_filters,
@@ -243,13 +243,14 @@ class GeospatialSensemakerController(SensemakerController):
                     self.track_times[track_uuid] = None
                 return False
 
-            geo_config = self._get_geo_config(track)
-
+            futures = []
             with ThreadPoolExecutor() as executor:
-                futures = [
-                    executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    for sensemaker in self._registry.values()
-                ]
+                for track in tracks:
+                    geo_config = self._get_geo_config(track)
+                    for sensemaker in self._registry.values():
+                        future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                        futures.append(future)
+
                 for future in as_completed(futures):
                     _ = future.result()
         except Exception:
