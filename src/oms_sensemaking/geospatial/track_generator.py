@@ -40,7 +40,7 @@ class TrackGenerator:
         :return: List of created Track objects
         """
 
-        tracks: list[Track] = []
+        tracks = []
 
         points = track_node_buffer[track_uuid]
         points.sort(key=attrgetter("detection_time"))
@@ -87,6 +87,8 @@ class TrackGenerator:
 
             LOGGER.info("Track completed: %s", sub_track_id)
             oms_track = APITrack(track).create_oms_track()
+
+            tracks.append(track)
             LOGGER.info("OMS Track published: %s", oms_track.id)
 
         if not tracks:
