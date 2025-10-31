@@ -31,14 +31,14 @@ class SearchObservable(BaseObservable):
         # get status attribute
         status_attr = self.get_status_attr()
         if not status_attr:
-            LOGGER.error(f"No status attribute found for observable {self.id}")
+            LOGGER.error("No status attribute found for observable %s", self.id)
             return
 
         # get related object IDs
         related_ids = self.get_related_object_ids()
         related_ids = related_ids if related_ids else []
         if len(related_ids) < 1:
-            LOGGER.info(f"No related objects found for observable {self.id}")
+            LOGGER.info("No related objects found for observable %s", self.id)
             return
 
         all_ids = set(related_ids)
@@ -60,7 +60,7 @@ class SearchObservable(BaseObservable):
             self.criteria = TypeAdapter(List[StatusCriteria]).validate_python(raw_data)
 
         except Exception as e:
-            LOGGER.error(f"Unable to load criteria for observable {self.id}: {e}")
+            LOGGER.error("Unable to load criteria for observable %s: %s", self.id, e)
             return
 
         # loop through each criterion

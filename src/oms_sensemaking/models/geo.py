@@ -515,7 +515,7 @@ class CommonSenseFilter(BaseModel):
             # Made it through all checks. Update last good point for next comparison.
             last_good_point = cur_point
         if bad_points:
-            LOGGER.debug(f"Removed {len(bad_points)} of {len(points)} points.")
+            LOGGER.debug("Removed %d of %d points.", len(bad_points), len(points))
         points = [p for p in points if p not in bad_points]
         return points
 
@@ -673,5 +673,5 @@ def decompose_observation_geometry(oms_obs: ObservationObservation) -> list[Time
         # Eliminate rounding errors on final coordinate time
         timed_coords[-1]["detection_time"] = end_time
         return timed_coords
-    LOGGER.info(f"Observation <{oms_obs.id}> does not meet certain criteria and will be ignored.")
+    LOGGER.info("Observation <%s> does not meet certain criteria and will be ignored.", oms_obs.id)
     return []

@@ -20,6 +20,9 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 db_engine = create_engine(
     SETTINGS.db_uri,  # type: ignore
     pool_pre_ping=True,
+    pool_size=SETTINGS.db_pool_size,
+    max_overflow=SETTINGS.db_max_overflow,
+    pool_timeout=SETTINGS.db_pool_timeout_seconds,
     connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
 )
 
@@ -67,7 +70,7 @@ def ping_db() -> bool:
         LOGGER.info("DB connectivity check successful")
         return True
     except Exception as ex:
-        LOGGER.warning(f"DB connectivity check failed: {ex}")
+        LOGGER.warning("DB connectivity check failed: %s", ex)
         return False
 
 
@@ -79,5 +82,5 @@ def ping_db_host_wait() -> bool:
         client = BaseClient(host, port, "Postgres")
         return client.wait_until_ready()
     except Exception as ex:
-        LOGGER.warning(f"DB host readiness check encountered an issue: {ex}")
+        LOGGER.warning("DB host readiness check encountered an issue: %s", ex)
         return False

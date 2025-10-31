@@ -357,6 +357,11 @@ class Settings(BaseSettings):
     )
     db_ssl: bool = Field(True, description="Flag to require SSL verse just preferring SSL.")
 
+    # Database connection pooling (limits concurrent access and mitigates mining)
+    db_pool_size: int = Field(10, description="SQLAlchemy connection pool size.")
+    db_max_overflow: int = Field(20, description="SQLAlchemy max overflow connections beyond the pool size.")
+    db_pool_timeout_seconds: int = Field(30, description="Seconds to wait for a connection from the pool.")
+
     # Geospatial Sensemaking Settings
     geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",
                                                  description="Path to the Geospatial Sensemaker Config")

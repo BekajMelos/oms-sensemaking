@@ -46,7 +46,7 @@ class PubSub:
         self.__subscribers: dict[str, list[Callable]] = defaultdict(list)
         self.__dispatcher = Thread(target=self.__dispatch)
         self.__dispatcher.start()
-        LOGGER.debug(f"Initialized event pub/sub for {self.__class__}")
+        LOGGER.debug("Initialized event pub/sub for %s", self.__class__)
 
     def subscribe(self, event_type: str, fn: Callable) -> None:
         """

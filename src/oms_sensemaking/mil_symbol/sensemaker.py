@@ -104,8 +104,8 @@ class MilSymbolSensemaker(Sensemaker):
         symbol_id_code = self.get_starting_symbol_id_code(oms_object, oms_node)
         if not symbol_id_code:
             symbol_id_code = SETTINGS.mil_symbol_settings.default_2525d_code
-            LOGGER.info(f"No default code for {oms_node.classIri}. Starting from default {symbol_id_code}")
-        LOGGER.info(f"Initial symbol_id_code: {symbol_id_code}")
+            LOGGER.info("No default code for %s. Starting from default %s", oms_node.classIri, symbol_id_code)
+        LOGGER.info("Initial symbol_id_code: %s", symbol_id_code)
 
         code_2525b = None
         code_2525c = None
@@ -129,16 +129,16 @@ class MilSymbolSensemaker(Sensemaker):
                 return []
         except KeyError as e:
             raise MilSymbolInvalidIdCharError(
-                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by"
+                f"symbol Id code: {symbol_id_code} from node: {oms_node.id} is invalid and cannot be processed by "
                 f"the MilSymbol Sensemaker because of the following character: {e.args[0]}"
             ) from e
 
         # use this to compare codes before and after enrichment to determine if we need to publish
         before_enrich_2525d = code_2525d.formatted_code
 
-        LOGGER.info(f"Parsed 2525D for {oms_node.id}")
-        LOGGER.info(f"Parsed 2525C for {oms_node.id}")
-        LOGGER.info(f"Parsed 2525B for {oms_node.id}")
+        LOGGER.info("Parsed 2525D for %s", oms_node.id)
+        LOGGER.info("Parsed 2525C for %s", oms_node.id)
+        LOGGER.info("Parsed 2525B for %s", oms_node.id)
 
         # Get OMS data to enrich codes
         context_attr = self.get_context(oms_node)
@@ -151,9 +151,9 @@ class MilSymbolSensemaker(Sensemaker):
         code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
 
-        LOGGER.info(f"Enriched 2525B for {oms_node.id}")
-        LOGGER.info(f"Enriched 2525C for {oms_node.id}")
-        LOGGER.info(f"Enriched 2525D for {oms_node.id}")
+        LOGGER.info("Enriched 2525B for %s", oms_node.id)
+        LOGGER.info("Enriched 2525C for %s", oms_node.id)
+        LOGGER.info("Enriched 2525D for %s", oms_node.id)
 
         symbol_code_update_d = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
@@ -200,8 +200,9 @@ class MilSymbolSensemaker(Sensemaker):
             symbol_id_code = oms_node.symbolIdCode
         if not symbol_id_code:
             LOGGER.debug(
-                f"Node and Attribute do not have a symbol to use for the symbol_id_code."
-                f"Getting default from omsb based on iri {oms_node.classIri}"
+                "Node and Attribute do not have a symbol to use for the symbol_id_code. "
+                "Getting default from omsb based on iri %s",
+                oms_node.classIri,
             )
             symbol_id_code = self.get_default_symbol_id_code(oms_node.classIri)
 
@@ -383,7 +384,7 @@ class MilSymbolSensemaker(Sensemaker):
                 )
                 self.oms_crud_tool.create_attribute(attribute)
 
-        LOGGER.info(f"Mil Symbol Sensemaker updated symbol codes for {oms_node.id}")
+        LOGGER.info("Mil Symbol Sensemaker updated symbol codes for %s", oms_node.id)
 
     def update_oms_node(self, oms_node: NodeNode, code: str) -> None:
         """Update the Oms Node with the new code
@@ -417,7 +418,7 @@ class MilSymbolSensemaker(Sensemaker):
 
             return self.oms_crud_tool.get_node(oms_object.nodeId)
         else:
-            LOGGER.warning(f"Unexpected class type processed: {type(oms_object)}")
+            LOGGER.warning("Unexpected class type processed: %s", type(oms_object))
             return None
 
     def is_node(self, oms_object: NodeNode | AttributeAttribute) -> bool:
@@ -473,6 +474,6 @@ class MilSymbolSensemaker(Sensemaker):
             SETTINGS.mil_symbol_settings.symbol_attribute_iri in oms_object.attributeIri
             or self.has_mil_symbol_sensemaker_tags(oms_object.tags)
         ):
-            LOGGER.info(f"MilSymbolSensemaker ignoring attribute it may have published: {oms_object.id}")
+            LOGGER.info("MilSymbolSensemaker ignoring attribute it may have published: %s", oms_object.id)
             return True
         return False

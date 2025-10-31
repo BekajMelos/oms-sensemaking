@@ -26,7 +26,7 @@ class RDFClient:
             Optional[str]: A string containing the serialized RDF representation of the node object
                         and node's relationships, or None if the object could not be fetched or converted.
         """
-        LOGGER.info(f"RDF API request from object: {obj_id}")
+        LOGGER.info("RDF API request from object: %s", obj_id)
         try:
             node_query = NodeQuery(guideIds=[obj_id])
             node = oms_crud_tool.get_nodes(node_query)
@@ -40,7 +40,7 @@ class RDFClient:
             node_obj_json = node.model_dump_json()
             return self.json_to_rdf(node_obj_json, relationships_json, format.value)
         except (ValueError, TimeoutError, AttributeError) as e:
-            LOGGER.error(f"Failed to fetch RDF for object ID {obj_id} - {str(e)}")
+            LOGGER.error("Failed to fetch RDF for object ID %s - %s", obj_id, str(e))
         return None
 
     def json_to_rdf(self, node_obj: str, relationships_obj: str, format: str) -> str:

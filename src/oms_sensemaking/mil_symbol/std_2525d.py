@@ -84,7 +84,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
                     self.source_ids.put((self.CONTEXT_SOURCE_PRIORITY, context_attr.sourceId))
                     self.acms.append(context_attr.acm)
-                    LOGGER.debug(f"Updated context for {context_attr.id}")
+                    LOGGER.debug("Updated context for %s", context_attr.id)
                     break
 
     def enrich_affiliation(self, affiliation_attr: Optional[AttributeAttribute]) -> None:
@@ -101,7 +101,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
                     self.source_ids.put((self.AFFILIATION_SOURCE_PRIORITY, affiliation_attr.sourceId))
                     self.acms.append(affiliation_attr.acm)
-                    LOGGER.debug(f"Updated std identity for {affiliation_attr.id}")
+                    LOGGER.debug("Updated std identity for %s", affiliation_attr.id)
                     break
 
     def enrich_dimension(self, oms_node: NodeNode, ancestor_iris: List[str]) -> None:
@@ -127,7 +127,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_1, code[1])
                     self.acms.append(oms_node.acm)
-                    LOGGER.debug(f"Updated dimension for {oms_node.id}")
+                    LOGGER.debug("Updated dimension for %s", oms_node.id)
                     return True
             return False
 
@@ -137,7 +137,7 @@ class MilSymbol2525D(MilSymbol):
         dimension_code = self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0] + self.code[self.MIL_SYM_2525D_DIMENSION_IDX_0]
         code_is_unknown = dimension_code == self.UNKNOWN_DIMENSION_CODE
         if code_is_unknown:
-            LOGGER.debug(f"Dimension code is still unknown. Checking ancestor iris: {ancestor_iris}")
+            LOGGER.debug("Dimension code is still unknown. Checking ancestor iris: %s", ancestor_iris)
             for iri in ancestor_iris:
                 if update_dimension(iri):
                     return
@@ -156,7 +156,7 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
                     self.source_ids.put((self.STATUS_SOURCE_PRIORITY, status_attr.sourceId))
                     self.acms.append(status_attr.acm)
-                    LOGGER.debug(f"Updated status for {status_attr.id}")
+                    LOGGER.debug("Updated status for %s", status_attr.id)
                     break
 
     def enrich_echelon(self, echelon_attr: Optional[AttributeAttribute]) -> None:
@@ -175,5 +175,5 @@ class MilSymbol2525D(MilSymbol):
                     self.update_code(self.MIL_SYM_2525D_AMPLIFIER_IDX_1, code[1])
                     self.source_ids.put((self.ECHELON_SOURCE_PRIORITY, echelon_attr.sourceId))
                     self.acms.append(echelon_attr.acm)
-                    LOGGER.debug(f"Updated echelon for {echelon_attr.id}")
+                    LOGGER.debug("Updated echelon for %s", echelon_attr.id)
                     break
