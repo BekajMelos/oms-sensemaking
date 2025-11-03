@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+### Removed
+
 ## [0.16.0] - 2025-11-03
 
 ### Added
