@@ -23,7 +23,7 @@ def test_ping_db_failure(logger_mock, db_session_mock):
 
     assert result is False
     logger_mock.warning.assert_called_once()
-    assert "db down" in str(logger_mock.warning.call_args[0][0])
+    assert "db down" in str(logger_mock.warning.call_args[0][1])
 
 
 @patch("oms_sensemaking.clients.instances.BaseClient")
@@ -57,4 +57,4 @@ def test_ping_db_host_wait_exception(logger_mock, base_client_mock):
 
     assert result is False
     logger_mock.warning.assert_called_once()
-    assert "network error" in str(logger_mock.warning.call_args[0][0])
+    assert "network error" in str(logger_mock.warning.call_args[0][1])

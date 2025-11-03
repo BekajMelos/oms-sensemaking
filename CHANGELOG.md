@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- New classes for getting attributes used for enriching MilSymbols
+- New API endpoint to view Audit Error Logs which get logged to the DB
+- New classes for getting attributes used for enriching MilSymbols all at once
 
 ### Changed
-
+- Changed formatting of logging statements from f-string to lazy logging % format
+- Changed sensemakers to run on split tracks
 ### Fixed
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
 - Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers. 

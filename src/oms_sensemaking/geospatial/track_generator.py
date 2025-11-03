@@ -32,15 +32,15 @@ class TrackGenerator:
         common_sense_filters: list[CommonSenseFilter],
         track_node_buffer: dict[UUID, list[Point]],
         oms_crud_tool: OmsCrudTool,
-    ) -> Track:
-        """Generate Track object. Splits the full track into max_track_time_length_seconds time intervals.
+    ) -> list[Track]:
+        """Generate Track objects. Splits the full track into max_track_time_length_seconds time intervals.
         Then runs the common sense filters and track weaver.
 
         :param track_uuid: UUID of the track
-        :return: Created Track object
+        :return: List of created Track objects
         """
 
-        track = None
+        tracks = []
 
         points = track_node_buffer[track_uuid]
         points.sort(key=attrgetter("detection_time"))
@@ -58,7 +58,7 @@ class TrackGenerator:
         for binned_points in time_bins.values():
             # since we split the track points into bins, each bin needs an id
             sub_track_id = uuid4()
-            LOGGER.debug(f"Split bin {sub_track_id} from {track_uuid}")
+            LOGGER.debug("Split bin %s from %s", sub_track_id, track_uuid)
 
             binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
             # Execute a track weaver on the buffered Points
@@ -85,14 +85,16 @@ class TrackGenerator:
                     track_uuid=sub_track_id,
                 )
 
-            LOGGER.info(f"Track completed: {sub_track_id}")
+            LOGGER.info("Track completed: %s", sub_track_id)
             oms_track = APITrack(track).create_oms_track()
-            LOGGER.info(f"OMS Track published: {oms_track.id}")
 
-        if not track:
+            tracks.append(track)
+            LOGGER.info("OMS Track published: %s", oms_track.id)
+
+        if not tracks:
             raise TrackLengthError("Not enough points for track.") from None
 
-        return track
+        return tracks
 
     def bin_points_for_track(self, points: list[Point]):
         """

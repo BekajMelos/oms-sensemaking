@@ -168,7 +168,9 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
-        LOGGER.info(f"Trying to connect to {self._queue_name} at {SETTINGS.rabbitmq_host}:{SETTINGS.rabbitmq_port}")
+        LOGGER.info(
+            "Trying to connect to %s at %s:%s", self._queue_name, SETTINGS.rabbitmq_host, SETTINGS.rabbitmq_port
+        )
         try:
             credentials = PlainCredentials(SETTINGS.rabbitmq_username, SETTINGS.rabbitmq_password)
             parameters = ConnectionParameters(
@@ -183,10 +185,10 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
                 queue=self._queue_name, durable=True, arguments={"x-delivery-limit": -1, "x-queue-type": "quorum"}
             )
             self._channel.basic_qos(0, SETTINGS.rabbitmq_prefetch_count, False)
-            LOGGER.info(f"Connected to RabbitMQ queue: {self._queue_name}")
+            LOGGER.info("Connected to RabbitMQ queue: %s", self._queue_name)
             return True
         except (AMQPConnectionError, AMQPChannelError, socket.gaierror) as ex:
-            LOGGER.error(f"{self._name} Failed to connect to RabbitMQ: {ex}")
+            LOGGER.error("%s Failed to connect to RabbitMQ: %s", self._name, ex)
             return False
 
     def _disconnect(self):
@@ -194,9 +196,9 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         if self._connection and self._connection.is_open:
             try:
                 self._connection.close()
-                LOGGER.info(f"{self._name} Disconnected from RabbitMQ")
+                LOGGER.info("%s Disconnected from RabbitMQ", self._name)
             except Exception as ex:
-                LOGGER.error(f"{self._name} Error disconnecting from RabbitMQ: {ex}")
+                LOGGER.error("%s Error disconnecting from RabbitMQ: %s", self._name, ex)
 
     @abstractmethod
     def process_audit_log_events(self) -> None:
@@ -226,7 +228,7 @@ class RabbitMQListener(BaseRabbitMQListener):
         self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes
     ):
         if self.stopped.is_set():
-            LOGGER.debug(f"Shutting down {self._name}")
+            LOGGER.debug("Shutting down %s", self._name)
             return
 
         object_id = None
@@ -235,33 +237,40 @@ class RabbitMQListener(BaseRabbitMQListener):
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
             audit_log.headers = HeaderParser().parse(properties)
-            LOGGER.info(f"{self._name} Received {audit_log.action} {audit_log.objectType}: {audit_log.objectId}")
+            LOGGER.info("%s Received %s %s: %s", self._name, audit_log.action, audit_log.objectType, audit_log.objectId)
             object_id = audit_log.objectId
 
             if self._event_filter and not self._event_filter.passes_filter(audit_log):
                 LOGGER.warning(
-                    f"{self._name} Filtered {audit_log.action} {audit_log.objectType}:"
-                    + f"{audit_log.objectId} from queue {self._queue_name}"
+                    "%s Filtered %s %s: from queue %s",
+                    self._name,
+                    audit_log.action,
+                    audit_log.objectType,
+                    self._queue_name,
                 )
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 return
 
             if self.handle_event and self.handle_event(audit_log):
-                LOGGER.info(f"Acknowledging processed object {audit_log.objectId} from {self._queue_name}")
+                LOGGER.info("Acknowledging processed object %s from %s", audit_log.objectId, self._queue_name)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
 
                 # Record successful processing metrics
                 record_processing_success(self._queue_name, start_time)
 
             else:
-                LOGGER.warning(f"{self._name} Audit log event (Object ID: {object_id}) was not processed successfully.")
+                LOGGER.warning(
+                    "%s Audit log event (Object ID: %s) was not processed successfully.", self._name, object_id
+                )
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
                 # Record failed processing metrics
                 record_processing_failure(self._queue_name, start_time)
 
         except Exception:
-            LOGGER.error(f"{self._name} Error processing message (Object ID: {object_id}): {traceback.format_exc()}")
+            LOGGER.error(
+                "%s Error processing message (Object ID: %s): %s", self._name, object_id, traceback.format_exc()
+            )
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
             # Record failed processing metrics
@@ -273,10 +282,10 @@ class RabbitMQListener(BaseRabbitMQListener):
             raise ValueError(f"{self._name}'s handle_event must be a callable object, got {type(self.handle_event)}")
 
         while not self.stopped.is_set():
-            LOGGER.info(f"{self._name} waiting for events in RabbitMQ queue {self._queue_name}")
+            LOGGER.info("%s waiting for events in RabbitMQ queue %s", self._name, self._queue_name)
 
             if not self._connect():
-                LOGGER.error(f"{self._name} failed to connect to RabbitMQ. Retrying in a few seconds...")
+                LOGGER.error("%s failed to connect to RabbitMQ. Retrying in a few seconds...", self._name)
                 sleep(SETTINGS.rmq_read_wait_seconds)
                 continue
 
@@ -288,14 +297,14 @@ class RabbitMQListener(BaseRabbitMQListener):
                     try:
                         self._connection.process_data_events(time_limit=1)
                     except Exception as ex:
-                        LOGGER.error(f"{self._name} Error processing RabbitMQ events: {ex}")
+                        LOGGER.error("%s Error processing RabbitMQ events: %s", self._name, ex)
                         break
 
             except (AMQPConnectionError, AMQPChannelError) as ex:
-                LOGGER.error(f"{self._name} RabbitMQ connection error: {ex}. Reconnecting...")
+                LOGGER.error("%s RabbitMQ connection error: %s. Reconnecting...", self._name, ex)
                 sleep(SETTINGS.rmq_read_wait_seconds)
             except Exception as ex:
-                LOGGER.error(f"{self._name} Unexpected error in RabbitMQ listener: {ex}")
+                LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
                 sleep(SETTINGS.rmq_read_wait_seconds)
             finally:
                 self._disconnect()
@@ -330,7 +339,7 @@ class CronEventEmitter(AuditLogEventConsumer):
             )
 
             if callable(self.handle_event):
-                LOGGER.info(f"Emitting periodic event at {datetime.now()}")
+                LOGGER.info("Emitting periodic event at %s", datetime.now())
                 self.handle_event(event)
 
             # sleep for the interval or until stopped

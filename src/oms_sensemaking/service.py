@@ -17,7 +17,7 @@ from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
-from oms_sensemaking.api.routers import aac, about, health, rdf, test
+from oms_sensemaking.api.routers import aac, about, audit_log_error, health, rdf, test
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -99,7 +99,7 @@ async def lifespan(application: FastAPI):
         ping_db_host_wait()
         ping_db()
     except Exception as ex:
-        LOGGER.warning(f"Dependency readiness checks encountered an issue: {ex}")
+        LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
     controllers: list[tuple[SensemakerController, Thread]] = []
 
     for ctrlr in get_controllers():
@@ -174,6 +174,7 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(aac.router, prefix="/aac")
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
+    application.include_router(audit_log_error.router)
 
     # Include test endpoints only if enabled
     if config.toggle_test_endpoints:
@@ -194,7 +195,7 @@ def create_app(config: Settings) -> FastAPI:
 def check_aoi_file_path() -> None:
     """Check for valid areas of interest directory"""
     if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
-        LOGGER.error(f"{SETTINGS.inference_incursion_areas_of_interest_path} is not a valid directory.")
+        LOGGER.error("%s is not a valid directory", SETTINGS.inference_incursion_areas_of_interest_path)
         sys.exit("The areas of interest directory is incorrect or does not exist.")
 
 

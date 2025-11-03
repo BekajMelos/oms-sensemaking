@@ -2,9 +2,7 @@
 
 import logging
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
-from typing import Callable
 from unittest import mock
 from uuid import uuid4
 
@@ -127,8 +125,8 @@ def track_points(source1, oms_node) -> list[Point]:
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_with_default_provider_config(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
     mock_geo_controller: GeospatialSensemakerController,
     default_aircraft_config: dict,
     default_watercraft_config: dict,
@@ -159,7 +157,7 @@ def test_geo_controller_with_default_provider_config(
         observation_ids=[],
         track_uuid=track.track_uuid,
     )
-    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
     # mock thread pool execution
     # Create a mock executor that returns a future with a known result
@@ -202,8 +200,8 @@ def test_geo_controller_with_default_provider_config(
 @mock.patch("oms_sensemaking.geospatial.controllers.as_completed")
 @mock.patch("oms_sensemaking.geospatial.controllers.ThreadPoolExecutor")
 def test_geo_controller_with_provider_config(
-    mock_executor: ThreadPoolExecutor,
-    mock_as_completed: Callable,
+    mock_executor: mock.MagicMock,
+    mock_as_completed: mock.MagicMock,
     mock_geo_controller: GeospatialSensemakerController,
     provider_1_aircraft_config: dict,
     source1: SourceSource,
@@ -247,7 +245,7 @@ def test_geo_controller_with_provider_config(
         observation_ids=[],
         track_uuid=track.track_uuid,
     )
-    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=t)
+    mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
     # call flush buffer
     mock_geo_controller.flush_buffer()

@@ -123,7 +123,7 @@ class GeospatialSensemakerController(SensemakerController):
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
         """
-        LOGGER.debug(f"Received AuditLogEvent(objectId={event.objectId})")
+        LOGGER.debug("Received AuditLogEvent(objectId=%s)", event.objectId)
 
         # Retrieve observation
         oms_obs = self.get_oms_observation(event.objectId)
@@ -155,7 +155,7 @@ class GeospatialSensemakerController(SensemakerController):
             db.expire_on_commit = False
 
             for point_data in obs_geo_data:
-                LOGGER.debug(f"Parsed coordinates for {oms_obs.id}")
+                LOGGER.debug("Parsed coordinates for %s", oms_obs.id)
                 # NOTE: Altitude intentionally disabled: Shapely fails with mixed 2D/3D coordinate arrays.
                 #   Enable once geometry normalization supports consistent altitude data.
                 try:
@@ -230,7 +230,7 @@ class GeospatialSensemakerController(SensemakerController):
         try:
             try:
                 # Attempt to build the full track from buffered points
-                track = self._track_generator.generate_track(
+                tracks = self._track_generator.generate_track(
                     track_uuid,
                     self.track_weaver,
                     self.common_sense_filters,
@@ -243,13 +243,14 @@ class GeospatialSensemakerController(SensemakerController):
                     self.track_times[track_uuid] = None
                 return False
 
-            geo_config = self._get_geo_config(track)
-
+            futures = []
             with ThreadPoolExecutor() as executor:
-                futures = [
-                    executor.submit(sensemaker.execute, track, geo_config.model_dump())
-                    for sensemaker in self._registry.values()
-                ]
+                for track in tracks:
+                    geo_config = self._get_geo_config(track)
+                    for sensemaker in self._registry.values():
+                        future = executor.submit(sensemaker.execute, track, geo_config.model_dump())
+                        futures.append(future)
+
                 for future in as_completed(futures):
                     _ = future.result()
         except Exception:
