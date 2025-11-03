@@ -22,6 +22,7 @@ from oms_sensemaking.mil_symbol.controllers import (
     MilSymbolSensemaker,
     MilSymbolSensemakerController,
 )
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFactory
 
 
 @pytest.fixture
@@ -44,7 +45,15 @@ def test_mil_sym_controller(
     oms_client = OmsCrudTool()
     # register the sensemaker without starting the listener
     mock_mil_sym_controller.register(
-        "mil_symbol", MilSymbolSensemaker(oms_client, mil_symbol_rules, OntologyClient(oms_client))
+        "mil_symbol",
+        MilSymbolSensemaker(
+            oms_client,
+            mil_symbol_rules,
+            OntologyClient(oms_client),
+            GetMilSymbolAttributeFactory(oms_client).get_attribute_retriever(
+                SETTINGS.mil_symbol_settings.mil_sym_attr_retriever
+            ),
+        ),
     )
 
     # mock oms call
@@ -106,6 +115,7 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_mil_sym_control
         # configure settings
         settings_mock.enable_mil_symbol_sensemaker = True
         settings_mock.rules_file_path = "fake_mil_rules.json"
+        settings_mock.mil_sym_attr_retriever = "AllAtOnce"
 
         mock_mil_sym_controller.start()
 

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New API endpoint to view Audit Error Logs which get logged to the DB
+- New classes for getting attributes used for enriching MilSymbols all at once
 
 ### Changed
 - Changed formatting of logging statements from f-string to lazy logging % format

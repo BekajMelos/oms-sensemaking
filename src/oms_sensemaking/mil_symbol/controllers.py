@@ -1,6 +1,5 @@
 """Military Symbol sensemaker controller."""
 
-import itertools
 import json
 import logging
 
@@ -13,6 +12,7 @@ from oms_sensemaking.core.events import (
     AuditLogEvent,
     EventFilter,
 )
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFactory
 from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -31,17 +31,27 @@ class MilSymbolSensemakerController(SensemakerController):
             with open(SETTINGS.mil_symbol_settings.rules_file_path) as fd:
                 mil_symbol_rules = json.load(fd)
 
-            self.register("mil_symbol", MilSymbolSensemaker(mil_symbol_rules, self.oms_crud_tool, ontology_service))
+            self.register(
+                "mil_symbol",
+                MilSymbolSensemaker(
+                    mil_symbol_rules,
+                    self.oms_crud_tool,
+                    ontology_service,
+                    GetMilSymbolAttributeFactory(self.oms_crud_tool).get_attribute_retriever(
+                        SETTINGS.mil_symbol_settings.mil_sym_attr_retriever
+                    ),
+                ),
+            )
 
         super().start()
 
 
 class MilSymbolQueueFilter(EventFilter):
     def __init__(self) -> None:
-        self.handled_iris = itertools.chain(
-            SETTINGS.mil_symbol_settings.affiliation_iris,
-            SETTINGS.mil_symbol_settings.echelon_iris,
-            SETTINGS.mil_symbol_settings.status_iris,
+        self.handled_iris = (
+            SETTINGS.mil_symbol_settings.affiliation_iris
+            + SETTINGS.mil_symbol_settings.echelon_iris
+            + SETTINGS.mil_symbol_settings.status_iris
         )
 
     def passes_filter(self, audit_event: AuditLogEvent):
