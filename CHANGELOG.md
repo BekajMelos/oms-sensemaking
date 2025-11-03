@@ -1,8 +1,15 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
 ## Unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
+## [0.16.0] - 2025-11-03
 
 ### Added
 - New API endpoint to view Audit Error Logs which get logged to the DB
@@ -11,10 +18,10 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Changed formatting of logging statements from f-string to lazy logging % format
 - Changed sensemakers to run on split tracks
+
 ### Fixed
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
 - Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers. 
-
 - Sync client unable to connect due to CA File ssl auth errors
 
 ### Removed
