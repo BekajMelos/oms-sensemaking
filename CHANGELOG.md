@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- Added a new "provider_id" feature to the tracks table in the database
 
 ### Changed
+- Tracks are now separated by provider
 
 ### Fixed
 
