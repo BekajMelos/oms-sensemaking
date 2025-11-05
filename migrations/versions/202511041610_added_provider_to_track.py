@@ -1,7 +1,7 @@
 """Added provider to tracks
 
 Revision ID: 202511041610
-Revises: 202507151200
+Revises: 202510301521
 Create Date: 2025-11-04 16:10:00.0000
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "202511041610"
-down_revision: Union[str, None] = "202507151200"
+down_revision: Union[str, None] = "202510301521"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
