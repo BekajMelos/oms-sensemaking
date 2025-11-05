@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
 
 ### Changed
 
