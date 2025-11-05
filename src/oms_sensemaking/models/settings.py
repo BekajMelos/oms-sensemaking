@@ -30,7 +30,7 @@ class Setting(BaseORM, SettingsMixin):
     __tablename__: str = "settings"
 
     setting_id: Mapped[int] = mapped_column(
-        sa.Integer,
+        sa.Integer(),
         sa.Identity(),
         nullable=False,
         init=False,

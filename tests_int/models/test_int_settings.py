@@ -59,3 +59,11 @@ def test_get_or_create_new_setting(db: Session):
 
     assert setting
     assert is_new
+
+    # Test second call to get_or_create
+    same_setting, is_new_again = Setting.get_or_create(
+        db, defaults=dict(field_name="new_setting", field_value="this is a new setting")
+    )
+
+    assert same_setting.setting_id == setting.setting_id
+    assert not is_new_again
