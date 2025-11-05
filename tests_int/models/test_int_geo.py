@@ -67,7 +67,13 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
             points.append(point)
         Track.get_or_create(
             session=db,
-            defaults=dict(points=points, node_id=points[0].node_id, algorithm="geo_test_track", acm=DEFAULT_ACM),
+            defaults=dict(
+                points=points,
+                node_id=points[0].node_id,
+                algorithm="geo_test_track",
+                acm=DEFAULT_ACM,
+                provider_id=uuid4(),
+            ),
             track_uuid=track_uuid,
         )
 
@@ -340,7 +346,12 @@ def test_geometry_crosses_antimeridian_same_lat(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+        points=[p1, p2, p3],
+        node_id=node_id,
+        track_uuid=track_uuid,
+        algorithm="test_track",
+        acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -396,7 +407,12 @@ def test_geometry_crosses_antimeridian_diff_lat(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+        points=[p1, p2, p3],
+        node_id=node_id,
+        track_uuid=track_uuid,
+        algorithm="test_track",
+        acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -452,7 +468,12 @@ def test_geometry_crosses_antimeridian_other_direction(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+        points=[p1, p2, p3],
+        node_id=node_id,
+        track_uuid=track_uuid,
+        algorithm="test_track",
+        acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -511,7 +532,12 @@ def test_geometry_not_crosses_antimeridian(tester_db: Session):
 
     # Create Track Object
     track = Track(
-        points=[p1, p2, p3], node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM
+        points=[p1, p2, p3],
+        node_id=node_id,
+        track_uuid=track_uuid,
+        algorithm="test_track",
+        acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -602,7 +628,14 @@ def test_geometry_crosses_antimeridian_three_intersections(tester_db: Session):
 
     # Create Track Object
     points = [p1, p2, p3, p4, p5, p6]
-    track = Track(points=points, node_id=node_id, track_uuid=track_uuid, algorithm="test_track", acm=ROLLUP_DEFAULT_ACM)
+    track = Track(
+        points=points,
+        node_id=node_id,
+        track_uuid=track_uuid,
+        algorithm="test_track",
+        acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
+    )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
     expected = {
