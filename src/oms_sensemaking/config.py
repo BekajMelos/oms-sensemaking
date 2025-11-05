@@ -180,6 +180,7 @@ class MilSymbolSettings(BaseModel):
         description="the RMQ Resolution Queue name",
         examples=["mil-symbol-trigger"]
     )
+    mil_sym_attr_retriever: str = Field("AllAtOnce", description="Algorithm for getting mil symbol attributes")
     enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
     affiliation_iris: list[str] = Field(
         ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")

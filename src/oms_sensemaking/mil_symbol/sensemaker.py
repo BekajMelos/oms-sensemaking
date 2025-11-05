@@ -14,12 +14,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     NodeNode,
-    NodeQuery,
-    NodeRelationshipQuery,
-    NodeRelationshipSubQuery,
-    NodesNodes,
-    ObjectTier,
-    RelationshipDirection,
     RestoreAttributeRestoreAttribute,
     RestoreNodeRestoreNode,
     UpdateAttributeInput,
@@ -34,6 +28,7 @@ from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.mil_symbol.converters import to_2525b, to_2525c, to_2525d
+from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
 from oms_sensemaking.mil_symbol.mil_symbol_maker import MilSymbolMaker
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
@@ -74,7 +69,13 @@ class MilSymbolSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, settings: Dict, oms_crud_tool: OmsCrudTool, ontology_service: OntologyService) -> None:
+    def __init__(
+        self,
+        settings: Dict,
+        oms_crud_tool: OmsCrudTool,
+        ontology_service: OntologyService,
+        attribute_retriever: GetMilSymbolAttributes,
+    ) -> None:
         """Create a new instance of MilSymbolSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -83,6 +84,7 @@ class MilSymbolSensemaker(Sensemaker):
         self.settings = settings
         self.oms_crud_tool = oms_crud_tool
         self._ontology_service = ontology_service
+        self._attribute_retriever = attribute_retriever
 
     def process_data(
         self, oms_object: AttributeAttribute | NodeNode, config: dict | None = None
@@ -141,12 +143,14 @@ class MilSymbolSensemaker(Sensemaker):
         LOGGER.info("Parsed 2525B for %s", oms_node.id)
 
         # Get OMS data to enrich codes
-        context_attr = self.get_context(oms_node)
-        affiliation_attr = self.get_affiliation(oms_node)
-        status_attr = self.get_status(oms_node)
+        enrichment_attributes = self._attribute_retriever.get_all_mil_sym_attrs_for_enrichment(oms_node)
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
-        echelon_attr = self.get_echelon(oms_node)
-
+        context_attr, affiliation_attr, status_attr, echelon_attr = (
+            enrichment_attributes[0],
+            enrichment_attributes[1],
+            enrichment_attributes[2],
+            enrichment_attributes[3],
+        )
         code_2525d.enrich(context_attr, affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525c.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
         code_2525b.enrich(affiliation_attr, oms_node, ancestor_iris, status_attr, echelon_attr)
@@ -216,104 +220,6 @@ class MilSymbolSensemaker(Sensemaker):
         """
         return self._ontology_service.get_default_symbol_id_code(iri)
 
-    def get_context(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """Get context for this node. Find an attribute with exercise, reality, or simulation iri and a truthy value
-
-        :param oms_node: Node to grab the context for
-        :return: The matched IRI
-        """
-
-        context_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id,
-            SETTINGS.mil_symbol_settings.is_reality_context_iris
-            + SETTINGS.mil_symbol_settings.is_exercise_context_iris
-            + SETTINGS.mil_symbol_settings.is_simulation_context_iris,
-        )
-
-        if context_attrs:
-            for context_attr in context_attrs:
-                if context_attr.attributeValue.lower() == "true":
-                    return context_attr
-
-        return None
-
-    def get_affiliation(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """Get affiliation/standard identity for this node.
-
-        :param oms_node: Node to grab the affiliation for
-        :return: The Node's standard identity
-        """
-
-        affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-        )
-
-        if affiliation_attrs:
-            return affiliation_attrs[0]
-
-        if oms_node.tier != ObjectTier.DERIVATIVE:
-            return None
-
-        LOGGER.debug("Affiliation code is still unknown. Checking ancestor related controlling nodes")
-
-        # look for parent relationship
-        # TODO: we don't actually care about parentNode data,
-        # we should try to find a way to just get the nodeId and affiliation
-        parent_nodes: NodesNodes = self._get_hierarchical_parent_node(oms_node)
-
-        if not parent_nodes.data:
-            return None
-
-        for node in parent_nodes.data:
-            parent_affiliation_attrs: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-                node.id, SETTINGS.mil_symbol_settings.affiliation_iris
-            )
-
-            if parent_affiliation_attrs:
-                return parent_affiliation_attrs[0]
-
-        return None
-
-    def _get_hierarchical_parent_node(self, oms_node: NodeNode) -> NodesNodes:
-        """Get the parent node according to a Controls or ControlledBy relationship"""
-        return self.oms_crud_tool.get_nodes(
-            NodeQuery(
-                relationships=NodeRelationshipQuery(
-                    or_=[
-                        NodeRelationshipQuery(
-                            hasMatch=NodeRelationshipSubQuery(
-                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controlled_by_iris,
-                                relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.OUTGOING,
-                            )
-                        ),
-                        NodeRelationshipQuery(
-                            hasMatch=NodeRelationshipSubQuery(
-                                objectPropertyIris=SETTINGS.mil_symbol_settings.affiliation_controls_iris,
-                                relatedNodeIds=[oms_node.id],
-                                direction=RelationshipDirection.INCOMING,
-                            )
-                        ),
-                    ]
-                )
-            )
-        )
-
-    def get_status(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """Get status for this node.
-
-        :param oms_node: Node to grab the status for
-        :return: The Node's status
-        """
-        status_attr: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id, SETTINGS.mil_symbol_settings.status_iris
-        )
-
-        if status_attr:
-            return status_attr[0]
-
-        return None
-
     def get_node_ancestors_iris(self, oms_node: NodeNode) -> List[str]:
         """Get ancestor's iris.
 
@@ -321,22 +227,6 @@ class MilSymbolSensemaker(Sensemaker):
         :return: The Node's ancestor's iri list
         """
         return self._ontology_service.mil_symbol_get_node_ancestors_iris(oms_node)
-
-    def get_echelon(self, oms_node: NodeNode) -> Optional[AttributeAttribute]:
-        """
-        Get echelon for this node.
-
-        :param oms_node: Node to get the echelon
-        :return: The node's echelon
-        """
-        echelon_attr: List[AttributeAttribute] = self.oms_crud_tool.get_node_attribute_by_iri(
-            oms_node.id, SETTINGS.mil_symbol_settings.echelon_iris
-        )
-
-        if echelon_attr:
-            return echelon_attr[0]
-
-        return None
 
     def publish_attributes(
         self, oms_node: NodeNode, symbol_code_updates: List[SymbolCodeUpdate], source_id: uuid.UUID

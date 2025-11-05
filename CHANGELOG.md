@@ -1,19 +1,30 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
 ## Unreleased
 
 ### Added
-- New API endpoint to view Audit Error Logs which get logged to the DB
+- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.16.0] - 2025-11-03
+
+### Added
+- New API endpoint to view Audit Error Logs which get saved to the DB
+- New classes for getting attributes used for enriching MilSymbols all at once
 
 ### Changed
 - Changed formatting of logging statements from f-string to lazy logging % format
-- Changed sensemakers to run on split tracks
+- Sensemakers now run on all split tracks which are generated
+
 ### Fixed
 - Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
 - Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers. 
-
 - Sync client unable to connect due to CA File ssl auth errors
 
 ### Removed
