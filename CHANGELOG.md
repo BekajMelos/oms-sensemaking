@@ -4,9 +4,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- New migrations for creating a settings table for oms_sensemaking database.
-- New class with a get_settings function to get all settings from the database.
-- New integration and unit tests.
+- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
 
 ### Changed
 
