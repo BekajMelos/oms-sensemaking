@@ -4,16 +4,6 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-
-### Changed
-
-### Fixed
-
-### Removed
-
-## [0.16.0] - 2025-11-05
-
-### Added
 - New migrations for creating a settings table for oms_sensemaking database.
 - New class with a get_settings function to get all settings from the database.
 - New integration and unit tests.
