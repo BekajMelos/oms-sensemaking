@@ -78,7 +78,7 @@ class TrackGenerator:
                 binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
                 # Execute a track weaver on the buffered Points
                 # and save the new Track with the chosen UUID
-                weaved_track = track_weaver.execute(binned_points, provider_id)
+                weaved_track = track_weaver.execute(binned_points, provider)
 
                 weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
                 # Abort and do not clear buffer if final track has less than 2 points
@@ -91,7 +91,7 @@ class TrackGenerator:
                     "algorithm": weaved_track.algorithm,
                     "observation_ids": weaved_track.observation_ids,
                     "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
-                    "provider_id": provider_id,
+                    "provider_id": provider,
                 }
 
                 with db_session() as db:
