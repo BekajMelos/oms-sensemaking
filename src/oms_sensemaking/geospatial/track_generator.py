@@ -55,7 +55,6 @@ class TrackGenerator:
         except IndexError as e:
             raise TrackLengthError(e) from e
 
-        # Query the provider IDs from the observations
         oms_crud_tool = OmsCrudTool()
         provider_points_dict: dict[UUID, list[Point]] = {}  # mapping dict from provider ID to points
 
