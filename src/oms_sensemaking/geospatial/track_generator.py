@@ -9,7 +9,11 @@ from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.exceptions import TrackLengthError
-from oms_sensemaking.core.oms_crud import ObservationWithProviderObservation, OmsCrudTool
+from oms_sensemaking.core.oms_crud import (
+    ObservationQuery,
+    ObservationsWithProviderObservations,
+    OmsCrudTool,
+)
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.models.geo import (
     CommonSenseFilter,
@@ -53,16 +57,27 @@ class TrackGenerator:
 
         # Query the provider IDs from the observations
         oms_crud_tool = OmsCrudTool()
-        provider_points_dict: dict[UUID, list[Point]] = {}
+        provider_points_dict: dict[UUID, list[Point]] = {}  # mapping dict from provider ID to points
 
-        for point in points:
-            observ: ObservationWithProviderObservation = oms_crud_tool.get_observation_with_provider(
-                id=point.observation_id
-            )
+        # Query the provider IDs from the observations
+        observation_ids = [point.observation_id for point in points]
+        observs: ObservationsWithProviderObservations = oms_crud_tool.get_observations_with_provider(
+            ObservationQuery(ids=observation_ids)
+        )
+
+        # create mapping from observation ID to corresponding point
+        id_to_point_map = {point.observation_id: point for point in points}
+
+        for observ in observs.data:
             provider_id = observ.source.provider.id
+
             if provider_id not in provider_points_dict:
                 provider_points_dict[provider_id] = []
-            provider_points_dict[provider_id].append(point)
+
+            # Retrieve the Point object using the observation ID
+            point = id_to_point_map[UUID(observ.id)]
+            if point:
+                provider_points_dict[provider_id].append(point)
 
         ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
 
