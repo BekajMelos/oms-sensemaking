@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
 
 ### Changed
+- Encrypted whitelist of endpoints to be secret in repo
 
 ### Fixed
 
