@@ -25,6 +25,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
+from oms_sensemaking.core.settings import Settings as DBSettings
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
@@ -226,8 +227,6 @@ initialize_settings()
 def reload_settings_from_db() -> None:
     """Reload settings from database and update the global SETTINGS object."""
     try:
-        from oms_sensemaking.core.settings import Settings as DBSettings
-
         db_settings_obj = DBSettings()
         db_settings_dict = db_settings_obj.get_settings()
 
@@ -241,7 +240,6 @@ def reload_settings_from_db() -> None:
                 continue
 
             if field_name not in SETTINGS.model_fields:
-                LOGGER.debug("Skipping unknown setting from DB: %s", field_name)
                 continue
 
             # Get current value
