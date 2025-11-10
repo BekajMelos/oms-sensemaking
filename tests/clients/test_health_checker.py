@@ -55,3 +55,23 @@ def test_services_unhealthy(mocker: MockerFixture):
 
         assert actual == service.get("expected")
         mock.assert_called_once()
+
+
+def test_db_health(mocker: MockerFixture):
+    # Healthy DB
+    healthy_ping = mocker.Mock(return_value=True)
+    result = health_checker.get_db_health(healthy_ping)
+    assert result == "healthy"
+    healthy_ping.assert_called_once()
+
+    # Unhealthy DB (ping returns False)
+    unhealthy_ping = mocker.Mock(return_value=False)
+    result = health_checker.get_db_health(unhealthy_ping)
+    assert result == "Unable to communicate with DB Service"
+    unhealthy_ping.assert_called_once()
+
+    # DB throws an exception
+    error_ping = mocker.Mock(side_effect=Exception("db down"))
+    result = health_checker.get_db_health(error_ping)
+    assert result == "Unable to communicate with DB Service"
+    error_ping.assert_called_once()
