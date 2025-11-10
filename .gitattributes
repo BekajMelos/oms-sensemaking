@@ -5,7 +5,7 @@
 # ------------------------------
 #pattern  filter=crypt diff=crypt merge=crypt
 etc/pki/* filter=crypt diff=crypt merge=crypt
-
+data/whitelist.txt  filter=crypt diff=crypt merge=crypt
 
 # ------------------------------
 # Git LFS
