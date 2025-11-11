@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- New "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- New classes for the In/Out of Garrison rule, which is part of the Inference Sensemaker, so that necessary computational data can be retrieved all at once with a custom SDK query
 
 ### Changed
 
