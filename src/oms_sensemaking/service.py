@@ -235,6 +235,7 @@ def reload_settings_from_db() -> None:
             return
 
         updated_count = 0
+        rate_limit_updated = False
         for field_name, field_value in db_settings_dict.items():
             if "__" in field_name:
                 continue
@@ -251,8 +252,23 @@ def reload_settings_from_db() -> None:
                 updated_count += 1
                 LOGGER.info("Reloaded setting from DB: %s (old: %s -> new: %s)", field_name, old_value, field_value)
 
+                # Check if rate limit settings changed
+                if field_name in ("maximum_oms_api_calls", "oms_api_call_period_seconds"):
+                    rate_limit_updated = True
+
         if updated_count > 0:
             LOGGER.info("Successfully reloaded %d setting(s) from database", updated_count)
+
+            # Update rate limiter if rate limit settings changed
+            if rate_limit_updated:
+                from oms_sensemaking.core.oms_crud import OmsCrudTool
+                from oms_sensemaking.core.rate_limiter import update_rate_limiter_for_class
+
+                update_rate_limiter_for_class(
+                    OmsCrudTool,
+                    SETTINGS.maximum_oms_api_calls,
+                    SETTINGS.oms_api_call_period_seconds,
+                )
         else:
             LOGGER.info("Reloaded %d setting(s) from database, no changes needed", len(db_settings_dict))
 
