@@ -121,5 +121,3 @@ load-stress:
 		--limit $(limit) \
 		--garrisons-per-unit 5 \
 		--locations-per-garrison 5 \
-		--noise-relationships-per-unit 10 \
-		--noise-attributes-per-garrison 20
