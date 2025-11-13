@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--garrisons-per-unit", type=int, default=1)
     parser.add_argument("--locations-per-garrison", type=int, default=1)
+    parser.add_argument("--loop", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -20,29 +21,43 @@ def main():
         f"[Load Script] limit={args.limit}, "
         f"garrisons_per_unit={args.garrisons_per_unit}, "
         f"locations_per_garrison={args.locations_per_garrison}, "
+        f"loop={args.loop}"
     )
 
     sourcing = create_sourcing()
     unit_service = UnitService()
     garrison_service = GarrisonService()
+    for n in range(args.loop):
+        if args.loop > 1:
+            print(f"[Load Script] Loop {n + 1}/{args.loop}")
+        # Units
+        units = create_with_progress("Creating units", args.limit, lambda i: unit_service.create(f"Unit-{i}"))
 
-    # Units
-    units = create_with_progress("Creating units", args.limit, lambda i: unit_service.create(f"Unit-{i}"))
+        # Garrisons (+ base geo attributes)
+        garrisons = create_with_progress(
+            "Creating garrisons",
+            args.limit,
+            lambda i: garrison_service.create(f"Garrison-{i}", sourcing, args.locations_per_garrison),
+        )
 
-    # Garrisons (+ base geo attributes)
-    garrisons = create_with_progress(
-        "Creating garrisons",
-        args.limit,
-        lambda i: garrison_service.create(f"Garrison-{i}", sourcing, args.locations_per_garrison),
-    )
+        # Assign garrisons to units
+        run_progressive_step(
+            "Assigning garrisons",
+            units,
+            lambda u, garrisons=garrisons, sourcing=sourcing: assign_garrisons(
+                [u],
+                garrisons,
+                sourcing,
+                args.garrisons_per_unit,
+            ),
+        )
 
-    # Assign garrisons to units
-    run_progressive_step(
-        "Assigning garrisons", units, lambda u: assign_garrisons([u], garrisons, sourcing, args.garrisons_per_unit)
-    )
-
-    # Observations
-    run_progressive_step("Creating observations", units, lambda u: observe_all([u], sourcing))
+        # Observations
+        run_progressive_step(
+            "Creating observations",
+            units,
+            lambda u, sourcing=sourcing: observe_all([u], sourcing),
+        )
 
     print("Load test complete")
 

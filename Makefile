@@ -10,6 +10,7 @@ export
 ## Reference: https://stackoverflow.com/a/38415982
 
 limit ?= 100
+loop ?= 1
 
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -112,10 +113,11 @@ refresh: nuke  # Purge all generated content and restart
 	docker compose --profile local up --build -d
 
 load-out-of-garrison:
-	python -m scripts.load_test.main --limit $(limit)
+	python -m scripts.load_test.main --limit $(limit) --loop $(loop)
 
 load-stress:
 	python -m scripts.load_test.main \
 		--limit $(limit) \
 		--garrisons-per-unit 5 \
 		--locations-per-garrison 5 \
+		--loop $(loop)
