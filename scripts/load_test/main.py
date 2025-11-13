@@ -37,7 +37,7 @@ def main():
         garrisons = create_with_progress(
             "Creating garrisons",
             args.limit,
-            lambda i: garrison_service.create(f"Garrison-{i}", sourcing, args.locations_per_garrison),
+            lambda i: garrison_service.create(f"Garrison-{i}", sourcing),
         )
 
         # Assign garrisons to units
@@ -48,7 +48,6 @@ def main():
                 [u],
                 garrisons,
                 sourcing,
-                args.garrisons_per_unit,
             ),
         )
 

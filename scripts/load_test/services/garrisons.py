@@ -20,7 +20,7 @@ class Garrison:
 
 
 class GarrisonService:
-    def create(self, name, sourcing, locations_per_garrison):
+    def create(self, name, sourcing):
         client = atoms_client.client
 
         facility = client.create_node(
@@ -50,22 +50,5 @@ class GarrisonService:
                 sourceId=sourcing.source.id,
             )
         )
-
-        # Extra geo attrs
-        for _ in range(locations_per_garrison - 1):
-            client.create_attribute(
-                CreateAttributeInput(
-                    nodeId=facility.id,
-                    acm=DEFAULT_ACM,
-                    attributeIri=SETTINGS.inference_geo_attribute_iri,
-                    attributeValue="extra",
-                    attributeType=AttributeType.GEOSPATIAL,
-                    geometry=gen_random_location(),
-                    valueStart="2022-01-01T00:00:00Z",
-                    valueEnd="2030-01-01T00:00:00Z",
-                    confidence="LOW",
-                    sourceId=sourcing.source.id,
-                )
-            )
 
         return Garrison(facility, primary_geo)

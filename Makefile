@@ -114,10 +114,3 @@ refresh: nuke  # Purge all generated content and restart
 
 load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop)
-
-load-stress:
-	python -m scripts.load_test.main \
-		--limit $(limit) \
-		--garrisons-per-unit 5 \
-		--locations-per-garrison 5 \
-		--loop $(loop)
