@@ -35,7 +35,7 @@ make up
 
 ### Default
 
-Run the load test with default parameters (`limit=100`, `loop=1`):
+Run the load test with default parameters (`limit=100`, `loop=1`, `loop_wait=0`):
 
 ```
 make load-out-of-garrison
@@ -48,6 +48,16 @@ To load 50,000 garrisons in five iterations of 10,000:
 ```
 make load-out-of-garrison limit=10000 loop=5
 ```
+
+### Sustained load pattern example
+
+To keep steady ingestion pressure over time:
+
+```
+make load-out-of-garrison limit=2500 loop=20 loop_wait=3
+```
+
+This creates 20 batches of 2,500 with a 3-minute pause between each batch. 
 
 ## Monitor the system
 
@@ -73,7 +83,8 @@ Suggested panels to monitor:
 
 ### Practical tips
 
-- For a smoother ramp-up, use multiple loops (e.g., `limit=2500`,`loop=4`) instead of a single iteration (`limit=10000`).
+- For a quicker ramp-up, use multiple loops (e.g., `limit=2500`,`loop=4`) instead of a single iteration (`limit=10000`).
+- For a sustained long-running load test, combine multiple loops with `loop_wait`  (e.g., `limit=2500`,`loop=20`, `loop_wait=3`). 
 - For stress testing consumer behavior, run the load-test script with the `sensemaking` service temporarily stopped,
   then start the service after the load completes. This forces RabbitMQ to accumulate events and helps simulate a backlog
   scenario.

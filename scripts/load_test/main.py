@@ -1,4 +1,5 @@
 import argparse
+import time
 
 from scripts.load_test.services.garrisons import GarrisonService
 from scripts.load_test.services.observations import observe_all
@@ -12,10 +13,11 @@ def main():
 
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--loop", type=int, default=1)
+    parser.add_argument("--loop-wait", type=int, default=0, help="Minutes to wait between each loop iteration")
 
     args = parser.parse_args()
 
-    print(f"[Load Script] limit={args.limit}, " f"loop={args.loop}")
+    print(f"[Load Script] limit={args.limit}, loop={args.loop}, loop_wait={args.loop_wait}")
 
     sourcing = create_sourcing()
     unit_service = UnitService()
@@ -50,6 +52,11 @@ def main():
             units,
             lambda u, sourcing=sourcing: observe_all([u], sourcing),
         )
+
+        # Wait before next loop (but not after the final one)
+        if args.loop_wait > 0 and n < args.loop - 1:
+            print(f"[Load Script] Waiting {args.loop_wait} minute(s) before next loop...")
+            time.sleep(args.loop_wait * 60)
 
     print("Load test complete")
 
