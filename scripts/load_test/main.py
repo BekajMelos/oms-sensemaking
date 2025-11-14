@@ -11,18 +11,11 @@ def main():
     parser = argparse.ArgumentParser(description="Load-test generator for OMS Sensemaking")
 
     parser.add_argument("--limit", type=int, default=100)
-    parser.add_argument("--garrisons-per-unit", type=int, default=1)
-    parser.add_argument("--locations-per-garrison", type=int, default=1)
     parser.add_argument("--loop", type=int, default=1)
 
     args = parser.parse_args()
 
-    print(
-        f"[Load Script] limit={args.limit}, "
-        f"garrisons_per_unit={args.garrisons_per_unit}, "
-        f"locations_per_garrison={args.locations_per_garrison}, "
-        f"loop={args.loop}"
-    )
+    print(f"[Load Script] limit={args.limit}, " f"loop={args.loop}")
 
     sourcing = create_sourcing()
     unit_service = UnitService()
