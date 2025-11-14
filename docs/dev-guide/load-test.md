@@ -8,8 +8,8 @@ The script generates high-volume batches of:
 - Relationships (Unit -> Garrison)
 - Observations
 
-Each batch is pushed through the ATOMS API pipeline and events will await processing in their respective Sensemaking
-queue (see: RabbitMQ).
+Each batch flows through the ATOMS API pipeline and its associated events queue inside RabbitMQ, where the Sensemaking 
+consumers pick them up for processing. 
 
 ## Setup
 
