@@ -58,7 +58,7 @@ def main():
             print(f"[Load Script] Waiting {args.loop_wait} minute(s) before next loop...")
             time.sleep(args.loop_wait * 60)
 
-    print("Load test complete")
+    print("[Load Script] Complete")
 
 
 if __name__ == "__main__":
