@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- New "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- New classes for the In/Out of Garrison rule, which is part of the Inference Sensemaker, so that necessary computational data can be retrieved all at once with a custom SDK query
+- Added one index to `points` table to prevent long-running Geo query that compounded with each call. 
 
 ### Changed
 - Encrypted whitelist of endpoints to be secret in repo
@@ -12,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Unused OS level packages from the Sensemaking Docker image which were requested to be addressed (removed/updated) by the DevOPs team
 
 ## [0.16.0] - 2025-11-03
 
