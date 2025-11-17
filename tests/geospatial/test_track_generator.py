@@ -69,10 +69,8 @@ def track_points(source) -> list[Point]:
 
 
 @mock.patch("oms_sensemaking.models.geo.aac_client")
-def test_generate_track_too_short(mock_aac_client: AacClient, mock_oms_client, track_points: list[Point], oms_node):
+def test_generate_track_too_short(mock_aac_client: AacClient, mock_oms_crud_tool, track_points: list[Point]):
     track_generator = TrackGenerator(OntologyClient(OmsCrudTool()))
-
-    mock_oms_client.get_node = mock.MagicMock(return_value=oms_node)
 
     # mock track creation
     track_uuid = uuid4()
@@ -84,4 +82,6 @@ def test_generate_track_too_short(mock_aac_client: AacClient, mock_oms_client, t
 
     # call flush buffer. Should raise exception
     with pytest.raises(TrackLengthError):
-        track_generator.generate_track(track_uuid, NaiveTrackWeaver(), [], {track_uuid: track_points}, mock_oms_client)
+        track_generator.generate_track(
+            track_uuid, NaiveTrackWeaver(), [], {track_uuid: track_points}, mock_oms_crud_tool
+        )

@@ -3,17 +3,13 @@ from itertools import groupby
 from operator import attrgetter
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client import NodeNode
+from oms_sdk.generated.generated_graphql_client import NodeNode, ObservationQuery, ObservationsWithProviderObservations
 
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.exceptions import TrackLengthError
-from oms_sensemaking.core.oms_crud import (
-    ObservationQuery,
-    ObservationsWithProviderObservations,
-    OmsCrudTool,
-)
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.dao.track import APITrack
 from oms_sensemaking.models.geo import (
     CommonSenseFilter,
@@ -51,11 +47,10 @@ class TrackGenerator:
 
         # Get the IRI hierarchy for the node
         try:
-            oms_node = oms_crud_tool.get_node(points[1].node_id)
+            oms_node = oms_crud_tool.get_node(points[0].node_id)
         except IndexError as e:
             raise TrackLengthError(e) from e
 
-        oms_crud_tool = OmsCrudTool()
         provider_points_dict: dict[UUID, list[Point]] = {}  # mapping dict from provider ID to points
 
         # Query the provider IDs from the observations

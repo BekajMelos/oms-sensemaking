@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "5bd49bc2-e810-4d64-a147-8e045a90e9b4",
-		"name": "Sensemaking Smoke Tests",
+		"_postman_id": "84922e58-62d8-4711-804b-131972d99d2c",
+		"name": "Sensemaking Smoke Tests Current",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "41624740"
 	},
@@ -5449,7 +5449,7 @@
 											"    pm.expect(json.data.createObservation.id).to.exist;",
 											"});",
 											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"loiterobservationId7\", json.data.createObservation.id);"
+											"pm.collectionVariables.set(\"loiterobservationId8\", json.data.createObservation.id);"
 										],
 										"type": "text/javascript",
 										"packages": {},
@@ -7343,6 +7343,149 @@
 									"graphql": {
 										"query": "mutation (\n    $activityId: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityId\": \"{{nonGarrisonActivityId}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Track Observation Ids Copy",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Set max retries",
+											"const maxRetries = 3;",
+											"",
+											"// Get current retry count (or initialize)",
+											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"retryCount = parseInt(retryCount, 10);",
+											"",
+											"// Step 1: Check if we've exceeded the retry limit",
+											"if (retryCount >= maxRetries) {",
+											"    console.error(\"Max retries reached. Stopping execution.\");",
+											"    pm.environment.unset(\"retryCount\");",
+											"    postman.setNextRequest(null); // Stop execution",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Step 4: Check if request succeeded based on response data",
+											"let response = pm.response.json(); ",
+											"",
+											"// Validate if the response meets success criteria",
+											"let isValidResponse = response.data && ",
+											"                      response.data.observations && ",
+											"                      response.data.observations.data && ",
+											"                      response.data.observations.data.length > 0 && ",
+											"                      response.data.observations.totalSize > 0;",
+											"",
+											"if (isValidResponse) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(isValidResponse).to.be.true;",
+											"    });",
+											"    console.log(\"Valid response received. Stopping retries.\");",
+											"    pm.environment.unset(\"retryCount\"); // Reset on success",
+											"    pm.collectionVariables.set(\"incursiontrackobs\", response.data.observations.data[0].id);",
+											"} else {",
+											"    console.warn(\"Invalid response received. Retrying...\");",
+											"",
+											"    // Step 5: Increment retry count",
+											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
+											"    retryCount = parseInt(retryCount, 10) + 1;",
+											"",
+											"    if (retryCount >= 3) {",
+											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
+											"        pm.environment.unset(\"retryCount\");",
+											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
+											"    } else {",
+											"        pm.environment.set(\"retryCount\", retryCount);",
+											"",
+											"        // Sleep for 30 seconds before making the request",
+											"        console.log(`Sleeping for 15 seconds before attempt ${retryCount + 1}...`);",
+											"",
+											"        setTimeout(function(){}, 30000);",
+											"",
+											"        // Step 6: Retry request",
+											"        postman.setNextRequest(pm.info.requestName);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+										"variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Track Observation Tag 1 Copy 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Incursion Track Obs Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"incursiontrackobs\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"incursiontrackobs\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
 									}
 								},
 								"url": {
@@ -11124,6 +11267,26 @@
 		},
 		{
 			"key": "nonGarrisonActivityId",
+			"value": ""
+		},
+		{
+			"key": "providerId1",
+			"value": ""
+		},
+		{
+			"key": "providerId2",
+			"value": ""
+		},
+		{
+			"key": "sourceId1",
+			"value": ""
+		},
+		{
+			"key": "sourceId2",
+			"value": ""
+		},
+		{
+			"key": "loiterobservationId8",
 			"value": ""
 		}
 	]
