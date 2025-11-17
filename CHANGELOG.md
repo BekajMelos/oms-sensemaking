@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Create a new "Settings" table in the database with a corresponding `get_settings()` method to fetch.
+- New "Settings" table in the database with a corresponding `get_settings()` method to fetch.
 - Added a new "provider_id" feature to the tracks table in the database
+- New classes for the In/Out of Garrison rule, which is part of the Inference Sensemaker, so that necessary computational data can be retrieved all at once with a custom SDK query
 
 ### Changed
 - Tracks are now separated by provider
+- Encrypted whitelist of endpoints to be secret in repo
 
 ### Fixed
 

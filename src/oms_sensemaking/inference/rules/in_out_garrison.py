@@ -1,17 +1,13 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
-from geopy.distance import geodesic
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    AttributeQuery,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
     NodeNode,
     ObservationObservation,
-    RelationshipNodeQuery,
-    RelationshipQuery,
     StringQuery,
     UpdateActivityInput,
     UpdateUuidList,
@@ -21,7 +17,9 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
+from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.base_rule import BaseRule
+from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataRetrieverFactory
 from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
 
@@ -34,6 +32,9 @@ class InOrOutOfGarrison(BaseRule):
     def __init__(self, name: str):
         self.name = name
         self.version = (1, 0, 0)
+        self._data_retriever = GetGarrisonDataRetrieverFactory(oms_crud_tool).get_garrison_data_retriever(
+            SETTINGS.garrison_data_retriever
+        )
 
     def evaluate(self, rule_context: RuleContext) -> bool:
         """
@@ -62,42 +63,17 @@ class InOrOutOfGarrison(BaseRule):
 
         obs = rule_context.observation
         node_object = oms_crud_tool.get_node(obs.nodeId)
-        geo = obs.geometry
-
-        # Find garrison node id through garrison relationship
-        garrison_relationship_query = RelationshipQuery(
-            objectPropertyIris=[SETTINGS.inference_garrisoned_in_iri],
-            nodes=RelationshipNodeQuery(startNodeIds=[obs.nodeId]),
+        object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
+        if not object_and_garrison_coords:
+            return None
+        object_lat_lon, garrison_lat_lon = object_and_garrison_coords
+        in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
+        garrison_buffer_points = generate_circle_points_geographical(
+            garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
         )
-        garrison_relationship_res = oms_crud_tool.get_relationships(garrison_relationship_query)
+        garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
-        if len(garrison_relationship_res.data):
-            relationship = garrison_relationship_res.data[0]
-            garrison_object_id = relationship.endNodeId
-
-            # Find garrison coordinates through location attribute
-            garrison_attribute_query = AttributeQuery(
-                nodeIds=[garrison_object_id], attributeIris=[SETTINGS.inference_geo_attribute_iri]
-            )
-            garrison_attribute_res = oms_crud_tool.get_attributes(garrison_attribute_query)
-            if len(garrison_attribute_res.data):
-                garrison_object_coordinates = garrison_attribute_res.data[0].geometry["coordinates"]
-
-                # Determine if object is in garrison
-                object_coordinates = geo["coordinates"]
-                object_coordinates = [object_coordinates[1], object_coordinates[0]]
-                garrison_object_coordinates = [garrison_object_coordinates[1], garrison_object_coordinates[0]]
-                distance = geodesic(object_coordinates, garrison_object_coordinates).kilometers
-                in_garrison = distance < SETTINGS.garrison_distance_kilometers
-                garrison_buffer_points = generate_circle_points_geographical(
-                    garrison_object_coordinates[0],
-                    garrison_object_coordinates[1],
-                    SETTINGS.garrison_distance_kilometers,
-                )
-
-                garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-
-                self._create_or_update_garrison_activity(obs, node_object, in_garrison, garrison_buffer_geojson)
+        self._create_or_update_garrison_activity(obs, node_object, in_garrison_check, garrison_buffer_geojson)
 
     def _create_or_update_garrison_activity(
         self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
