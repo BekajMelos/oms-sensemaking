@@ -25,6 +25,8 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.rate_limiter import update_rate_limiter_for_class
 from oms_sensemaking.core.settings import Settings as DBSettings
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
@@ -243,7 +245,6 @@ def reload_settings_from_db() -> None:
             if field_name not in SETTINGS.model_fields:
                 continue
 
-            # Get current value
             old_value = getattr(SETTINGS, field_name, None)
 
             # Only update if value changed
@@ -252,18 +253,13 @@ def reload_settings_from_db() -> None:
                 updated_count += 1
                 LOGGER.info("Reloaded setting from DB: %s (old: %s -> new: %s)", field_name, old_value, field_value)
 
-                # Check if rate limit settings changed
                 if field_name in ("maximum_oms_api_calls", "oms_api_call_period_seconds"):
                     rate_limit_updated = True
 
         if updated_count > 0:
             LOGGER.info("Successfully reloaded %d setting(s) from database", updated_count)
 
-            # Update rate limiter if rate limit settings changed
             if rate_limit_updated:
-                from oms_sensemaking.core.oms_crud import OmsCrudTool
-                from oms_sensemaking.core.rate_limiter import update_rate_limiter_for_class
-
                 update_rate_limiter_for_class(
                     OmsCrudTool,
                     SETTINGS.maximum_oms_api_calls,
