@@ -144,7 +144,15 @@ def test_geo_controller_with_default_provider_config(
 
     # mock track creation
     track_uuid = uuid4()
-    track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
+    track = Track(
+        acm=DEFAULT_ACM,
+        points=track_points,
+        node_id=oms_node.id,
+        algorithm="",
+        observation_ids=[],
+        track_uuid=track_uuid,
+        provider_id=source1.providerId,
+    )
 
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
@@ -156,6 +164,7 @@ def test_geo_controller_with_default_provider_config(
         algorithm="",
         observation_ids=[],
         track_uuid=track.track_uuid,
+        provider_id=source1.providerId,
     )
     mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
@@ -217,7 +226,15 @@ def test_geo_controller_with_provider_config(
 
     # mock track creation
     track_uuid = uuid4()
-    track = Track(DEFAULT_ACM, track_points, oms_node.id, "", [], track_uuid)
+    track = Track(
+        acm=DEFAULT_ACM,
+        points=track_points,
+        node_id=oms_node.id,
+        algorithm="",
+        observation_ids=[],
+        track_uuid=track_uuid,
+        provider_id=source2.providerId,
+    )
 
     # set up track buffer
     mock_geo_controller.track_node_buffer = {track_uuid: track_points}
@@ -244,6 +261,7 @@ def test_geo_controller_with_provider_config(
         algorithm="",
         observation_ids=[],
         track_uuid=track.track_uuid,
+        provider_id=source2.providerId,
     )
     mock_geo_controller._track_generator.generate_track = mock.MagicMock(return_value=[t])
 
