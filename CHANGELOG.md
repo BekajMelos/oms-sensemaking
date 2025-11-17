@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Unused OS level packages from the Sensemaking Docker image which were requested to be addressed (removed/updated) by the DevOPs team
 
 ## [0.16.0] - 2025-11-03
 

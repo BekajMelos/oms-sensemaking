@@ -29,7 +29,7 @@ pipeline {
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
         IMAGE_NAME="dpaas/ubi8-ccp"
-        IMAGE_VERSION="8.10"
+        IMAGE_VERSION="8.10-1761020747"
 
         APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
 
