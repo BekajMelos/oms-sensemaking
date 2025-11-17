@@ -18,12 +18,12 @@ EOSQL
 
 echo "==> [EXTENSIONS] pg_trgm extension enabled in $DB_NAME_OMSB."
 
-# Enable pg_stat_statements
+# Configure pg_stat_statements
 echo "shared_preload_libraries = 'pg_stat_statements'" >> "$PGDATA/postgresql.conf"
 echo "pg_stat_statements.max = 10000" >> "$PGDATA/postgresql.conf"
 echo "pg_stat_statements.track = all" >> "$PGDATA/postgresql.conf"
 
-# Enable pg_stat_statements in the database
+# Enable pg_stat_statements in the sensemaking database
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname="$DB_NAME" <<-EOSQL
   CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 EOSQL
