@@ -1,40 +1,90 @@
 # Load Test & Metrics
 
-Load Testing is a process of seeing how well the application performs with more than just a handful of test records.  This helps us verify the queues process data at a reasonable pace and helps us identify slow parts of the system.
+Load testing helps evaluate how **ATOMS Sensemaking** performs under large-scale data ingestion.
+The script generates high-volume batches of:
+
+- Units
+- Garrisons (including geo attributes)
+- Relationships (Unit -> Garrison)
+- Observations
+
+Each batch flows through the ATOMS API pipeline and its associated events queue inside RabbitMQ, where the Sensemaking 
+consumers pick them up for processing. 
 
 ## Setup
 
-Activate Python:
+Activate the Python environment:
+
 ```
 source .venv/bin/activate
 ```
-Add the `metrics` profile to `.env`:
+
+Enable the metrics profile in `.env`:
 
 ```
 COMPOSE_PROFILES=local,metrics
 ```
 
-Run `make up` to ensure the Prometheus and Grafana services spin up.
+Start the stack with metrics services:
+
+```
+make up
+```
 
 ## Run a load test
 
-Run a load test of ATOMS entities (default: 100 units). 
+### Default
+
+Run the load test with default parameters (`limit=100`, `loop=1`, `loop_wait=0`):
 
 ```
 make load-out-of-garrison
 ```
 
-To customize the number of units:
+### Large-scale example
+
+To load 50,000 garrisons in five iterations of 10,000:
 
 ```
-make load-out-of-garrison limit=10000
+make load-out-of-garrison limit=10000 loop=5
 ```
 
-## View performance metrics
+### Sustained load pattern example
 
-In [Grafana](http://localhost:3001/d/oms-sensemaking/oms-sensemaking-dashboard), open the dashboard to view the following:
-- Request Rate
-- 95th Percentile Response Time
+To keep steady ingestion pressure over time:
+
+```
+make load-out-of-garrison limit=2500 loop=20 loop_wait=3
+```
+
+This creates 20 batches of 2,500 with a 3-minute pause between each batch. 
+
+## Monitor the system
+
+### RabbitMQ
+
+Open the [RabbitMQ queue dashboard](http://localhost:15672/#/queues) to watch events accumulate and drain.
+
+This is a good place to observe:
+
+- Incoming event spikes
+- Queue buildup
+- Active consumer throughput and health
+
+### Grafana
+
+Open the [Sensemaking dashboard in Grafana](http://localhost:3001/d/oms-sensemaking/oms-sensemaking-dashboard) to view graphical panels of throughput and identify any failed events.
+
+Suggested panels to monitor:
+
 - Queue Processing Rate
 - Events Processed Rate
 - Events Failed Rate
+
+### Practical tips
+
+- For a quicker ramp-up, use multiple loops (e.g., `limit=2500`,`loop=4`) instead of a single iteration (`limit=10000`).
+- For a sustained long-running load test, combine multiple loops with `loop_wait`  (e.g., `limit=2500`,`loop=20`, `loop_wait=3`). 
+- For stress testing consumer behavior, run the load-test script with the `sensemaking` service temporarily stopped,
+  then start the service after the load completes. This forces RabbitMQ to accumulate events and helps simulate a backlog
+  scenario.

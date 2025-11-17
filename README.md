@@ -80,6 +80,7 @@ See [Docs](docs/) for more information.
 - [Development Guide](docs/dev-guide/dev.md)
 - [Environment Variables](docs/dev-guide/env-vars.md)
 - [Packaging & Versioning](docs/dev-guide/packaging.md)
+- [Example Settings for AIDE](docs/dev-guide/aide-env.md)
 
 ### mkdocs
 

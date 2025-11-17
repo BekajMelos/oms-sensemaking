@@ -346,6 +346,7 @@ class Settings(BaseSettings):
         "OUT_OF_GARRISON", description="String Out of Garrison Activity State"
     )
     garrison_distance_kilometers: int = 2000
+    garrison_data_retriever: str = Field("AllAtOnce", description="Algorithm for getting garrison data")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
