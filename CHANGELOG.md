@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Docs page unable to load correctly due to dependency mismatch
+- Removal commands added to the Dockerfile resulted in unwanted "broken behavior related to SSL
 
 ### Removed
 
