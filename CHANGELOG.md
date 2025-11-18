@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Encrypted whitelist of endpoints to be secret in repo
 
 ### Fixed
+- Latest DB migration refers to correct parent migration
 
 ### Removed
 - Unused OS level packages from the Sensemaking Docker image which were requested to be addressed (removed/updated) by the DevOPs team
