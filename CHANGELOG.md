@@ -9,10 +9,14 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
-- Docs page unable to load correctly due to dependency mismatch
-- Removal commands added to the Dockerfile resulted in unwanted "broken behavior related to SSL
 
 ### Removed
+
+## [0.17.1] - 2025-11-18
+
+### Fixed
+- Docs page unable to load correctly due to dependency mismatch
+- Removal commands added to the Dockerfile resulted in unwanted "broken behavior related to SSL
 
 ## [0.17.0] - 2025-11-18
 
