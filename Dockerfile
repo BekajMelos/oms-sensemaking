@@ -219,8 +219,6 @@ dnf remove -y \
   python3-requests \
   python3-six \
   python3-urllib3 \
-  openssh \
-  openssh-clients \
 && dnf autoremove -y \
 && dnf clean all \
 
