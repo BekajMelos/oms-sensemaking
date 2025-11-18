@@ -354,7 +354,15 @@ def sample_track():
         source_id=uuid4(),
     )
     points = [p1, p2]
-    return Track(node_id=node_id, track_uuid=track_uuid, points=points, algorithm="test", observation_ids=[], acm=None)
+    return Track(
+        node_id=node_id,
+        track_uuid=track_uuid,
+        points=points,
+        algorithm="test",
+        observation_ids=[],
+        acm=None,
+        provider_id=uuid4(),
+    )
 
 
 @patch("oms_sensemaking.geospatial.sensemakers.CotravelSensemaker.get_points", return_value=[])
