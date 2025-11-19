@@ -211,19 +211,6 @@ rm -rf /usr/bin/pip*
 rm -rf /usr/local/bin/pip*
 rm -rf /usr/local/lib/python3.12/site-packages/pip*
 
-dnf remove -y \
-  perl* \
-  python3-chardet \
-  python3-idna \
-  python3-pysocks \
-  python3-requests \
-  python3-six \
-  python3-urllib3 \
-  openssh \
-  openssh-clients \
-&& dnf autoremove -y \
-&& dnf clean all \
-
 EOF
 
 LABEL maintainer="The OMS Team <oms@blackcape.io>"

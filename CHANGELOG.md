@@ -1,19 +1,37 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
 ## Unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.17.1] - 2025-11-18
+
+### Fixed
+- Docs page unable to load correctly due to dependency mismatch
+- Removal commands added to the Dockerfile resulted in unwanted "broken behavior related to SSL
+
+## [0.17.0] - 2025-11-18
 
 ### Added
 - New "Settings" table in the database with a corresponding `get_settings()` method to fetch.
 - Added a new "provider_id" feature to the tracks table in the database
 - New classes for the In/Out of Garrison rule, which is part of the Inference Sensemaker, so that necessary computational data can be retrieved all at once with a custom SDK query
-- Added one index to `points` table to prevent long-running Geo query that compounded with each call. 
+- Added one index to `points` table to prevent long-running Geo query that compounded with each call.
 
 ### Changed
 - Tracks are now separated by provider
 - Encrypted whitelist of endpoints to be secret in repo
 
 ### Fixed
+- Latest DB migration refers to correct parent migration
 
 ### Removed
 - Unused OS level packages from the Sensemaking Docker image which were requested to be addressed (removed/updated) by the DevOPs team
@@ -29,8 +47,8 @@ All notable changes to this project will be documented in this file.
 - Sensemakers now run on all split tracks which are generated
 
 ### Fixed
-- Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance. 
-- Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers. 
+- Centralized the instantiation of the database engine and session (`clients/instances.py`) to improve geo-sensemaker performance.
+- Pulled out unnecessary processing from thread locks in Geo controller, while maintaining safety of buffers.
 - Sync client unable to connect due to CA File ssl auth errors
 
 ### Removed
