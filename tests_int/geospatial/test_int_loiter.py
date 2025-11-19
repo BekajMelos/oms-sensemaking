@@ -72,7 +72,6 @@ def test_loiter_success(
         algorithm="test_track",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -192,7 +191,6 @@ def test_loiter_invalid_not_long_enough(
         track_uuid=track_uuid,
         algorithm="test_loiter",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
@@ -223,7 +221,6 @@ def test_loiter_fails_valid_observed_threshold(mock_oms_crud_tool, aircraft_geo_
         track_uuid=track_uuid,
         algorithm="test_loiter",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     loiters = LoiterSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
@@ -258,7 +255,6 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
         track_uuid=track_uuid,
         algorithm="test_loiter",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -384,7 +380,6 @@ def test_loiter_success_multiple_in_same_geohash(
         track_uuid=track_uuid,
         algorithm="test_loiter",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -569,7 +564,6 @@ def test_loiter_success_multiple_in_different_geohash(
         track_uuid=track_uuid,
         algorithm="test_loiter",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks

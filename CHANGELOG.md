@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Removed
+- Revert adding provider_id to tracks in database and splitting tracks by provider due to migration issues in deployment environments
 
 ## [0.17.1] - 2025-11-18
 

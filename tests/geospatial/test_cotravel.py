@@ -361,7 +361,6 @@ def sample_track():
         algorithm="test",
         observation_ids=[],
         acm=None,
-        provider_id=uuid4(),
     )
 
 
