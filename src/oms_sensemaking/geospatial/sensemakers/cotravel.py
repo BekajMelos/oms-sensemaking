@@ -357,7 +357,7 @@ class CotravelSensemaker(Sensemaker):
                     node_id=track.node_id,
                     algorithm=track.algorithm,
                     observation_ids=track.observation_ids,
-                    track_uuid=uuid4(),  # type: ignore
+                    track_uuid=track.track_uuid,  # type: ignore
                     acm=track.acm,
                 ),
                 track2=Track(
@@ -365,7 +365,7 @@ class CotravelSensemaker(Sensemaker):
                     node_id=track2.node_id,
                     algorithm=track2.algorithm,
                     observation_ids=track2.observation_ids,
-                    track_uuid=uuid4(),  # type: ignore
+                    track_uuid=track2.track_uuid,  # type: ignore
                     acm=track2.acm,
                 ),
                 start_time=start_time,
