@@ -18,7 +18,7 @@ class TestCreateOrUpdateSetting:
 
     def test_create_new_setting(self):
         """Test creating a new setting when it doesn't exist."""
-        setting_update = SettingUpdate(field_name="test_setting", field_value=True)
+        setting_update = SettingUpdate(field_name="test_setting", field_value=42)
 
         mock_db = MagicMock()
         mock_query = MagicMock()
@@ -53,18 +53,18 @@ class TestCreateOrUpdateSetting:
             added_setting = mock_db.add.call_args[0][0]
             assert isinstance(added_setting, Setting)
             assert added_setting.field_name == "test_setting"
-            assert added_setting.field_value is True
+            assert added_setting.field_value == 42
 
             # Verify reload was called
             mock_reload.assert_called_once()
 
     def test_update_existing_setting(self):
         """Test updating an existing setting."""
-        setting_update = SettingUpdate(field_name="existing_setting", field_value="new_value")
+        setting_update = SettingUpdate(field_name="existing_setting", field_value=100)
 
         mock_db = MagicMock()
         mock_query = MagicMock()
-        existing_setting = Setting(field_name="existing_setting", field_value="old_value")
+        existing_setting = Setting(field_name="existing_setting", field_value=50)
         mock_db.query.return_value = mock_query
         mock_query.filter.return_value.first.return_value = existing_setting
 
@@ -89,7 +89,7 @@ class TestCreateOrUpdateSetting:
             # Verify database operations
             mock_db.query.assert_called_once_with(Setting)
             mock_query.filter.assert_called_once()
-            assert existing_setting.field_value == "new_value"
+            assert existing_setting.field_value == 100
             mock_db.commit.assert_called_once()
 
             # Verify no new setting was added
@@ -99,9 +99,8 @@ class TestCreateOrUpdateSetting:
             mock_reload.assert_called_once()
 
     def test_create_setting_with_complex_value(self):
-        """Test creating a setting with a complex value (dict, list, etc.)."""
-        complex_value = {"nested": {"key": "value"}, "list": [1, 2, 3]}
-        setting_update = SettingUpdate(field_name="complex_setting", field_value=complex_value)
+        """Test creating a setting with an integer value."""
+        setting_update = SettingUpdate(field_name="complex_setting", field_value=999)
 
         mock_db = MagicMock()
         mock_query = MagicMock()
@@ -126,9 +125,9 @@ class TestCreateOrUpdateSetting:
             assert isinstance(response, Response)
             assert response.status_code == 201
 
-            # Verify the complex value was stored
+            # Verify the value was stored
             added_setting = mock_db.add.call_args[0][0]
-            assert added_setting.field_value == complex_value
+            assert added_setting.field_value == 999
 
             mock_reload.assert_called_once()
 
@@ -140,9 +139,9 @@ class TestCreateOrUpdateSettings:
         """Test creating multiple new settings."""
         settings_update = SettingsUpdate(
             settings={
-                "setting1": True,
+                "setting1": 10,
                 "setting2": 42,
-                "setting3": "test_string",
+                "setting3": 100,
             }
         )
 
@@ -180,15 +179,15 @@ class TestCreateOrUpdateSettings:
         """Test updating multiple existing settings."""
         settings_update = SettingsUpdate(
             settings={
-                "existing1": "new_value1",
-                "existing2": "new_value2",
+                "existing1": 200,
+                "existing2": 300,
             }
         )
 
         mock_db = MagicMock()
         mock_query = MagicMock()
-        existing1 = Setting(field_name="existing1", field_value="old_value1")
-        existing2 = Setting(field_name="existing2", field_value="old_value2")
+        existing1 = Setting(field_name="existing1", field_value=100)
+        existing2 = Setting(field_name="existing2", field_value=150)
 
         # Mock query to return different settings based on filter
         def filter_side_effect(*args, **kwargs):
@@ -222,8 +221,8 @@ class TestCreateOrUpdateSettings:
             assert response.status_code == 201
 
             # Verify values were updated
-            assert existing1.field_value == "new_value1"
-            assert existing2.field_value == "new_value2"
+            assert existing1.field_value == 200
+            assert existing2.field_value == 300
 
             # Verify no new settings were added
             mock_db.add.assert_not_called()
@@ -235,14 +234,14 @@ class TestCreateOrUpdateSettings:
         """Test batch update with mix of new and existing settings."""
         settings_update = SettingsUpdate(
             settings={
-                "existing_setting": "updated_value",
-                "new_setting": "new_value",
+                "existing_setting": 500,
+                "new_setting": 600,
             }
         )
 
         mock_db = MagicMock()
         mock_query = MagicMock()
-        existing_setting = Setting(field_name="existing_setting", field_value="old_value")
+        existing_setting = Setting(field_name="existing_setting", field_value=400)
 
         # Mock query to return existing setting for first call, None for second
         def filter_side_effect(*args, **kwargs):
@@ -275,13 +274,13 @@ class TestCreateOrUpdateSettings:
             assert response.status_code == 201
 
             # Verify existing setting was updated
-            assert existing_setting.field_value == "updated_value"
+            assert existing_setting.field_value == 500
 
             # Verify new setting was added
             assert mock_db.add.call_count == 1
             added_setting = mock_db.add.call_args[0][0]
             assert added_setting.field_name == "new_setting"
-            assert added_setting.field_value == "new_value"
+            assert added_setting.field_value == 600
 
             mock_db.commit.assert_called_once()
             mock_reload.assert_called_once()
@@ -348,7 +347,7 @@ class TestSettingsEndpointsIntegration:
 
                 response = client.post(
                     "/settings",
-                    json={"field_name": "test_setting", "field_value": True},
+                    json={"field_name": "test_setting", "field_value": 42},
                     headers={"user_dn": "test_user"},
                 )
 
@@ -385,7 +384,7 @@ class TestSettingsEndpointsIntegration:
 
                 response = client.post(
                     "/settings/batch",
-                    json={"settings": {"setting1": True, "setting2": 42}},
+                    json={"settings": {"setting1": 10, "setting2": 42}},
                     headers={"user_dn": "test_user"},
                 )
 
