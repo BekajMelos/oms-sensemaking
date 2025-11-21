@@ -86,7 +86,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (queue_name) (rate(events_processed_total{queue_name=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}[5m]))",
+          "expr": "sum by (queue_name) (rate(events_processed_total{queue_name!~\"^oms.*\"}[5m]))",
           "legendFormat": "{{queue_name}}"
         }
       ]
@@ -99,7 +99,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (queue_name, le) (rate(queue_processing_time_seconds_bucket{queue_name=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (queue_name, le) (rate(queue_processing_time_seconds_bucket{queue_name!~\"^oms.*\"}[5m])))",
           "legendFormat": "p95 {{queue_name}}"
         }
       ]
@@ -118,7 +118,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rabbitmq_queue_messages_ready{queue=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}",
+          "expr": "rabbitmq_queue_messages_ready{queue!~\"^oms.*\"}",
           "legendFormat": "{{queue}}"
         }
       ]
@@ -131,7 +131,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rabbitmq_queue_messages_unacked{queue=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}",
+          "expr": "rabbitmq_queue_messages_unacked{queue!~\"^oms.*\"}",
           "legendFormat": "{{queue}}"
         }
       ]
@@ -144,7 +144,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rabbitmq_queue_consumers{queue=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}",
+          "expr": "rabbitmq_queue_consumers{queue!~\"^oms.*\"}",
           "legendFormat": "{{queue}}"
         }
       ]
@@ -181,7 +181,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (queue_name) (rate(events_failed_total{queue_name=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"}[5m]))",
+          "expr": "sum by (queue_name) (rate(events_failed_total{queue_name!~\"^oms.*\"}[5m]))",
           "legendFormat": "{{queue_name}}"
         }
       ]
@@ -194,7 +194,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(events_failed_total{queue_name=~\"(mil-symbol-trigger|oms-guide-trigger|oms-wfs-trigger|resolution-trigger)\"})",
+          "expr": "sum(events_failed_total{queue_name!~\"^oms.*\"})",
           "legendFormat": "Total"
         }
       ]
