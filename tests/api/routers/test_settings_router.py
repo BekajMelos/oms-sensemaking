@@ -9,7 +9,7 @@ from oms_sensemaking.api.routers.settings import (
     create_or_update_setting,
     create_or_update_settings,
 )
-from oms_sensemaking.api.schemas.settings import SettingsUpdate, SettingUpdate
+from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
 from oms_sensemaking.models.settings import Setting
 
 
@@ -137,7 +137,7 @@ class TestCreateOrUpdateSettings:
 
     def test_create_multiple_new_settings(self):
         """Test creating multiple new settings."""
-        settings_update = SettingsUpdate(
+        settings_update = SettingsBatchUpdate(
             settings={
                 "setting1": 10,
                 "setting2": 42,
@@ -177,7 +177,7 @@ class TestCreateOrUpdateSettings:
 
     def test_update_multiple_existing_settings(self):
         """Test updating multiple existing settings."""
-        settings_update = SettingsUpdate(
+        settings_update = SettingsBatchUpdate(
             settings={
                 "existing1": 200,
                 "existing2": 300,
@@ -232,7 +232,7 @@ class TestCreateOrUpdateSettings:
 
     def test_mixed_create_and_update(self):
         """Test batch update with mix of new and existing settings."""
-        settings_update = SettingsUpdate(
+        settings_update = SettingsBatchUpdate(
             settings={
                 "existing_setting": 500,
                 "new_setting": 600,
@@ -287,7 +287,7 @@ class TestCreateOrUpdateSettings:
 
     def test_empty_batch_update(self):
         """Test batch update with empty settings dict."""
-        settings_update = SettingsUpdate(settings={})
+        settings_update = SettingsBatchUpdate(settings={})
 
         mock_db = MagicMock()
 
@@ -309,12 +309,14 @@ class TestCreateOrUpdateSettings:
             assert isinstance(response, Response)
             assert response.status_code == 201
 
-            # Verify no database operations except commit
+            # Verify no database operations when nothing to update
+            mock_db_session.assert_not_called()
             mock_db.query.assert_not_called()
             mock_db.add.assert_not_called()
-            mock_db.commit.assert_called_once()
+            mock_db.commit.assert_not_called()
 
-            mock_reload.assert_called_once()
+            # Verify reload was not called when nothing changed
+            mock_reload.assert_not_called()
 
 
 class TestSettingsEndpointsIntegration:
