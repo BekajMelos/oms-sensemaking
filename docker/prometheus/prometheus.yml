@@ -16,3 +16,9 @@ scrape_configs:
     scheme: https
     tls_config:
       insecure_skip_verify: true
+
+  - job_name: 'rabbitmq'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'rabbitmq:15692' ]
+    metrics_path: '/metrics'
