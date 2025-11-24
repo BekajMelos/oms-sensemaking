@@ -35,7 +35,17 @@ class ResolutionSensemakerController(SensemakerController):
 
 
 class ResolutionQueueFilter(EventFilter):
-    def passes_filter(self, audit_event: AuditLogEvent):
+    def __init__(self) -> None:
+        with open(SETTINGS.duplicate_object_iris_file_path) as fd:
+            duplicate_object_iris = json.load(fd)
+            self.attribute_iris = sum(duplicate_object_iris.values(), [])
+
+    def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
-        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types
+
+        return (
+            audit_log_event.objectType in handled_object_types
+            and audit_log_event.action in handled_event_types
+            and audit_log_event.headers.iri not in self.attribute_iris
+        )
