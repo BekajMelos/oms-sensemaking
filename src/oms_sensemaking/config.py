@@ -433,6 +433,7 @@ class Settings(BaseSettings):
     n_tracks: int = Field(5, description="Number of similar tracks to return")
 
     # RabbitMQ Settings
+    queue_worker_threads: int = Field(10, description="The amount of worker threads for a given queue's sync processes")
     rabbitmq_host: str = Field("rabbitmq", description="RabbitMQ host")
     rabbitmq_port: int = Field(5672, description="RabbitMQ port")
     rabbitmq_vhost: str = Field("/", description="RabbitMQ virtual host")

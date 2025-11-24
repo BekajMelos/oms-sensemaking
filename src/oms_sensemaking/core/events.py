@@ -219,9 +219,9 @@ class RabbitMQListener(BaseRabbitMQListener):
         self,
         name: str,
         queue_name: str,
+        workers: int,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
-        workers: int = 10,
     ):
         """Create a new instance of RabbitMQListener."""
         super().__init__(name, queue_name, handle_event, event_filter)
