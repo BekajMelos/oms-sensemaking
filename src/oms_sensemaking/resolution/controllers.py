@@ -47,5 +47,5 @@ class ResolutionQueueFilter(EventFilter):
         return (
             audit_log_event.objectType in handled_object_types
             and audit_log_event.action in handled_event_types
-            and audit_log_event.headers.iri not in self.attribute_iris
+            and audit_log_event.headers.iri in self.attribute_iris
         )
