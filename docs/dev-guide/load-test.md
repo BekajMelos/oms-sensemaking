@@ -61,6 +61,17 @@ This creates 20 batches of 2,500 with a 3-minute pause between each batch.
 
 ## Monitor the system
 
+### Grafana
+
+Open the [Sensemaking dashboard in Grafana](http://localhost:3001/d/oms-sensemaking/oms-sensemaking-dashboard) to view graphical panels of throughput and identify any failed events.
+
+Suggested panels to monitor:
+
+- Events Processed (per second)
+- Queue Length (Ready messages)
+- Queue Processing Latency (95th percentile)
+- Event Failures (per second)
+
 ### RabbitMQ
 
 Open the [RabbitMQ queue dashboard](http://localhost:15672/#/queues) to watch events accumulate and drain.
@@ -70,16 +81,6 @@ This is a good place to observe:
 - Incoming event spikes
 - Queue buildup
 - Active consumer throughput and health
-
-### Grafana
-
-Open the [Sensemaking dashboard in Grafana](http://localhost:3001/d/oms-sensemaking/oms-sensemaking-dashboard) to view graphical panels of throughput and identify any failed events.
-
-Suggested panels to monitor:
-
-- Queue Processing Rate
-- Events Processed Rate
-- Events Failed Rate
 
 ### Practical tips
 
