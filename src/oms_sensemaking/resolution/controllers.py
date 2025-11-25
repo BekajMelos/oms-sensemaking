@@ -2,6 +2,7 @@
 
 import json
 import logging
+from itertools import chain
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
 
@@ -36,9 +37,10 @@ class ResolutionSensemakerController(SensemakerController):
 
 class ResolutionQueueFilter(EventFilter):
     def __init__(self) -> None:
+        self.attribute_iris: list[str] = []
         with open(SETTINGS.duplicate_object_iris_file_path) as fd:
             duplicate_object_iris = json.load(fd)
-            self.attribute_iris = sum(duplicate_object_iris.values(), [])
+            self.attribute_iris = list(chain.from_iterable(duplicate_object_iris.values()))
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
