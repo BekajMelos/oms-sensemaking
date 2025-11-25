@@ -49,7 +49,7 @@ def test_get_schema():
         "description": "Schema representing a validated single setting.",
         "properties": {
             "field_name": {
-                "examples": ["max_retries", "session_timeout_seconds"],
+                "examples": ["oms_api_call_period_seconds", "maximum_oms_api_calls"],
                 "title": "Field Name",
                 "type": "string",
             },
