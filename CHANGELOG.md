@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated ATOMS dependency to Grimlock-INC-36
 
 ### Fixed
 

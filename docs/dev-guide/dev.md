@@ -28,15 +28,15 @@ Ask a teammate for supplemental references to:
 At a minimum, you will need to set the below variables. Others may rely on the default values set in the
 applicaton's configuraton.
 
-| Variable Name | Example | Description |
-|:--------------------|:--------------------------------------------------|:------------------------------------------------------|
-| `POSTGRES_PASSWORD` | `xxxxxxx` | The password for the PostgreSQL admmin user |
-| `OMSB_VERSION` | `Grimlock-INC-33` | The version of oms-bridge |
-| `OMSB_URL` | `https://localhost:8020/graphql` | URL for OMSB |
-| `CERT_PATH` | `./etc/pki/test10.pem` | Path to User PEM |
-| `KEY_PATH` | `./etc/pki/test10.key` | Path to User Key |
-| `ATOMS_CACERT_PATH` | `./etc/pki/trusted.crt` | Path to CA File used for your local dev containers |
-| `DOCKER_REGISTRY` | `hostname:5000` | Socket address of the remote docker registry |
+| Variable Name | Example                                          | Description |
+|:--------------------|:-------------------------------------------------|:------------------------------------------------------|
+| `POSTGRES_PASSWORD` | `xxxxxxx`                                        | The password for the PostgreSQL admmin user |
+| `OMSB_VERSION` | `Grimlock-INC-36`                                | The version of oms-bridge |
+| `OMSB_URL` | `https://localhost:8020/graphql`                 | URL for OMSB |
+| `CERT_PATH` | `./etc/pki/test10.pem`                           | Path to User PEM |
+| `KEY_PATH` | `./etc/pki/test10.key`                           | Path to User Key |
+| `ATOMS_CACERT_PATH` | `./etc/pki/trusted.crt`                          | Path to CA File used for your local dev containers |
+| `DOCKER_REGISTRY` | `hostname:5000`                                  | Socket address of the remote docker registry |
 | `PIP_INDEX` | `https://host:3000/api/packages/oms/pypi/simple` | URL for the private pip index |
 
 ## Common Workflows
