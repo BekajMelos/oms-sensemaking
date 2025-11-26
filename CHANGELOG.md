@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+## Unreleased - 2025-11-26
+
+### Changed
+- Updated ATOMS dependency to Grimlock-INC-36
+
 ## [0.17.2] - 2025-11-19
 
 ### Removed
