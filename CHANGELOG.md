@@ -8,15 +8,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
-
+- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 ### Fixed
 
 ### Removed
-
-## Unreleased - 2025-11-26
-
-### Changed
-- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 
 ## [0.17.2] - 2025-11-19
 
