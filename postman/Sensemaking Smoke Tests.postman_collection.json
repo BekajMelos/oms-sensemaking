@@ -802,7 +802,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-after-write race condition",
+											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
 											"wait(1500);",
 											"",
@@ -933,7 +933,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-after-write race condition",
+											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
 											"wait(1500);"
 										],
@@ -1018,7 +1018,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-after-write race condition",
+											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
 											"wait(1500)"
 										],
@@ -1235,7 +1235,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-after-write race condition",
+											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
 											"wait(1500)"
 										],
@@ -6410,7 +6410,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-after-write race condition",
+											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
 											"wait(1500);",
 											"",
