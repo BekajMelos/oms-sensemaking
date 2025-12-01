@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "3406a148-878f-42db-a8a5-1dacb216d5aa",
+		"_postman_id": "697ce977-18d8-43d7-9e5c-8c55ec0b5e88",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "41174150"
+		"_exporter_id": "33434330"
 	},
 	"item": [
 		{
@@ -802,6 +802,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500);",
+											"",
 											"// Set max retries",
 											"const maxRetries = 3;",
 											"",
@@ -817,7 +821,8 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
@@ -865,7 +870,8 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -919,7 +925,21 @@
 											"pm.collectionVariables.set(\"loiternodeId\", response.data.relationships.data[0].startNodeId);"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -998,10 +1018,13 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											""
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500)"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
@@ -1024,7 +1047,8 @@
 											"pm.collectionVariables.set(\"loitertrackobsId2\", response.data.observations.data[1].id);"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -1203,7 +1227,21 @@
 											"pm.collectionVariables.set(\"loiterattrId\", response.data.attributes.data[0].id);"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500)"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -6205,13 +6243,18 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500);",
+											"",
 											"// Set max retries",
 											"const maxRetries = 3;",
 											"",
@@ -6227,7 +6270,8 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -6358,13 +6402,18 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
+											"// Add small delay to avoid read-after-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500);",
+											"",
 											"// Set max retries",
 											"const maxRetries = 3;",
 											"",
@@ -6380,7 +6429,8 @@
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -9672,7 +9722,17 @@
 			"script": {
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
+					"// GLOBAL synchronous wait function to avoid race conditions",
+					"// Store the function as raw text",
+					"pm.globals.set(\"waitFn\", `",
+					"function wait(ms) {",
+					"    var end = Date.now() + ms;",
+					"    while (Date.now() < end) {}",
+					"}",
+					"`);",
+					"",
 					"var moment = require('moment');",
 					"",
 					"// Configure the current timestamp",
@@ -9682,33 +9742,33 @@
 					"let nodeId = pm.collectionVariables.get(\"nodeId\");",
 					"if (!pm.collectionVariables.get(\"nodeId\")) {",
 					"    pm.collectionVariables.set(\"nodeId\", null);",
-					"}else{",
-					"    if(!nodeId.startsWith(\"\\\"\")){",
+					"} else {",
+					"    if (!nodeId.startsWith(\"\\\"\")) {",
 					"        nodeId = \"\\\"\" + nodeId + \"\\\"\";",
 					"    }",
-					"    pm.collectionVariables.set(\"nodeId\",  nodeId);",
+					"    pm.collectionVariables.set(\"nodeId\", nodeId);",
 					"}",
 					"",
 					"// If the observation ID is not set, make it explicitly null, otherwise wrap with quotes",
 					"let observationId = pm.collectionVariables.get(\"observationId\");",
 					"if (!pm.collectionVariables.get(\"observationId\")) {",
 					"    pm.collectionVariables.set(\"observationId\", null);",
-					"}else{",
-					"    if(!observationId.startsWith(\"\\\"\")){",
+					"} else {",
+					"    if (!observationId.startsWith(\"\\\"\")) {",
 					"        observationId = \"\\\"\" + observationId + \"\\\"\";",
 					"    }",
-					"    pm.collectionVariables.set(\"observationId\",  observationId);",
+					"    pm.collectionVariables.set(\"observationId\", observationId);",
 					"}",
 					"",
 					"// If the activity ID is not set, make it explicitly null, otherwise wrap with quotes",
 					"let activityId = pm.collectionVariables.get(\"activityId\");",
 					"if (!pm.collectionVariables.get(\"activityId\")) {",
 					"    pm.collectionVariables.set(\"activityId\", null);",
-					"}else{",
-					"    if(!activityId.startsWith(\"\\\"\")){",
+					"} else {",
+					"    if (!activityId.startsWith(\"\\\"\")) {",
 					"        activityId = \"\\\"\" + activityId + \"\\\"\";",
 					"    }",
-					"    pm.collectionVariables.set(\"activityId\",  activityId);",
+					"    pm.collectionVariables.set(\"activityId\", activityId);",
 					"}"
 				]
 			}
@@ -9718,6 +9778,7 @@
 			"script": {
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
 					""
 				]
@@ -9731,8 +9792,7 @@
 		},
 		{
 			"key": "userPreferencesId",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "providerId",
@@ -9748,8 +9808,7 @@
 		},
 		{
 			"key": "nodeId",
-			"value": null,
-			"type": "string"
+			"value": null
 		},
 		{
 			"key": "nodeIds",
@@ -9761,18 +9820,15 @@
 		},
 		{
 			"key": "commentId",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "objectListId",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "alertId",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "resolvedObjectConfigId",
@@ -9784,328 +9840,263 @@
 		},
 		{
 			"key": "pastDate",
-			"value": "2023-01-01T00:00:00+00:00",
-			"type": "string"
+			"value": "2023-01-01T00:00:00+00:00"
 		},
 		{
 			"key": "futureDate",
-			"value": "2028-01-01T00:00:00+00:00",
-			"type": "string"
+			"value": "2028-01-01T00:00:00+00:00"
 		},
 		{
 			"key": "auditFragment",
-			"value": "fragment auditFragment on AuditLog {\n    id\n    action\n    timestamp\n    userId\n    objectType\n    objectId\n    objectVersion\n    complexAuditId\n}",
-			"type": "string"
+			"value": "fragment auditFragment on AuditLog {\n    id\n    action\n    timestamp\n    userId\n    objectType\n    objectId\n    objectVersion\n    complexAuditId\n}"
 		},
 		{
 			"key": "auditFullFragment",
-			"value": "{{auditFragment}}\nfragment auditFullFragment on AuditLog {\n    ...auditFragment\n    complexAudit {\n        id\n        action\n        timestamp\n        userId\n        auditJson\n        relatedAudits {\n            ... auditFragment\n        }\n    }\n    object {\n        __typename\n        id\n        version\n        acm\n        ... on Originator {\n            tags\n            originatorName: name\n            description\n        }\n        ... on Provider {\n            tags\n            providerName: name\n            description\n            defaultAcm\n            originatorId\n            url                \n        }\n        ... on Source {\n            tags\n            sourceName: name\n            sourceDescription: description\n            dateOfReport\n            dateOfInformation\n            primaryTopic\n            secondaryTopic\n            providerId\n            identifier\n            uri\n            dataAcm\n        }\n        ... on Attribute {\n            tags\n            attributeIri\n            attributeName\n            attributeValue\n            confidence\n            sourceId\n            nodeId\n            geo {\n                geoJson\n                mgrs\n            }\n            authorityValue\n            authoritySetBy\n            authoritySetAtTime\n            valueStart\n            valueEnd\n        }\n        ... on Node {\n            tags\n            guideId\n            nodeName: name\n            tier\n            classIri\n            className\n            ifcCodes\n            allegiance\n            allegianceAor\n            currentAor\n            isNso\n        }\n        ... on Relationship {\n            tags\n            relationshipName: name\n            startNodeId\n            endNodeId\n            confidence\n            objectPropertyIri\n            objectPropertyName\n        }\n        ... on ResolvedObjectConfig {\n            tags\n            classIri\n            defaultNameFormat\n        }\n        ... on NodeIdentifier {\n            nodeIdentifierProviderId: providerId\n            resolvedObjectConfigId\n            idAttributeIris\n            nameAttributeIris\n            nameFormat\n        }\n        ... on Comment {\n            targetObjectId\n            targetObjectType\n            owner\n            timeOfComment\n            contentType\n            contentBody\n        }\n        ... on Alert {\n            createdBy\n            createdAt\n            expiresAt\n            severity\n            summary\n            details\n        }\n        ... on ObjectList {\n            tags\n            isPublic\n            owners\n            groups\n            objectListName: name\n            objectListDescription: description\n            nodeIds\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{auditFragment}}\nfragment auditFullFragment on AuditLog {\n    ...auditFragment\n    complexAudit {\n        id\n        action\n        timestamp\n        userId\n        auditJson\n        relatedAudits {\n            ... auditFragment\n        }\n    }\n    object {\n        __typename\n        id\n        version\n        acm\n        ... on Originator {\n            tags\n            originatorName: name\n            description\n        }\n        ... on Provider {\n            tags\n            providerName: name\n            description\n            defaultAcm\n            originatorId\n            url                \n        }\n        ... on Source {\n            tags\n            sourceName: name\n            sourceDescription: description\n            dateOfReport\n            dateOfInformation\n            primaryTopic\n            secondaryTopic\n            providerId\n            identifier\n            uri\n            dataAcm\n        }\n        ... on Attribute {\n            tags\n            attributeIri\n            attributeName\n            attributeValue\n            confidence\n            sourceId\n            nodeId\n            geo {\n                geoJson\n                mgrs\n            }\n            authorityValue\n            authoritySetBy\n            authoritySetAtTime\n            valueStart\n            valueEnd\n        }\n        ... on Node {\n            tags\n            guideId\n            nodeName: name\n            tier\n            classIri\n            className\n            ifcCodes\n            allegiance\n            allegianceAor\n            currentAor\n            isNso\n        }\n        ... on Relationship {\n            tags\n            relationshipName: name\n            startNodeId\n            endNodeId\n            confidence\n            objectPropertyIri\n            objectPropertyName\n        }\n        ... on ResolvedObjectConfig {\n            tags\n            classIri\n            defaultNameFormat\n        }\n        ... on NodeIdentifier {\n            nodeIdentifierProviderId: providerId\n            resolvedObjectConfigId\n            idAttributeIris\n            nameAttributeIris\n            nameFormat\n        }\n        ... on Comment {\n            targetObjectId\n            targetObjectType\n            owner\n            timeOfComment\n            contentType\n            contentBody\n        }\n        ... on Alert {\n            createdBy\n            createdAt\n            expiresAt\n            severity\n            summary\n            details\n        }\n        ... on ObjectList {\n            tags\n            isPublic\n            owners\n            groups\n            objectListName: name\n            objectListDescription: description\n            nodeIds\n        }\n    }\n}"
 		},
 		{
 			"key": "auditPageFragment",
-			"value": "{{auditFragment}}\nfragment auditPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFragment\n    }\n}",
-			"type": "string"
+			"value": "{{auditFragment}}\nfragment auditPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFragment\n    }\n}"
 		},
 		{
 			"key": "auditFullPageFragment",
-			"value": "{{auditFullFragment}}\nfragment auditFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{auditFullFragment}}\nfragment auditFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... auditFullFragment\n    }\n}"
 		},
 		{
 			"key": "originatorFragment",
-			"value": "fragment originatorFragment on Originator {\n    id\n    version\n    acm\n    tags\n    name\n    description\n}",
-			"type": "string"
+			"value": "fragment originatorFragment on Originator {\n    id\n    version\n    acm\n    tags\n    name\n    description\n}"
 		},
 		{
 			"key": "originatorFullFragment",
-			"value": "{{originatorFragment}}\n{{auditFragment}}\n{{providerFragment}}\nfragment originatorFullFragment on Originator {\n    ... originatorFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... originatorFragment\n        }\n    }\n    providers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{originatorFragment}}\n{{auditFragment}}\n{{providerFragment}}\nfragment originatorFullFragment on Originator {\n    ... originatorFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... originatorFragment\n        }\n    }\n    providers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "originatorPageFragment",
-			"value": "{{originatorFragment}}\nfragment originatorPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFragment\n    }\n}",
-			"type": "string"
+			"value": "{{originatorFragment}}\nfragment originatorPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFragment\n    }\n}"
 		},
 		{
 			"key": "originatorFullPageFragment",
-			"value": "{{originatorFullFragment}}\nfragment originatorFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{originatorFullFragment}}\nfragment originatorFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... originatorFullFragment\n    }\n}"
 		},
 		{
 			"key": "providerFragment",
-			"value": "fragment providerFragment on Provider {\n    id\n    version\n    acm\n    tags\n    name\n    url\n    description\n    originatorId\n    defaultAcm\n}",
-			"type": "string"
+			"value": "fragment providerFragment on Provider {\n    id\n    version\n    acm\n    tags\n    name\n    url\n    description\n    originatorId\n    defaultAcm\n}"
 		},
 		{
 			"key": "providerFullFragment",
-			"value": "{{providerFragment}}\n{{auditFragment}}\n{{originatorFragment}}\n{{sourceFragment}}\n{{nodeIdentifierFragment}}\nfragment providerFullFragment on Provider {\n    ... providerFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n    originator {\n        ... originatorFragment\n    }\n    sources (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    nodeIdentifiers (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"id\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{providerFragment}}\n{{auditFragment}}\n{{originatorFragment}}\n{{sourceFragment}}\n{{nodeIdentifierFragment}}\nfragment providerFullFragment on Provider {\n    ... providerFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... providerFragment\n        }\n    }\n    originator {\n        ... originatorFragment\n    }\n    sources (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    nodeIdentifiers (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"id\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "providerPageFragment",
-			"value": "{{providerFragment}}\nfragment providerPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFragment\n    }\n}",
-			"type": "string"
+			"value": "{{providerFragment}}\nfragment providerPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFragment\n    }\n}"
 		},
 		{
 			"key": "providerFullPageFragment",
-			"value": "{{providerFullFragment}}\nfragment providerFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{providerFullFragment}}\nfragment providerFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... providerFullFragment\n    }\n}"
 		},
 		{
 			"key": "sourceFragment",
-			"value": "fragment sourceFragment on Source {\n    id\n    version\n    name\n    description\n    dateOfReport\n    dateOfInformation\n    primaryTopic\n    secondaryTopic\n    tags\n    providerId\n    acm\n    identifier\n    uri\n    dataAcm\n}",
-			"type": "string"
+			"value": "fragment sourceFragment on Source {\n    id\n    version\n    name\n    description\n    dateOfReport\n    dateOfInformation\n    primaryTopic\n    secondaryTopic\n    tags\n    providerId\n    acm\n    identifier\n    uri\n    dataAcm\n}"
 		},
 		{
 			"key": "sourceFullFragment",
-			"value": "{{sourceFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\nfragment sourceFullFragment on Source {\n    ... sourceFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    attributes(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
-			"type": "string"
+			"value": "{{sourceFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\nfragment sourceFullFragment on Source {\n    ... sourceFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... sourceFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    attributes(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships(\n        filter:{\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}"
 		},
 		{
 			"key": "sourcePageFragment",
-			"value": "{{sourceFragment}}\nfragment sourcePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFragment\n    }\n}",
-			"type": "string"
+			"value": "{{sourceFragment}}\nfragment sourcePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFragment\n    }\n}"
 		},
 		{
 			"key": "sourceFullPageFragment",
-			"value": "{{sourceFullFragment}}\nfragment sourceFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{sourceFullFragment}}\nfragment sourceFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... sourceFullFragment\n    }\n}"
 		},
 		{
 			"key": "attributeFragment",
-			"value": "fragment attributeFragment on Attribute {\n    id\n    version\n    acm\n    tags\n    labels\n    attributeIri\n    attributeName\n    attributeValue\n    attributeDisplayValue\n    attributeNormalizedValue\n    attributeType\n    geometry\n    confidence\n    sourceType\n    sourceId\n    nodeId\n    observationId\n    activityId\n    authorityValue\n    authoritySetBy\n    authoritySetAtTime\n    valueStart\n    valueEnd\n    isMutable\n    isReviewed\n    reviewedBy\n    reviewedAt\n}",
-			"type": "string"
+			"value": "fragment attributeFragment on Attribute {\n    id\n    version\n    acm\n    tags\n    labels\n    attributeIri\n    attributeName\n    attributeValue\n    attributeDisplayValue\n    attributeNormalizedValue\n    attributeType\n    geometry\n    confidence\n    sourceType\n    sourceId\n    nodeId\n    observationId\n    activityId\n    authorityValue\n    authoritySetBy\n    authoritySetAtTime\n    valueStart\n    valueEnd\n    isMutable\n    isReviewed\n    reviewedBy\n    reviewedAt\n}"
 		},
 		{
 			"key": "attributeFullFragment",
-			"value": "{{attributeFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{ontologyAttributeFragment}}\n{{commentFragment}}\nfragment attributeFullFragment on Attribute {\n    ... attributeFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    observation {\n        ... observationFragment\n    }\n    activity {\n        ... activityFragment\n    }\n    ontologyAttribute {\n        ... ontologyAttributeFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
-			"type": "string"
+			"value": "{{attributeFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{ontologyAttributeFragment}}\n{{commentFragment}}\nfragment attributeFullFragment on Attribute {\n    ... attributeFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    observation {\n        ... observationFragment\n    }\n    activity {\n        ... activityFragment\n    }\n    ontologyAttribute {\n        ... ontologyAttributeFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}"
 		},
 		{
 			"key": "attributePageFragment",
-			"value": "{{attributeFragment}}\nfragment attributePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFragment\n    }\n}",
-			"type": "string"
+			"value": "{{attributeFragment}}\nfragment attributePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFragment\n    }\n}"
 		},
 		{
 			"key": "attributeFullPageFragment",
-			"value": "{{attributeFullFragment}}\nfragment attributeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{attributeFullFragment}}\nfragment attributeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... attributeFullFragment\n    }\n}"
 		},
 		{
 			"key": "observationFragment",
-			"value": "fragment observationFragment on Observation {\n    id\n    version\n    acm\n    tags\n    classIri\n    className\n    displayValue\n    confidence\n    sourceId\n    nodeId\n    geometry\n    startTime\n    endTime\n}",
-			"type": "string"
+			"value": "fragment observationFragment on Observation {\n    id\n    version\n    acm\n    tags\n    classIri\n    className\n    displayValue\n    confidence\n    sourceId\n    nodeId\n    geometry\n    startTime\n    endTime\n}"
 		},
 		{
 			"key": "observationFullFragment",
-			"value": "{{observationFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{activityFragment}}\n{{attributeFragment}}\n{{ontologyClassFragment}}\nfragment observationFullFragment on Observation {\n    ... observationFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    activities(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
-			"type": "string"
+			"value": "{{observationFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{activityFragment}}\n{{attributeFragment}}\n{{ontologyClassFragment}}\nfragment observationFullFragment on Observation {\n    ... observationFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    activities(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}"
 		},
 		{
 			"key": "observationPageFragment",
-			"value": "{{observationFragment}}\nfragment observationPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFragment\n    }\n}",
-			"type": "string"
+			"value": "{{observationFragment}}\nfragment observationPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFragment\n    }\n}"
 		},
 		{
 			"key": "observationFullPageFragment",
-			"value": "{{observationFullFragment}}\nfragment observationFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{observationFullFragment}}\nfragment observationFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... observationFullFragment\n    }\n}"
 		},
 		{
 			"key": "activityFragment",
-			"value": "fragment activityFragment on Activity {\n    id\n    version\n    acm\n    classIri\n    className\n    tags\n    name\n    description\n    state\n    sourceId\n    nodeId\n    observationIds\n    startTime\n    endTime\n}",
-			"type": "string"
+			"value": "fragment activityFragment on Activity {\n    id\n    version\n    acm\n    classIri\n    className\n    tags\n    name\n    description\n    state\n    sourceId\n    nodeId\n    observationIds\n    startTime\n    endTime\n}"
 		},
 		{
 			"key": "activityFullFragment",
-			"value": "{{activityFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{commentFragment}}\n{{ontologyClassFragment}}\nfragment activityFullFragment on Activity {\n    ... activityFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"startTime\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n}",
-			"type": "string"
+			"value": "{{activityFragment}}\n{{auditFragment}}\n{{sourceFragment}}\n{{nodeFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{commentFragment}}\n{{ontologyClassFragment}}\nfragment activityFullFragment on Activity {\n    ... activityFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    source {\n        ... sourceFragment\n    }\n    node {\n        ... nodeFragment\n    }\n    attributes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeValue\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"startTime\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n}"
 		},
 		{
 			"key": "activityPageFragment",
-			"value": "{{activityFragment}}\nfragment activityPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFragment\n    }\n}",
-			"type": "string"
+			"value": "{{activityFragment}}\nfragment activityPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFragment\n    }\n}"
 		},
 		{
 			"key": "activityFullPageFragment",
-			"value": "{{activityFullFragment}}\nfragment activityFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{activityFullFragment}}\nfragment activityFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... activityFullFragment\n    }\n}"
 		},
 		{
 			"key": "nodeFragment",
-			"value": "fragment nodeFragment on Node {\n    id\n    version\n    acm\n    tags\n    nodeLabels: labels\n    guideId\n    name\n    tier\n    classIri\n    className\n    symbolIdCode\n    ifcCodes\n    allegiance\n    allegianceAor\n    currentAor\n    isNso\n}",
-			"type": "string"
+			"value": "fragment nodeFragment on Node {\n    id\n    version\n    acm\n    tags\n    nodeLabels: labels\n    guideId\n    name\n    tier\n    classIri\n    className\n    symbolIdCode\n    ifcCodes\n    allegiance\n    allegianceAor\n    currentAor\n    isNso\n}"
 		},
 		{
 			"key": "nodeFullFragment",
-			"value": "{{nodeFragment}}\n{{auditFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\n{{objectListFragment}}\n{{ontologyClassFragment}}\n{{commentFragment}}\n{{nodeChangeFragment}}\nfragment nodeFullFragment on Node {\n    ... nodeFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    attributes (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    objectLists (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    permissions\n    latestKnownLocation {\n        ... observationFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{nodeFragment}}\n{{auditFragment}}\n{{attributeFragment}}\n{{observationFragment}}\n{{activityFragment}}\n{{relationshipFragment}}\n{{objectListFragment}}\n{{ontologyClassFragment}}\n{{commentFragment}}\n{{nodeChangeFragment}}\nfragment nodeFullFragment on Node {\n    ... nodeFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    attributes (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"attributeIri\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... attributeFragment\n        }\n    }\n    observations (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"displayValue\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... observationFragment\n        }\n    }\n    activities (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... activityFragment\n        }\n    }\n    relationships (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    objectLists (\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    permissions\n    latestKnownLocation {\n        ... observationFragment\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "nodePageFragment",
-			"value": "{{nodeFragment}}\nfragment nodePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFragment\n    }\n}",
-			"type": "string"
+			"value": "{{nodeFragment}}\nfragment nodePageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFragment\n    }\n}"
 		},
 		{
 			"key": "nodeFullPageFragment",
-			"value": "{{nodeFullFragment}}\nfragment nodeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{nodeFullFragment}}\nfragment nodeFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeFullFragment\n    }\n}"
 		},
 		{
 			"key": "nodeChangeFragment",
-			"value": "fragment nodeChangeFragment on NodeChange {\n    id\n    timestamp\n    userId\n    nodeId\n    nodeVersion\n    changeType\n    relatedObjectType\n    relatedObjectId\n    relatedObjectVersion\n    relatedObjectChangeAction\n}",
-			"type": "string"
+			"value": "fragment nodeChangeFragment on NodeChange {\n    id\n    timestamp\n    userId\n    nodeId\n    nodeVersion\n    changeType\n    relatedObjectType\n    relatedObjectId\n    relatedObjectVersion\n    relatedObjectChangeAction\n}"
 		},
 		{
 			"key": "relationshipFragment",
-			"value": "fragment relationshipFragment on Relationship {\n    id\n    version\n    acm\n    tags\n    labels\n    name\n    startNodeId\n    endNodeId\n    sourceId\n    confidence\n    objectPropertyIri\n    objectPropertyName\n}",
-			"type": "string"
+			"value": "fragment relationshipFragment on Relationship {\n    id\n    version\n    acm\n    tags\n    labels\n    name\n    startNodeId\n    endNodeId\n    sourceId\n    confidence\n    objectPropertyIri\n    objectPropertyName\n}"
 		},
 		{
 			"key": "relationshipFullFragment",
-			"value": "{{relationshipFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{ontologyRelationshipFragment}}\n{{commentFragment}}\nfragment relationshipFullFragment on Relationship {\n    ... relationshipFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    startNode {\n        ... nodeFragment\n    }\n    endNode {\n        ... nodeFragment\n    }\n    ontologyRelationship {\n        ... ontologyRelationshipFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}",
-			"type": "string"
+			"value": "{{relationshipFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{ontologyRelationshipFragment}}\n{{commentFragment}}\nfragment relationshipFullFragment on Relationship {\n    ... relationshipFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... relationshipFragment\n        }\n    }\n    startNode {\n        ... nodeFragment\n    }\n    endNode {\n        ... nodeFragment\n    }\n    ontologyRelationship {\n        ... ontologyRelationshipFragment\n    }\n    comments(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"timeOfComment\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    lastVerified {\n        timestamp\n        userId\n    }\n}"
 		},
 		{
 			"key": "relationshipPageFragment",
-			"value": "{{relationshipFragment}}\nfragment relationshipPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFragment\n    }\n}",
-			"type": "string"
+			"value": "{{relationshipFragment}}\nfragment relationshipPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFragment\n    }\n}"
 		},
 		{
 			"key": "relationshipFullPageFragment",
-			"value": "{{relationshipFullFragment}}\nfragment relationshipFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{relationshipFullFragment}}\nfragment relationshipFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... relationshipFullFragment\n    }\n}"
 		},
 		{
 			"key": "commentFragment",
-			"value": "fragment commentFragment on Comment {\n    id\n    version\n    acm\n    tags\n    targetObjectId\n    targetObjectType\n    owner\n    timeOfComment\n    contentType\n    contentBody\n}",
-			"type": "string"
+			"value": "fragment commentFragment on Comment {\n    id\n    version\n    acm\n    tags\n    targetObjectId\n    targetObjectType\n    owner\n    timeOfComment\n    contentType\n    contentBody\n}"
 		},
 		{
 			"key": "commentFullFragment",
-			"value": "{{commentFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{relationshipFragment}}\n{{attributeFragment}}\nfragment commentFullFragment on Comment {\n    ... commentFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    targetObject {\n        ... on Node {\n            ... nodeFragment\n        }\n        ... on Relationship {\n            ... relationshipFragment\n        }\n        ... on Attribute {\n            ... attributeFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{commentFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{relationshipFragment}}\n{{attributeFragment}}\nfragment commentFullFragment on Comment {\n    ... commentFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... commentFragment\n        }\n    }\n    targetObject {\n        ... on Node {\n            ... nodeFragment\n        }\n        ... on Relationship {\n            ... relationshipFragment\n        }\n        ... on Attribute {\n            ... attributeFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "commentPageFragment",
-			"value": "{{commentFragment}}\nfragment commentPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFragment\n    }\n}",
-			"type": "string"
+			"value": "{{commentFragment}}\nfragment commentPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFragment\n    }\n}"
 		},
 		{
 			"key": "commentFullPageFragment",
-			"value": "{{commentFullFragment}}\nfragment commentFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{commentFullFragment}}\nfragment commentFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... commentFullFragment\n    }\n}"
 		},
 		{
 			"key": "objectListFragment",
-			"value": "fragment objectListFragment on ObjectList {\n    id\n    version\n    acm\n    tags\n    isPublic\n    owners\n    groups\n    name\n    description\n    nodeIds\n}",
-			"type": "string"
+			"value": "fragment objectListFragment on ObjectList {\n    id\n    version\n    acm\n    tags\n    isPublic\n    owners\n    groups\n    name\n    description\n    nodeIds\n}"
 		},
 		{
 			"key": "objectListFullFragment",
-			"value": "{{objectListFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{nodeChangeFragment}}\nfragment objectListFullFragment on ObjectList {\n    ... objectListFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    permissions\n    nodes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{objectListFragment}}\n{{auditFragment}}\n{{nodeFragment}}\n{{nodeChangeFragment}}\nfragment objectListFullFragment on ObjectList {\n    ... objectListFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... objectListFragment\n        }\n    }\n    permissions\n    nodes(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"name\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeFragment\n        }\n    }\n    nodeChanges(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeChangeFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "objectListPageFragment",
-			"value": "{{objectListFragment}}\nfragment objectListPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFragment\n    }\n}",
-			"type": "string"
+			"value": "{{objectListFragment}}\nfragment objectListPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFragment\n    }\n}"
 		},
 		{
 			"key": "objectListFullPageFragment",
-			"value": "{{objectListFullFragment}}\nfragment objectListFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{objectListFullFragment}}\nfragment objectListFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectListFullFragment\n    }\n}"
 		},
 		{
 			"key": "alertFragment",
-			"value": "fragment alertFragment on Alert {\n    id\n    version\n    acm\n    tags\n    createdBy\n    createdAt\n    expiresAt\n    severity\n    summary\n    details\n}",
-			"type": "string"
+			"value": "fragment alertFragment on Alert {\n    id\n    version\n    acm\n    tags\n    createdBy\n    createdAt\n    expiresAt\n    severity\n    summary\n    details\n}"
 		},
 		{
 			"key": "alertFullFragment",
-			"value": "{{alertFragment}}\n{{auditFragment}}\nfragment alertFullFragment on Alert {\n    ... alertFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... alertFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{alertFragment}}\n{{auditFragment}}\nfragment alertFullFragment on Alert {\n    ... alertFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... alertFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "alertPageFragment",
-			"value": "{{alertFragment}}\nfragment alertPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFragment\n    }\n}",
-			"type": "string"
+			"value": "{{alertFragment}}\nfragment alertPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFragment\n    }\n}"
 		},
 		{
 			"key": "alertFullPageFragment",
-			"value": "{{alertFullFragment}}\nfragment alertFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{alertFullFragment}}\nfragment alertFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... alertFullFragment\n    }\n}"
 		},
 		{
 			"key": "resolvedObjectConfigFragment",
-			"value": "fragment resolvedObjectConfigFragment on ResolvedObjectConfig {\n    id\n    version\n    acm\n    tags\n    classIri\n    defaultNameFormat\n}",
-			"type": "string"
+			"value": "fragment resolvedObjectConfigFragment on ResolvedObjectConfig {\n    id\n    version\n    acm\n    tags\n    classIri\n    defaultNameFormat\n}"
 		},
 		{
 			"key": "resolvedObjectConfigFullFragment",
-			"value": "{{resolvedObjectConfigFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{nodeIdentifierFragment}}\nfragment resolvedObjectConfigFullFragment on ResolvedObjectConfig {\n    ... resolvedObjectConfigFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... resolvedObjectConfigFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    nodeIdentifiers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"providerId\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{resolvedObjectConfigFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{nodeIdentifierFragment}}\nfragment resolvedObjectConfigFullFragment on ResolvedObjectConfig {\n    ... resolvedObjectConfigFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... resolvedObjectConfigFragment\n        }\n    }\n    ontologyClass {\n        ... ontologyClassFragment\n    }\n    nodeIdentifiers(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"providerId\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "resolvedObjectConfigPageFragment",
-			"value": "{{resolvedObjectConfigFragment}}\nfragment resolvedObjectConfigPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFragment\n    }\n}",
-			"type": "string"
+			"value": "{{resolvedObjectConfigFragment}}\nfragment resolvedObjectConfigPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFragment\n    }\n}"
 		},
 		{
 			"key": "resolvedObjectConfigFullPageFragment",
-			"value": "{{resolvedObjectConfigFullFragment}}\nfragment resolvedObjectConfigFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{resolvedObjectConfigFullFragment}}\nfragment resolvedObjectConfigFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... resolvedObjectConfigFullFragment\n    }\n}"
 		},
 		{
 			"key": "nodeIdentifierFragment",
-			"value": "fragment nodeIdentifierFragment on NodeIdentifier {\n    id\n    version\n    acm\n    tags\n    providerId\n    resolvedObjectConfigId\n    idAttributeIris\n    nameAttributeIris\n    nameFormat\n}",
-			"type": "string"
+			"value": "fragment nodeIdentifierFragment on NodeIdentifier {\n    id\n    version\n    acm\n    tags\n    providerId\n    resolvedObjectConfigId\n    idAttributeIris\n    nameAttributeIris\n    nameFormat\n}"
 		},
 		{
 			"key": "nodeIdentifierFullFragment",
-			"value": "{{nodeIdentifierFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{resolvedObjectConfigFragment}}\nfragment nodeIdentifierFullFragment on NodeIdentifier {\n    ... nodeIdentifierFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    resolvedObjectConfig {\n        ... resolvedObjectConfigFragment\n    }\n}",
-			"type": "string"
+			"value": "{{nodeIdentifierFragment}}\n{{auditFragment}}\n{{providerFragment}}\n{{resolvedObjectConfigFragment}}\nfragment nodeIdentifierFullFragment on NodeIdentifier {\n    ... nodeIdentifierFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... nodeIdentifierFragment\n        }\n    }\n    provider {\n        ... providerFragment\n    }\n    resolvedObjectConfig {\n        ... resolvedObjectConfigFragment\n    }\n}"
 		},
 		{
 			"key": "nodeIdentifierPageFragment",
-			"value": "{{nodeIdentifierFragment}}\nfragment nodeIdentifierPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFragment\n    }\n}",
-			"type": "string"
+			"value": "{{nodeIdentifierFragment}}\nfragment nodeIdentifierPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFragment\n    }\n}"
 		},
 		{
 			"key": "nodeIdentifierFullPageFragment",
-			"value": "{{nodeIdentifierFullFragment}}\nfragment nodeIdentifierFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{nodeIdentifierFullFragment}}\nfragment nodeIdentifierFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... nodeIdentifierFullFragment\n    }\n}"
 		},
 		{
 			"key": "ontologyAttributeFragment",
-			"value": "fragment ontologyAttributeFragment on OntologyAttribute {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    dataType\n}",
-			"type": "string"
+			"value": "fragment ontologyAttributeFragment on OntologyAttribute {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    dataType\n}"
 		},
 		{
 			"key": "ontologyClassFragment",
-			"value": "fragment ontologyClassFragment on OntologyClass {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    superclassIris\n    defaultIfc\n    defaultSymbolIdCode\n}",
-			"type": "string"
+			"value": "fragment ontologyClassFragment on OntologyClass {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n    superclassIris\n    defaultIfc\n    defaultSymbolIdCode\n}"
 		},
 		{
 			"key": "ontologyRelationshipFragment",
-			"value": "fragment ontologyRelationshipFragment on OntologyRelationship {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n}",
-			"type": "string"
+			"value": "fragment ontologyRelationshipFragment on OntologyRelationship {\n    iri\n    source\n    version\n    citation\n    classification\n    name\n    description\n    aliases\n}"
 		},
 		{
 			"key": "userPreferencesFragment",
-			"value": "fragment userPreferencesFragment on UserPreferences {\n    id\n    version\n    acm\n    userId\n    appId\n    preferences\n    tags\n}",
-			"type": "string"
+			"value": "fragment userPreferencesFragment on UserPreferences {\n    id\n    version\n    acm\n    userId\n    appId\n    preferences\n    tags\n}"
 		},
 		{
 			"key": "userPreferencesFullFragment",
-			"value": "{{userPreferencesFragment}}\n{{auditFragment}}\nfragment userPreferencesFullFragment on UserPreferences {\n    ... userPreferencesFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... userPreferencesFragment\n        }\n    }\n}",
-			"type": "string"
+			"value": "{{userPreferencesFragment}}\n{{auditFragment}}\nfragment userPreferencesFullFragment on UserPreferences {\n    ... userPreferencesFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... userPreferencesFragment\n        }\n    }\n}"
 		},
 		{
 			"key": "userPreferencesPageFragment",
-			"value": "{{userPreferencesFragment}}\nfragment userPreferencesPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... userPreferencesFragment\n    }\n}",
-			"type": "string"
+			"value": "{{userPreferencesFragment}}\nfragment userPreferencesPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... userPreferencesFragment\n    }\n}"
 		},
 		{
 			"key": "noQuoteNodeId",
@@ -10121,23 +10112,19 @@
 		},
 		{
 			"key": "baseballCardFragment",
-			"value": "fragment baseballCardFragment on BaseballCard {\n    id\n    version\n    acm\n    tags\n    name\n    classIri\n    className\n    attributeIris\n    relationshipIris\n}",
-			"type": "string"
+			"value": "fragment baseballCardFragment on BaseballCard {\n    id\n    version\n    acm\n    tags\n    name\n    classIri\n    className\n    attributeIris\n    relationshipIris\n}"
 		},
 		{
 			"key": "baseballCardFullFragment",
-			"value": "{{baseballCardFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{ontologyAttributeFragment}}\n{{ontologyRelationshipFragment}}\nfragment baseballCardFullFragment on BaseballCard {\n    ... baseballCardFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... baseballCardFragment\n        }\n    }\n    ontologyClass {\n        ...ontologyClassFragment\n    }\n    ontologyAttributes {\n        ...ontologyAttributeFragment\n    }\n    ontologyRelationships {\n        ...ontologyRelationshipFragment\n    }\n}",
-			"type": "string"
+			"value": "{{baseballCardFragment}}\n{{auditFragment}}\n{{ontologyClassFragment}}\n{{ontologyAttributeFragment}}\n{{ontologyRelationshipFragment}}\nfragment baseballCardFullFragment on BaseballCard {\n    ... baseballCardFragment\n    audits(\n        filter: {\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... baseballCardFragment\n        }\n    }\n    ontologyClass {\n        ...ontologyClassFragment\n    }\n    ontologyAttributes {\n        ...ontologyAttributeFragment\n    }\n    ontologyRelationships {\n        ...ontologyRelationshipFragment\n    }\n}"
 		},
 		{
 			"key": "baseballCardPageFragment",
-			"value": "{{baseballCardFragment}}\nfragment baseballCardPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFragment\n    }\n}",
-			"type": "string"
+			"value": "{{baseballCardFragment}}\nfragment baseballCardPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFragment\n    }\n}"
 		},
 		{
 			"key": "baseballCardFullPageFragment",
-			"value": "{{baseballCardFullFragment}}\nfragment baseballCardFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFullFragment\n    }\n}",
-			"type": "string"
+			"value": "{{baseballCardFullFragment}}\nfragment baseballCardFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... baseballCardFullFragment\n    }\n}"
 		},
 		{
 			"key": "baseballCardId",
