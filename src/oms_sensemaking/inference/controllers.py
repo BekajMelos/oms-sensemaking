@@ -7,8 +7,10 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, EventFilter
-from oms_sensemaking.inference.rules.rule_context import RuleContext
-from oms_sensemaking.inference.sensemakers.inference import InferenceSensemaker
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.domain.area_of_interest.aoi_extractor import RealAOIDataExtractor
+from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
+from oms_sensemaking.inference.rules.incursions import Incursion
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -23,28 +25,30 @@ class InferenceSensemakerController(SensemakerController):
     def start(self) -> None:
         # check to make sure its starting
         """Start the controller."""
+        crud_tool = OmsCrudTool()
         if SETTINGS.generate_inferences:
-            self.register("inference", InferenceSensemaker())
+            self.register("incursion", Incursion(RealAOIDataExtractor(), crud_tool))
+            self.register("garrison", InOrOutOfGarrison(crud_tool))
 
         super().start()
 
-    def get_oms_data(self, event: AuditLogEvent) -> RuleContext | None:
-        """
-        Given an OMS data object's ID, get the object we'll pass to the sensemaker
+    # def get_oms_data(self, event: AuditLogEvent) -> RuleContext | None:
+    #     """
+    #     Given an OMS data object's ID, get the object we'll pass to the sensemaker
 
-        :param event: the object whose creation, update, or deletion we need to process
-        :return: None if no object exists, or the OMS Object if it's a type we handle
-        """
+    #     :param event: the object whose creation, update, or deletion we need to process
+    #     :return: None if no object exists, or the OMS Object if it's a type we handle
+    #     """
 
-        oms_obj = super().get_oms_data(event)
+    #     oms_obj = super().get_oms_data(event)
 
-        if event.objectType == ObjectType.ATTRIBUTE:
-            return RuleContext(attribute=oms_obj) if oms_obj else None
-        if event.objectType == ObjectType.OBSERVATION:
-            return RuleContext(observation=oms_obj) if oms_obj else None
-        if event.objectType == ObjectType.ACTIVITY:
-            return RuleContext(activity=oms_obj) if oms_obj else None
-        return None
+    #     if event.objectType == ObjectType.ATTRIBUTE:
+    #         return RuleContext(attribute=oms_obj) if oms_obj else None
+    #     if event.objectType == ObjectType.OBSERVATION:
+    #         return RuleContext(observation=oms_obj) if oms_obj else None
+    #     if event.objectType == ObjectType.ACTIVITY:
+    #         return RuleContext(activity=oms_obj) if oms_obj else None
+    #     return None
 
 
 class InferenceQueueFilter(EventFilter):

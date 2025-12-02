@@ -1,6 +1,7 @@
 """Incursion Rule"""
 
 import logging
+from dataclasses import dataclass, field
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -22,54 +23,69 @@ from oms_sdk.generated.generated_graphql_client import (
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
-from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.domain.area_of_interest.base import AOI, AOIExtractor
-from oms_sensemaking.inference.rules.base_rule import BaseRule
-from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Incursion(BaseRule):
+@dataclass
+class Incur(FindingBase):
+    """Represents a loiter event."""
+
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_INCURSION)
+    acm: dict
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    def __repr__(self):
+        return self.__str__()
+
+    def get_acm(self) -> dict:
+        return self.acm
+
+
+class Incursion(Sensemaker):
     """
     Determine if an Observation indicates an incursion for the node it's associated
     with and make the appropriate attribute/activity updates
     """
 
-    def __init__(self, name: str, aoi_extractor: AOIExtractor):
-        self.name = name
+    def __init__(self, aoi_extractor: AOIExtractor, crud_tool):
+        super().__init__()
+        self.oms_crud_tool = crud_tool
+        self.name = self.__class__.__name__
         self.version = (1, 0, 0)
         self.features = aoi_extractor.get_areas_of_interest()
 
-    def evaluate(self, rule_context: RuleContext) -> bool:
+    def evaluate(self, rule_context: ObservationObservation) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if (
-            not rule_context.observation
-            or rule_context.observation.startTime is None
-            or rule_context.observation.endTime is None
-        ):
+        if not rule_context or rule_context.startTime is None or rule_context.endTime is None:
             return False
 
-        obs = rule_context.observation
+        obs = rule_context
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def action(self, rule_context: RuleContext):
+    def process_data(self, rule_context: ObservationObservation):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-
-        obs = rule_context.observation
+        obs = rule_context
+        if not self.evaluate(obs):
+            return
         # Fetch node that observation points to
-        incurring_object = oms_crud_tool.get_node(obs.nodeId)
+        incurring_object = self.oms_crud_tool.get_node(obs.nodeId)
         obs_geo: BaseGeometry = shape(obs.geometry)
 
         # Check if observation occurred in an area of interest
@@ -85,7 +101,7 @@ class Incursion(BaseRule):
             LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
-            existing_incursion_activities = oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
+            existing_incursion_activities = self.oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
             matching_incursion_attribute_found = False
 
             LOGGER.debug("%d Existing Incursion Activities", len(existing_incursion_activities))
@@ -101,7 +117,7 @@ class Incursion(BaseRule):
                     activityIds=[existing_incursion_activity.id],
                     tags=SETTINGS.incursion_tags,
                 )
-                attr_response = oms_crud_tool.get_attributes(attribute_query)
+                attr_response = self.oms_crud_tool.get_attributes(attribute_query)
                 existing_incursion_attributes = attr_response.data
 
                 LOGGER.debug("%d Existing Incursion Attributes", len(existing_incursion_attributes))
@@ -118,6 +134,7 @@ class Incursion(BaseRule):
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, feature_of_interest)
+        # return Incur(acm=obs.acm)
 
     def _check_existing_incursion_and_update(
         self,
@@ -175,7 +192,7 @@ class Incursion(BaseRule):
             observationIds=UpdateUuidList(add=[observation.id]),
             labels=activity_labels,
         )
-        oms_crud_tool.update_activity(updated_activity_input)
+        self.oms_crud_tool.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         attribute_labels = existing_incursion_attribute.labels
@@ -188,7 +205,7 @@ class Incursion(BaseRule):
             valueEnd=inc_attr_geo_timeframe.end_time.isoformat(),
             labels=attribute_labels,
         )
-        oms_crud_tool.update_attribute(updated_attribute_input)
+        self.oms_crud_tool.update_attribute(updated_attribute_input)
 
     def _handle_new_incursion(
         self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: AOI
@@ -219,7 +236,7 @@ class Incursion(BaseRule):
             startTime=observation.startTime,
             endTime=observation.endTime,
         )
-        new_incursion_activity = oms_crud_tool.create_activity(incursion_activity)
+        new_incursion_activity = self.oms_crud_tool.create_activity(incursion_activity)
 
         # Create new incursion attribute pointing to activity describing incurring object
         incursion_attribute = CreateAttributeInput(
@@ -241,19 +258,19 @@ class Incursion(BaseRule):
             valueStart=observation.startTime,
             valueEnd=observation.endTime,
         )
-        oms_crud_tool.create_attribute(incursion_attribute)
+        self.oms_crud_tool.create_attribute(incursion_attribute)
 
-    def has_action_already_ran(self, rule_context: RuleContext):
+    def has_action_already_ran(self, rule_context: ObservationObservation):
         """
         Determine if an incursion activity pointing to the inputted observation has already been created
         """
 
-        obs = rule_context.observation
+        obs = rule_context
         if not obs:
             return False
 
         activity_query = ActivityQuery(observationIds=[obs.id])
-        activities = oms_crud_tool.get_activities(activity_query).data
+        activities = self.oms_crud_tool.get_activities(activity_query).data
 
         return any(activity.name == "Incursion" for activity in activities)
 

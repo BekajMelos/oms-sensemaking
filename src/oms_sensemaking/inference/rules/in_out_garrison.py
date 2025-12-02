@@ -1,5 +1,7 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+from dataclasses import dataclass, field
+
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
@@ -14,55 +16,71 @@ from oms_sdk.generated.generated_graphql_client import (
     UuidQueryByList,
 )
 
-from oms_sensemaking.clients.instances import oms_crud_tool
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
+from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
-from oms_sensemaking.inference.rules.base_rule import BaseRule
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataRetrieverFactory
-from oms_sensemaking.inference.rules.rule_context import RuleContext
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+from oms_sensemaking.models.sensemaking import FindingType
 
 
-class InOrOutOfGarrison(BaseRule):
+@dataclass
+class Garr(FindingBase):
+    """Represents a loiter event."""
+
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_OUT_OF_GARRISON)
+    acm: dict
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    def __repr__(self):
+        return self.__str__()
+
+    def get_acm(self) -> dict:
+        return self.acm
+
+
+class InOrOutOfGarrison(Sensemaker):
     """
     Detect when a node is in or out of garrison and create/update the appropriate activity
     """
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, crud_tool):
+        super().__init__()
+        self.oms_crud_tool = crud_tool
+        self.name = self.__class__.__name__
         self.version = (1, 0, 0)
-        self._data_retriever = GetGarrisonDataRetrieverFactory(oms_crud_tool).get_garrison_data_retriever(
+        self._data_retriever = GetGarrisonDataRetrieverFactory(self.oms_crud_tool).get_garrison_data_retriever(
             SETTINGS.garrison_data_retriever
         )
 
-    def evaluate(self, rule_context: RuleContext) -> bool:
+    def evaluate(self, rule_context: ObservationObservation) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
 
-        if (
-            not rule_context.observation
-            or rule_context.observation.startTime is None
-            or rule_context.observation.endTime is None
-        ):
+        if not rule_context or rule_context.startTime is None or rule_context.endTime is None:
             return False
 
-        obs = rule_context.observation
+        obs = rule_context
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def action(self, rule_context: RuleContext):
+    def process_data(self, rule_context: ObservationObservation):
         """
         Determine if an observation indicates that a node is in or out of garrison
 
         :param rule_context: Rule context object containing the observation in question
         """
 
-        obs = rule_context.observation
-        node_object = oms_crud_tool.get_node(obs.nodeId)
+        obs = rule_context
+        if not self.evaluate(obs):
+            return
+        node_object = self.oms_crud_tool.get_node(obs.nodeId)
         object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
         if not object_and_garrison_coords:
             return None
@@ -74,6 +92,7 @@ class InOrOutOfGarrison(BaseRule):
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
         self._create_or_update_garrison_activity(obs, node_object, in_garrison_check, garrison_buffer_geojson)
+        # return Garr(acm=obs.acm)
 
     def _create_or_update_garrison_activity(
         self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
@@ -93,7 +112,7 @@ class InOrOutOfGarrison(BaseRule):
             states=[activity_state],
             nodeIds=UuidQueryByList(in_=[obs.nodeId]),
         )
-        activity_response = oms_crud_tool.get_activities(activity_query)
+        activity_response = self.oms_crud_tool.get_activities(activity_query)
         existing_activities = activity_response.data
 
         matching_activity_found = False
@@ -135,7 +154,7 @@ class InOrOutOfGarrison(BaseRule):
             observationIds=UpdateUuidList(add=[observation.id]),
             nodeId=observation.nodeId,
         )
-        oms_crud_tool.update_activity(updated_activity_input)
+        self.oms_crud_tool.update_activity(updated_activity_input)
 
     def _handle_new_activity(self, observation: ObservationObservation, activity_name: str, activity_state: str):
         """
@@ -159,19 +178,19 @@ class InOrOutOfGarrison(BaseRule):
             startTime=observation.startTime,
             endTime=observation.endTime,
         )
-        oms_crud_tool.create_activity(garrison_activity)
+        self.oms_crud_tool.create_activity(garrison_activity)
 
-    def has_action_already_ran(self, rule_context: RuleContext):
+    def has_action_already_ran(self, rule_context: ObservationObservation):
         """
         Determine if an in/out of garrison activity pointing to the inputted observation has already been created
         """
 
-        obs = rule_context.observation
+        obs = rule_context
         if not obs:
             return False
 
         activity_query = ActivityQuery(observationIds=[obs.id])
-        activities = oms_crud_tool.get_activities(activity_query).data
+        activities = self.oms_crud_tool.get_activities(activity_query).data
 
         return any(
             act.name == SETTINGS.inference_in_garrison_activity_name
