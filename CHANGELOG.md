@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Filter out track type observations for the Inference processes
 
 ### Changed
+- Updated ATOMS dependency to Grimlock-INC-36
 
 ### Fixed
 
