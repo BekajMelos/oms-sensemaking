@@ -50,9 +50,14 @@ class InferenceSensemakerController(SensemakerController):
 class InferenceQueueFilter(EventFilter):
     """Class for filtering AuditLogEvents being processed by the Inference Sensemaker"""
 
+    def __init__(self) -> None:
+        self.ignored_track_obs_iri = SETTINGS.track_iri
+
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         """Filter AuditLogEvents being processed by the Inference Sensemaker"""
         handled_event_types = [Action.CREATE, Action.RESTORE]
         return (
-            audit_log_event.objectType == ObjectType.OBSERVATION.value and audit_log_event.action in handled_event_types
+            audit_log_event.objectType == ObjectType.OBSERVATION.value
+            and audit_log_event.action in handled_event_types
+            and audit_log_event.headers.iri != self.ignored_track_obs_iri
         )
