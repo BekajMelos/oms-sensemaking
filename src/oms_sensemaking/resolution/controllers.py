@@ -28,30 +28,32 @@ class ResolutionSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.enable_resolution_sensemaker:
-            with open(SETTINGS.duplicate_object_iris_file_path) as fd:
-                duplicate_object_iris = json.load(fd)
-            self.register("resolution", ResolutionSensemaker(duplicate_object_iris, self.oms_crud_tool))
-
+            duplicate_object_iris = ResolutionJsonLoader()
+            self.register("resolution", ResolutionSensemaker(duplicate_object_iris.iris, self.oms_crud_tool))
         super().start()
 
 
 class ResolutionQueueFilter(EventFilter):
     def __init__(self) -> None:
-        duplicate_object_iris = ResolutionJsonHandler.read_json(SETTINGS.duplicate_object_iris_file_path)
-        self.attribute_iris: list[str] = list(chain.from_iterable(duplicate_object_iris.values()))
+        self.duplicate_object_iris = ResolutionJsonLoader()
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        attribute_iris = list(chain.from_iterable(self.duplicate_object_iris.iris.values()))
         return (
             audit_log_event.objectType in handled_object_types
             and audit_log_event.action in handled_event_types
-            and audit_log_event.headers.iri in self.attribute_iris
+            and audit_log_event.headers.iri in attribute_iris
         )
 
 
-class ResolutionJsonHandler:
-    @staticmethod
-    def read_json(json_file_path: str):
-        with open(json_file_path) as json_data:
-            return json.load(json_data)
+class ResolutionJsonLoader:
+    def __init__(self, file_path=SETTINGS.duplicate_object_iris_file_path) -> None:
+        self.file_path = file_path
+        self.iris = self._load_from_json()
+
+    def _load_from_json(self):
+        with open(self.file_path) as file:
+            data = json.load(file)
+        return data
