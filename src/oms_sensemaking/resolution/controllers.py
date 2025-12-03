@@ -28,19 +28,19 @@ class ResolutionSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.enable_resolution_sensemaker:
-            duplicate_object_iris = ResolutionJsonLoader()
+            duplicate_object_iris = ResolutionIriProvider()
             self.register("resolution", ResolutionSensemaker(duplicate_object_iris.iris, self.oms_crud_tool))
         super().start()
 
 
 class ResolutionQueueFilter(EventFilter):
     def __init__(self) -> None:
-        self.duplicate_object_iris = ResolutionJsonLoader()
+        self.duplicate_object_iris = ResolutionIriProvider()
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
-        attribute_iris = list(chain.from_iterable(self.duplicate_object_iris.iris.values()))
+        attribute_iris = self.duplicate_object_iris.attribute_iris
         return (
             audit_log_event.objectType in handled_object_types
             and audit_log_event.action in handled_event_types
@@ -48,10 +48,11 @@ class ResolutionQueueFilter(EventFilter):
         )
 
 
-class ResolutionJsonLoader:
+class ResolutionIriProvider:
     def __init__(self, file_path=SETTINGS.duplicate_object_iris_file_path) -> None:
         self.file_path = file_path
         self.iris = self._load_from_json()
+        self.attribute_iris = list(chain.from_iterable(self.iris.values()))
 
     def _load_from_json(self):
         with open(self.file_path) as file:
