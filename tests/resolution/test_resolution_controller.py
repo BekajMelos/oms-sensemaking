@@ -117,14 +117,10 @@ def test_passes_filter_returns_true_for_handled_event():
     event = AuditLogEvent(
         userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
     )
-    event2 = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.RESTORE.value
-    )
     # These are attributes from duplicate_object_iris.json
     event.headers = AuditLogHeaders("https://foundry.ai.mil/ontology/meks/p-0000000050")
-    event2.headers = AuditLogHeaders("https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber")
 
-    assert filt.passes_filter(event) is True
+    assert filt.passes_filter(event)
 
 
 @pytest.mark.parametrize(
