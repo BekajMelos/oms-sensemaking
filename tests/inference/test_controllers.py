@@ -20,7 +20,12 @@ from oms_sensemaking.inference.rules.rule_context import RuleContext
 @pytest.fixture
 def mock_inference_controller():
     controller = InferenceSensemakerController(
-        RabbitMQListener("InferenceRMQListener", SETTINGS.rmq_res_queue_name, event_filter=InferenceQueueFilter()),
+        RabbitMQListener(
+            "InferenceRMQListener",
+            SETTINGS.rmq_res_queue_name,
+            SETTINGS.queue_worker_threads,
+            event_filter=InferenceQueueFilter(),
+        ),
         RethrowErrorLogger(ErrorLogger()),
     )
     return controller

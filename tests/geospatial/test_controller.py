@@ -27,7 +27,12 @@ from oms_sensemaking.models.geo import Point, Track
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
     controller = GeospatialSensemakerController(
-        RabbitMQListener("geo test queue listener", SETTINGS.rmq_geo_queue_name, event_filter=GeoQueueFilter()),
+        RabbitMQListener(
+            "geo test queue listener",
+            SETTINGS.rmq_geo_queue_name,
+            SETTINGS.queue_worker_threads,
+            event_filter=GeoQueueFilter(),
+        ),
         RethrowErrorLogger(ErrorLogger()),
         OntologyClient(mock_oms_client),
     )

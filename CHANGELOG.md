@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Filter out track type observations for the Inference processes
 
 ### Fixed
+- RabbitMQ queues are now thread safe so they no longer lose connection
 
 ### Removed
 
