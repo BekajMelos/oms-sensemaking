@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
+- Transitioning `_fetch_garrison_coords()` function away from exceptions
 
 ### Fixed
 
