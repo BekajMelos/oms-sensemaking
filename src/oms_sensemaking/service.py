@@ -8,7 +8,7 @@ import sys
 from contextlib import asynccontextmanager
 from logging.config import dictConfig
 from pathlib import Path
-from threading import Lock, Thread
+from threading import Thread
 
 from fastapi import FastAPI, status
 from fastapi.middleware.gzip import GZipMiddleware
@@ -25,9 +25,6 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
-from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.rate_limiter import update_rate_limiter_for_class
-from oms_sensemaking.core.settings import Settings as DBSettings
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
@@ -40,10 +37,6 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 
 # Initialize observability system
 initialize_observability()
-
-# Global storage for controller references and threads for live reload
-_controller_threads: list[tuple[SensemakerController, Thread]] = []
-_controller_lock = Lock()
 
 
 def get_controllers() -> list[SensemakerController]:
@@ -108,25 +101,20 @@ async def lifespan(application: FastAPI):
     except Exception as ex:
         LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
 
-    # Initialize controllers and store references globally
-    with _controller_lock:
-        _controller_threads.clear()
-        for ctrlr in get_controllers():
-            controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
-            controller_thread.start()
-            _controller_threads.append((ctrlr, controller_thread))
+    controllers: list[tuple[SensemakerController, Thread]] = []
+    for ctrlr in get_controllers():
+        controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
+        controller_thread.start()
+        controllers.append((ctrlr, controller_thread))
 
     yield
 
-    # Shutdown all controllers
-    with _controller_lock:
-        for controller, controller_thread in _controller_threads:
-            LOGGER.warning("Handling the keyboard interrupt.")
-            controller.stop()
+    for controller, controller_thread in controllers:
+        LOGGER.warning("Handling the keyboard interrupt.")
+        controller.stop()
 
-            if controller_thread.is_alive():
-                controller_thread.join()
-        _controller_threads.clear()
+        if controller_thread.is_alive():
+            controller_thread.join()
 
 
 def handle_exception(_, ex: Exception):
@@ -224,87 +212,6 @@ def initialize_settings() -> None:
 
 
 initialize_settings()
-
-
-def reload_settings_from_db() -> None:
-    """Reload settings from database and update the global SETTINGS object."""
-    try:
-        db_settings_obj = DBSettings()
-        db_settings_dict = db_settings_obj.get_settings()
-
-        if not db_settings_dict:
-            LOGGER.info("No settings found in database, keeping current config/env defaults")
-            return
-
-        updated_count = 0
-        rate_limit_updated = False
-        for field_name, field_value in db_settings_dict.items():
-            if "__" in field_name:
-                continue
-
-            if field_name not in SETTINGS.model_fields:
-                continue
-
-            old_value = getattr(SETTINGS, field_name, None)
-
-            # Only update if value changed
-            if old_value != field_value:
-                object.__setattr__(SETTINGS, field_name, field_value)
-                updated_count += 1
-                LOGGER.info("Reloaded setting from DB: %s (old: %s -> new: %s)", field_name, old_value, field_value)
-
-                if field_name in ("maximum_oms_api_calls", "oms_api_call_period_seconds"):
-                    rate_limit_updated = True
-
-        if updated_count > 0:
-            LOGGER.info("Successfully reloaded %d setting(s) from database", updated_count)
-
-            if rate_limit_updated:
-                update_rate_limiter_for_class(
-                    OmsCrudTool,
-                    SETTINGS.maximum_oms_api_calls,
-                    SETTINGS.oms_api_call_period_seconds,
-                )
-        else:
-            LOGGER.info("Reloaded %d setting(s) from database, no changes needed", len(db_settings_dict))
-
-    except Exception as e:
-        LOGGER.warning("Failed to reload settings from database: %s", e, exc_info=True)
-
-
-def restart_controllers() -> None:
-    """Stop all running controllers and restart them with updated settings."""
-    LOGGER.info("Restarting sensemaker controllers...")
-
-    with _controller_lock:
-        # Stop all existing controllers
-        for controller, controller_thread in _controller_threads:
-            LOGGER.info("Stopping controller %s", controller.__class__.__name__)
-            controller.stop()
-            if controller_thread.is_alive():
-                controller_thread.join(timeout=5.0)
-                if controller_thread.is_alive():
-                    LOGGER.warning("Controller thread %s did not stop in time", controller.__class__.__name__)
-
-        # Clear the list
-        _controller_threads.clear()
-
-        # Create new controllers with updated settings
-        for ctrlr in get_controllers():
-            new_thread = Thread(target=run_controller, args=(ctrlr,))
-            new_thread.start()
-            _controller_threads.append((ctrlr, new_thread))
-            LOGGER.info("Started controller %s", ctrlr.__class__.__name__)
-
-    LOGGER.info("All controllers restarted successfully")
-
-
-def reload_settings_and_restart_controllers() -> None:
-    """Reload settings from database and restart all controllers."""
-    LOGGER.info("Reloading settings and restarting controllers...")
-    reload_settings_from_db()
-    restart_controllers()
-    LOGGER.info("Settings reload and controller restart complete")
 
 
 app: FastAPI = create_app(SETTINGS)

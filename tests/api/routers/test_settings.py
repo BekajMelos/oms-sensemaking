@@ -31,9 +31,6 @@ class TestCreateOrUpdateSetting:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -55,9 +52,6 @@ class TestCreateOrUpdateSetting:
             assert added_setting.field_name == "test_setting"
             assert added_setting.field_value == 42
 
-            # Verify reload was called
-            mock_reload.assert_called_once()
-
     def test_update_existing_setting(self):
         """Test updating an existing setting."""
         setting_update = SettingUpdate(field_name="existing_setting", field_value=100)
@@ -74,9 +68,6 @@ class TestCreateOrUpdateSetting:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -95,9 +86,6 @@ class TestCreateOrUpdateSetting:
             # Verify no new setting was added
             mock_db.add.assert_not_called()
 
-            # Verify reload was called
-            mock_reload.assert_called_once()
-
     def test_create_setting_with_complex_value(self):
         """Test creating a setting with an integer value."""
         setting_update = SettingUpdate(field_name="complex_setting", field_value=999)
@@ -113,9 +101,6 @@ class TestCreateOrUpdateSetting:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -128,8 +113,6 @@ class TestCreateOrUpdateSetting:
             # Verify the value was stored
             added_setting = mock_db.add.call_args[0][0]
             assert added_setting.field_value == 999
-
-            mock_reload.assert_called_once()
 
 
 class TestCreateOrUpdateSettings:
@@ -156,9 +139,6 @@ class TestCreateOrUpdateSettings:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -171,9 +151,6 @@ class TestCreateOrUpdateSettings:
             # Verify three settings were added
             assert mock_db.add.call_count == 3
             mock_db.commit.assert_called_once()
-
-            # Verify reload was called
-            mock_reload.assert_called_once()
 
     def test_update_multiple_existing_settings(self):
         """Test updating multiple existing settings."""
@@ -208,9 +185,6 @@ class TestCreateOrUpdateSettings:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -227,8 +201,6 @@ class TestCreateOrUpdateSettings:
             # Verify no new settings were added
             mock_db.add.assert_not_called()
             mock_db.commit.assert_called_once()
-
-            mock_reload.assert_called_once()
 
     def test_mixed_create_and_update(self):
         """Test batch update with mix of new and existing settings."""
@@ -261,9 +233,6 @@ class TestCreateOrUpdateSettings:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -283,7 +252,6 @@ class TestCreateOrUpdateSettings:
             assert added_setting.field_value == 600
 
             mock_db.commit.assert_called_once()
-            mock_reload.assert_called_once()
 
     def test_empty_batch_update(self):
         """Test batch update with empty settings dict."""
@@ -297,9 +265,6 @@ class TestCreateOrUpdateSettings:
                 "oms_sensemaking.api.routers.settings.check_user_dn_in_whitelist",
                 return_value="test_user",
             ),
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             mock_db_session.return_value.__enter__.return_value = mock_db
             mock_db_session.return_value.__exit__.return_value = None
@@ -315,9 +280,6 @@ class TestCreateOrUpdateSettings:
             mock_db.add.assert_not_called()
             mock_db.commit.assert_not_called()
 
-            # Verify reload was not called when nothing changed
-            mock_reload.assert_not_called()
-
 
 class TestSettingsEndpointsIntegration:
     """Integration tests for settings endpoints using TestClient."""
@@ -332,9 +294,6 @@ class TestSettingsEndpointsIntegration:
 
         with (
             patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             # Override the dependency
             app.dependency_overrides[check_user_dn_in_whitelist] = mock_check_user_dn
@@ -354,7 +313,6 @@ class TestSettingsEndpointsIntegration:
                 )
 
                 assert response.status_code == 201
-                mock_reload.assert_called_once()
             finally:
                 # Clean up dependency override
                 app.dependency_overrides.clear()
@@ -369,9 +327,6 @@ class TestSettingsEndpointsIntegration:
 
         with (
             patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-            patch(
-                "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-            ) as mock_reload,
         ):
             # Override the dependency
             app.dependency_overrides[check_user_dn_in_whitelist] = mock_check_user_dn
@@ -392,7 +347,6 @@ class TestSettingsEndpointsIntegration:
 
                 assert response.status_code == 201
                 assert mock_db.add.call_count == 2
-                mock_reload.assert_called_once()
             finally:
                 # Clean up dependency override
                 app.dependency_overrides.clear()

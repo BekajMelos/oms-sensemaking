@@ -22,9 +22,6 @@ def test_create_setting(client: TestClient):
 
     with (
         patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-        patch(
-            "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-        ) as mock_reload,
     ):
         mock_db_session.return_value.__enter__.return_value = mock_db
 
@@ -33,7 +30,6 @@ def test_create_setting(client: TestClient):
         assert response.status_code == 201
         mock_db.add.assert_called_once()
         mock_db.commit.assert_called_once()
-        mock_reload.assert_called_once()
 
     app.dependency_overrides.clear()
 
@@ -55,9 +51,6 @@ def test_update_setting(client: TestClient):
 
     with (
         patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-        patch(
-            "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-        ) as mock_reload,
     ):
         mock_db_session.return_value.__enter__.return_value = mock_db
 
@@ -67,7 +60,6 @@ def test_update_setting(client: TestClient):
         assert existing.field_value == 5000
         mock_db.add.assert_not_called()
         mock_db.commit.assert_called_once()
-        mock_reload.assert_called_once()
 
     app.dependency_overrides.clear()
 
@@ -84,9 +76,6 @@ def test_batch_create_settings(client: TestClient):
 
     with (
         patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-        patch(
-            "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-        ) as mock_reload,
     ):
         mock_db_session.return_value.__enter__.return_value = mock_db
 
@@ -95,7 +84,6 @@ def test_batch_create_settings(client: TestClient):
         assert response.status_code == 201
         assert mock_db.add.call_count == 2
         mock_db.commit.assert_called_once()
-        mock_reload.assert_called_once()
 
     app.dependency_overrides.clear()
 
@@ -107,15 +95,11 @@ def test_batch_empty(client: TestClient):
 
     with (
         patch("oms_sensemaking.api.routers.settings.db_session") as mock_db_session,
-        patch(
-            "oms_sensemaking.api.routers.settings.service_module.reload_settings_and_restart_controllers"
-        ) as mock_reload,
     ):
         response = client.post("/settings/batch", json=payload)
 
         assert response.status_code == 201
 
         mock_db_session.assert_not_called()
-        mock_reload.assert_not_called()
 
     app.dependency_overrides.clear()

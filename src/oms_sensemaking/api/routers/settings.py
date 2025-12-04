@@ -5,7 +5,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
 
-import oms_sensemaking.service as service_module
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
 from oms_sensemaking.clients.instances import db_session
@@ -31,9 +30,6 @@ def create_or_update_setting(
             db.add(new_setting)
         db.commit()
 
-    # Trigger live reload
-    service_module.reload_settings_and_restart_controllers()
-
     return Response(status_code=201)
 
 
@@ -57,8 +53,5 @@ def create_or_update_settings(
                 new_setting = Setting(field_name=field_name, field_value=field_value)
                 db.add(new_setting)
         db.commit()
-
-    # Trigger live reload
-    service_module.reload_settings_and_restart_controllers()
 
     return Response(status_code=201)
