@@ -10,6 +10,9 @@ from oms_sdk.generated.generated_async_graphql_client import (
 )
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.transport_stack import async_transport_stack
+
+transport_stack = async_transport_stack()
 
 
 class AsyncAtomsCrudTool:
@@ -25,6 +28,7 @@ class AsyncAtomsCrudTool:
             pkcs12_password=SETTINGS.pkcs12_password,
             ssl_cert_file_path=SETTINGS.atoms_cacert_path,
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
+            transport=transport_stack,
         )
 
     def create_node(self, node_input: CreateNodeInput):

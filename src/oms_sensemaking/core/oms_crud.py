@@ -69,8 +69,11 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.rate_limiter import rate_limiter
+from oms_sensemaking.core.transport_stack import sync_transport_stack
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+transport_stack = sync_transport_stack()
 
 
 @rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
@@ -89,6 +92,7 @@ class OmsCrudTool(BaseClient):
             pkcs12_password=SETTINGS.pkcs12_password,
             ssl_cert_file_path=SETTINGS.atoms_cacert_path,
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
+            transport=transport_stack,
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:
