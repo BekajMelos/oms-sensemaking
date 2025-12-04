@@ -6,6 +6,7 @@ import socket
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from threading import Event, Thread
 from time import sleep, time
@@ -218,11 +219,13 @@ class RabbitMQListener(BaseRabbitMQListener):
         self,
         name: str,
         queue_name: str,
+        workers: int,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
         """Create a new instance of RabbitMQListener."""
         super().__init__(name, queue_name, handle_event, event_filter)
+        self.pool = ThreadPoolExecutor(max_workers=workers)
 
     def callback(
         self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes
@@ -230,7 +233,18 @@ class RabbitMQListener(BaseRabbitMQListener):
         if self.stopped.is_set():
             LOGGER.debug("Shutting down %s", self._name)
             return
+        try:
+            self.pool.submit(self._process_message, ch, method, properties, body)
+        except Exception:
+            LOGGER.exception("%s Failed to submit worker task", self._name)
+            try:
+                self._connection.add_callback_threadsafe(
+                    lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+                )
+            except Exception:
+                LOGGER.exception("%s Failed to schedule nack after submission failure", self._name)
 
+    def _process_message(self, ch, method, properties, body):
         object_id = None
         start_time = time()  # Record when we start processing
 
@@ -248,12 +262,12 @@ class RabbitMQListener(BaseRabbitMQListener):
                     audit_log.objectType,
                     self._queue_name,
                 )
-                ch.basic_ack(delivery_tag=method.delivery_tag)
+                self._connection.add_callback_threadsafe(lambda: ch.basic_ack(delivery_tag=method.delivery_tag))
                 return
 
             if self.handle_event and self.handle_event(audit_log):
                 LOGGER.info("Acknowledging processed object %s from %s", audit_log.objectId, self._queue_name)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
+                self._connection.add_callback_threadsafe(lambda: ch.basic_ack(delivery_tag=method.delivery_tag))
 
                 # Record successful processing metrics
                 record_processing_success(self._queue_name, start_time)
@@ -262,7 +276,9 @@ class RabbitMQListener(BaseRabbitMQListener):
                 LOGGER.warning(
                     "%s Audit log event (Object ID: %s) was not processed successfully.", self._name, object_id
                 )
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+                self._connection.add_callback_threadsafe(
+                    lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+                )
 
                 # Record failed processing metrics
                 record_processing_failure(self._queue_name, start_time)
@@ -271,7 +287,9 @@ class RabbitMQListener(BaseRabbitMQListener):
             LOGGER.error(
                 "%s Error processing message (Object ID: %s): %s", self._name, object_id, traceback.format_exc()
             )
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+            self._connection.add_callback_threadsafe(
+                lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+            )
 
             # Record failed processing metrics
             record_processing_failure(self._queue_name, start_time)
@@ -307,15 +325,33 @@ class RabbitMQListener(BaseRabbitMQListener):
                 LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
                 sleep(SETTINGS.rmq_read_wait_seconds)
             finally:
-                self._disconnect()
+                if not self.stopped.is_set():
+                    try:
+                        self._disconnect()
+                    except Exception:
+                        LOGGER.exception("_disconnect() failed in finally")
 
                 if not self.stopped.is_set():
                     sleep(SETTINGS.rmq_read_wait_seconds)
 
     def stop(self) -> None:
         """Stop consuming events and close the connection."""
-        super().stop()
-        self._disconnect()
+        self.stopped.set()
+        self.pool.shutdown(wait=True)
+
+        try:
+            if self._connection and self._connection.is_open and self._channel and self._channel.is_open:
+                self._connection.add_callback_threadsafe(lambda: self._channel.stop_consuming())
+        except Exception:
+            LOGGER.exception("%s Failed to schedule channel.stop_consuming", self._name)
+        try:
+            super().stop()
+        except Exception:
+            LOGGER.exception("%s Error joining consumer thread in stop()", self._name)
+        try:
+            self._disconnect()
+        except Exception:
+            LOGGER.exception("%s Error during final disconnect()", self._name)
 
 
 class CronEventEmitter(AuditLogEventConsumer):
