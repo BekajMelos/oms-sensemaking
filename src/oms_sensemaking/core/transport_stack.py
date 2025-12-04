@@ -3,13 +3,19 @@ from oms_sdk.client_request_time_transport import AsyncClientRequestTimeTranspor
 from oms_sdk.profiled_transport import ProfiledAsyncHTTPTransport, ProfiledHTTPTransport
 
 
-def sync_transport_stack() -> BaseTransport:
-    profiled_transport = ProfiledHTTPTransport()
-    stack = ClientRequestTimeTransport(transport=profiled_transport)
-    return stack
+def sync_transport_stack() -> type[BaseTransport]:
+    class SyncStackTransport(ClientRequestTimeTransport):
+        def __init__(self, *args, **kwargs):
+            profiled_transport = ProfiledHTTPTransport(*args, **kwargs)
+            super().__init__(transport=profiled_transport)
+
+    return SyncStackTransport
 
 
-async def async_transport_stack() -> AsyncBaseTransport:
-    profiled_transport = ProfiledAsyncHTTPTransport()
-    stack = AsyncClientRequestTimeTransport(transport=profiled_transport)
-    return await stack
+def async_transport_stack() -> type[AsyncBaseTransport]:
+    class AsyncStackTransport(AsyncClientRequestTimeTransport):
+        def __init__(self, *args, **kwargs):
+            profiled_transport = ProfiledAsyncHTTPTransport(*args, **kwargs)
+            super().__init__(transport=profiled_transport)
+
+    return AsyncStackTransport
