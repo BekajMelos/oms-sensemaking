@@ -25,7 +25,12 @@ from src.oms_sensemaking.core.event_model import AuditLogHeaders
 @pytest.fixture
 def mock_res_controller():
     controller = ResolutionSensemakerController(
-        RabbitMQListener("ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter()),
+        RabbitMQListener(
+            "ResolutionRMQListener",
+            SETTINGS.rmq_res_queue_name,
+            SETTINGS.queue_worker_threads,
+            event_filter=ResolutionQueueFilter(),
+        ),
         RethrowErrorLogger(ErrorLogger()),
     )
     return controller

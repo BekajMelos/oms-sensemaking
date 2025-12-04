@@ -51,6 +51,7 @@ def get_controllers() -> list[SensemakerController]:
             RabbitMQListener(
                 "GeoRMQListener",
                 SETTINGS.rmq_geo_queue_name,
+                workers=SETTINGS.queue_worker_threads,
                 event_filter=GeoQueueFilter(),
             ),
             err_logger,
@@ -58,13 +59,19 @@ def get_controllers() -> list[SensemakerController]:
         ),
         InferenceSensemakerController(
             RabbitMQListener(
-                "InferenceRMQListener", SETTINGS.rmq_inference_queue_name, event_filter=InferenceQueueFilter()
+                "InferenceRMQListener",
+                SETTINGS.rmq_inference_queue_name,
+                workers=SETTINGS.queue_worker_threads,
+                event_filter=InferenceQueueFilter(),
             ),
             err_logger,
         ),
         ResolutionSensemakerController(
             RabbitMQListener(
-                "ResolutionRMQListener", SETTINGS.rmq_res_queue_name, event_filter=ResolutionQueueFilter()
+                "ResolutionRMQListener",
+                SETTINGS.rmq_res_queue_name,
+                workers=SETTINGS.queue_worker_threads,
+                event_filter=ResolutionQueueFilter(),
             ),
             err_logger,
         ),
@@ -72,6 +79,7 @@ def get_controllers() -> list[SensemakerController]:
             RabbitMQListener(
                 "MilSymbolRMQListener",
                 SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
+                workers=SETTINGS.queue_worker_threads,
                 event_filter=MilSymbolQueueFilter(),
             ),
             err_logger,
