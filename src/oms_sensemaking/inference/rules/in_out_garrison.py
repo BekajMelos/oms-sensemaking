@@ -61,7 +61,7 @@ class InOrOutOfGarrison(Sensemaker):
         node_object = self.oms_crud_tool.get_node(obs.nodeId)
         object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
         if not object_and_garrison_coords:
-            return None
+            return []
         object_lat_lon, garrison_lat_lon = object_and_garrison_coords
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
         garrison_buffer_points = generate_circle_points_geographical(

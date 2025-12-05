@@ -30,24 +30,6 @@ class InferenceSensemakerController(SensemakerController):
 
         super().start()
 
-    # def get_oms_data(self, event: AuditLogEvent) -> RuleContext | None:
-    #     """
-    #     Given an OMS data object's ID, get the object we'll pass to the sensemaker
-
-    #     :param event: the object whose creation, update, or deletion we need to process
-    #     :return: None if no object exists, or the OMS Object if it's a type we handle
-    #     """
-
-    #     oms_obj = super().get_oms_data(event)
-
-    #     if event.objectType == ObjectType.ATTRIBUTE:
-    #         return RuleContext(attribute=oms_obj) if oms_obj else None
-    #     if event.objectType == ObjectType.OBSERVATION:
-    #         return RuleContext(observation=oms_obj) if oms_obj else None
-    #     if event.objectType == ObjectType.ACTIVITY:
-    #         return RuleContext(activity=oms_obj) if oms_obj else None
-    #     return None
-
 
 class InferenceQueueFilter(EventFilter):
     """Class for filtering AuditLogEvents being processed by the Inference Sensemaker"""
