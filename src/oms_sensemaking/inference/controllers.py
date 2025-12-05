@@ -7,7 +7,6 @@ from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, EventFilter
-from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.domain.area_of_interest.aoi_extractor import RealAOIDataExtractor
 from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 from oms_sensemaking.inference.rules.incursions import Incursion
@@ -25,10 +24,9 @@ class InferenceSensemakerController(SensemakerController):
     def start(self) -> None:
         # check to make sure its starting
         """Start the controller."""
-        crud_tool = OmsCrudTool()
         if SETTINGS.generate_inferences:
-            self.register("incursion", Incursion(RealAOIDataExtractor(), crud_tool))
-            self.register("garrison", InOrOutOfGarrison(crud_tool))
+            self.register("incursion", Incursion(RealAOIDataExtractor(), self.oms_crud_tool))
+            self.register("garrison", InOrOutOfGarrison(self.oms_crud_tool))
 
         super().start()
 

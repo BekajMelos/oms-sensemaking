@@ -1,7 +1,6 @@
 """Incursion Rule"""
 
 import logging
-from dataclasses import dataclass, field
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -24,29 +23,12 @@ from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.domain.area_of_interest.base import AOI, AOIExtractor
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
-from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class Incur(FindingBase):
-    """Represents a loiter event."""
-
-    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_INCURSION)
-    acm: dict
-
-    def __str__(self):
-        return str(self.to_dict())
-
-    def __repr__(self):
-        return self.__str__()
-
-    def get_acm(self) -> dict:
-        return self.acm
 
 
 class Incursion(Sensemaker):
@@ -55,35 +37,32 @@ class Incursion(Sensemaker):
     with and make the appropriate attribute/activity updates
     """
 
-    def __init__(self, aoi_extractor: AOIExtractor, crud_tool):
+    def __init__(self, aoi_extractor: AOIExtractor, oms_crud_tool: OmsCrudTool):
         super().__init__()
-        self.oms_crud_tool = crud_tool
+        self.oms_crud_tool = oms_crud_tool
         self.name = self.__class__.__name__
         self.version = (1, 0, 0)
         self.features = aoi_extractor.get_areas_of_interest()
 
-    def evaluate(self, rule_context: ObservationObservation) -> bool:
+    def evaluate(self, obs: ObservationObservation) -> bool:
         """
         Valid inputs must contain observations that have geometry and point to a node
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if not rule_context or rule_context.startTime is None or rule_context.endTime is None:
+        if not obs or obs.startTime is None or obs.endTime is None:
             return False
-
-        obs = rule_context
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def process_data(self, rule_context: ObservationObservation):
+    def process_data(self, obs: ObservationObservation):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        obs = rule_context
-        if not self.evaluate(obs):
-            return
+        if not self.evaluate(obs) and self.has_action_already_ran(obs):
+            return []
         # Fetch node that observation points to
         incurring_object = self.oms_crud_tool.get_node(obs.nodeId)
         obs_geo: BaseGeometry = shape(obs.geometry)
@@ -134,7 +113,7 @@ class Incursion(Sensemaker):
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, feature_of_interest)
-        # return Incur(acm=obs.acm)
+        return []
 
     def _check_existing_incursion_and_update(
         self,
@@ -260,12 +239,11 @@ class Incursion(Sensemaker):
         )
         self.oms_crud_tool.create_attribute(incursion_attribute)
 
-    def has_action_already_ran(self, rule_context: ObservationObservation):
+    def has_action_already_ran(self, obs: ObservationObservation):
         """
         Determine if an incursion activity pointing to the inputted observation has already been created
         """
 
-        obs = rule_context
         if not obs:
             return False
 

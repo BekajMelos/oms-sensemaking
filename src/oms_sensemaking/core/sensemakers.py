@@ -220,8 +220,7 @@ class FindingWriter:
 
         :param finding_objects: List of finding objects to write as findings
         """
-        if not finding_objects:
-            return
+
         if finding_objects:
             LOGGER.info("Saving findings from %s %s to DB", alg_meta_data.name, alg_meta_data.version_string)
 
