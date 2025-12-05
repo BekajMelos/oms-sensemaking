@@ -55,7 +55,7 @@ class Incursion(Sensemaker):
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def process_data(self, obs: ObservationObservation):
+    def process_data(self, obs: ObservationObservation, config: dict):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
