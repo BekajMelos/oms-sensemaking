@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Two endpoints to adjust throttling settings 
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
