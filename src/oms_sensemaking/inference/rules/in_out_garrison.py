@@ -49,7 +49,7 @@ class InOrOutOfGarrison(Sensemaker):
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def process_data(self, obs: ObservationObservation, config: dict):
+    def process_data(self, obs: ObservationObservation, config: dict | None = None):
         """
         Determine if an observation indicates that a node is in or out of garrison
 
