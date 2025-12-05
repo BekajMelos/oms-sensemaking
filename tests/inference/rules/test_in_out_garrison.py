@@ -10,12 +10,16 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
     Confidence,
     CreateActivityInput,
+    GeoQuery,
     GeoQueryType,
     NodeNode,
     ObservationObservation,
+    ObservationQuery,
     RelationshipRelationship,
+    TimeQuery,
     UpdateActivityInput,
     UpdateUuidList,
+    UuidQueryByList,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
@@ -252,53 +256,6 @@ def out_garrison_activity2(mocker: MockerFixture):
     return activity
 
 
-# Mock methods
-@pytest.fixture
-def mock_get_node(mocker: MockerFixture, initial_object):
-    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_node")
-    mock_get_node.return_value = initial_object
-    return mock_get_node
-
-
-@pytest.fixture
-def mock_get_attributes(mocker: MockerFixture):
-    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_attributes")
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = []
-    mock_get_attributes.return_value = mock_attribute_response
-    return mock_get_attributes
-
-
-@pytest.fixture
-def mock_get_activities(mocker: MockerFixture):
-    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_activities")
-    mock_activity_response = MagicMock()
-    mock_activity_response.data = []
-    mock_get_activities.return_value = mock_activity_response
-    return mock_get_activities
-
-
-@pytest.fixture
-def mock_get_relationships(mocker: MockerFixture, garrison_relationship):
-    mock_get_relationships = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_relationships")
-    mock_relationship_response = MagicMock()
-    mock_relationship_response.data = [garrison_relationship]
-    mock_get_relationships.return_value = mock_relationship_response
-    return mock_get_relationships
-
-
-@pytest.fixture
-def mock_create_activity(mocker: MockerFixture):
-    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_activity")
-    return mock_create_activity
-
-
-@pytest.fixture
-def mock_update_activity(mocker: MockerFixture):
-    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_activity")
-    return mock_update_activity
-
-
 @pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node2):
     mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_observations")
@@ -315,10 +272,9 @@ def mock_oms_client():
 
 @pytest.fixture
 def mock_crud_tool(mock_oms_client):
-    oms_crud_tool = OmsCrudTool()
-    oms_crud_tool.oms_client = mock_oms_client
-
-    return oms_crud_tool
+    crud_tool = MagicMock(spec=OmsCrudTool)
+    crud_tool.oms_client = mock_oms_client
+    return crud_tool
 
 
 @pytest.fixture
@@ -368,7 +324,7 @@ def test_evaluate_input(observational_node, mock_crud_tool, broken_observation):
     assert not garr_sm.evaluate(obs=observation_without_parent), "expected input to be invalid"
 
 
-def test_no_relationship_no_op(mocker, mock_crud_tool, observational_node, mock_get_node, mock_create_activity):
+def test_no_relationship_no_op(mocker, mock_crud_tool, observational_node):
     payload = {"node": {"relationships": {"data": []}}}
     mocker.patch(
         "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
@@ -377,11 +333,14 @@ def test_no_relationship_no_op(mocker, mock_crud_tool, observational_node, mock_
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
 
     garr_sm.process_data(obs=observational_node)
-    mock_create_activity.assert_not_called()
+    mock_crud_tool.create_activity.assert_not_called()
 
 
 def test_no_geo_attr_no_op(
-    mocker, mock_crud_tool, observational_node, garrison_object, mock_get_node, mock_create_activity
+    mocker,
+    mock_crud_tool,
+    observational_node,
+    garrison_object,
 ):
     payload = {
         "node": {"relationships": {"data": [{"endNode": {"id": garrison_object.id, "attributes": {"data": []}}}]}}
@@ -393,16 +352,13 @@ def test_no_geo_attr_no_op(
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
 
     garr_sm.process_data(obs=observational_node)
-    mock_create_activity.assert_not_called()
+    mock_crud_tool.create_activity.assert_not_called()
 
 
 def test_new_in_garrison(
     mock_crud_tool,
     observational_node,
     garrison_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_create_activity,
     geo_attribute1,
 ):
     # Make the mocked GQL call return a shape compatible with the helper
@@ -420,7 +376,7 @@ def test_new_in_garrison(
         geoIris=[SETTINGS.inference_geo_attribute_iri],
     )
 
-    mock_crud_tool.oms_client.create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node.acm,
             labels=[
@@ -443,10 +399,6 @@ def test_new_in_garrison(
 def test_new_out_garrison(
     mock_crud_tool,
     observational_node2,
-    garrison_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_create_activity,
     geo_attribute1,
 ):
     # Make the mocked GQL call return a shape compatible with the helper
@@ -463,7 +415,7 @@ def test_new_out_garrison(
         geoIris=[SETTINGS.inference_geo_attribute_iri],
     )
 
-    mock_crud_tool.oms_client.create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node2.acm,
             labels=[
@@ -486,19 +438,18 @@ def test_new_out_garrison(
 def test_update_in_garrison(
     mock_crud_tool,
     observational_node,
-    garrison_object,
-    mock_get_node,
-    mock_get_activities,
+    initial_object,
     mock_get_observations,
-    mock_update_activity,
     geo_attribute1,
     in_garrison_activity1,
     in_garrison_activity2,
 ):
     # Scenario: Observation input yields updating an in garrison activity
+    mock_crud_tool.get_node.return_value = initial_object
+
     mock_activity_response = MagicMock()
     mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
-    mock_crud_tool.oms_client.activities.return_value = mock_activity_response
+    mock_crud_tool.get_activities.return_value = mock_activity_response
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
@@ -519,16 +470,15 @@ def test_update_in_garrison(
         SETTINGS.garrison_distance_kilometers,
     )
     garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-
-    args, kwargs = mock_get_observations.call_args
-    obs_query_arg = args[0]
-    assert isinstance(obs_query_arg.nodeIds.in_[0], MagicMock)
-    assert obs_query_arg.startTime.gt == "2023-01-01T00:00:00+00:00"
-    assert obs_query_arg.endTime.lte == "2025-01-01T00:00:00+00:00"
-    assert obs_query_arg.geometry.queryGeoJson == garrison_buffer_geojson
-    assert obs_query_arg.geometry.queryType == GeoQueryType.DISJOINT
-
-    mock_crud_tool.oms_client.update_activity.assert_called_with(
+    mock_get_observations.assert_called_with(
+        ObservationQuery(
+            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
+            startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
+            endTime=TimeQuery(lte="2025-01-01T00:00:00+00:00"),
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT),
+        )
+    )
+    mock_crud_tool.update_activity.assert_called_with(
         UpdateActivityInput(
             id=in_garrison_activity2.id,
             startTime=in_garrison_activity2.startTime,
@@ -542,19 +492,18 @@ def test_update_in_garrison(
 def test_update_out_garrison(
     mock_crud_tool,
     observational_node2,
-    garrison_object,
-    mock_get_node,
-    mock_get_activities,
+    initial_object,
     mock_get_observations,
-    mock_update_activity,
     geo_attribute1,
     out_garrison_activity1,
 ):
     # Scenario: Observation input yields updating an out of garrison activity
     # that has non overlapping time with observation
+    mock_crud_tool.get_node.return_value = initial_object
+
     mock_activity_response = MagicMock()
     mock_activity_response.data = [out_garrison_activity1]
-    mock_crud_tool.oms_client.activities.return_value = mock_activity_response
+    mock_crud_tool.get_activities.return_value = mock_activity_response
 
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
@@ -579,15 +528,15 @@ def test_update_out_garrison(
     )
     garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
 
-    args, kwargs = mock_get_observations.call_args
-    obs_query_arg = args[0]
-    assert isinstance(obs_query_arg.nodeIds.in_[0], MagicMock)
-    assert obs_query_arg.startTime.gte == "2024-01-01T00:00:00+00:00"
-    assert obs_query_arg.endTime.lt == "2025-01-01T00:00:00+00:00"
-    assert obs_query_arg.geometry.queryGeoJson == garrison_buffer_geojson
-    assert obs_query_arg.geometry.queryType == GeoQueryType.INTERSECTS
-
-    mock_crud_tool.oms_client.update_activity.assert_called_with(
+    mock_get_observations.assert_called_with(
+        ObservationQuery(
+            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
+            startTime=TimeQuery(gte="2024-01-01T00:00:00+00:00"),
+            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
+            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS),
+        )
+    )
+    mock_crud_tool.update_activity.assert_called_with(
         UpdateActivityInput(
             id=out_garrison_activity1.id,
             startTime=observational_node2.startTime,

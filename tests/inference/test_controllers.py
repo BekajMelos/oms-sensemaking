@@ -51,7 +51,7 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_inference_contr
     with (
         mock.patch("oms_sensemaking.config.SETTINGS") as settings_mock,
         mock.patch.object(mock_inference_controller, "register") as register_mock,
-        mock.patch("oms_sensemaking.inference.controllers.InferenceSensemaker") as sensemaker_mock,
+        mock.patch("oms_sensemaking.inference.controllers.InOrOutOfGarrison") as sensemaker_mock,
         mock.patch.object(SensemakerController, "start", autospec=True) as super_start_mock,
     ):
         # configure settings
@@ -63,7 +63,7 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_inference_contr
         sensemaker_mock.assert_called_once()
 
         # Verify register called
-        register_mock.assert_called_once_with("inference", sensemaker_mock.return_value)
+        register_mock.assert_called_with("garrison", sensemaker_mock.return_value)
 
         # Verify super().start() called
         super_start_mock.assert_called_once_with(mock_inference_controller)
