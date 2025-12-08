@@ -19,6 +19,7 @@ from oms_sensemaking.resolution.controllers import (
     ResolutionSensemaker,
     ResolutionSensemakerController,
 )
+from src.oms_sensemaking.core.event_model import AuditLogHeaders
 
 
 @pytest.fixture
@@ -121,8 +122,10 @@ def test_passes_filter_returns_true_for_handled_event():
     event = AuditLogEvent(
         userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
     )
+    # These are attributes from duplicate_object_iris.json
+    event.headers = AuditLogHeaders("https://foundry.ai.mil/ontology/meks/p-0000000050")
 
-    assert filt.passes_filter(event) is True
+    assert filt.passes_filter(event)
 
 
 @pytest.mark.parametrize(

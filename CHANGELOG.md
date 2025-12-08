@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
-
+- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 ### Fixed
 - RabbitMQ queues are now thread safe so they no longer lose connection
 
