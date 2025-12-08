@@ -8,7 +8,6 @@ from fastapi import APIRouter, Depends, Response
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
 from oms_sensemaking.clients.instances import db_session
-from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.settings import Setting
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -67,10 +66,4 @@ def _fetch_settings_from_db() -> dict[str, str]:
 
 @router.get("/settings", response_model=dict[str, Any])
 def get_settings(user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]) -> dict[str, str]:
-    LOGGER.info(
-        "GET /settings called — runtime maximum_oms_api_calls=%s, rabbitmq_prefetch_count=%s",
-        SETTINGS.maximum_oms_api_calls,
-        SETTINGS.rabbitmq_prefetch_count,
-    )
-
     return _fetch_settings_from_db()
