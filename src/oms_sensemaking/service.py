@@ -30,7 +30,6 @@ from oms_sensemaking.inference.controllers import InferenceQueueFilter, Inferenc
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
 from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
-from oms_sensemaking.settings_loader import load_settings_with_db_override
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -212,7 +211,7 @@ def check_aoi_file_path() -> None:
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
-        load_settings_with_db_override(SETTINGS)
+        SETTINGS.load_settings_with_db_override()
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
