@@ -713,12 +713,6 @@ class Settings(BaseSettings):
         for key, value in db_settings.items():
             if key in self.model_fields:
                 setattr(self, key, value)
-            else:
-                LOGGER.warning(
-                    "Ignoring DB setting %s (not a valid Settings field)",
-                    key,
-                )
-
 
 
 SETTINGS: Settings = Settings()
