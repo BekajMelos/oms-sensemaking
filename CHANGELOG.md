@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Two endpoints to adjust throttling settings 
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
+- Transitioning `_fetch_garrison_coords()` function away from exceptions
 - Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 ### Fixed
 - RabbitMQ queues are now thread safe so they no longer lose connection

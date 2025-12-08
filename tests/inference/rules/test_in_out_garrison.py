@@ -372,7 +372,8 @@ def test_evaluate_input(observational_node):
 
 
 def test_no_relationship_no_op(mocker, observational_node, mock_get_node, mock_create_activity):
-    payload = {"node": {"relationships": {"data": []}}}
+    payload = MagicMock()
+    payload.relationships.data = []
     mocker.patch(
         "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
         new=MagicMock(return_value=payload),
@@ -384,9 +385,8 @@ def test_no_relationship_no_op(mocker, observational_node, mock_get_node, mock_c
 
 
 def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_get_node, mock_create_activity):
-    payload = {
-        "node": {"relationships": {"data": [{"endNode": {"id": garrison_object.id, "attributes": {"data": []}}}]}}
-    }
+    payload = MagicMock()
+    payload.node.relationships.data.endNode = {"id": garrison_object.id}
     mocker.patch(
         "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
         new=MagicMock(return_value=payload),
