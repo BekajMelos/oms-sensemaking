@@ -28,7 +28,12 @@ from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFacto
 @pytest.fixture
 def mock_mil_sym_controller():
     controller = MilSymbolSensemakerController(
-        RabbitMQListener("MilSymbolRMQListener", SETTINGS.rmq_res_queue_name, event_filter=MilSymbolQueueFilter()),
+        RabbitMQListener(
+            "MilSymbolRMQListener",
+            SETTINGS.rmq_res_queue_name,
+            SETTINGS.queue_worker_threads,
+            event_filter=MilSymbolQueueFilter(),
+        ),
         RethrowErrorLogger(ErrorLogger()),
     )
     return controller

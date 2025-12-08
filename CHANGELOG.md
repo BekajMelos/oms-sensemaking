@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Two endpoints to adjust throttling settings 
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
+- Transitioning `_fetch_garrison_coords()` function away from exceptions
 - In compliance with coming SDK updates, the event_hooks parameter in the Sync/Async CRUD tools' clients were populated to record the time requests were sent
 
 ### Fixed
+- RabbitMQ queues are now thread safe so they no longer lose connection
 
 ### Removed
 
