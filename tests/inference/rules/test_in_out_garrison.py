@@ -324,8 +324,9 @@ def test_evaluate_input(observational_node, mock_crud_tool, broken_observation):
     assert not garr_sm.evaluate(obs=observation_without_parent), "expected input to be invalid"
 
 
-def test_no_relationship_no_op(mocker, mock_crud_tool, observational_node):
-    payload = {"node": {"relationships": {"data": []}}}
+def test_no_relationship_no_op(mocker, observational_node, mock_crud_tool):
+    payload = MagicMock()
+    payload.relationships.data = []
     mocker.patch(
         "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
         new=MagicMock(return_value=payload),
@@ -336,15 +337,9 @@ def test_no_relationship_no_op(mocker, mock_crud_tool, observational_node):
     mock_crud_tool.create_activity.assert_not_called()
 
 
-def test_no_geo_attr_no_op(
-    mocker,
-    mock_crud_tool,
-    observational_node,
-    garrison_object,
-):
-    payload = {
-        "node": {"relationships": {"data": [{"endNode": {"id": garrison_object.id, "attributes": {"data": []}}}]}}
-    }
+def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_crud_tool):
+    payload = MagicMock()
+    payload.node.relationships.data.endNode = {"id": garrison_object.id}
     mocker.patch(
         "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
         new=MagicMock(return_value=payload),

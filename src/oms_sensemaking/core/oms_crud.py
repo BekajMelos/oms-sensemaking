@@ -5,6 +5,7 @@ from uuid import UUID
 
 from cachetools import TTLCache, cached
 from oms_sdk import get_generated_graphql_client
+from oms_sdk.client_request_time_header import add_request_time_header
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivities,
     ActivityActivity,
@@ -65,6 +66,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateSourceUpdateSource,
     UuidQueryByList,
 )
+from oms_sdk.profiled_transport import ProfiledHTTPTransport
 
 from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS
@@ -89,6 +91,8 @@ class OmsCrudTool(BaseClient):
             pkcs12_password=SETTINGS.pkcs12_password,
             ssl_cert_file_path=SETTINGS.atoms_cacert_path,
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
+            transport=ProfiledHTTPTransport,
+            event_hooks={"request": [add_request_time_header]},
         )
 
     def publish_nodes(self, nodes: list[CreateNodeInput]) -> list[CreateNodeCreateNode]:

@@ -17,7 +17,7 @@ from fastapi_offline import FastAPIOffline
 
 from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
-from oms_sensemaking.api.routers import aac, about, audit_log_error, health, rdf, test
+from oms_sensemaking.api.routers import aac, about, audit_log_error, health, rdf, settings, test
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
@@ -108,8 +108,8 @@ async def lifespan(application: FastAPI):
         ping_db()
     except Exception as ex:
         LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
-    controllers: list[tuple[SensemakerController, Thread]] = []
 
+    controllers: list[tuple[SensemakerController, Thread]] = []
     for ctrlr in get_controllers():
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
         controller_thread.start()
@@ -183,6 +183,7 @@ def create_app(config: Settings) -> FastAPI:
     application.include_router(health.router)
     application.include_router(rdf.router, prefix="/resolver", tags=["resolver"])
     application.include_router(audit_log_error.router)
+    application.include_router(settings.router, tags=["settings"])
 
     # Include test endpoints only if enabled
     if config.toggle_test_endpoints:
@@ -219,4 +220,6 @@ def initialize_settings() -> None:
 
 
 initialize_settings()
+
+
 app: FastAPI = create_app(SETTINGS)
