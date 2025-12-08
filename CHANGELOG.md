@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
+- In compliance with coming SDK updates, the event_hooks parameter in the Sync/Async CRUD tools' clients were populated to record the time requests were sent
 
 ### Fixed
 

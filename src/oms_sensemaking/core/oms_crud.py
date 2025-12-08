@@ -5,6 +5,7 @@ from uuid import UUID
 
 from cachetools import TTLCache, cached
 from oms_sdk import get_generated_graphql_client
+from oms_sdk.client_request_time_header import add_request_time_header
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivities,
     ActivityActivity,
@@ -65,7 +66,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateSourceUpdateSource,
     UuidQueryByList,
 )
-from oms_sdk.profiled_transport import ProfiledHTTPTransport, add_request_time_header
+from oms_sdk.profiled_transport import ProfiledHTTPTransport
 
 from oms_sensemaking.clients.base_client import BaseClient
 from oms_sensemaking.config import SETTINGS

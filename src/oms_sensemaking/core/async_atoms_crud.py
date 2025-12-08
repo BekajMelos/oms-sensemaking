@@ -1,4 +1,5 @@
 from oms_sdk import get_generated_async_graphql_client
+from oms_sdk.client_request_time_header import async_add_request_time_header
 from oms_sdk.generated.generated_async_graphql_client import (
     Client,
     CreateActivityInput,
@@ -8,7 +9,7 @@ from oms_sdk.generated.generated_async_graphql_client import (
     CreateProviderInput,
     CreateSourceInput,
 )
-from oms_sdk.profiled_transport import ProfiledAsyncHTTPTransport, async_add_request_time_header
+from oms_sdk.profiled_transport import ProfiledAsyncHTTPTransport
 
 from oms_sensemaking.config import SETTINGS
 
