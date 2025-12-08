@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -51,10 +51,74 @@ def test_fetch_garrison_coords_returns_coords(mock_oms_tool):
     assert coords == [30.0, 40.0]
 
 
-@pytest.mark.parametrize("exc", [AttributeError, IndexError, KeyError, TypeError])
-def test_fetch_garrison_coords_handles_exceptions(mock_oms_tool, exc):
+def test_fetch_garrison_coords_handles_attribute_error(mock_oms_tool):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.side_effect = exc
+
+    # Simulate missing relationships attribute (AttributeError)
+    mock_result = MagicMock()
+    mock_result.relationships = None
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = mock_result
+
+    coords = retriever._fetch_garrison_coords("node123")
+    assert coords is None
+
+
+def test_fetch_garrison_coords_handles_index_error(mock_oms_tool):
+    retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
+
+    # Simulate empty relationships data (IndexError)
+    mock_result = MagicMock()
+    mock_result.relationships.data = []
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = mock_result
+
+    coords = retriever._fetch_garrison_coords("node123")
+    assert coords is None
+
+
+def test_fetch_garrison_coords_handles_missing_geometry_key(mock_oms_tool):
+    retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
+
+    # Simulate missing 'geometry' key (KeyError)
+    attributes_data_mock = [MagicMock()]
+
+    mock_result_missing_geometry = MagicMock()
+    mock_result_missing_geometry.relationships.data.attributes.endNode = {"attributes": {"data": attributes_data_mock}}
+
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = mock_result_missing_geometry
+
+    coords = retriever._fetch_garrison_coords("node123")
+    assert coords is None
+
+
+def test_fetch_garrison_coords_handles_invalid_geometry_type(mock_oms_tool):
+    retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
+
+    # Simulate 'geometry' not being a dict (TypeError)
+    attributes_data_mock = [MagicMock()]
+
+    mock_result_missing_geometry = MagicMock()
+    mock_result_missing_geometry.relationships.data.attributes.endNode = {"attributes": {"data": attributes_data_mock}}
+
+    attributes_data_mock[0].geometry = "not_a_dict"
+
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = mock_result_missing_geometry
+
+    coords = retriever._fetch_garrison_coords("node123")
+    assert coords is None
+
+
+def test_fetch_garrison_coords_handles_missing_coordinates_key(mock_oms_tool):
+    retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
+
+    # Simulate 'coordinates' missing in geometry dict (KeyError)
+    attributes_data_mock = [MagicMock()]
+
+    mock_result_missing_geometry = MagicMock()
+    mock_result_missing_geometry.relationships.data.attributes.endNode = {"attributes": {"data": attributes_data_mock}}
+
+    attributes_data_mock[0].geometry = {}
+
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = mock_result_missing_geometry
 
     coords = retriever._fetch_garrison_coords("node123")
     assert coords is None

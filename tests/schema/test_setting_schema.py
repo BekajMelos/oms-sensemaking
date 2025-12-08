@@ -1,6 +1,6 @@
 """Test Setting Schema Validation"""
 
-from oms_sensemaking.api.schemas.setting_input_schema import get_pydantic_schema, validate_setting
+from oms_sensemaking.api.schemas.settings import get_pydantic_schema, validate_setting
 
 
 def test_valid_setting():
@@ -46,17 +46,17 @@ def test_get_schema():
 
     # Define the expected schema as a Python dictionary
     expected_schema = {
-        "description": "Provides setting schema.",
+        "description": "Schema representing a validated single setting.",
         "properties": {
             "field_name": {
-                "examples": ["max_retries", "session_timeout_seconds"],
+                "examples": ["oms_api_call_period_seconds", "maximum_oms_api_calls"],
                 "title": "Field Name",
                 "type": "string",
             },
             "field_value": {"examples": [10, 20, 30], "minimum": 0, "title": "Field Value", "type": "integer"},
         },
         "required": ["field_name", "field_value"],
-        "title": "SettingInputSchema",
+        "title": "Setting",
         "type": "object",
     }
 

@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Two endpoints to adjust throttling settings 
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
+
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
+- Transitioning `_fetch_garrison_coords()` function away from exceptions
 
 ### Fixed
 - RabbitMQ queues are now thread safe so they no longer lose connection
