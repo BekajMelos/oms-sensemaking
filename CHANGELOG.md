@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.18.0] - 2025-12-09
+
+### Added
 - Two endpoints to adjust throttling settings
 
 ### Changed
@@ -16,8 +26,6 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - RabbitMQ queues are now thread safe so they no longer lose connection
-
-### Removed
 
 ## [0.17.2] - 2025-11-19
 
