@@ -1,4 +1,5 @@
 from oms_sdk import get_generated_async_graphql_client
+from oms_sdk.client_request_time_header import async_add_request_time_header
 from oms_sdk.generated.generated_async_graphql_client import (
     Client,
     CreateActivityInput,
@@ -8,6 +9,7 @@ from oms_sdk.generated.generated_async_graphql_client import (
     CreateProviderInput,
     CreateSourceInput,
 )
+from oms_sdk.profiled_transport import ProfiledAsyncHTTPTransport
 
 from oms_sensemaking.config import SETTINGS
 
@@ -25,6 +27,8 @@ class AsyncAtomsCrudTool:
             pkcs12_password=SETTINGS.pkcs12_password,
             ssl_cert_file_path=SETTINGS.atoms_cacert_path,
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
+            transport=ProfiledAsyncHTTPTransport,
+            event_hooks={"request": [async_add_request_time_header]},
         )
 
     def create_node(self, node_input: CreateNodeInput):
