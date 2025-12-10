@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 
 ### Changed
 
