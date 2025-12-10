@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
+- Restoring code to split tracks by provider
 
 ### Changed
 
@@ -17,7 +18,6 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Two endpoints to adjust throttling settings
-- Restoring code to split tracks by provider
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
