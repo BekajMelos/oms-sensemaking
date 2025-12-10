@@ -817,7 +817,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -865,7 +865,7 @@
 											"        setTimeout(function(){}, 30000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -2438,7 +2438,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}",
 											""
 										],
@@ -2483,7 +2483,7 @@
 											"        // Step 6: Retry request",
 											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
 											"        setTimeout(function(){}, 30000);",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -4267,7 +4267,7 @@
 											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
 											"",
 											"        setTimeout(function(){}, 30000);",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}",
 											""
@@ -4291,7 +4291,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}",
 											""
 										],
@@ -5165,7 +5165,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -5213,7 +5213,7 @@
 											"        setTimeout(function(){}, 30000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -5428,7 +5428,7 @@
 											"        setTimeout(function(){}, 15000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -5451,7 +5451,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -6521,7 +6521,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -6569,7 +6569,7 @@
 											"        setTimeout(function(){}, 30000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -7255,7 +7255,7 @@
 											"        setTimeout(function(){}, 5000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -7278,7 +7278,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -8187,7 +8187,7 @@
 											"        setTimeout(function(){}, 5000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -8210,7 +8210,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -8947,7 +8947,7 @@
 											"        setTimeout(function(){}, 5000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -8970,7 +8970,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
@@ -9601,7 +9601,7 @@
 											"        setTimeout(function(){}, 5000);",
 											"",
 											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"        pm.execution.setNextRequest(pm.info.requestName);",
 											"    }",
 											"}"
 										],
@@ -9624,7 +9624,7 @@
 											"if (retryCount >= maxRetries) {",
 											"    console.error(\"Max retries reached. Stopping execution.\");",
 											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
+											"    pm.execution.setNextRequest(null); // Stop execution",
 											"}"
 										],
 										"type": "text/javascript",
