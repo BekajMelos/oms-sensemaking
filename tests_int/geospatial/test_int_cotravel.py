@@ -34,6 +34,7 @@ NODE_UUID1 = uuid4()
 NODE_UUID2 = uuid4()
 NODE_UUID3 = uuid4()
 SOURCE_ID = uuid4()
+PROVIDER_ID = uuid4()
 TRACK_UUID1 = uuid4()
 TRACK_UUID2 = uuid4()
 TRACK_UUID3 = uuid4()
@@ -232,6 +233,7 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 node_id=points[0].node_id,
                 algorithm="cotravel_test_track",
                 acm=DEFAULT_ACM,
+                provider_id=PROVIDER_ID,
             ),
             track_uuid=track_uuid,
         )
@@ -266,6 +268,7 @@ def test_cotravel_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -375,6 +378,7 @@ def make_potential_duplicate_track() -> Track:
         algorithm="test_algorithm",
         track_uuid=track_id,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     return track
@@ -514,6 +518,7 @@ def test_potential_duplicate_failure(
         algorithm="test_algorithm",
         track_uuid=track_id,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -556,6 +561,7 @@ def test_multiple_cotravel_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -733,6 +739,7 @@ def test_lag_lead_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     # Set up mocks
@@ -842,6 +849,7 @@ def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrud
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
@@ -873,6 +881,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
+        provider_id=uuid4(),
     )
 
     # Set up mocks

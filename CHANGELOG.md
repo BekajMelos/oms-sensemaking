@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Two endpoints to adjust throttling settings 
+- Two endpoints to adjust throttling settings
+- Restoring code to split tracks by provider
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
