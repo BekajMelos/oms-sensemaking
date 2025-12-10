@@ -116,14 +116,19 @@ def test_start_does_nothing_when_disabled(mock_res_controller):
         super_start_mock.assert_called_once_with(mock_res_controller)
 
 
-def test_passes_filter_returns_true_for_handled_event():
+@pytest.mark.parametrize(
+    "obj_type, action",
+    [
+        ("ATTRIBUTE", Action.CREATE.value),
+        ("ATTRIBUTE", Action.RESTORE.value),
+    ],
+)
+def test_passes_filter_returns_true_for_handled_event(obj_type, action):
     filt = ResolutionQueueFilter()
 
-    event = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
-    )
+    event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
     # These are attributes from duplicate_object_iris.json
-    event.headers = AuditLogHeaders("https://foundry.ai.mil/ontology/meks/p-0000000050")
+    event.headers = AuditLogHeaders(MockIriProvider.mock_attribute_iri())
 
     assert filt.passes_filter(event)
 
@@ -138,7 +143,19 @@ def test_passes_filter_returns_true_for_handled_event():
 )
 def test_passes_filter_returns_false_for_unhandled(obj_type, action):
     filt = ResolutionQueueFilter()
-
+    print("obj_type:", obj_type)
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
     assert filt.passes_filter(event) is False
+
+
+class MockIriProvider:
+    @staticmethod
+    def mock_attribute_iri():
+        mock_iri = "https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"
+        return mock_iri
+
+    @staticmethod
+    def mock_duplicate_object_iris():
+        mock_duplicate_object_iris = {"obj1": ["dup1", "dup2"]}
+        return mock_duplicate_object_iris
