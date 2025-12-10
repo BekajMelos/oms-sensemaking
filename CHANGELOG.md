@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 
 ### Changed
+- Updated tags to reference Atoms instead of oms
+- Clean up formatting for environment variables
 
 ### Fixed
 
