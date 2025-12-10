@@ -75,6 +75,14 @@ class InOrOutOfGarrison(BaseRule):
 
         self._create_or_update_garrison_activity(obs, node_object, in_garrison_check, garrison_buffer_geojson)
 
+    def get_graph_data(self, rule_context: RuleContext):
+        """
+        Retrieve all data from Atoms API required for this rule.
+
+        :param rule_context: Rule context object containing the observation in question
+        """
+        return
+
     def _create_or_update_garrison_activity(
         self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
     ):

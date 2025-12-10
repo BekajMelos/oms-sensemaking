@@ -119,6 +119,14 @@ class Incursion(BaseRule):
             if not matching_incursion_attribute_found:
                 self._handle_new_incursion(obs, incurring_object, feature_of_interest)
 
+    def get_graph_data(self, rule_context: RuleContext):
+        """
+        Retrieve all data from Atoms API required for this rule.
+
+        :param rule_context: Rule context object containing the observation in question
+        """
+        return
+
     def _check_existing_incursion_and_update(
         self,
         observation: ObservationObservation,

@@ -5,17 +5,29 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Two endpoints to adjust throttling settings 
+- Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
+
+### Changed
+- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
+
+### Fixed
+
+### Removed
+
+## [0.18.0] - 2025-12-09
+
+### Added
+- Two endpoints to adjust throttling settings
 
 ### Changed
 - Updated ATOMS dependency to Grimlock-INC-36
 - Filter out track type observations for the Inference processes
 - Transitioning `_fetch_garrison_coords()` function away from exceptions
-- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
+- In compliance with coming SDK updates, the event_hooks parameter in the Sync/Async CRUD tools' clients were populated to record the time requests were sent
+- Updated ATOMS dependency to Grimlock-INC-37
+
 ### Fixed
 - RabbitMQ queues are now thread safe so they no longer lose connection
-
-### Removed
 
 ## [0.17.2] - 2025-11-19
 
