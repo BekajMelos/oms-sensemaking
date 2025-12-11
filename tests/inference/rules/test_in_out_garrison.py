@@ -440,7 +440,6 @@ def test_update_in_garrison(
     in_garrison_activity2,
 ):
     # Scenario: Observation input yields updating an in garrison activity
-    mock_crud_tool.get_node.return_value = initial_object
 
     mock_activity_response = MagicMock()
     mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
@@ -494,7 +493,6 @@ def test_update_out_garrison(
 ):
     # Scenario: Observation input yields updating an out of garrison activity
     # that has non overlapping time with observation
-    mock_crud_tool.get_node.return_value = initial_object
 
     mock_activity_response = MagicMock()
     mock_activity_response.data = [out_garrison_activity1]

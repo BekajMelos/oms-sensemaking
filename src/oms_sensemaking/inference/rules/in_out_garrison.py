@@ -1,12 +1,13 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+from uuid import UUID
+
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
-    NodeNode,
     ObservationObservation,
     StringQuery,
     UpdateActivityInput,
@@ -58,7 +59,6 @@ class InOrOutOfGarrison(Sensemaker):
 
         if not self.evaluate(obs) and self.has_action_already_ran(obs):
             return []
-        node_object = self.oms_crud_tool.get_node(obs.nodeId)
         object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
         if not object_and_garrison_coords:
             return []
@@ -68,12 +68,13 @@ class InOrOutOfGarrison(Sensemaker):
             garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-
-        self._create_or_update_garrison_activity(obs, node_object, in_garrison_check, garrison_buffer_geojson)
+        # Get nodeId from observation
+        node_object_id = obs.nodeId
+        self._create_or_update_garrison_activity(obs, node_object_id, in_garrison_check, garrison_buffer_geojson)
         return []
 
     def _create_or_update_garrison_activity(
-        self, obs: ObservationObservation, node_object: NodeNode, in_garrison: bool, garrison_buffer_geojson: dict
+        self, obs: ObservationObservation, node_object_id: UUID, in_garrison: bool, garrison_buffer_geojson: dict
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -102,7 +103,7 @@ class InOrOutOfGarrison(Sensemaker):
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
             if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(
-                node_object, obs, geo_query
+                node_object_id, obs, geo_query
             ):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
