@@ -61,7 +61,7 @@ class Incursion(Sensemaker):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if not self.evaluate(obs) and self.has_action_already_ran(obs):
+        if not self.evaluate(obs) or self.has_action_already_ran(obs):
             return []
         # Fetch node that observation points to
         incurring_object = self.oms_crud_tool.get_node(obs.nodeId)
