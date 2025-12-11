@@ -1,6 +1,6 @@
 import copy
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from oms_sdk import DEFAULT_ACM
@@ -430,7 +430,11 @@ def test_new_out_garrison(
     )
 
 
+@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.evaluate")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.has_action_already_ran")
 def test_update_in_garrison(
+    mock_has_action_already_ran,
+    mock_evaluate,
     mock_crud_tool,
     observational_node,
     initial_object,
@@ -450,6 +454,8 @@ def test_update_in_garrison(
     mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
         coords=geo_attribute1.geometry["coordinates"]
     )
+    mock_evaluate.return_value = True
+    mock_has_action_already_ran.return_value = False
     garr_sm.process_data(obs=observational_node)
 
     # single call now
@@ -484,7 +490,11 @@ def test_update_in_garrison(
     )
 
 
+@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.evaluate")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.has_action_already_ran")
 def test_update_out_garrison(
+    mock_has_action_already_ran,
+    mock_evaluate,
     mock_crud_tool,
     observational_node2,
     initial_object,
@@ -503,7 +513,8 @@ def test_update_out_garrison(
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
-
+    mock_evaluate.return_value = True
+    mock_has_action_already_ran.return_value = False
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
         coords=geo_attribute1.geometry["coordinates"]
