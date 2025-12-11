@@ -61,7 +61,7 @@ class Incursion(Sensemaker):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if not self.evaluate(obs) or self.has_action_already_ran(obs):
+        if not self.evaluate(obs):
             return []
         obs_geo: BaseGeometry = shape(obs.geometry)
 
@@ -74,6 +74,10 @@ class Incursion(Sensemaker):
                 break
 
         if feature_of_interest:
+            # Check if observation has already been run on after ensuring
+            # the observation falls within a feature of interest, does not waste a request early on
+            if self.has_action_already_ran(obs):
+                return []
             # can we include geo?
             LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             # Fetch node id that observation points to

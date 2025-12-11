@@ -57,10 +57,15 @@ class InOrOutOfGarrison(Sensemaker):
         :param rule_context: Rule context object containing the observation in question
         """
 
-        if not self.evaluate(obs) or self.has_action_already_ran(obs):
+        if not self.evaluate(obs):
             return []
         object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
         if not object_and_garrison_coords:
+            return []
+        # Check if observation has already been processed after getting coords
+        # We could fail early and never call has_action_already_ran
+        # if 'object_and_garrison_coords' conditional does not pass
+        if self.has_action_already_ran(obs):
             return []
         object_lat_lon, garrison_lat_lon = object_and_garrison_coords
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
