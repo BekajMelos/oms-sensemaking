@@ -29,7 +29,7 @@ def mock_res_controller():
             "ResolutionRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
-            event_filter=ResolutionQueueFilter(),
+            event_filter=ResolutionQueueFilter(MockIriProvider()),
         ),
         RethrowErrorLogger(ErrorLogger()),
     )
@@ -124,11 +124,12 @@ def test_start_does_nothing_when_disabled(mock_res_controller):
     ],
 )
 def test_passes_filter_returns_true_for_handled_event(obj_type, action):
-    filt = ResolutionQueueFilter()
+    mock_iri_provider = MockIriProvider()
+    filt = ResolutionQueueFilter(mock_iri_provider)
 
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
     # These are attributes from duplicate_object_iris.json
-    event.headers = AuditLogHeaders(MockIriProvider.mock_attribute_iri())
+    event.headers = AuditLogHeaders(mock_iri_provider.attribute_iris[0])
 
     assert filt.passes_filter(event)
 
@@ -142,7 +143,7 @@ def test_passes_filter_returns_true_for_handled_event(obj_type, action):
     ],
 )
 def test_passes_filter_returns_false_for_unhandled(obj_type, action):
-    filt = ResolutionQueueFilter()
+    filt = ResolutionQueueFilter(MockIriProvider())
     print("obj_type:", obj_type)
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
@@ -150,12 +151,9 @@ def test_passes_filter_returns_false_for_unhandled(obj_type, action):
 
 
 class MockIriProvider:
-    @staticmethod
-    def mock_attribute_iri():
-        mock_iri = "https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"
-        return mock_iri
+    def __init__(self):
+        self.attribute_iris = ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"]
 
-    @staticmethod
-    def mock_duplicate_object_iris():
-        mock_duplicate_object_iris = {"obj1": ["dup1", "dup2"]}
-        return mock_duplicate_object_iris
+    # def mock_duplicate_object_iris():
+    #     mock_duplicate_object_iris = {"obj1": ["dup1", "dup2"]}
+    #     return mock_duplicate_object_iris

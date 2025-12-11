@@ -29,7 +29,11 @@ from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSen
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
-from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
+from oms_sensemaking.resolution.controllers import (
+    ResolutionIriProvider,
+    ResolutionQueueFilter,
+    ResolutionSensemakerController,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -71,7 +75,7 @@ def get_controllers() -> list[SensemakerController]:
                 "ResolutionRMQListener",
                 SETTINGS.rmq_res_queue_name,
                 workers=SETTINGS.queue_worker_threads,
-                event_filter=ResolutionQueueFilter(),
+                event_filter=ResolutionQueueFilter(ResolutionIriProvider()),
             ),
             err_logger,
         ),

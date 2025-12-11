@@ -18,6 +18,18 @@ from oms_sensemaking.resolution.sensemaker import ResolutionSensemaker
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
+class ResolutionIriProvider:
+    def __init__(self, file_path=SETTINGS.duplicate_object_iris_file_path) -> None:
+        self.file_path = file_path
+        self.iris = self._load_from_json()
+        self.attribute_iris = list(chain.from_iterable(self.iris.values()))
+
+    def _load_from_json(self):
+        with open(self.file_path) as file:
+            data = json.load(file)
+        return data
+
+
 class ResolutionSensemakerController(SensemakerController):
     """
     Resolution sensemaker controller.
@@ -34,8 +46,8 @@ class ResolutionSensemakerController(SensemakerController):
 
 
 class ResolutionQueueFilter(EventFilter):
-    def __init__(self) -> None:
-        self.duplicate_object_iris = ResolutionIriProvider()
+    def __init__(self, iri_provider: ResolutionIriProvider) -> None:
+        self.duplicate_object_iris = iri_provider
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
@@ -46,15 +58,3 @@ class ResolutionQueueFilter(EventFilter):
             and audit_log_event.action in handled_event_types
             and audit_log_event.headers.iri in attribute_iris
         )
-
-
-class ResolutionIriProvider:
-    def __init__(self, file_path=SETTINGS.duplicate_object_iris_file_path) -> None:
-        self.file_path = file_path
-        self.iris = self._load_from_json()
-        self.attribute_iris = list(chain.from_iterable(self.iris.values()))
-
-    def _load_from_json(self):
-        with open(self.file_path) as file:
-            data = json.load(file)
-        return data
