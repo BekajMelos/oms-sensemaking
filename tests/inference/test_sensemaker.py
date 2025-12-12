@@ -5,6 +5,7 @@ import pytest
 # Assuming your imports
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
+from oms_sensemaking.inference.rules.incursions import Incursion
 
 
 @pytest.fixture
@@ -33,14 +34,15 @@ def mock_extractor():
     return extractor
 
 
-# def test_init_adds_rules_based_on_settings(mocker, mock_engine, mock_crud_tool, mock_extractor):
-#     mock_settings = mocker.patch("oms_sensemaking.config.SETTINGS")
-#     mock_settings.toggle_add_garrison_rule = True
-#     mock_settings.toggle_incursion_rule = True
+@pytest.mark.skip("Depreceated test, this will be removed when Inference SM is fully removed")
+def test_init_adds_rules_based_on_settings(mocker, mock_engine, mock_crud_tool, mock_extractor):
+    mock_settings = mocker.patch("oms_sensemaking.config.SETTINGS")
+    mock_settings.toggle_add_garrison_rule = True
+    mock_settings.toggle_incursion_rule = True
 
-#     sensemaker = Incursion(mock_extractor, mock_crud_tool)
-#     print("Config rules:", sensemaker.config["rules"])
-#     print("Add_rule calls:", mock_engine.return_value.add_rule.call_args_list)
+    sensemaker = Incursion(mock_extractor, mock_crud_tool)
+    print("Config rules:", sensemaker.config["rules"])
+    print("Add_rule calls:", mock_engine.return_value.add_rule.call_args_list)
 
-#     assert len(sensemaker.config["rules"]) == 2
-#     assert mock_engine.return_value.add_rule.call_count == 2
+    assert len(sensemaker.config["rules"]) == 2
+    assert mock_engine.return_value.add_rule.call_count == 2
