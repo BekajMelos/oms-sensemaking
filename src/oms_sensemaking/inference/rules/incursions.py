@@ -1,6 +1,7 @@
 """Incursion Rule"""
 
 import logging
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -14,10 +15,12 @@ from oms_sdk.generated.generated_graphql_client import (
     GeoQueryType,
     NodeNode,
     ObservationObservation,
+    PageParams,
     StringQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
     UpdateUuidList,
+    UuidQueryByList,
 )
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
@@ -146,6 +149,32 @@ class Incursion(Sensemaker):
                 )
                 return True
         return False
+
+    def get_all_incursion_data(self, incurring_object_id: UUID, feature_of_interest: AOI, pagesize: int = 200):
+        all_data = []
+        page = 1
+        while True:
+            activity_query = ActivityQuery(
+                name=StringQuery(equals="Incursion"),
+                nodeIds=UuidQueryByList(in_=[incurring_object_id]),
+                pageParams=PageParams(page=page, pageSize=pagesize),
+            )
+            response = self.oms_crud_tool.oms_client.incursion_data(
+                query=activity_query,
+                incursionAttributeValue=StringQuery(equals="Incursion"),
+                incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+                incursionAttributeType=AttributeType.GEOSPATIAL,
+                attributeGeometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
+                incursionTags=SETTINGS.incursion_tags,
+            )
+            activities_data = response.data
+            if not activities_data:
+                break
+            all_data.extend(activities_data)
+            if len(activities_data) < pagesize:
+                break
+            page += 1
+        return all_data
 
     def _update_existing_incursion(
         self,
