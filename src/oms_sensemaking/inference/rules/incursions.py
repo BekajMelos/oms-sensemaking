@@ -6,13 +6,15 @@ from uuid import UUID
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    AttributeQuery,
     AttributesAttributesData,
     AttributeType,
+    AttributeTypeQuery,
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
+    IncursionDataActivitiesData,
+    IncursionDataActivitiesDataAttributesData,
     ObservationObservation,
     PageParams,
     StringQuery,
@@ -86,7 +88,9 @@ class Incursion(Sensemaker):
             incurring_object_id = obs.nodeId
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
-            existing_incursion_activities = self.oms_crud_tool.get_pages_of_activities("Incursion", incurring_object_id)
+            existing_incursion_activities = self.get_all_incursion_data(
+                incurring_object_id=incurring_object_id, feature_of_interest=feature_of_interest
+            )
             matching_incursion_attribute_found = False
 
             LOGGER.debug("%d Existing Incursion Activities", len(existing_incursion_activities))
@@ -94,16 +98,7 @@ class Incursion(Sensemaker):
             for existing_incursion_activity in existing_incursion_activities:
                 if matching_incursion_attribute_found:
                     break
-                attribute_query = AttributeQuery(
-                    attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-                    attributeValue=StringQuery(equals="Incursion"),
-                    attributeType={"is": AttributeType.GEOSPATIAL},
-                    geometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
-                    activityIds=[existing_incursion_activity.id],
-                    tags=SETTINGS.incursion_tags,
-                )
-                attr_response = self.oms_crud_tool.get_attributes(attribute_query)
-                existing_incursion_attributes = attr_response.data
+                existing_incursion_attributes = existing_incursion_activity.attributes.data
 
                 LOGGER.debug("%d Existing Incursion Attributes", len(existing_incursion_attributes))
 
@@ -126,8 +121,8 @@ class Incursion(Sensemaker):
         observation: ObservationObservation,
         incurring_obj_id: UUID,
         feat_of_int: AOI,
-        existing_act: ActivitiesActivitiesData,
-        existing_attributes: list[AttributesAttributesData],
+        existing_act: IncursionDataActivitiesData,
+        existing_attributes: list[IncursionDataActivitiesDataAttributesData],
         obs_timeframe: Timeframe,
     ) -> bool:
         """
@@ -154,7 +149,7 @@ class Incursion(Sensemaker):
         return False
 
     def get_all_incursion_data(self, incurring_object_id: UUID, feature_of_interest: AOI, pagesize: int = 200):
-        all_data = []
+        incursion_activities: list[IncursionDataActivitiesData] = []
         page = 1
         while True:
             activity_query = ActivityQuery(
@@ -166,18 +161,19 @@ class Incursion(Sensemaker):
                 query=activity_query,
                 incursionAttributeValue=StringQuery(equals="Incursion"),
                 incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
-                incursionAttributeType=AttributeType.GEOSPATIAL,
+                incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
                 attributeGeometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
                 incursionTags=SETTINGS.incursion_tags,
             )
-            activities_data = response.data
-            if not activities_data:
+            activities_layer = response.data
+            if not activities_layer:
                 break
-            all_data.extend(activities_data)
-            if len(activities_data) < pagesize:
+            # Get all pages of incurison data
+            incursion_activities.extend(activities_layer)
+            if len(activities_layer) < pagesize:
                 break
             page += 1
-        return all_data
+        return incursion_activities
 
     def _update_existing_incursion(
         self,

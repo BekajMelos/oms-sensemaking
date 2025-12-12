@@ -5,17 +5,23 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivityActivity,
+    ActivityQuery,
     AttributeAttribute,
-    AttributeQuery,
     AttributeType,
+    AttributeTypeQuery,
     Confidence,
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
+    IncursionDataActivities,
+    IncursionDataActivitiesData,
+    IncursionDataActivitiesDataAttributes,
+    IncursionDataActivitiesDataAttributesData,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
+    PageParams,
     StringQuery,
     TimeQuery,
     UpdateActivityInput,
@@ -23,6 +29,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateUuidList,
     UuidQueryByList,
 )
+from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
 from shapely.geometry import shape
 
@@ -253,8 +260,14 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 
 
 @pytest.fixture
-def mock_crud_tool():
+def mock_oms_client():
+    return MagicMock(spec=Client)
+
+
+@pytest.fixture
+def mock_crud_tool(mock_oms_client):
     crud_tool = MagicMock(spec=OmsCrudTool)
+    crud_tool.oms_client = mock_oms_client
     return crud_tool
 
 
@@ -427,22 +440,45 @@ def test_two_existing_incursions(
     # incursion including the observation, resulting in an attribute/activity update
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
+    response = IncursionDataActivities(
+        data=[
+            IncursionDataActivitiesData(
+                id=activity1.id,
+                labels=activity1.labels,
+                attributes=IncursionDataActivitiesDataAttributes(
+                    data=[
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute2.id,
+                            labels=attribute2.labels,
+                            valueStart=attribute2.valueStart,
+                            valueEnd=attribute2.valueEnd,
+                        ),
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute1.id,
+                            labels=attribute1.labels,
+                            valueStart=attribute1.valueStart,
+                            valueEnd=attribute1.valueEnd,
+                        ),
+                    ]
+                ),
+            )
+        ]
+    )
     # mock responses for correct behavior
-    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [attribute2, attribute1]
-    mock_crud_tool.get_attributes.return_value = mock_attribute_response
+    mock_crud_tool.oms_client.incursion_data.return_value = response
 
     incur_sm.process_data(obs=observational_node_region1)
-    mock_crud_tool.get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
+    mock_crud_tool.oms_client.incursion_data.assert_called_with(
+        query=ActivityQuery(
+            name=StringQuery(equals="Incursion"),
+            nodeIds=UuidQueryByList(in_=[incurring_object.id]),
+            pageParams=PageParams(page=1, pageSize=200),
+        ),
+        incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+        incursionAttributeValue=StringQuery(equals="Incursion"),
+        incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
+        attributeGeometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
+        incursionTags=SETTINGS.incursion_tags,
     )
 
     mock_get_observations.assert_called_with(
@@ -485,13 +521,28 @@ def test_existing_incursion_nonoverlapping_time(
     # with nonoverlapping time, resulting in attribute/activity updates
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
+    response = IncursionDataActivities(
+        data=[
+            IncursionDataActivitiesData(
+                id=activity1.id,
+                labels=activity1.labels,
+                attributes=IncursionDataActivitiesDataAttributes(
+                    data=[
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute2.id,
+                            labels=attribute2.labels,
+                            valueStart=attribute2.valueStart,
+                            valueEnd=attribute2.valueEnd,
+                        ),
+                    ]
+                ),
+            )
+        ]
+    )
+    mock_crud_tool.oms_client.incursion_data.return_value = response
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [attribute2]
-    mock_crud_tool.get_attributes.return_value = mock_attribute_response
 
     incur_sm.process_data(obs=observational_node_region1)
     mock_get_observations.assert_called_with(
