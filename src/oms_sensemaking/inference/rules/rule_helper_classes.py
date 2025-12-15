@@ -1,7 +1,8 @@
+from uuid import UUID
+
 from dateutil.parser import isoparse
 from oms_sdk.generated.generated_graphql_client import (
     GeoQuery,
-    NodeNode,
     ObservationObservation,
     ObservationQuery,
     TimeQuery,
@@ -33,7 +34,7 @@ class GeoTimeframe:
 
     def object_observed_between_generic_node_and_observation_times(
         self,
-        node_object: NodeNode,
+        node_object_id: UUID,
         observation: ObservationObservation,
         geo_query: GeoQuery = None,
     ) -> bool:
@@ -49,7 +50,7 @@ class GeoTimeframe:
         if observation_start_time < self.start_time:
             # Check for observations between current observation end time and generic node start time
             observation_query = ObservationQuery(
-                nodeIds=UuidQueryByList(in_=[node_object.id]),
+                nodeIds=UuidQueryByList(in_=[node_object_id]),
                 startTime=TimeQuery(gte=observation.endTime),
                 endTime=TimeQuery(lt=self.start_time.isoformat()),
                 geometry=geo_query,
@@ -57,7 +58,7 @@ class GeoTimeframe:
         else:
             # Check for observations between generic end time and current observation start time
             observation_query = ObservationQuery(
-                nodeIds=UuidQueryByList(in_=[node_object.id]),
+                nodeIds=UuidQueryByList(in_=[node_object_id]),
                 startTime=TimeQuery(gt=self.end_time.isoformat()),
                 endTime=TimeQuery(lte=observation.startTime),
                 geometry=geo_query,

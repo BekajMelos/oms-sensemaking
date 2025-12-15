@@ -12,7 +12,6 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
-    NodeNode,
     ObservationObservation,
     StringQuery,
     UpdateActivityInput,
@@ -61,10 +60,8 @@ class Incursion(Sensemaker):
 
         :param rule_context: Rule context object containing the observation to evaluate
         """
-        if not self.evaluate(obs) or self.has_action_already_ran(obs):
+        if not self.evaluate(obs):
             return []
-        # Fetch node that observation points to
-        incurring_object = self.oms_crud_tool.get_node(obs.nodeId)
         obs_geo: BaseGeometry = shape(obs.geometry)
 
         # Check if observation occurred in an area of interest
@@ -76,11 +73,15 @@ class Incursion(Sensemaker):
                 break
 
         if feature_of_interest:
+            # Check if observation has already been run on after ensuring
+            # the observation falls within a feature of interest, does not waste a request early on
+            if self.has_action_already_ran(obs):
+                return []
             # can we include geo?
             LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
-            existing_incursion_activities = self.oms_crud_tool.get_pages_of_activities("Incursion", incurring_object)
+            existing_incursion_activities = self.oms_crud_tool.get_pages_of_activities("Incursion", obs.nodeId)
             matching_incursion_attribute_found = False
 
             LOGGER.debug("%d Existing Incursion Activities", len(existing_incursion_activities))
@@ -103,7 +104,6 @@ class Incursion(Sensemaker):
 
                 matching_incursion_attribute_found = self._check_existing_incursion_and_update(
                     obs,
-                    incurring_object,
                     feature_of_interest,
                     existing_incursion_activity,
                     existing_incursion_attributes,
@@ -112,13 +112,12 @@ class Incursion(Sensemaker):
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
-                self._handle_new_incursion(obs, incurring_object, feature_of_interest)
+                self._handle_new_incursion(obs, feature_of_interest)
         return []
 
     def _check_existing_incursion_and_update(
         self,
         observation: ObservationObservation,
-        incurring_obj: NodeNode,
         feat_of_int: AOI,
         existing_act: ActivitiesActivitiesData,
         existing_attributes: list[AttributesAttributesData],
@@ -137,7 +136,7 @@ class Incursion(Sensemaker):
             time_overlap = inc_attr_geo_timeframe.does_observation_overlap(obs_timeframe)
             geo_query = GeoQuery(queryGeoJson=(feat_of_int.geometry_dict), queryType=GeoQueryType.DISJOINT)
             if time_overlap or inc_attr_geo_timeframe.object_observed_between_generic_node_and_observation_times(
-                incurring_obj, observation, geo_query
+                observation.nodeId, observation, geo_query
             ):
                 # Update existing incursion with union of observation and incursion time intervals
                 inc_attr_geo_timeframe.update_generic_node_times_with_observation(obs_timeframe)
@@ -186,17 +185,13 @@ class Incursion(Sensemaker):
         )
         self.oms_crud_tool.update_attribute(updated_attribute_input)
 
-    def _handle_new_incursion(
-        self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: AOI
-    ):
+    def _handle_new_incursion(self, observation: ObservationObservation, feature_of_interest: AOI):
         """
         Create new incursion attribute pointing to incurring_object and activity pointing to observation
         """
 
         # Create new incursion activity pointing to observation
-        description = feature_of_interest.name
-        if description is None:
-            description = f"Incursion Activity by {incurring_object.name}"
+        description = f"Incursion Activity by object: {observation.nodeId}"
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
             tags=SETTINGS.incursion_tags,
