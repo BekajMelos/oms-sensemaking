@@ -251,40 +251,6 @@ def activity1(mocker: MockerFixture):
 
 
 @pytest.fixture
-def activity2(mocker: MockerFixture):
-    acti = mocker.Mock(spec=ActivityActivity)
-    acti.id = "incActi2"
-    acti.acm = DEFAULT_ACM
-    acti.classIri = SETTINGS.inference_incursion_class_iri
-    acti.name = "Incursion"
-    acti.state = SETTINGS.inference_incursion_activity_state
-    acti.nodeId = "incurring_object_id"
-    acti.observationIds = ["obs_id"]
-    acti.startTime = "2024-01-01T00:00:00+00:00"
-    acti.endTime = "2025-01-01T00:00:00+00:00"
-    acti.labels = None
-
-    return acti
-
-
-@pytest.fixture
-def activity3(mocker: MockerFixture):
-    acti = mocker.Mock(spec=ActivityActivity)
-    acti.id = "incActi3"
-    acti.acm = DEFAULT_ACM
-    acti.classIri = SETTINGS.inference_incursion_class_iri
-    acti.name = "Incursion"
-    acti.state = SETTINGS.inference_incursion_activity_state
-    acti.nodeId = "incurring_object_id"
-    acti.observationIds = ["obs_id"]
-    acti.startTime = "2024-01-01T00:00:00+00:00"
-    acti.endTime = "2025-01-01T00:00:00+00:00"
-    acti.labels = None
-
-    return acti
-
-
-@pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node_region1):
     mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_observations")
     mock_observation_response = MagicMock()
