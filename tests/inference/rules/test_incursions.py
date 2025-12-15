@@ -259,7 +259,7 @@ def mock_crud_tool():
 
 
 @pytest.fixture
-def broken_observation(mocker: MockerFixture):
+def observation_with_missing_start_time(mocker: MockerFixture):
     """
     Incoming observation
     """
@@ -282,12 +282,12 @@ def broken_observation(mocker: MockerFixture):
 
 
 # Tests
-def test_evaluate_input(observational_node_region1, broken_observation, mock_crud_tool):
+def test_evaluate_input(observational_node_region1, observation_with_missing_start_time, mock_crud_tool):
     """Test to verify valid inputs are recognized as such"""
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
     # Rule should only be ran against observations
-    assert not incur_sm.evaluate(broken_observation), "should only run for observations"
+    assert not incur_sm.evaluate(observation_with_missing_start_time), "should only run for observations"
 
     # Input observations must include a nodeId and geometry
     assert incur_sm.evaluate(obs=observational_node_region1), "expected input to be valid"
