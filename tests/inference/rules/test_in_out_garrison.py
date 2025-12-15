@@ -278,7 +278,7 @@ def mock_crud_tool(mock_oms_client):
 
 
 @pytest.fixture
-def broken_observation(mocker: MockerFixture):
+def observation_with_missing_start_time(mocker: MockerFixture):
     """
     Incoming observation
     """
@@ -310,12 +310,12 @@ def make_in_out_garrison_response(coords):
 
 
 # Tests
-def test_evaluate_input_obs_no_start_time(mock_crud_tool, broken_observation):
+def test_evaluate_input_obs_no_start_time(mock_crud_tool, observation_with_missing_start_time):
     """Test to verify valid inputs are recognized as such"""
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
 
     # Rule should only be ran against observations
-    assert not garr_sm.evaluate(broken_observation), "should only run for observations"
+    assert not garr_sm.evaluate(observation_with_missing_start_time), "should only run for observations"
 
 
 def test_evaluate_input_obs_no_node_id(observational_node, mock_crud_tool):

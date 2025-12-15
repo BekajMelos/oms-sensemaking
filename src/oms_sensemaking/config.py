@@ -73,7 +73,7 @@ class CommonVars:
     SonarQube code smells for duplicated values
     '''
     has_text_value_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"
-    base_oms_sensemaking_tag = "Atoms Sensemaking"
+    base_atoms_sensemaking_tag = "Atoms Sensemaking"
     intentional_act_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct"
     has_coords_iri = "https://foundry.ai.mil/ontology/4901-001/hasCoordinates"
 
@@ -172,7 +172,7 @@ class MilSymbolSettings(BaseModel):
         CommonVars.has_text_value_iri,
         description="Military Symbol Sensemaker tags")
     mil_symbol_sensemaker_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Military Symbol Sensemaker"],
+        [CommonVars.base_atoms_sensemaking_tag, "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
     rmq_mil_symbol_queue_name: str = Field(
@@ -304,10 +304,10 @@ class Settings(BaseSettings):
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
     incursion_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
     )
     inference_incursion_activity_state: str = Field(
         "UNKNOWN", description="String Incursion Activity State"
@@ -370,7 +370,7 @@ class Settings(BaseSettings):
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
     cache_entry_expire_sec: int = Field(30, description="How long to wait for new points before creating a new Track")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
-    geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
+    geo_sensemaker_event_tag: str = Field("geosensemaker",
         description="Tag for OMSB objects from the geospatial sensemakers")
     max_track_time_length_seconds: int = Field(7 * 24 * 60 * 60,
         description="Max amount of time in seconds a track can be from earliest start time to last start time",
@@ -460,7 +460,7 @@ class Settings(BaseSettings):
         examples=["resolution-trigger"]
     )
     enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
-    resolution_sensemaker_tag: str = Field("resolution_tag",
+    resolution_sensemaker_tag: str = Field("resolution",
                                            description="Tag for OMSB objects from the resolution sensemaker")
     resolution_relationship_name: str = Field("Same As",
                                            description="Relationship IRI for resolution sensemaker suggestions")
@@ -486,7 +486,7 @@ class Settings(BaseSettings):
     oms_crud_ttl_cache_size: int = Field(1024, description="Max items in OMS CRUD Tool's given TTL Cache")
     oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in OMS CRUD Tool's given TTL Cache")
     omsb_url: str = Field("https://graphql:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-36", description="OMSB Version")
+    omsb_version: str = Field("Grimlock-INC-37", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     aac_cacert_path: str | None = Field(
@@ -533,7 +533,7 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
-    sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
+    sm_test_tags: list[str] = Field(["SM_TEST"], description="Tag for Sensemaking test processes")
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
     audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
     audit_log_error_json_file_path: str = Field(

@@ -15,6 +15,9 @@ class RuleHelper(BaseRule):
     def has_action_already_ran(self, input):
         return False
 
+    def get_graph_data(self, input):
+        return
+
 
 class Data:
     def __init__(self, id):

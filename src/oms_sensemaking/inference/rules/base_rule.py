@@ -18,7 +18,7 @@ class BaseRule(ABC, SensemakerMetaData):
         self.name: str = name if name else self.__class__.__name__
         self.config: dict = {}
 
-        #: The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
+        # The algorithm version [MAJOR, MINOR, PATCH]. Subclasses should set this to acknowledge notable changes.
         self.version: Tuple[int | str, int | str, int | str] = (0, 0, 0)
         self.executed_at: datetime
         self._finding_writer = FindingWriter()
@@ -38,9 +38,21 @@ class BaseRule(ABC, SensemakerMetaData):
         """
 
         LOGGER.debug("Executing Rule %s with rule_context %s", self.get_name(), rule_context)
+        self._get_graph_data(rule_context)
+
         if not self._has_action_already_ran(rule_context) and self._evaluate(rule_context):
             self._action(rule_context)
         return
+
+    @abstractmethod
+    def get_graph_data(self, rule_context: RuleContext):
+        """
+        Retrieve all data from Atoms API required for this rule.
+
+        :param rule_context: Generic object used to test conditions
+        """
+
+        raise NotImplementedError
 
     @abstractmethod
     def has_action_already_ran(self, rule_context: RuleContext) -> bool:
@@ -71,6 +83,13 @@ class BaseRule(ABC, SensemakerMetaData):
         """
 
         raise NotImplementedError
+
+    def _get_graph_data(self, rule_context: RuleContext):
+        """
+        Pre running step for the get_graph_data method.
+        """
+        LOGGER.info("Retrieving graph data for rule %s", self.get_name())
+        return self.get_graph_data(rule_context)
 
     def _has_action_already_ran(self, rule_context: RuleContext) -> bool:
         """
