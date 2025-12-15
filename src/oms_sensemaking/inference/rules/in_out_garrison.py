@@ -1,7 +1,5 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
-from uuid import UUID
-
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
@@ -73,13 +71,11 @@ class InOrOutOfGarrison(Sensemaker):
             garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-        # Get nodeId from observation
-        node_object_id = obs.nodeId
-        self._create_or_update_garrison_activity(obs, node_object_id, in_garrison_check, garrison_buffer_geojson)
+        self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson)
         return []
 
     def _create_or_update_garrison_activity(
-        self, obs: ObservationObservation, node_object_id: UUID, in_garrison: bool, garrison_buffer_geojson: dict
+        self, obs: ObservationObservation, in_garrison: bool, garrison_buffer_geojson: dict
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -108,7 +104,7 @@ class InOrOutOfGarrison(Sensemaker):
             # garrison in the time between the observation and activity
             time_overlap = enhanced_activity.does_observation_overlap(enhanced_obs)
             if time_overlap or enhanced_activity.object_observed_between_generic_node_and_observation_times(
-                node_object_id, obs, geo_query
+                obs.nodeId, obs, geo_query
             ):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
