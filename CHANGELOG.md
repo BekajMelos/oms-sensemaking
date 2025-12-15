@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 
 ### Changed
+- Updated tags to reference Atoms instead of oms
+- Clean up formatting for environment variables
+- Changed Inference Rules into their own Sensemakers which inherit from the base class for improved parallel processing.
 - Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 
 ### Fixed
