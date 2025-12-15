@@ -251,6 +251,40 @@ def activity1(mocker: MockerFixture):
 
 
 @pytest.fixture
+def activity2(mocker: MockerFixture):
+    acti = mocker.Mock(spec=ActivityActivity)
+    acti.id = "incActi2"
+    acti.acm = DEFAULT_ACM
+    acti.classIri = SETTINGS.inference_incursion_class_iri
+    acti.name = "Incursion"
+    acti.state = SETTINGS.inference_incursion_activity_state
+    acti.nodeId = "incurring_object_id"
+    acti.observationIds = ["obs_id"]
+    acti.startTime = "2024-01-01T00:00:00+00:00"
+    acti.endTime = "2025-01-01T00:00:00+00:00"
+    acti.labels = None
+
+    return acti
+
+
+@pytest.fixture
+def activity3(mocker: MockerFixture):
+    acti = mocker.Mock(spec=ActivityActivity)
+    acti.id = "incActi3"
+    acti.acm = DEFAULT_ACM
+    acti.classIri = SETTINGS.inference_incursion_class_iri
+    acti.name = "Incursion"
+    acti.state = SETTINGS.inference_incursion_activity_state
+    acti.nodeId = "incurring_object_id"
+    acti.observationIds = ["obs_id"]
+    acti.startTime = "2024-01-01T00:00:00+00:00"
+    acti.endTime = "2025-01-01T00:00:00+00:00"
+    acti.labels = None
+
+    return acti
+
+
+@pytest.fixture
 def mock_get_observations(mocker: MockerFixture, observational_node_region1):
     mock_get_observations = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_observations")
     mock_observation_response = MagicMock()
@@ -316,6 +350,28 @@ def test_no_incursion(no_inc_observational_node, mock_crud_tool):
     incur_sm.process_data(obs=no_inc_observational_node)
     mock_crud_tool.create_activity.assert_not_called()
     mock_crud_tool.update_activity.assert_not_called()
+
+
+def test_get_incursion_data(observational_node_region1, mock_crud_tool, areas_of_interest):
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    # Fake activity objects (could be MagicMock or real dataclasses)
+    activity1 = MagicMock(spec=IncursionDataActivitiesData)
+    activity2 = MagicMock(spec=IncursionDataActivitiesData)
+    activity3 = MagicMock(spec=IncursionDataActivitiesData)
+
+    # Page 1 returns full page, page 2 returns partial and then stop
+    responses = [
+        IncursionDataActivities(data=[activity1, activity2]),  # page 1
+        IncursionDataActivities(data=[activity3]),  # page 2
+    ]
+    mock_incursion_data = MagicMock(side_effect=responses)
+    mock_crud_tool.oms_client.incursion_data = mock_incursion_data
+    result = incur_sm.get_all_incursion_data(
+        incurring_object_id=observational_node_region1.nodeId, feature_of_interest=areas_of_interest[0], pagesize=2
+    )
+
+    assert result == [activity1, activity2, activity3]
+    assert mock_crud_tool.oms_client.incursion_data.call_count == 2
 
 
 def test_new_incursion_region1(
