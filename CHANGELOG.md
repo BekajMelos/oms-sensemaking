@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated tags to reference Atoms instead of oms
 - Clean up formatting for environment variables
+- Changed Inference Rules into their own Sensemakers which inherit from the base class for improved parallel processing.
 
 ### Fixed
 

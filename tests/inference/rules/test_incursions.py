@@ -27,8 +27,8 @@ from pytest_mock import MockerFixture
 from shapely.geometry import shape
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.rules.incursions import Incursion
-from oms_sensemaking.inference.rules.rule_context import RuleContext
 from tests.domain.area_of_interest.test_aoi_extractor import FakeAOIExtractor
 
 
@@ -238,62 +238,9 @@ def activity1(mocker: MockerFixture):
     acti.observationIds = ["obs_id"]
     acti.startTime = "2024-01-01T00:00:00+00:00"
     acti.endTime = "2025-01-01T00:00:00+00:00"
+    acti.labels = None
 
     return acti
-
-
-# Mock methods
-@pytest.fixture
-def mock_get_node(mocker: MockerFixture, incurring_object):
-    mock_get_node = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_node")
-    mock_get_node.return_value = incurring_object
-    return mock_get_node
-
-
-@pytest.fixture
-def mock_get_attributes(mocker: MockerFixture):
-    mock_get_attributes = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_attributes")
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = []
-    mock_get_attributes.return_value = mock_attribute_response
-    return mock_get_attributes
-
-
-@pytest.fixture
-def mock_create_attribute(mocker: MockerFixture):
-    mock_create_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_attribute")
-    return mock_create_attribute
-
-
-@pytest.fixture
-def mock_update_attribute(mocker: MockerFixture):
-    mock_update_attribute = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_attribute")
-    return mock_update_attribute
-
-
-@pytest.fixture
-def mock_get_activities(mocker: MockerFixture):
-    mock_get_activities = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.get_activities")
-    mock_activity_response = MagicMock()
-    mock_activity = MagicMock()
-    mock_activity.id = "incActi1"
-    mock_activity.labels = []
-    mock_activity_response.data = [mock_activity]
-    mock_get_activities.return_value = mock_activity_response
-    return mock_get_activities
-
-
-@pytest.fixture
-def mock_create_activity(mocker: MockerFixture, activity1):
-    mock_create_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.create_activity")
-    mock_create_activity.return_value = activity1
-    return mock_create_activity
-
-
-@pytest.fixture
-def mock_update_activity(mocker: MockerFixture):
-    mock_update_activity = mocker.patch("oms_sensemaking.clients.instances.oms_crud_tool.update_activity")
-    return mock_update_activity
 
 
 @pytest.fixture
@@ -305,56 +252,71 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
     return mock_get_observations
 
 
+@pytest.fixture
+def mock_crud_tool():
+    crud_tool = MagicMock(spec=OmsCrudTool)
+    return crud_tool
+
+
+@pytest.fixture
+def observation_with_missing_start_time(mocker: MockerFixture):
+    """
+    Incoming observation
+    """
+    geometry = {"coordinates": [-155.6235, 19.7023], "type": "Point"}
+
+    obs = mocker.Mock(spec=ObservationObservation)
+    obs.id = "obs_id"
+    obs.version = "version"
+    obs.acm = "acm"
+    obs.classIri = "classIri"
+    obs.className = "className"
+    obs.confidence = Confidence.MODERATE
+    obs.sourceId = "obs_sourceId"
+    obs.nodeId = "initial_object_id"
+    obs.geometry = geometry
+    obs.startTime = None
+    obs.endTime = "2025-01-01T00:00:00+00:00"
+
+    return obs
+
+
 # Tests
-def test_evaluate_input(observational_node_region1):
+def test_evaluate_input(observational_node_region1, observation_with_missing_start_time, mock_crud_tool):
     """Test to verify valid inputs are recognized as such"""
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
     # Rule should only be ran against observations
-    assert not rule.evaluate(RuleContext()), "should only run for observations"
+    assert not incur_sm.evaluate(observation_with_missing_start_time), "should only run for observations"
 
     # Input observations must include a nodeId and geometry
-    assert rule.evaluate(RuleContext(observation=observational_node_region1)), "expected input to be valid"
+    assert incur_sm.evaluate(obs=observational_node_region1), "expected input to be valid"
     observation_without_parent = copy.deepcopy(observational_node_region1)
     observation_without_parent.nodeId = None
-    assert not rule.evaluate(RuleContext(observation=observation_without_parent)), "expected input to be invalid"
+    assert not incur_sm.evaluate(obs=observation_without_parent), "expected input to be invalid"
 
 
-def test_no_incursion(no_inc_observational_node, mock_get_node, mock_create_activity, mock_update_activity):
+def test_no_incursion(no_inc_observational_node, mock_crud_tool):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    rule.action(RuleContext(observation=no_inc_observational_node))
-    mock_create_activity.assert_not_called()
-    mock_update_activity.assert_not_called()
+    incur_sm.process_data(obs=no_inc_observational_node)
+    mock_crud_tool.create_activity.assert_not_called()
+    mock_crud_tool.update_activity.assert_not_called()
 
 
 def test_new_incursion_region1(
-    activity1,
-    observational_node_region1,
-    incurring_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_get_attributes,
-    mock_create_activity,
-    mock_create_attribute,
-    areas_of_interest,
+    activity1, observational_node_region1, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region1
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    rule.action(RuleContext(observation=observational_node_region1))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
-    )
-    mock_create_attribute.assert_called_with(
+    # mock response for triggering other calls
+    mock_crud_tool.create_activity.return_value = activity1
+
+    incur_sm.process_data(obs=observational_node_region1)
+
+    mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue="Incursion",
@@ -368,14 +330,14 @@ def test_new_incursion_region1(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             geometry=areas_of_interest[0].geometry_dict,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
         )
     )
-    mock_create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region1.acm,
             tags=SETTINGS.incursion_tags,
@@ -383,7 +345,7 @@ def test_new_incursion_region1(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
@@ -398,31 +360,17 @@ def test_new_incursion_region1(
 
 
 def test_new_incursion_region2(
-    activity1,
-    observational_node_region2,
-    incurring_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_get_attributes,
-    mock_create_activity,
-    mock_create_attribute,
-    areas_of_interest,
+    activity1, observational_node_region2, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    rule.action(RuleContext(observation=observational_node_region2))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[1].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
-    )
-    mock_create_attribute.assert_called_with(
+    # mock responses for triggering correct behavior
+    mock_crud_tool.get_node.return_value = incurring_object
+    mock_crud_tool.create_activity.return_value = activity1
+
+    incur_sm.process_data(obs=observational_node_region2)
+    mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue="Incursion",
@@ -436,14 +384,14 @@ def test_new_incursion_region2(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             geometry=areas_of_interest[1].geometry_dict,
             valueStart=observational_node_region2.startTime,
             valueEnd=observational_node_region2.endTime,
         )
     )
-    mock_create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region2.acm,
             tags=SETTINGS.incursion_tags,
@@ -451,7 +399,7 @@ def test_new_incursion_region2(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
@@ -471,24 +419,24 @@ def test_two_existing_incursions(
     incurring_object,
     attribute1,
     attribute2,
-    mock_get_node,
-    mock_get_attributes,
-    mock_get_activities,
     mock_get_observations,
-    mock_update_attribute,
-    mock_update_activity,
     areas_of_interest,
+    mock_crud_tool,
 ):
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+
+    # mock responses for correct behavior
+    mock_crud_tool.get_node.return_value = incurring_object
+    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2, attribute1]
-    mock_get_attributes.return_value = mock_attribute_response
+    mock_crud_tool.get_attributes.return_value = mock_attribute_response
 
-    rule.action(RuleContext(observation=observational_node_region1))
-    mock_get_attributes.assert_called_with(
+    incur_sm.process_data(obs=observational_node_region1)
+    mock_crud_tool.get_attributes.assert_called_with(
         AttributeQuery(
             attributeIris=[SETTINGS.inference_incursion_attribute_iri],
             attributeValue=StringQuery(equals="Incursion"),
@@ -507,7 +455,7 @@ def test_two_existing_incursions(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_update_attribute.assert_called_with(
+    mock_crud_tool.update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute1.id,
             valueStart=observational_node_region1.startTime,
@@ -515,7 +463,7 @@ def test_two_existing_incursions(
             labels=[SETTINGS.sm_enriched_label],
         )
     )
-    mock_update_activity.assert_called_with(
+    mock_crud_tool.update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
@@ -530,26 +478,25 @@ def test_existing_incursion_nonoverlapping_time(
     observational_node_region1,
     incurring_object,
     attribute2,
-    mock_get_node,
-    mock_get_attributes,
-    mock_get_activities,
     mock_get_observations,
-    mock_update_attribute,
-    mock_update_activity,
     areas_of_interest,
+    activity1,
+    mock_crud_tool,
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
+    mock_crud_tool.get_node.return_value = incurring_object
+    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2]
-    mock_get_attributes.return_value = mock_attribute_response
+    mock_crud_tool.get_attributes.return_value = mock_attribute_response
 
-    rule.action(RuleContext(observation=observational_node_region1))
+    incur_sm.process_data(obs=observational_node_region1)
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeIds=UuidQueryByList(in_=[incurring_object.id]),
@@ -558,7 +505,7 @@ def test_existing_incursion_nonoverlapping_time(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_update_attribute.assert_called_with(
+    mock_crud_tool.update_attribute.assert_called_with(
         UpdateAttributeInput(
             id=attribute2.id,
             valueStart=attribute2.valueStart,
@@ -568,7 +515,7 @@ def test_existing_incursion_nonoverlapping_time(
             ],
         )
     )
-    mock_update_activity.assert_called_with(
+    mock_crud_tool.update_activity.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
@@ -580,31 +527,16 @@ def test_existing_incursion_nonoverlapping_time(
 
 
 def test_new_incursion_region3(
-    activity1,
-    observational_node_region3,
-    incurring_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_get_attributes,
-    mock_create_activity,
-    mock_create_attribute,
-    areas_of_interest,
+    activity1, observational_node_region3, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    rule.action(RuleContext(observation=observational_node_region3))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[2].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
-    )
-    mock_create_attribute.assert_called_with(
+    mock_crud_tool.create_activity.return_value = activity1
+
+    incur_sm.process_data(obs=observational_node_region3)
+
+    mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue="Incursion",
@@ -618,14 +550,14 @@ def test_new_incursion_region3(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             geometry=areas_of_interest[2].geometry_dict,
             valueStart=observational_node_region3.startTime,
             valueEnd=observational_node_region3.endTime,
         )
     )
-    mock_create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region3.acm,
             tags=SETTINGS.incursion_tags,
@@ -633,7 +565,7 @@ def test_new_incursion_region3(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
@@ -648,31 +580,16 @@ def test_new_incursion_region3(
 
 
 def test_new_incursion_region4(
-    activity1,
-    observational_node_region4,
-    incurring_object,
-    mock_get_node,
-    mock_get_activities,
-    mock_get_attributes,
-    mock_create_activity,
-    mock_create_attribute,
-    areas_of_interest,
+    activity1, observational_node_region4, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    rule = Incursion("incursion rule", FakeAOIExtractor())
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    rule.action(RuleContext(observation=observational_node_region4))
-    mock_get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[3].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
-    )
-    mock_create_attribute.assert_called_with(
+    mock_crud_tool.create_activity.return_value = activity1
+
+    incur_sm.process_data(obs=observational_node_region4)
+
+    mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
             attributeValue="Incursion",
@@ -686,14 +603,14 @@ def test_new_incursion_region4(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             geometry=areas_of_interest[3].geometry_dict,
             valueStart=observational_node_region4.startTime,
             valueEnd=observational_node_region4.endTime,
         )
     )
-    mock_create_activity.assert_called_with(
+    mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region4.acm,
             tags=SETTINGS.incursion_tags,
@@ -701,7 +618,7 @@ def test_new_incursion_region4(
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
-                rule.version_string,
+                incur_sm.version_string,
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",

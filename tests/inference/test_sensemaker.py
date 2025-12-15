@@ -1,7 +1,11 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 # Assuming your imports
-from oms_sensemaking.inference.sensemakers.inference import InferenceSensemaker
+from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
+from oms_sensemaking.inference.rules.incursions import Incursion
 
 
 @pytest.fixture
@@ -17,12 +21,26 @@ def mock_rules(mocker):
     return mock_in_garrison, mock_incursion, mock_extractor
 
 
-def test_init_adds_rules_based_on_settings(mocker, mock_engine, mock_rules):
+@pytest.fixture
+def mock_crud_tool(mock_oms_client):
+    crud_tool = MagicMock(spec=OmsCrudTool)
+    crud_tool.oms_client = mock_oms_client
+    return crud_tool
+
+
+@pytest.fixture
+def mock_extractor():
+    extractor = MagicMock(spec=AOIExtractor)
+    return extractor
+
+
+@pytest.mark.skip("Depreceated test, this will be removed when Inference SM is fully removed")
+def test_init_adds_rules_based_on_settings(mocker, mock_engine, mock_crud_tool, mock_extractor):
     mock_settings = mocker.patch("oms_sensemaking.config.SETTINGS")
     mock_settings.toggle_add_garrison_rule = True
     mock_settings.toggle_incursion_rule = True
 
-    sensemaker = InferenceSensemaker()
+    sensemaker = Incursion(mock_extractor, mock_crud_tool)
     print("Config rules:", sensemaker.config["rules"])
     print("Add_rule calls:", mock_engine.return_value.add_rule.call_args_list)
 
