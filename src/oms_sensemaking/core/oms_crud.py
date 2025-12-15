@@ -58,6 +58,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateActivityUpdateActivity,
     UpdateAttributeInput,
     UpdateAttributeUpdateAttribute,
+    UpdateIncursionActivityAndAttributes,
     UpdateNodeInput,
     UpdateNodeUpdateNode,
     UpdateRelationshipInput,
@@ -290,7 +291,16 @@ class OmsCrudTool(BaseClient):
         """Update activity"""
         return self.oms_client.update_activity(update_input)
 
-    ### DELETE ###
+    def update_incursion_activity_and_attributes(
+        self,
+        activity_input: UpdateActivityInput,
+        attribute_input: UpdateAttributeInput,
+    ) -> UpdateIncursionActivityAndAttributes:
+        """Update incursion activity and attributes"""
+        return self.oms_client.update_incursion_activity_and_attributes(activity_input, attribute_input)
+
+        ### DELETE ###
+
     def delete_node(self, node_id: str) -> bool:
         """Update node"""
         return self.oms_client.delete_node(DeleteByIdInput(id=node_id))

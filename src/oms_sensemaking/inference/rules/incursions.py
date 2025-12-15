@@ -183,7 +183,6 @@ class Incursion(BaseRule):
             observationIds=UpdateUuidList(add=[observation.id]),
             labels=activity_labels,
         )
-        oms_crud_tool.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         attribute_labels = existing_incursion_attribute.labels
@@ -196,7 +195,8 @@ class Incursion(BaseRule):
             valueEnd=inc_attr_geo_timeframe.end_time.isoformat(),
             labels=attribute_labels,
         )
-        oms_crud_tool.update_attribute(updated_attribute_input)
+
+        oms_crud_tool.update_incursion_activity_and_attributes(updated_activity_input, updated_attribute_input)
 
     def _handle_new_incursion(
         self, observation: ObservationObservation, incurring_object: NodeNode, feature_of_interest: AOI
