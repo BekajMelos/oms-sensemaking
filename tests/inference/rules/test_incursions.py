@@ -272,7 +272,7 @@ def mock_crud_tool(mock_oms_client):
 
 
 @pytest.fixture
-def broken_observation(mocker: MockerFixture):
+def observation_with_missing_start_time(mocker: MockerFixture):
     """
     Incoming observation
     """
@@ -295,12 +295,12 @@ def broken_observation(mocker: MockerFixture):
 
 
 # Tests
-def test_evaluate_input(observational_node_region1, broken_observation, mock_crud_tool):
+def test_evaluate_input(observational_node_region1, observation_with_missing_start_time, mock_crud_tool):
     """Test to verify valid inputs are recognized as such"""
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
     # Rule should only be ran against observations
-    assert not incur_sm.evaluate(broken_observation), "should only run for observations"
+    assert not incur_sm.evaluate(observation_with_missing_start_time), "should only run for observations"
 
     # Input observations must include a nodeId and geometry
     assert incur_sm.evaluate(obs=observational_node_region1), "expected input to be valid"
@@ -362,7 +362,7 @@ def test_new_incursion_region1(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="test feature name",
+            description=f"Incursion Activity by object: {observational_node_region1.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
@@ -415,7 +415,7 @@ def test_new_incursion_region2(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion Activity by {incurring_object.id}",
+            description=f"Incursion Activity by object: {observational_node_region2.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
@@ -617,7 +617,7 @@ def test_new_incursion_region3(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="Pentagon Polygon",
+            description=f"Incursion Activity by object: {observational_node_region3.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region3.nodeId,
             observationIds=[observational_node_region3.id],
@@ -670,7 +670,7 @@ def test_new_incursion_region4(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="Pentagon",
+            description=f"Incursion Activity by object: {observational_node_region4.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region4.nodeId,
             observationIds=[observational_node_region4.id],

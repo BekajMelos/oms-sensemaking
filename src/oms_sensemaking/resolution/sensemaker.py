@@ -142,7 +142,7 @@ class ResolutionSensemaker(Sensemaker):
 
     def has_already_ran(self, current_node_id: UUID) -> bool:
         """
-        Deteremine if this check has already run and the nodes have already been tagged
+        Determine if this check has already run and the nodes have already been tagged
 
         :param current_node_id: The node id we're checking for duplicates against
         :return: boolean indicating whether this check has run or not
