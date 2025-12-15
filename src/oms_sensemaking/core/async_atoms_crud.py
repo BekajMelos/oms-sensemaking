@@ -3,6 +3,7 @@ from oms_sdk.client_request_time_header import async_add_request_time_header
 from oms_sdk.generated.generated_async_graphql_client import (
     Client,
     CreateActivityInput,
+    CreateAttribute,
     CreateNodeInput,
     CreateObservationInput,
     CreateOriginatorInput,
@@ -61,3 +62,6 @@ class AsyncAtomsCrudTool:
 
     def create_source(self, source_input: CreateSourceInput):
         return self._atoms_client.create_source(source_input)
+
+    def create_attribute(self, attribute_input: CreateAttribute):
+        return self._atoms_client.create_attribute(attribute_input)
