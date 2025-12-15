@@ -150,17 +150,17 @@ class SensemakerController:
             return False
 
         try:
-            with ThreadPoolExecutor() as executor:
+            with ThreadPoolExecutor() as sync_executor:
                 futures = []
                 for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, oms_obj)
+                    future = sync_executor.submit(sensemaker.execute, oms_obj)
                     futures.append(future)
 
                 # make sure errors are caught
                 for future in as_completed(futures):
                     _ = future.result()
 
-                executor.shutdown(wait=True)
+                sync_executor.shutdown(wait=True)
 
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"
