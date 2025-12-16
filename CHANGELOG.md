@@ -10,10 +10,13 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated tags to reference Atoms instead of oms
 - Clean up formatting for environment variables
+- Changed Inference Rules into their own Sensemakers which inherit from the base class for improved parallel processing.
+- Instead of using the actual node object, use the nodeId of the object of interest for the Incursion and In/Out Garrison processes.
 
 ### Fixed
 
 ### Removed
+- No longer request for the node object in the Incursion and In/Out Garrison processes
 
 ## [0.18.0] - 2025-12-09
 
