@@ -349,7 +349,7 @@ def test_new_incursion_region1(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="test feature name",
+            description=f"Incursion Activity by object: {observational_node_region1.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
@@ -366,7 +366,6 @@ def test_new_incursion_region2(
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
     # mock responses for triggering correct behavior
-    mock_crud_tool.get_node.return_value = incurring_object
     mock_crud_tool.create_activity.return_value = activity1
 
     incur_sm.process_data(obs=observational_node_region2)
@@ -403,7 +402,7 @@ def test_new_incursion_region2(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description=f"Incursion Activity by {incurring_object.name}",
+            description=f"Incursion Activity by object: {observational_node_region2.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
@@ -429,7 +428,6 @@ def test_two_existing_incursions(
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
     # mock responses for correct behavior
-    mock_crud_tool.get_node.return_value = incurring_object
     mock_crud_tool.get_pages_of_activities.return_value = [activity1]
     mock_attribute_response = MagicMock()
     mock_attribute_response.data = [attribute2, attribute1]
@@ -487,7 +485,6 @@ def test_existing_incursion_nonoverlapping_time(
     # with nonoverlapping time, resulting in attribute/activity updates
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    mock_crud_tool.get_node.return_value = incurring_object
     mock_crud_tool.get_pages_of_activities.return_value = [activity1]
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
@@ -569,7 +566,7 @@ def test_new_incursion_region3(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="Pentagon Polygon",
+            description=f"Incursion Activity by object: {observational_node_region3.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region3.nodeId,
             observationIds=[observational_node_region3.id],
@@ -622,7 +619,7 @@ def test_new_incursion_region4(
             ],
             classIri=SETTINGS.inference_incursion_class_iri,
             name="Incursion",
-            description="Pentagon",
+            description=f"Incursion Activity by object: {observational_node_region4.nodeId}",
             state=SETTINGS.inference_incursion_activity_state,
             nodeId=observational_node_region4.nodeId,
             observationIds=[observational_node_region4.id],
