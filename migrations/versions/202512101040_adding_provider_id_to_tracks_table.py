@@ -1,3 +1,11 @@
+"""added provider_id to tracks table
+
+Revision ID: 202512101040
+Revises: 202511112210
+Create Date: 2025-12-10 10:40:32.170304
+
+"""
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
