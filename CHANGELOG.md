@@ -54,7 +54,6 @@ All notable changes to this project will be documented in this file.
 - Added one index to `points` table to prevent long-running Geo query that compounded with each call.
 - Added new setting input schema validation and get method for use in the endpoint
 
-
 ### Changed
 - Tracks are now separated by provider
 - Encrypted whitelist of endpoints to be secret in repo

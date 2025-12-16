@@ -23,6 +23,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateUuidList,
     UuidQueryByList,
 )
+from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
 from shapely.geometry import shape
 
@@ -253,8 +254,14 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 
 
 @pytest.fixture
-def mock_crud_tool():
+def mock_oms_client():
+    return MagicMock(spec=Client)
+
+
+@pytest.fixture
+def mock_crud_tool(mock_oms_client):
     crud_tool = MagicMock(spec=OmsCrudTool)
+    crud_tool.oms_client = mock_oms_client
     return crud_tool
 
 
@@ -454,7 +461,7 @@ def test_two_existing_incursions(
         )
     )
 
-    mock_crud_tool.update_incursion_activity_and_attributes.assert_called_with(
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
@@ -501,7 +508,7 @@ def test_existing_incursion_nonoverlapping_time(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_crud_tool.update_incursion_activity_and_attributes.assert_called_with(
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),

@@ -183,7 +183,9 @@ class Incursion(Sensemaker):
             labels=attribute_labels,
         )
 
-        self.oms_crud_tool.update_incursion_activity_and_attributes(updated_activity_input, updated_attribute_input)
+        self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
+            updated_activity_input, updated_attribute_input
+        )
 
     def _handle_new_incursion(self, observation: ObservationObservation, feature_of_interest: AOI):
         """
