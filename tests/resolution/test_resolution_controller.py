@@ -144,7 +144,6 @@ def test_passes_filter_returns_true_for_handled_event(obj_type, action):
 )
 def test_passes_filter_returns_false_for_unhandled(obj_type, action):
     filt = ResolutionQueueFilter(MockIriProvider())
-    print("obj_type:", obj_type)
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
     assert filt.passes_filter(event) is False
@@ -153,7 +152,3 @@ def test_passes_filter_returns_false_for_unhandled(obj_type, action):
 class MockIriProvider:
     def __init__(self):
         self.attribute_iris = ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"]
-
-    # def mock_duplicate_object_iris():
-    #     mock_duplicate_object_iris = {"obj1": ["dup1", "dup2"]}
-    #     return mock_duplicate_object_iris
