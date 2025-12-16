@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "a58974b5-3cb9-4b65-b3a5-699ce3149c2f",
-		"name": "Sensemaking Smoke Tests",
+		"_postman_id": "92f9f64a-867f-4b1e-8f8d-c93852cb9936",
+		"name": "Sensemaking Smoke Tests improvements",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "33434330"
 	},
@@ -820,7 +820,7 @@
 											"const success = retryUntil({",
 											"  conditionFn: () =>",
 											"    response?.data?.nodes?.data?.length > 0,",
-											"  maxAttempts: 3,",
+											"  maxAttempts: 4,",
 											"  delayMs: 30000",
 											"});",
 											"",
@@ -6190,7 +6190,7 @@
 											"            activity.observationIds.length === 2",
 											"        );",
 											"    },",
-											"    maxAttempts: Number(pm.environment.get(\"MAX_RETRIES\") ?? 3),",
+											"    maxAttempts: 3,",
 											"    delayMs: 30000",
 											"});",
 											"",
