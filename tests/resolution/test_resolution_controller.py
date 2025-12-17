@@ -19,6 +19,7 @@ from oms_sensemaking.resolution.controllers import (
     ResolutionSensemaker,
     ResolutionSensemakerController,
 )
+from src.oms_sensemaking.core.event_model import AuditLogHeaders
 
 
 @pytest.fixture
@@ -28,7 +29,7 @@ def mock_res_controller():
             "ResolutionRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
-            event_filter=ResolutionQueueFilter(),
+            event_filter=ResolutionQueueFilter(MockIriProvider()),
         ),
         RethrowErrorLogger(ErrorLogger()),
     )
@@ -115,14 +116,22 @@ def test_start_does_nothing_when_disabled(mock_res_controller):
         super_start_mock.assert_called_once_with(mock_res_controller)
 
 
-def test_passes_filter_returns_true_for_handled_event():
-    filt = ResolutionQueueFilter()
+@pytest.mark.parametrize(
+    "obj_type, action",
+    [
+        ("ATTRIBUTE", Action.CREATE.value),
+        ("ATTRIBUTE", Action.RESTORE.value),
+    ],
+)
+def test_passes_filter_returns_true_for_handled_event(obj_type, action):
+    mock_iri_provider = MockIriProvider()
+    filt = ResolutionQueueFilter(mock_iri_provider)
 
-    event = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
-    )
+    event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
+    # These are attributes from duplicate_object_iris.json
+    event.headers = AuditLogHeaders(mock_iri_provider.attribute_iris[0])
 
-    assert filt.passes_filter(event) is True
+    assert filt.passes_filter(event)
 
 
 @pytest.mark.parametrize(
@@ -134,8 +143,12 @@ def test_passes_filter_returns_true_for_handled_event():
     ],
 )
 def test_passes_filter_returns_false_for_unhandled(obj_type, action):
-    filt = ResolutionQueueFilter()
-
+    filt = ResolutionQueueFilter(MockIriProvider())
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
     assert filt.passes_filter(event) is False
+
+
+class MockIriProvider:
+    def __init__(self):
+        self.attribute_iris = ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"]
