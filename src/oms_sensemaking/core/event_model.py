@@ -14,7 +14,7 @@ class HeaderParser:
 
 
 class AuditLogHeaders:
-    def __init__(self, iri) -> None:
+    def __init__(self, iri: str) -> None:
         self.iri = iri
 
     def to_dict(self):
