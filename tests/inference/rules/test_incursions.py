@@ -5,17 +5,23 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivityActivity,
+    ActivityQuery,
     AttributeAttribute,
-    AttributeQuery,
     AttributeType,
+    AttributeTypeQuery,
     Confidence,
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
+    IncursionDataActivities,
+    IncursionDataActivitiesData,
+    IncursionDataActivitiesDataAttributes,
+    IncursionDataActivitiesDataAttributesData,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
+    PageParams,
     StringQuery,
     TimeQuery,
     UpdateActivityInput,
@@ -312,6 +318,28 @@ def test_no_incursion(no_inc_observational_node, mock_crud_tool):
     mock_crud_tool.update_activity.assert_not_called()
 
 
+def test_get_incursion_data(observational_node_region1, mock_crud_tool, areas_of_interest):
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    # Fake activity objects (could be MagicMock or real dataclasses)
+    activity1 = MagicMock(spec=IncursionDataActivitiesData)
+    activity2 = MagicMock(spec=IncursionDataActivitiesData)
+    activity3 = MagicMock(spec=IncursionDataActivitiesData)
+
+    # Page 1 returns full page, page 2 returns partial and then stop
+    responses = [
+        IncursionDataActivities(data=[activity1, activity2]),  # page 1
+        IncursionDataActivities(data=[activity3]),  # page 2
+    ]
+    mock_incursion_data = MagicMock(side_effect=responses)
+    mock_crud_tool.oms_client.incursion_data = mock_incursion_data
+    result = incur_sm.get_all_incursion_data(
+        incurring_object_id=observational_node_region1.nodeId, feature_of_interest=areas_of_interest[0], pagesize=2
+    )
+
+    assert result == [activity1, activity2, activity3]
+    assert mock_crud_tool.oms_client.incursion_data.call_count == 2
+
+
 def test_new_incursion_region1(
     activity1, observational_node_region1, incurring_object, areas_of_interest, mock_crud_tool
 ):
@@ -434,22 +462,45 @@ def test_two_existing_incursions(
     # incursion including the observation, resulting in an attribute/activity update
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
+    response = IncursionDataActivities(
+        data=[
+            IncursionDataActivitiesData(
+                id=activity1.id,
+                labels=activity1.labels,
+                attributes=IncursionDataActivitiesDataAttributes(
+                    data=[
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute2.id,
+                            labels=attribute2.labels,
+                            valueStart=attribute2.valueStart,
+                            valueEnd=attribute2.valueEnd,
+                        ),
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute1.id,
+                            labels=attribute1.labels,
+                            valueStart=attribute1.valueStart,
+                            valueEnd=attribute1.valueEnd,
+                        ),
+                    ]
+                ),
+            )
+        ]
+    )
     # mock responses for correct behavior
-    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [attribute2, attribute1]
-    mock_crud_tool.get_attributes.return_value = mock_attribute_response
+    mock_crud_tool.oms_client.incursion_data.return_value = response
 
     incur_sm.process_data(obs=observational_node_region1)
-    mock_crud_tool.get_attributes.assert_called_with(
-        AttributeQuery(
-            attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-            attributeValue=StringQuery(equals="Incursion"),
-            attributeType={"is": AttributeType.GEOSPATIAL},
-            geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
-            activityIds=[activity1.id],
-            tags=SETTINGS.incursion_tags,
-        )
+    mock_crud_tool.oms_client.incursion_data.assert_called_with(
+        query=ActivityQuery(
+            name=StringQuery(equals="Incursion"),
+            nodeIds=UuidQueryByList(in_=[incurring_object.id]),
+            pageParams=PageParams(page=1, pageSize=200),
+        ),
+        incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+        incursionAttributeValue=StringQuery(equals="Incursion"),
+        incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
+        attributeGeometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
+        incursionTags=SETTINGS.incursion_tags,
     )
 
     mock_get_observations.assert_called_with(
@@ -491,13 +542,28 @@ def test_existing_incursion_nonoverlapping_time(
     # with nonoverlapping time, resulting in attribute/activity updates
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    mock_crud_tool.get_pages_of_activities.return_value = [activity1]
+    response = IncursionDataActivities(
+        data=[
+            IncursionDataActivitiesData(
+                id=activity1.id,
+                labels=activity1.labels,
+                attributes=IncursionDataActivitiesDataAttributes(
+                    data=[
+                        IncursionDataActivitiesDataAttributesData(
+                            id=attribute2.id,
+                            labels=attribute2.labels,
+                            valueStart=attribute2.valueStart,
+                            valueEnd=attribute2.valueEnd,
+                        ),
+                    ]
+                ),
+            )
+        ]
+    )
+    mock_crud_tool.oms_client.incursion_data.return_value = response
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
-    mock_attribute_response = MagicMock()
-    mock_attribute_response.data = [attribute2]
-    mock_crud_tool.get_attributes.return_value = mock_attribute_response
 
     incur_sm.process_data(obs=observational_node_region1)
     mock_get_observations.assert_called_with(

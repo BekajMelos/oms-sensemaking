@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Instead of using the actual node object, use the nodeId of the object of interest for the Incursion and In/Out Garrison processes.
 - Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
 - Combined update of incursion activity and attribute to a single request (mutation)
+- Incursion retrieves a majority of its necessary data through a single custom SDK query
 
 ### Fixed
 
