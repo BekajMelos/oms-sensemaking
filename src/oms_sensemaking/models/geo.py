@@ -193,6 +193,11 @@ class Track(BaseORM, SecurityMarkingMixin):
         nullable=False,
         comment="The node ID of the object associated with this track.",
     )
+    provider_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        comment="The provider ID of the provider associated with this track.",
+    )
     algorithm: Mapped[str] = mapped_column(
         String,
         nullable=True,
@@ -313,7 +318,7 @@ class TrackWeaverBase(ABC):
         self.config: dict = {}
 
     @abstractmethod
-    def execute(self, points: list[Point]) -> Track:
+    def execute(self, points: list[Point], provider_id: uuid.UUID) -> Track:
         """
         Weave a Track from a series of Points.
 
@@ -344,7 +349,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
         self.config = {}
         self.algorithm = "naive"
 
-    def execute(self, points: list[Point]) -> Track:
+    def execute(self, points: list[Point], provider_id: uuid.UUID) -> Track:
         points.sort(key=lambda x: x.detection_time)
         return Track(
             points=points,
@@ -352,6 +357,7 @@ class NaiveTrackWeaver(TrackWeaverBase):
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
             acm=aac_client.get_acm_rollup([point.acm for point in points]),
+            provider_id=provider_id,
         )
 
 
@@ -382,7 +388,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
         }
         self.algorithm = "time_bin_weighted_average"
 
-    def execute(self, points: list[Point]) -> Track:
+    def execute(self, points: list[Point], provider_id: uuid.UUID) -> Track:
         points.sort(key=lambda x: x.detection_time)
         # Integer division by bin size sorts timestamps into bins of arbitrary length
         time_bins = {
@@ -441,6 +447,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
             acm=aac_client.get_acm_rollup([point.acm for point in weighted_points]),
+            provider_id=provider_id,
         )
 
 

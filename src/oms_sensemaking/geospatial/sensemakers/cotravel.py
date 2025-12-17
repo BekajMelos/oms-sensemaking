@@ -359,6 +359,7 @@ class CotravelSensemaker(Sensemaker):
                     observation_ids=track.observation_ids,
                     track_uuid=track.track_uuid,  # type: ignore
                     acm=track.acm,
+                    provider_id=track.provider_id,
                 ),
                 track2=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
@@ -367,6 +368,7 @@ class CotravelSensemaker(Sensemaker):
                     observation_ids=track2.observation_ids,
                     track_uuid=track2.track_uuid,  # type: ignore
                     acm=track2.acm,
+                    provider_id=track2.provider_id,
                 ),
                 start_time=start_time,
                 last_time=last_time,
