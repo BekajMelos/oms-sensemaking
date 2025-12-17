@@ -23,6 +23,7 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateUuidList,
     UuidQueryByList,
 )
+from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
 from shapely.geometry import shape
 
@@ -253,8 +254,14 @@ def mock_get_observations(mocker: MockerFixture, observational_node_region1):
 
 
 @pytest.fixture
-def mock_crud_tool():
+def mock_oms_client():
+    return MagicMock(spec=Client)
+
+
+@pytest.fixture
+def mock_crud_tool(mock_oms_client):
     crud_tool = MagicMock(spec=OmsCrudTool)
+    crud_tool.oms_client = mock_oms_client
     return crud_tool
 
 
@@ -453,22 +460,21 @@ def test_two_existing_incursions(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_crud_tool.update_attribute.assert_called_with(
-        UpdateAttributeInput(
-            id=attribute1.id,
-            valueStart=observational_node_region1.startTime,
-            valueEnd=observational_node_region1.endTime,
-            labels=[SETTINGS.sm_enriched_label],
-        )
-    )
-    mock_crud_tool.update_activity.assert_called_with(
+
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],
-        )
+        ),
+        UpdateAttributeInput(
+            id=attribute1.id,
+            valueStart=observational_node_region1.startTime,
+            valueEnd=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
+        ),
     )
 
 
@@ -502,7 +508,14 @@ def test_existing_incursion_nonoverlapping_time(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_crud_tool.update_attribute.assert_called_with(
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
+        UpdateActivityInput(
+            id="incActi1",
+            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
+            startTime=attribute2.valueStart,
+            endTime=observational_node_region1.endTime,
+            labels=[SETTINGS.sm_enriched_label],
+        ),
         UpdateAttributeInput(
             id=attribute2.id,
             valueStart=attribute2.valueStart,
@@ -510,16 +523,7 @@ def test_existing_incursion_nonoverlapping_time(
             labels=[
                 SETTINGS.sm_enriched_label,
             ],
-        )
-    )
-    mock_crud_tool.update_activity.assert_called_with(
-        UpdateActivityInput(
-            id="incActi1",
-            observationIds=UpdateUuidList(add=[observational_node_region1.id]),
-            startTime=attribute2.valueStart,
-            endTime=observational_node_region1.endTime,
-            labels=[SETTINGS.sm_enriched_label],
-        )
+        ),
     )
 
 

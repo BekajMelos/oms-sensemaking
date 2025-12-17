@@ -170,7 +170,6 @@ class Incursion(Sensemaker):
             observationIds=UpdateUuidList(add=[observation.id]),
             labels=activity_labels,
         )
-        self.oms_crud_tool.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         attribute_labels = existing_incursion_attribute.labels
@@ -183,7 +182,10 @@ class Incursion(Sensemaker):
             valueEnd=inc_attr_geo_timeframe.end_time.isoformat(),
             labels=attribute_labels,
         )
-        self.oms_crud_tool.update_attribute(updated_attribute_input)
+
+        self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
+            updated_activity_input, updated_attribute_input
+        )
 
     def _handle_new_incursion(self, observation: ObservationObservation, feature_of_interest: AOI):
         """
