@@ -29,9 +29,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class CotravelType(enum.Enum):
-    potential_duplicate = "potential_duplicate"
-    cotravel = "cotravel"
-    lag_lead = "lag_lead"
+    potential_duplicate: str = "potential_duplicate"
+    cotravel: str = "cotravel"
+    lag_lead: str = "lag_lead"
 
     @classmethod
     def get_name(cls, cotravel_type: "CotravelType") -> str:
