@@ -147,7 +147,9 @@ class Incursion(Sensemaker):
     def get_all_incursion_data(self, incurring_object_id: UUID, feature_of_interest: AOI, pagesize: int = 200):
         incursion_activities: list[IncursionDataActivitiesData] = []
         page = 1
-        while True:
+        has_more = True
+
+        while has_more:
             activity_query = ActivityQuery(
                 name=StringQuery(equals="Incursion"),
                 nodeIds=UuidQueryByList(in_=[incurring_object_id]),
@@ -161,13 +163,10 @@ class Incursion(Sensemaker):
                 attributeGeometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
                 incursionTags=SETTINGS.incursion_tags,
             )
-            activities_layer = response.data
-            if not activities_layer:
-                break
-            # Get all pages of incurison data
+            activities_layer = response.data or []
             incursion_activities.extend(activities_layer)
-            if len(activities_layer) < pagesize:
-                break
+
+            has_more = len(activities_layer) == pagesize
             page += 1
         return incursion_activities
 
