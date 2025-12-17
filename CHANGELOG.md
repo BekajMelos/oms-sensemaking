@@ -6,13 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
+- Restoring code to split tracks by provider
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
 - Clean up formatting for environment variables
 - Changed Inference Rules into their own Sensemakers which inherit from the base class for improved parallel processing.
 - Instead of using the actual node object, use the nodeId of the object of interest for the Incursion and In/Out Garrison processes.
-- Combined update of incursion activity and attribute to a single request(mutation)
+- Implemented an IRI validation step in `ResolutionQueueFilter` that restricts event processing to only those ATTRIBUTE objects whose IRIs match an entry in the `duplicate_object_iris.json` configuration.
+- Combined update of incursion activity and attribute to a single request (mutation)
 
 ### Fixed
 
