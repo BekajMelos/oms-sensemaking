@@ -24,6 +24,7 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
+from oms_sensemaking.core.settings import Settings as AppSettings
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -156,6 +157,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self,
         name: str,
         queue_name: str,
+        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
@@ -166,6 +168,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._event_filter = event_filter
         self._connection: BlockingConnection = None
         self._channel: BlockingChannel = None
+        settings_dict = app_settings.get_settings()
+        self._prefetch_count = settings_dict.get("rabbitmq_prefetch_count", SETTINGS.rabbitmq_prefetch_count)
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
@@ -185,7 +189,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             self._channel.queue_declare(
                 queue=self._queue_name, durable=True, arguments={"x-delivery-limit": -1, "x-queue-type": "quorum"}
             )
-            self._channel.basic_qos(0, SETTINGS.rabbitmq_prefetch_count, False)
+            self._channel.basic_qos(0, self._prefetch_count, False)
             LOGGER.info("Connected to RabbitMQ queue: %s", self._queue_name)
             return True
         except (AMQPConnectionError, AMQPChannelError, socket.gaierror) as ex:
@@ -220,12 +224,19 @@ class RabbitMQListener(BaseRabbitMQListener):
         name: str,
         queue_name: str,
         workers: int,
+        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
         """Create a new instance of RabbitMQListener."""
-        super().__init__(name, queue_name, handle_event, event_filter)
+        super().__init__(name, queue_name, app_settings, handle_event, event_filter)
+        self._workers = workers
         self.pool = ThreadPoolExecutor(max_workers=workers)
+
+    @property
+    def workers(self) -> int:
+        """Return the number of worker threads."""
+        return self._workers
 
     def callback(
         self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes
