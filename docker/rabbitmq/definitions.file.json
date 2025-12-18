@@ -248,6 +248,38 @@
             "routing_key": "audit.ATTRIBUTE.RESTORE",
             "source": "oms.audits.exchange",
             "vhost": "/"
+        },
+        {
+          "arguments": {},
+          "destination": "object-minimums-trigger",
+          "destination_type": "queue",
+          "routing_key": "audit.ATTRIBUTE.CREATE",
+          "source": "oms.audits.exchange",
+          "vhost": "/"
+        },
+        {
+          "arguments": {},
+          "destination": "object-minimums-trigger",
+          "destination_type": "queue",
+          "routing_key": "audit.ATTRIBUTE.RESTORE",
+          "source": "oms.audits.exchange",
+          "vhost": "/"
+        },
+        {
+          "arguments": {},
+          "destination": "object-minimums-trigger",
+          "destination_type": "queue",
+          "routing_key": "audit.ATTRIBUTE.UPDATE",
+          "source": "oms.audits.exchange",
+          "vhost": "/"
+        },
+        {
+          "arguments": {},
+          "destination": "object-minimums-trigger",
+          "destination_type": "queue",
+          "routing_key": "audit.ATTRIBUTE.DELETE",
+          "source": "oms.audits.exchange",
+          "vhost": "/"
         }
     ],
     "queues": [
@@ -336,6 +368,17 @@
         "auto_delete": false,
         "durable": true,
         "name": "resolution-trigger",
+        "type": "quorum",
+        "vhost": "/"
+      },
+      {
+        "arguments": {
+          "x-delivery-limit": -1,
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "durable": true,
+        "name": "object-minimums-trigger",
         "type": "quorum",
         "vhost": "/"
       }

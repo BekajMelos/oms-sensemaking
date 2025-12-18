@@ -1,0 +1,37 @@
+"""Object minimums sensemaker controller."""
+
+import logging
+
+from oms_sdk.generated.generated_graphql_client.enums import Action
+
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.events import (
+    AuditLogEvent,
+    EventFilter,
+    ObjectType,
+)
+from oms_sensemaking.object_minimums.sensemaker import ObjectMinimums
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+class ObjectMinimumsSensemakerController(SensemakerController):
+    """
+    Resolution sensemaker controller.
+
+    This class manages a collection of resolution sensemakers.
+    """
+
+    def start(self) -> None:
+        """Start the controller."""
+        if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
+            self.register("object minimums", ObjectMinimums(self.oms_crud_tool))
+        super().start()
+
+
+class ObjectMinimumsQueueFilter(EventFilter):
+    def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
+        handled_object_types = [ObjectType.ATTRIBUTE.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]
+        return audit_log_event.objectType in handled_object_types and audit_log_event.action in handled_event_types

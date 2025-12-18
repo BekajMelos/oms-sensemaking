@@ -225,6 +225,14 @@ class MilSymbolSettings(BaseModel):
 
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
+class ObjectMinimumsSettings(BaseModel):
+    enable_object_minimums_sensemaker: bool = Field(True, description="Toggle the object minimums sensemkaer on/off")
+    rmq_object_minimums_queue_name:str = Field(
+        "object-minimums-trigger",
+        description="the RMQ Object Minimums Queue name",
+        examples=["object-minimums-trigger"]
+    )
+
 # IW Settings
 class IWSettings(BaseModel):
     """Settings for I&W"""
@@ -473,6 +481,7 @@ class Settings(BaseSettings):
     )
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
+    object_minimum_settings: ObjectMinimumsSettings = ObjectMinimumsSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
