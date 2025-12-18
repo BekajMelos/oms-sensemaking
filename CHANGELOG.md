@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 - Restoring code to split tracks by provider
+- Added `INCURSION` activity state.
+- Added new configuration toggle for http profile.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms

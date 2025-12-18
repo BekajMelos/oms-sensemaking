@@ -130,6 +130,7 @@ services:
       - ./etc/whitelist.txt:/opt/oms-bridge/etc/config/external/Whitelist.txt
       - ./docker/omsb/LocalCollectionStatusThresholds.yaml:/opt/oms-bridge/etc/collectionstatus/CollectionStatusThresholds.yaml
       - ./docker/omsb/SystemLabels.yaml:/opt/oms-bridge/etc/config/external/SystemLabels.yaml
+      - ./docker/omsb/ActivityStates.yaml:/opt/oms-bridge/etc/config/external/ActivityStates.yaml
     ports:
       - "8010:8000"
       - "8020:8443"
