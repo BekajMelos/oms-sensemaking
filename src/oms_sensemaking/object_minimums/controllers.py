@@ -31,6 +31,10 @@ class ObjectMinimumsSensemakerController(SensemakerController):
 
 
 class ObjectMinimumsQueueFilter(EventFilter):
+    # Should we also do node creation as an event we care about to assign it a score of 0?
+
+    # we should implement a filter similar to the resolution sensemaker
+    # to only keep attributes we care about
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]

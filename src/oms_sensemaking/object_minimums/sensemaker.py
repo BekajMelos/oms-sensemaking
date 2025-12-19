@@ -37,8 +37,27 @@ class ObjectMinimums(Sensemaker):
         """
         Determine the completeness of an ATOMS node based off its various related components
 
-        :param class_object: The object to analyze.
+        :param attribute_of_node: The objects attribute to analyze (will be expanding to
+        other descriptive objects in the future)
         :return: Grade
         """
         LOGGER.info("Running Object Minimums Sensemaker")
+
+        """
+        possible structure:
+
+        Probably get the node object by doing: node = crud_tool.get_node(attribute_of_node.nodeId)
+
+        Look at the node obj class iri: iri = node.iri
+
+        call some sort of helper function(s) below to call the grading class
+
+        run the grading rubric made for the specific class iri on the node
+
+        retrieve the grade
+
+        pass the grade to another helper to push the grade info to
+        the node's metadata (discussed with effects team) is this an update? (unsure)
+        """
+
         return []
