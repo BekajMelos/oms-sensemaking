@@ -91,7 +91,7 @@ class OmsCrudTool(BaseClient):
             pkcs12_password=SETTINGS.pkcs12_password,
             ssl_cert_file_path=SETTINGS.atoms_cacert_path,
             verify_ssl=SETTINGS.atoms_client_verify_ssl,
-            transport=ProfiledHTTPTransport,
+            transport=ProfiledHTTPTransport if SETTINGS.profile_transport else None,
             event_hooks={"request": [add_request_time_header]},
         )
 

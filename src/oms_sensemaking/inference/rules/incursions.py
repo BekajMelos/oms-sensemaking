@@ -1,22 +1,27 @@
 """Incursion Rule"""
 
 import logging
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    AttributeQuery,
     AttributesAttributesData,
     AttributeType,
+    AttributeTypeQuery,
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
+    IncursionDataActivitiesData,
+    IncursionDataActivitiesDataAttributesData,
     ObservationObservation,
+    PageParams,
     StringQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
     UpdateUuidList,
+    UuidQueryByList,
 )
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
@@ -81,7 +86,9 @@ class Incursion(Sensemaker):
             LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             incursion_obs_timeframe = Timeframe(obs)
             # Check for existing incursions in the relevant geo of interest
-            existing_incursion_activities = self.oms_crud_tool.get_pages_of_activities("Incursion", obs.nodeId)
+            existing_incursion_activities = self.get_all_incursion_data(
+                incurring_object_id=obs.nodeId, feature_of_interest=feature_of_interest
+            )
             matching_incursion_attribute_found = False
 
             LOGGER.debug("%d Existing Incursion Activities", len(existing_incursion_activities))
@@ -89,16 +96,7 @@ class Incursion(Sensemaker):
             for existing_incursion_activity in existing_incursion_activities:
                 if matching_incursion_attribute_found:
                     break
-                attribute_query = AttributeQuery(
-                    attributeIris=[SETTINGS.inference_incursion_attribute_iri],
-                    attributeValue=StringQuery(equals="Incursion"),
-                    attributeType={"is": AttributeType.GEOSPATIAL},
-                    geometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
-                    activityIds=[existing_incursion_activity.id],
-                    tags=SETTINGS.incursion_tags,
-                )
-                attr_response = self.oms_crud_tool.get_attributes(attribute_query)
-                existing_incursion_attributes = attr_response.data
+                existing_incursion_attributes = existing_incursion_activity.attributes.data
 
                 LOGGER.debug("%d Existing Incursion Attributes", len(existing_incursion_attributes))
 
@@ -119,8 +117,8 @@ class Incursion(Sensemaker):
         self,
         observation: ObservationObservation,
         feat_of_int: AOI,
-        existing_act: ActivitiesActivitiesData,
-        existing_attributes: list[AttributesAttributesData],
+        existing_act: IncursionDataActivitiesData,
+        existing_attributes: list[IncursionDataActivitiesDataAttributesData],
         obs_timeframe: Timeframe,
     ) -> bool:
         """
@@ -146,6 +144,32 @@ class Incursion(Sensemaker):
                 return True
         return False
 
+    def get_all_incursion_data(self, incurring_object_id: UUID, feature_of_interest: AOI, pagesize: int = 200):
+        incursion_activities: list[IncursionDataActivitiesData] = []
+        page = 1
+        has_more = True
+
+        while has_more:
+            activity_query = ActivityQuery(
+                name=StringQuery(equals="Incursion"),
+                nodeIds=UuidQueryByList(in_=[incurring_object_id]),
+                pageParams=PageParams(page=page, pageSize=pagesize),
+            )
+            response = self.oms_crud_tool.oms_client.incursion_data(
+                query=activity_query,
+                incursionAttributeValue=StringQuery(equals="Incursion"),
+                incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+                incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
+                attributeGeometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
+                incursionTags=SETTINGS.incursion_tags,
+            )
+            activities_layer = response.data or []
+            incursion_activities.extend(activities_layer)
+
+            has_more = len(activities_layer) == pagesize
+            page += 1
+        return incursion_activities
+
     def _update_existing_incursion(
         self,
         observation: ObservationObservation,
@@ -170,7 +194,6 @@ class Incursion(Sensemaker):
             observationIds=UpdateUuidList(add=[observation.id]),
             labels=activity_labels,
         )
-        self.oms_crud_tool.update_activity(updated_activity_input)
 
         # Update start/end times of incursion attribute
         attribute_labels = existing_incursion_attribute.labels
@@ -183,7 +206,10 @@ class Incursion(Sensemaker):
             valueEnd=inc_attr_geo_timeframe.end_time.isoformat(),
             labels=attribute_labels,
         )
-        self.oms_crud_tool.update_attribute(updated_attribute_input)
+
+        self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
+            updated_activity_input, updated_attribute_input
+        )
 
     def _handle_new_incursion(self, observation: ObservationObservation, feature_of_interest: AOI):
         """

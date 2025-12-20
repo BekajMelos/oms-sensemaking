@@ -271,6 +271,7 @@ class Settings(BaseSettings):
     # OMS_SDK-related settings
     create_source_if_none: bool = Field(False, description="Allow creation of source")
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
+    profile_transport: bool = Field(True, description="Allow for profiling of http transport")
 
     # General IRIs
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
@@ -310,7 +311,7 @@ class Settings(BaseSettings):
         [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
     )
     inference_incursion_activity_state: str = Field(
-        "UNKNOWN", description="String Incursion Activity State"
+        "INCURSION", description="String Incursion Activity State"
     )
     inference_incursion_areas_of_interest_path: str = Field(
         "./data/areas_of_interest", description="Path to areas of interest file"
