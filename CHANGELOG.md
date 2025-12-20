@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
+- Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
