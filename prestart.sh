@@ -23,6 +23,8 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
 
   if echo $alembic_output | grep -q "ALEMBIC_FAIL:AUTH_ISSUE"; then
     echo "[ALEMBIC ERROR]: Incorrect database credentials."
+    echo "$alembic_output" >&2
+    exit 1
   elif echo $alembic_output | grep -q "ALEMBIC_FAIL:HOST/PORT ISSUE"; then
     echo "[ALEMBIC ERROR]: HOST or port issues."
   elif echo $alembic_output | grep -q "ALEMBIC_FAIL:CONNECTION_TIMEOUT"; then
