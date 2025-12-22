@@ -131,7 +131,7 @@ async def lifespan(application: FastAPI):
     application.state.controllers = [ctrlr for ctrlr, _ in controllers]
     application.state.controller_threads = [thread for _, thread in controllers]
 
-    yield controllers
+    yield {}
 
     for controller, controller_thread in controllers:
         LOGGER.warning("Handling the keyboard interrupt.")
