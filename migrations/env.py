@@ -1,7 +1,6 @@
 """Alembic environment configuration."""
 
 import logging
-import sys
 from logging.config import fileConfig
 
 from alembic import context
@@ -104,15 +103,15 @@ def run_migrations_online() -> None:
 
     except OperationalError as e:
         err_msg = str(e).lower()
-        LOGGER.error(err_msg)
         if "authentication failed" in err_msg:
             LOGGER.error(f"ALEMBIC_FAIL:AUTH_ISSUE | {e}")
-        elif "connection timeout expired" in err_msg:
-            LOGGER.error(f"ALEMBIC_FAIL:CONNECTION_TIMEOUT | {e}")
+        elif "connection timeout expired" in err_msg or "server closed the connection" in err_msg:
+            LOGGER.error(f"ALEMBIC_FAIL:NETWORK ISSUE | {e}")
         elif "connection refused" in err_msg:
             LOGGER.error(f"ALEMBIC_FAIL:HOST/PORT ISSUE | {e}")
-        sys.exit(1)
-        raise e
+        else:
+            LOGGER.exception(f"Unexpected migration error:| {e}")
+        raise
 
 
 if context.is_offline_mode():
