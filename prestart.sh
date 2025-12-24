@@ -41,5 +41,8 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
     exit 1
   fi
 done
+echo "$alembic_output" >&2
+
+
 
 
