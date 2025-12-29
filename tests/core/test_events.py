@@ -13,6 +13,7 @@ import pytest
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, BaseRabbitMQListener, CronEventEmitter
+from oms_sensemaking.core.settings import Settings as AppSettings
 
 
 def test_audit_log_from_dict():
@@ -48,7 +49,9 @@ class DummyRabbitMQListener(BaseRabbitMQListener):
 def test_rmq_listeners(mock_connection: mock.MagicMock):
     """Test exception handling with rabbit mq connections"""
     mock_connection.side_effect = [socket.gaierror]
-    listener = DummyRabbitMQListener("test", "test-queue", None, None)
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
+    listener = DummyRabbitMQListener("test", "test-queue", app_settings, None, None)
     assert not listener.process_audit_log_events()
 
 
