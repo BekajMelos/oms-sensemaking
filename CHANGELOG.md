@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Incursion retrieves a majority of its necessary data through a single custom SDK query
 
 ### Fixed
+- Fixed bug where `TimeBinTrackWeaver` algorithm generated random `observation_id`s
 
 ### Removed
 - No longer request for the node object in the Incursion and In/Out Garrison processes
