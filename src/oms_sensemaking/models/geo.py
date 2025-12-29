@@ -409,13 +409,12 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                     continue
                 # Reuse most of the attributes from the first point in the bin
                 # TODO: Deal with altitudes
-                # TODO: Observation_id is still fake. Source_id is from a Point, should belong to Sensemaker eventually
                 acm_rollup = aac_client.get_acm_rollup([{"ACM": point.acm} for point in bin_points])
                 point_dict = {
                     "node_id": bin_points[0].node_id,
                     "node_version": bin_points[0].node_version,
                     "source_id": bin_points[0].source_id,
-                    "observation_id": uuid.uuid4(),
+                    "observation_id": bin_points[0].observation_id,
                     "observation_version": bin_points[0].observation_version,
                     "altitude": None,
                     "detection_time": datetime.fromtimestamp(
