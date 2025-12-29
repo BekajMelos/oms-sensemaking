@@ -205,18 +205,6 @@ rm -rf /usr/lib/python3.6/site-packages/setuptools*
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
 rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
 
-# delete doc directories
-find /usr/share/doc \
-  -maxdepth 1 \
-  -type d \
-  -name 'perl-*' \
-  ! -name 'perl-Error' \
-  ! -name 'perl-IO-Socket-SSL' \
-  ! -name 'perl-Mozilla-CA' \
-  ! -name 'perl-Net-SSLeay' \
-  ! -name 'perl-TermReadKey' \
-  -exec rm -rf {} +
-
 rm -rf /usr/lib/python3.12/site-packages/pip*
 rm -rf /usr/lib/python6/site-packages/pip*
 rm -rf /usr/bin/pip*
