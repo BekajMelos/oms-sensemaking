@@ -193,7 +193,7 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3.12-devel && \
+dnf remove -y gcc python3.12-devel emac-filesystem oniguruma && \
 dnf autoremove -y && \
 dnf clean all
 
@@ -205,11 +205,25 @@ rm -rf /usr/lib/python3.6/site-packages/setuptools*
 rm /usr/share/doc/perl-IO-Socket-SSL/certs/*
 rm /usr/share/doc/perl-Net-SSLeay/examples/*.pem
 
+# delete doc directories
+find /usr/share/doc \
+  -maxdepth 1 \
+  -type d \
+  -name 'perl-*' \
+  ! -name 'perl-Error' \
+  ! -name 'perl-IO-Socket-SSL' \
+  ! -name 'perl-Mozilla-CA' \
+  ! -name 'perl-Net-SSLeay' \
+  ! -name 'perl-TermReadKey' \
+  -exec rm -rf {} +
+
 rm -rf /usr/lib/python3.12/site-packages/pip*
 rm -rf /usr/lib/python6/site-packages/pip*
 rm -rf /usr/bin/pip*
 rm -rf /usr/local/bin/pip*
 rm -rf /usr/local/lib/python3.12/site-packages/pip*
+
+dnf remove -y tar
 
 EOF
 
