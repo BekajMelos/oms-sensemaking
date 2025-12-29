@@ -226,7 +226,7 @@ class MilSymbolSettings(BaseModel):
     rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
 
 class ObjectMinimumsSettings(BaseModel):
-    enable_object_minimums_sensemaker: bool = Field(True, description="Toggle the object minimums sensemkaer on/off")
+    enable_object_minimums_sensemaker: bool = Field(True, description="Toggle the object minimums sensemaker on/off")
     rmq_object_minimums_queue_name:str = Field(
         "object-minimums-trigger",
         description="the RMQ Object Minimums Queue name",
