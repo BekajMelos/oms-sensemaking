@@ -4,7 +4,7 @@ DB_MAX_CONNECTION_ATTEMPTS=10
 DB_CONNECTION_ATTEMPT_INTERVAL=5
 
 echo "Initializing database."
-
+sleep 3
 count=0
 alembic_output=''
 while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
@@ -32,7 +32,6 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
   fi
   
   echo "[ALEMBIC ERROR]: Attempting connection in ${DB_CONNECTION_ATTEMPT_INTERVAL} seconds (${count}/${DB_MAX_CONNECTION_ATTEMPTS})..."
-  echo "$alembic_output" >&2
   sleep ${DB_CONNECTION_ATTEMPT_INTERVAL}
   if [ ${count} -eq ${DB_MAX_CONNECTION_ATTEMPTS} ]; then
     echo "[ALEMBIC ERRROR]: Unable to establish database connection. Exiting."
