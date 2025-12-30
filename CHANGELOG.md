@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
+- Base structure for the Object Minimums Sensemaker
 - Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Incursion retrieves a majority of its necessary data through a single custom SDK query
 
 ### Fixed
+- Fixed bug where `TimeBinTrackWeaver` algorithm generated random `observation_id`s
 
 ### Removed
 - No longer request for the node object in the Incursion and In/Out Garrison processes
