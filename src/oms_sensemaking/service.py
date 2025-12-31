@@ -99,6 +99,7 @@ def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
                 "ObjectMinimumsRMQListener",
                 SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
                 workers=SETTINGS.queue_worker_threads,
+                app_settings=app_settings,
                 event_filter=ObjectMinimumsQueueFilter(),
             ),
             err_logger,
