@@ -78,6 +78,7 @@ class TelemetryManager(BaseTelemetryManager):
         return cls._instance
 
     def __init__(self):
+        """Pass through init"""
         pass
 
     def initialize(self):
