@@ -8,6 +8,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.models.object_minimums import ObjectMinimumRubric
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,5 +60,8 @@ class ObjectMinimums(Sensemaker):
         pass the grade to another helper to push the grade info to
         the node's metadata (discussed with effects team) is this an update? (unsure)
         """
+        rubric = ObjectMinimumRubric(required_iris=["test1", "test2", "test3"])
+        grade = rubric.grade(attributes=["test1", "test2"])
+        LOGGER.info("Object Minimum grade: %s", grade.completion_score)
 
         return []
