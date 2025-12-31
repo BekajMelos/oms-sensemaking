@@ -34,7 +34,7 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
   echo "[ALEMBIC ERROR]: Attempting connection in ${DB_CONNECTION_ATTEMPT_INTERVAL} seconds (${count}/${DB_MAX_CONNECTION_ATTEMPTS})..."
   sleep ${DB_CONNECTION_ATTEMPT_INTERVAL}
   if [ ${count} -eq ${DB_MAX_CONNECTION_ATTEMPTS} ]; then
-    echo "[ALEMBIC ERRROR]: Unable to establish database connection. Exiting."
+    echo "[ALEMBIC ERROR]: Unable to establish database connection. Exiting."
     echo "$alembic_output" >&2
     sleep 100000
     exit 1
