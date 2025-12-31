@@ -12,7 +12,15 @@ from uuid import uuid4
 import pytest
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 
-from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, BaseRabbitMQListener, CronEventEmitter
+from oms_sensemaking.core.events import (
+    AuditLogEvent,
+    AuditLogEventConsumer,
+    BaseRabbitMQListener,
+    CronEventEmitter,
+    DummyAuditLogEventConsumer,
+    NoOpEventConsumer,
+    RabbitMQListener,
+)
 from oms_sensemaking.core.settings import Settings as AppSettings
 
 
@@ -220,6 +228,18 @@ class TestAuditLogEvent:
         assert event.action == Action.DELETE
 
 
+def test_audit_log_event_headers_rejects_empty():
+    event = AuditLogEvent(
+        userId="user",
+        objectId=uuid4(),
+        objectType=ObjectType.ATTRIBUTE,
+        action=Action.CREATE,
+    )
+
+    with pytest.raises(ValueError):
+        event.headers = None
+
+
 class DummyConsumer(AuditLogEventConsumer):
     def process_audit_log_events(self):
         while not self.stopped.is_set():
@@ -251,3 +271,164 @@ class TestAuditLogEventConsumer:
         # simulate calling the handler manually
         consumer.handle_event(consumer, event)
         mock_handler.assert_called_once_with(consumer, event)
+
+
+@mock.patch("oms_sensemaking.core.events.HeaderParser")
+@mock.patch("oms_sensemaking.core.events.record_processing_success")
+def test_rabbitmq_listener_process_message_success(mock_metric, mock_header_parser):
+    # must be truthy or headers.setter raises ValueError
+    mock_header_parser.return_value.parse.return_value = {"foo": "bar"}
+
+    handler = MagicMock(return_value=True)
+
+    listener = RabbitMQListener(
+        name="TestListener",
+        queue_name="test-q",
+        workers=1,
+        handle_event=handler,
+    )
+
+    listener._connection = MagicMock()
+    ch = MagicMock()
+    method = MagicMock()
+    method.delivery_tag = "abc123"
+
+    body = json.dumps(
+        {
+            "userId": "u1",
+            "objectId": str(uuid4()),
+            "objectType": ObjectType.NODE.value,
+            "action": Action.CREATE.value,
+        }
+    ).encode()
+
+    listener._process_message(ch, method, MagicMock(), body)
+
+    handler.assert_called_once()
+    listener._connection.add_callback_threadsafe.assert_called()
+    mock_metric.assert_called()
+
+
+@mock.patch("oms_sensemaking.core.events.HeaderParser")
+@mock.patch("oms_sensemaking.core.events.record_processing_failure")
+def test_rabbitmq_listener_process_message_failure(mock_metric, mock_header_parser):
+    mock_header_parser.return_value.parse.return_value = {"foo": "bar"}
+
+    handler = MagicMock(return_value=False)
+
+    listener = RabbitMQListener(
+        name="TestListener",
+        queue_name="test-q",
+        workers=1,
+        handle_event=handler,
+    )
+
+    listener._connection = MagicMock()
+    ch = MagicMock()
+    method = MagicMock()
+    method.delivery_tag = "abc123"
+
+    body = json.dumps(
+        {
+            "userId": "u1",
+            "objectId": str(uuid4()),
+            "objectType": ObjectType.NODE.value,
+            "action": Action.UPDATE.value,
+        }
+    ).encode()
+
+    listener._process_message(ch, method, MagicMock(), body)
+
+    handler.assert_called_once()
+    listener._connection.add_callback_threadsafe.assert_called()
+    mock_metric.assert_called()
+
+
+class AlwaysFilter:
+    def passes_filter(self, *_):
+        return False
+
+
+@mock.patch("oms_sensemaking.core.events.HeaderParser")
+def test_rabbitmq_listener_filters_messages(mock_header_parser):
+    mock_header_parser.return_value.parse.return_value = {}
+
+    handler = MagicMock()
+
+    listener = RabbitMQListener(
+        name="TestListener",
+        queue_name="test-q",
+        workers=1,
+        handle_event=handler,
+        event_filter=AlwaysFilter(),
+    )
+
+    listener._connection = MagicMock()
+    ch = MagicMock()
+    method = MagicMock()
+    method.delivery_tag = "abc"
+
+    body = json.dumps(
+        {
+            "userId": "u1",
+            "objectId": str(uuid4()),
+            "objectType": ObjectType.ATTRIBUTE.value,
+            "action": Action.CREATE.value,
+        }
+    ).encode()
+
+    listener._process_message(ch, method, MagicMock(), body)
+
+    handler.assert_not_called()
+    listener._connection.add_callback_threadsafe.assert_called()
+
+
+def test_rabbitmq_listener_requires_callable():
+    listener = RabbitMQListener(
+        name="TestListener",
+        queue_name="q",
+        workers=1,
+        handle_event=None,
+    )
+
+    with pytest.raises(ValueError):
+        listener.process_audit_log_events()
+
+
+def test_noop_event_consumer_runs_and_stops():
+    consumer = NoOpEventConsumer()
+    consumer.start()
+    consumer.stop()
+    assert consumer.stopped.is_set()
+
+
+def test_dummy_audit_log_consumer_lifecycle():
+    consumer = DummyAuditLogEventConsumer()
+    consumer.start()
+    consumer.stop()
+    assert consumer.stopped.is_set()
+
+
+def test_rabbitmq_listener_stop_closes_resources():
+    handler = MagicMock(return_value=True)
+
+    listener = RabbitMQListener(
+        name="TestListener",
+        queue_name="q",
+        workers=1,
+        handle_event=handler,
+    )
+
+    listener._connection = MagicMock()
+    listener._connection.is_open = True
+
+    listener._channel = MagicMock()
+    listener._channel.is_open = True
+
+    listener.stop()
+
+    # pool shutdown should happen without error
+    assert listener.stopped.is_set()
+
+    # stop_consuming should have been scheduled
+    listener._connection.add_callback_threadsafe.assert_called()
