@@ -280,11 +280,14 @@ def test_rabbitmq_listener_process_message_success(mock_metric, mock_header_pars
     mock_header_parser.return_value.parse.return_value = {"foo": "bar"}
 
     handler = MagicMock(return_value=True)
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
 
     listener = RabbitMQListener(
         name="TestListener",
         queue_name="test-q",
         workers=1,
+        app_settings=app_settings,
         handle_event=handler,
     )
 
@@ -315,11 +318,14 @@ def test_rabbitmq_listener_process_message_failure(mock_metric, mock_header_pars
     mock_header_parser.return_value.parse.return_value = {"foo": "bar"}
 
     handler = MagicMock(return_value=False)
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
 
     listener = RabbitMQListener(
         name="TestListener",
         queue_name="test-q",
         workers=1,
+        app_settings=app_settings,
         handle_event=handler,
     )
 
@@ -354,11 +360,14 @@ def test_rabbitmq_listener_filters_messages(mock_header_parser):
     mock_header_parser.return_value.parse.return_value = {}
 
     handler = MagicMock()
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
 
     listener = RabbitMQListener(
         name="TestListener",
         queue_name="test-q",
         workers=1,
+        app_settings=app_settings,
         handle_event=handler,
         event_filter=AlwaysFilter(),
     )
@@ -384,10 +393,13 @@ def test_rabbitmq_listener_filters_messages(mock_header_parser):
 
 
 def test_rabbitmq_listener_requires_callable():
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     listener = RabbitMQListener(
         name="TestListener",
         queue_name="q",
         workers=1,
+        app_settings=app_settings,
         handle_event=None,
     )
 
@@ -411,11 +423,14 @@ def test_dummy_audit_log_consumer_lifecycle():
 
 def test_rabbitmq_listener_stop_closes_resources():
     handler = MagicMock(return_value=True)
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
 
     listener = RabbitMQListener(
         name="TestListener",
         queue_name="q",
         workers=1,
+        app_settings=app_settings,
         handle_event=handler,
     )
 
