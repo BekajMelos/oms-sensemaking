@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - No longer request for the node object in the Incursion and In/Out Garrison processes
+- Removed unused OS packages for vulnerability reasons
 
 ## [0.18.0] - 2025-12-09
 
