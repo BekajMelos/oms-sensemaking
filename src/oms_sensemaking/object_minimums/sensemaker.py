@@ -60,8 +60,33 @@ class ObjectMinimums(Sensemaker):
         pass the grade to another helper to push the grade info to
         the node's metadata (discussed with effects team) is this an update? (unsure)
         """
-        rubric = ObjectMinimumRubric(required_iris=["test1", "test2", "test3"])
-        grade = rubric.grade(attributes=["test1", "test2"])
+        sample_config = {
+            "https://oms.dodiis.ic.gov/ontology/c-0000000002": {
+                "ATTRIBUTES": [
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000002",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000001",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000006",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000003",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000004",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000005",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000008",
+                    "https://oms.dodiis.ic.gov/ontology/p-0000000022",
+                ],
+                "RELATIONSHIPS": [],
+            }
+        }
+        class_iri = self.oms_crud_tool.get_node(attribute_of_node.nodeId).classIri
+        reqs_attr_iris = sample_config[class_iri].get("ATTRIBUTES")
+        reqs_rel_iris = sample_config[class_iri].get("RELATIONSHIPS")
+        required_iris = reqs_attr_iris + reqs_rel_iris
+        rubric = ObjectMinimumRubric(required_iris=required_iris)
+        grade = rubric.grade(
+            attributes=[
+                "https://oms.dodiis.ic.gov/ontology/p-0000000002",
+                "https://oms.dodiis.ic.gov/ontology/p-0000000001",
+            ],
+            relationships=[],
+        )
         LOGGER.info("Object Minimum grade: %s", grade.completion_score)
 
         return []
