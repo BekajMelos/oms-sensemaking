@@ -1,5 +1,6 @@
 """Object minimums sensemaker controller."""
 
+import json
 import logging
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
@@ -26,7 +27,22 @@ class ObjectMinimumsSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
-            self.register("object minimums", ObjectMinimums(self.oms_crud_tool))
+            config_settings = SETTINGS.object_minimum_settings
+
+            try:
+                with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
+                    object_minimum_rubrics = json.load(fd)
+                LOGGER.info("Successfully read object minimum rubrics")
+            except FileNotFoundError:
+                LOGGER.error(f"Rubrics file not found: {SETTINGS.object_minimum_settings.rubrics_file_path}")
+                raise
+            except json.JSONDecodeError:
+                LOGGER.error("Failed to decode JSON from the rubrics file.")
+                raise
+
+            self.register(
+                "object minimums", ObjectMinimums(self.oms_crud_tool, config_settings, object_minimum_rubrics)
+            )
         super().start()
 
 

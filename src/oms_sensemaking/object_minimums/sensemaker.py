@@ -4,6 +4,9 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    AttributeQuery,
+    RelationshipNodeQuery,
+    RelationshipQuery,
 )
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -26,15 +29,16 @@ class ObjectMinimums(Sensemaker):
 
     """
 
-    def __init__(self, oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool, config: dict, rubrics: dict) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config = {}
+        self.config = config
+        self.rubrics = rubrics
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, attribute_of_node: AttributeAttribute, config: dict | None = None):
+    def process_data(self, attribute_of_node: AttributeAttribute):
         """
         Determine the completeness of an ATOMS node based off its various related components
 
@@ -60,33 +64,33 @@ class ObjectMinimums(Sensemaker):
         pass the grade to another helper to push the grade info to
         the node's metadata (discussed with effects team) is this an update? (unsure)
         """
-        sample_config = {
-            "https://oms.dodiis.ic.gov/ontology/c-0000000002": {
-                "ATTRIBUTES": [
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000002",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000001",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000006",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000003",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000004",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000005",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000008",
-                    "https://oms.dodiis.ic.gov/ontology/p-0000000022",
-                ],
-                "RELATIONSHIPS": [],
-            }
-        }
-        class_iri = self.oms_crud_tool.get_node(attribute_of_node.nodeId).classIri
-        reqs_attr_iris = sample_config[class_iri].get("ATTRIBUTES")
-        reqs_rel_iris = sample_config[class_iri].get("RELATIONSHIPS")
-        required_iris = reqs_attr_iris + reqs_rel_iris
-        rubric = ObjectMinimumRubric(required_iris=required_iris)
-        grade = rubric.grade(
-            attributes=[
-                "https://oms.dodiis.ic.gov/ontology/p-0000000002",
-                "https://oms.dodiis.ic.gov/ontology/p-0000000001",
-            ],
-            relationships=[],
-        )
-        LOGGER.info("Object Minimum grade: %s", grade.completion_score)
 
-        return []
+        try:
+            # Retrieve node
+            node = self.oms_crud_tool.get_node(attribute_of_node.nodeId)
+            class_iri = node.classIri
+
+            # Retrieve rubric requirements
+            rubric_data = self.rubrics.get(class_iri, {})
+            reqs_attr_iris = rubric_data.get("ATTRIBUTES", [])
+            reqs_rel_iris = rubric_data.get("RELATIONSHIPS", [])
+            required_iris = reqs_attr_iris + reqs_rel_iris
+
+            if not required_iris:
+                LOGGER.info("Object Minimum grade not calculated due to lack of required IRIs")
+                return []
+
+            # Initialize and use the rubric
+            rubric = ObjectMinimumRubric(required_iris=required_iris)
+            attributes_to_grade = self.oms_crud_tool.get_attributes(AttributeQuery(nodeIds=[node.id]))
+            relationships_to_grade = self.oms_crud_tool.get_relationships(
+                RelationshipQuery(nodes=RelationshipNodeQuery(nodeIds=[node.id]))
+            )
+            grade = rubric.grade(attributes=attributes_to_grade, relationships=relationships_to_grade)
+
+            LOGGER.info("Object Minimum grade: %s", grade.completion_score)
+            return []
+
+        except Exception as e:
+            LOGGER.error("Error processing data for node ID %s: %s", node.id, str(e))
+            return []

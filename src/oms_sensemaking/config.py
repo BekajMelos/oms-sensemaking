@@ -232,6 +232,7 @@ class ObjectMinimumsSettings(BaseModel):
         description="the RMQ Object Minimums Queue name",
         examples=["object-minimums-trigger"]
     )
+    rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
 
 # IW Settings
 class IWSettings(BaseModel):
