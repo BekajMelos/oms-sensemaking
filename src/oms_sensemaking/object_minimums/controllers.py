@@ -41,7 +41,8 @@ class ObjectMinimumsSensemakerController(SensemakerController):
                 raise
 
             self.register(
-                "object minimums", ObjectMinimums(self.oms_crud_tool, config_settings, object_minimum_rubrics)
+                "object minimums",
+                ObjectMinimums(self.oms_crud_tool, config_settings.model_dump(), object_minimum_rubrics),
             )
         super().start()
 

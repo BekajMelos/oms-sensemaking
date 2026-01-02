@@ -38,7 +38,7 @@ class ObjectMinimums(Sensemaker):
         self.rubrics = rubrics
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, attribute_of_node: AttributeAttribute):
+    def process_data(self, attribute_of_node: AttributeAttribute, config: dict | None = None):
         """
         Determine the completeness of an ATOMS node based off its various related components
 

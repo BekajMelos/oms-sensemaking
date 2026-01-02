@@ -9583,7 +9583,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Node A",
+					"name": "Create Node",
 					"event": [
 						{
 							"listen": "test",
@@ -9595,53 +9595,7 @@
 									"    pm.expect(json.data.createNode.id).to.exist;",
 									"});",
 									"// Set the node ID",
-									"pm.collectionVariables.set(\"nodeId1\", json.data.createNode.id);"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "user_dn",
-								"value": "{{TS_USER_DN}}"
-							}
-						],
-						"body": {
-							"mode": "graphql",
-							"graphql": {
-								"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Loiter Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-								"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/c-0000000002\"\n}"
-							}
-						},
-						"url": {
-							"raw": "https://{{GRAPHQL_ENDPOINT}}",
-							"protocol": "https",
-							"host": [
-								"{{GRAPHQL_ENDPOINT}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Node B",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Get the JSON response",
-									"var json = pm.response.json();",
-									"pm.test(\"Node created\", function () {",
-									"    pm.expect(json.data.createNode.id).to.exist;",
-									"});",
-									"// Set the node ID",
-									"pm.collectionVariables.set(\"nodeId2\", json.data.createNode.id);"
+									"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -10412,6 +10366,10 @@
 		},
 		{
 			"key": "nonGarrisonActivityId",
+			"value": ""
+		},
+		{
+			"key": "nodeId1",
 			"value": ""
 		}
 	]
