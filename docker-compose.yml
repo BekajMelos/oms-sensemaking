@@ -227,24 +227,24 @@ services:
     environment:
       WHITELIST_ENTRIES: ${MEME_WHITELIST}
       ADMIN_TOKENS: ${MEME_WHITELIST}
-      COM_DECIPHERNOW_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/twlserver.jks
-      COM_DECIPHERNOW_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.jks
-      SSL_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
-      SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
-      CLOUDSHARE_KEYSTORE: /opt/common/pki/twlserver.jks
-      CLOUDSHARE_TRUSTSTORE: /opt/common/pki/truststore.jks
-      CTE_USERSERVICE_KEYSTORE: /opt/common/pki/twlserver.jks
-      CTE_USERSERVICE_TRUSTSTORE: /opt/common/pki/truststore.jks
-      ZK_SSL_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
-      ZK_SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
-      SEARCH_KEYSTORE_PATH: /opt/common/pki/twlserver.jks
-      SEARCH_TRUSTSTORE_PATH: /opt/common/pki/truststore.jks
-      GOV_IC_CTE_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/twlserver.jks
-      GOV_IC_CTE_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.jks
-      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKKEYSTORE: /opt/common/pki/twlserver.jks
-      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKTRUSTSTORE: /opt/common/pki/truststore.jks
-      COM_TWITTER_FINATRA_CONFIG_KEYPATH: /opt/common/pki/twlserver.jks
-      COM_TWITTER_FINATRA_CONFIG_CERTIFICATEPATH: /opt/common/pki/truststore.jks
+      COM_DECIPHERNOW_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/server.p12
+      COM_DECIPHERNOW_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.p12
+      SSL_KEYSTORE_PATH: /opt/common/pki/server.p12
+      SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.p12
+      CLOUDSHARE_KEYSTORE: /opt/common/pki/server.p12
+      CLOUDSHARE_TRUSTSTORE: /opt/common/pki/truststore.p12
+      CTE_USERSERVICE_KEYSTORE: /opt/common/pki/server.p12
+      CTE_USERSERVICE_TRUSTSTORE: /opt/common/pki/truststore.p12
+      ZK_SSL_KEYSTORE_PATH: /opt/common/pki/server.p12
+      ZK_SSL_TRUSTSTORE_PATH: /opt/common/pki/truststore.p12
+      SEARCH_KEYSTORE_PATH: /opt/common/pki/server.p12
+      SEARCH_TRUSTSTORE_PATH: /opt/common/pki/truststore.p12
+      GOV_IC_CTE_SERVER_CONFIG_TLS_KEYSTORE: /opt/common/pki/server.p12
+      GOV_IC_CTE_SERVER_CONFIG_TLS_TRUSTSTORE: /opt/common/pki/truststore.p12
+      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKKEYSTORE: /opt/common/pki/server.p12
+      GOV_IC_CTE_CHM_USER_COMMON_CONFIG_ZKTRUSTSTORE: /opt/common/pki/truststore.p12
+      COM_TWITTER_FINATRA_CONFIG_KEYPATH: /opt/common/pki/server.p12
+      COM_TWITTER_FINATRA_CONFIG_CERTIFICATEPATH: /opt/common/pki/truststore.p12
       AAC_HOST: http://aac2:3000
       BANNED_PARAMS: query,q
       ES_HOSTS: http://elasticsearch8:9200
