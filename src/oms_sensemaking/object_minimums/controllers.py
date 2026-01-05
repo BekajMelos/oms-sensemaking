@@ -12,7 +12,7 @@ from oms_sensemaking.core.events import (
     EventFilter,
     ObjectType,
 )
-from oms_sensemaking.object_minimums.sensemaker import ObjectMinimums
+from oms_sensemaking.object_minimums.sensemaker import ObjectMinimumDataRetriever, ObjectMinimumRubric, ObjectMinimums
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -42,7 +42,13 @@ class ObjectMinimumsSensemakerController(SensemakerController):
 
             self.register(
                 "object minimums",
-                ObjectMinimums(self.oms_crud_tool, config_settings.model_dump(), object_minimum_rubrics),
+                ObjectMinimums(
+                    self.oms_crud_tool,
+                    ObjectMinimumDataRetriever(),
+                    ObjectMinimumRubric(),
+                    config_settings.model_dump(),
+                    object_minimum_rubrics,
+                ),
             )
         super().start()
 

@@ -5,6 +5,7 @@ import logging
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributeQuery,
+    NodeNode,
     RelationshipNodeQuery,
     RelationshipQuery,
 )
@@ -14,6 +15,40 @@ from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.models.object_minimums import ObjectMinimumRubric
 
 LOGGER = logging.getLogger(__name__)
+
+
+class ObjectMinimumDataRetriever:
+    def retrieve_data_for_grading(
+        self,
+        oms_crud_tool: OmsCrudTool,
+        node: NodeNode,
+        required_attributes: list[str],
+        required_relationships: list[str],
+    ):
+        iris_to_grade = {"attributes": None, "relationships": None}
+        if required_attributes:
+            try:
+                attributes_to_grade = oms_crud_tool.get_attributes(
+                    AttributeQuery(nodeIds=[node.id], attributeIris=required_attributes)
+                )
+                iris_to_grade["attributes"] = attributes_to_grade
+            except Exception as e:
+                LOGGER.error("Error retrieving attributes for node ID %s: %s", node.id, str(e))
+                raise
+
+        if required_relationships:
+            try:
+                relationships_to_grade = oms_crud_tool.get_relationships(
+                    RelationshipQuery(
+                        nodes=RelationshipNodeQuery(nodeIds=[node.id]), objectPropertyIris=required_relationships
+                    )
+                )
+                iris_to_grade["relationships"] = relationships_to_grade
+            except Exception as e:
+                LOGGER.error("Error retrieving relationships for node ID %s: %s", node.id, str(e))
+                raise
+
+        return iris_to_grade
 
 
 class ObjectMinimums(Sensemaker):
@@ -29,7 +64,14 @@ class ObjectMinimums(Sensemaker):
 
     """
 
-    def __init__(self, oms_crud_tool: OmsCrudTool, config_settings: dict, config_rubrics: dict) -> None:
+    def __init__(
+        self,
+        oms_crud_tool: OmsCrudTool,
+        obj_min_retriever: ObjectMinimumDataRetriever,
+        obj_min_rubric: ObjectMinimumRubric,
+        config_settings: dict,
+        config_rubrics: dict,
+    ) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
@@ -37,6 +79,8 @@ class ObjectMinimums(Sensemaker):
         self.config_settings = config_settings
         self.config_rubrics = config_rubrics
         self.oms_crud_tool = oms_crud_tool
+        self.obj_min_rubric = obj_min_rubric
+        self.obj_min_retriever = obj_min_retriever
 
     def process_data(self, attribute_of_node: AttributeAttribute, config: dict | None = None):
         """
@@ -66,16 +110,26 @@ class ObjectMinimums(Sensemaker):
         """
 
         try:
-            node = self._retrieve_node(attribute_of_node.nodeId)
+            try:
+                node_id = attribute_of_node.nodeId
+                node = self.oms_crud_tool.get_node(node_id)
+            except Exception as e:
+                LOGGER.error("Unexpected error retrieving node ID %s: %s", node_id, str(e))
+                raise
             class_iri = node.classIri
-            required_iris = self._get_required_iris(class_iri)
+            required_attributes, required_relationships = self._get_required_iris(class_iri)
+            required_iris = required_attributes + required_relationships
 
             if not required_iris:
                 LOGGER.info("Object Minimum grade not calculated due to lack of required IRIs")
                 return []
+            else:
+                self.obj_min_rubric.required_iris = required_iris
 
-            attributes_to_grade, relationships_to_grade = self._retrieve_data_for_grading(node)
-            grade = self._calculate_grade(attributes_to_grade, relationships_to_grade, required_iris)
+            iris_to_grade = self.obj_min_retriever.retrieve_data_for_grading(
+                self.oms_crud_tool, node, required_attributes, required_relationships
+            )
+            grade = self._calculate_grade(iris_to_grade["attributes"], iris_to_grade["relationships"])
 
             LOGGER.info("Object Minimum grade: %s", grade.completion_score)
         except Exception as e:
@@ -83,19 +137,12 @@ class ObjectMinimums(Sensemaker):
 
         return []
 
-    def _retrieve_node(self, node_id):
-        try:
-            return self.oms_crud_tool.get_node(node_id)
-        except Exception as e:
-            LOGGER.error("Unexpected error retrieving node ID %s: %s", node_id, str(e))
-            raise
-
     def _get_required_iris(self, class_iri):
         try:
             config_rubric_data = self.config_rubrics.get(class_iri, {})
             reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
             reqs_rel_iris = config_rubric_data.get("RELATIONSHIPS", [])
-            return reqs_attr_iris + reqs_rel_iris
+            return reqs_attr_iris, reqs_rel_iris
         except KeyError as e:
             LOGGER.error("Missing configuration for class IRI %s: %s", class_iri, str(e))
             raise
@@ -103,27 +150,9 @@ class ObjectMinimums(Sensemaker):
             LOGGER.error("Unexpected error retrieving required IRIs for class IRI %s: %s", class_iri, str(e))
             raise
 
-    def _retrieve_data_for_grading(self, node):
+    def _calculate_grade(self, attributes, relationships):
         try:
-            attributes_to_grade = self.oms_crud_tool.get_attributes(AttributeQuery(nodeIds=[node.id]))
-        except Exception as e:
-            LOGGER.error("Error retrieving attributes for node ID %s: %s", node.id, str(e))
-            raise
-
-        try:
-            relationships_to_grade = self.oms_crud_tool.get_relationships(
-                RelationshipQuery(nodes=RelationshipNodeQuery(nodeIds=[node.id]))
-            )
-        except Exception as e:
-            LOGGER.error("Error retrieving relationships for node ID %s: %s", node.id, str(e))
-            raise
-
-        return attributes_to_grade, relationships_to_grade
-
-    def _calculate_grade(self, attributes, relationships, required_iris):
-        try:
-            rubric = ObjectMinimumRubric(required_iris=required_iris)
-            return rubric.grade(attributes=attributes, relationships=relationships)
+            return self.obj_min_rubric.grade(attributes=attributes, relationships=relationships)
         except Exception as e:
             LOGGER.error("Error calculating grade: %s", str(e))
             raise
