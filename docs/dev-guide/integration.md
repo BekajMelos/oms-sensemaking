@@ -120,8 +120,7 @@
         ## Non Application Configuration                                                    ##
         ######################################################################################
         COMPOSE_PROFILES=
-        OMSB_VERSION=Grimlock
-        OMSB_TAG=latest
+        ATOMS_VERSION=3.1.1
         DOCKER_REGISTRY=<Docker Registry>:5000
         COMPOSE_PROFILES=remote
         DOCKER_PREFIX=aio4/dev/services/oms
