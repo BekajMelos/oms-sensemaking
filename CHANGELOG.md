@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.19.0] - 2026-01-05
+
+### Added
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
@@ -26,6 +34,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - No longer request for the node object in the Incursion and In/Out Garrison processes
+- Removed unused OS packages for vulnerability reasons
 
 ## [0.18.0] - 2025-12-09
 
