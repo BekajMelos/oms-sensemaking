@@ -8,8 +8,8 @@
     2. Update/confirm the `.env` file with the following values. _Please note the uncommented and commented settings_
         * `POSTGRES_PORT=5432`
         * `# RMQ_GEO_QUEUE_NAME=oms-bridge`
-        * `OMSB_VERSION=<OMSB_VERSION> (eg: Grimlock-INC-37)`
-        * `# OMSB_URL="https://localhost:8020/graphql"` 
+        * `OMSB_VERSION=<OMSB_VERSION> (eg: 3.1.1)`
+        * `# OMSB_URL="https://localhost:8020/graphql"`
         * `# AAC_URL="http://aac2:3000"`
         * `RABBITMQ_HOST=rabbitmq`
     3. Run `make up`
@@ -120,8 +120,7 @@
         ## Non Application Configuration                                                    ##
         ######################################################################################
         COMPOSE_PROFILES=
-        OMSB_VERSION=Grimlock
-        OMSB_TAG=latest
+        ATOMS_VERSION=3.1.1
         DOCKER_REGISTRY=<Docker Registry>:5000
         COMPOSE_PROFILES=remote
         DOCKER_PREFIX=aio4/dev/services/oms
