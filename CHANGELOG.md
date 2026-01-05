@@ -10,6 +10,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.20.0] - 2026-01-05
+
+### Added
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+
+### Changed
+- Updated ATOMS dependency to Starscream 3.1.1
+
 ## [0.19.0] - 2026-01-05
 
 ### Added
