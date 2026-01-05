@@ -29,13 +29,13 @@ class ObjectMinimums(Sensemaker):
 
     """
 
-    def __init__(self, oms_crud_tool: OmsCrudTool, config: dict, rubrics: dict) -> None:
+    def __init__(self, oms_crud_tool: OmsCrudTool, config_settings: dict, config_rubrics: dict) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config = config
-        self.rubrics = rubrics
+        self.config_settings = config_settings
+        self.config_rubrics = config_rubrics
         self.oms_crud_tool = oms_crud_tool
 
     def process_data(self, attribute_of_node: AttributeAttribute, config: dict | None = None):
@@ -66,31 +66,64 @@ class ObjectMinimums(Sensemaker):
         """
 
         try:
-            # Retrieve node
-            node = self.oms_crud_tool.get_node(attribute_of_node.nodeId)
+            node = self._retrieve_node(attribute_of_node.nodeId)
             class_iri = node.classIri
-
-            # Retrieve rubric requirements
-            rubric_data = self.rubrics.get(class_iri, {})
-            reqs_attr_iris = rubric_data.get("ATTRIBUTES", [])
-            reqs_rel_iris = rubric_data.get("RELATIONSHIPS", [])
-            required_iris = reqs_attr_iris + reqs_rel_iris
+            required_iris = self._get_required_iris(class_iri)
 
             if not required_iris:
                 LOGGER.info("Object Minimum grade not calculated due to lack of required IRIs")
                 return []
 
-            # Initialize and use the rubric
-            rubric = ObjectMinimumRubric(required_iris=required_iris)
+            attributes_to_grade, relationships_to_grade = self._retrieve_data_for_grading(node)
+            grade = self._calculate_grade(attributes_to_grade, relationships_to_grade, required_iris)
+
+            LOGGER.info("Object Minimum grade: %s", grade.completion_score)
+        except Exception as e:
+            LOGGER.error("Error processing object minimum data for node ID %s: %s", attribute_of_node.nodeId, str(e))
+
+        return []
+
+    def _retrieve_node(self, node_id):
+        try:
+            return self.oms_crud_tool.get_node(node_id)
+        except Exception as e:
+            LOGGER.error("Unexpected error retrieving node ID %s: %s", node_id, str(e))
+            raise
+
+    def _get_required_iris(self, class_iri):
+        try:
+            config_rubric_data = self.config_rubrics.get(class_iri, {})
+            reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
+            reqs_rel_iris = config_rubric_data.get("RELATIONSHIPS", [])
+            return reqs_attr_iris + reqs_rel_iris
+        except KeyError as e:
+            LOGGER.error("Missing configuration for class IRI %s: %s", class_iri, str(e))
+            raise
+        except Exception as e:
+            LOGGER.error("Unexpected error retrieving required IRIs for class IRI %s: %s", class_iri, str(e))
+            raise
+
+    def _retrieve_data_for_grading(self, node):
+        try:
             attributes_to_grade = self.oms_crud_tool.get_attributes(AttributeQuery(nodeIds=[node.id]))
+        except Exception as e:
+            LOGGER.error("Error retrieving attributes for node ID %s: %s", node.id, str(e))
+            raise
+
+        try:
             relationships_to_grade = self.oms_crud_tool.get_relationships(
                 RelationshipQuery(nodes=RelationshipNodeQuery(nodeIds=[node.id]))
             )
-            grade = rubric.grade(attributes=attributes_to_grade, relationships=relationships_to_grade)
-
-            LOGGER.info("Object Minimum grade: %s", grade.completion_score)
-            return []
-
         except Exception as e:
-            LOGGER.error("Error processing data for node ID %s: %s", node.id, str(e))
-            return []
+            LOGGER.error("Error retrieving relationships for node ID %s: %s", node.id, str(e))
+            raise
+
+        return attributes_to_grade, relationships_to_grade
+
+    def _calculate_grade(self, attributes, relationships, required_iris):
+        try:
+            rubric = ObjectMinimumRubric(required_iris=required_iris)
+            return rubric.grade(attributes=attributes, relationships=relationships)
+        except Exception as e:
+            LOGGER.error("Error calculating grade: %s", str(e))
+            raise

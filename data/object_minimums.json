@@ -16,7 +16,7 @@
         "TAGS": []
     },
     "https://oms.dodiis.ic.gov/ontology/c-0000000003": {
-        "NAME": "Organization",
+        "NAME": "Military Unit",
         "ACM": {},
         "ATTRIBUTES": [
             "https://oms.dodiis.ic.gov/ontology/p-0000000002",
