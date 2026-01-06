@@ -104,13 +104,13 @@ def run_migrations_online() -> None:
     except OperationalError as e:
         err_msg = str(e).lower()
         if "authentication failed" in err_msg:
-            LOGGER.error(f"ALEMBIC_FAIL:AUTH_ISSUE | {e}")
+            LOGGER.error("ALEMBIC_FAIL:AUTH_ISSUE")
         elif "connection timeout expired" in err_msg or "server closed the connection" in err_msg:
-            LOGGER.error(f"ALEMBIC_FAIL:NETWORK ISSUE | {e}")
+            LOGGER.error("ALEMBIC_FAIL:NETWORK ISSUE")
         elif "connection refused" in err_msg:
-            LOGGER.error(f"ALEMBIC_FAIL:HOST/PORT ISSUE | {e}")
+            LOGGER.error("ALEMBIC_FAIL:HOST/PORT ISSUE")
         else:
-            LOGGER.exception(f"Unexpected migration error:| {e}")
+            LOGGER.exception(f"Unexpected migration error: | {e}")
         raise
 
 
