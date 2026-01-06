@@ -16,6 +16,7 @@ LOGGER = logging.getLogger(__name__)
 class MilSymbol2525D(MilSymbol):
     """Class for MIL-STD-2525D format SIDCs"""
 
+    code_type_config = "MIL_SYMBOL_2525D"
     UNKNOWN_DIMENSION_CODE = "00"
 
     # E.g.  10000100000000000000
@@ -78,7 +79,7 @@ class MilSymbol2525D(MilSymbol):
 
         if context_attr:
             context = context_attr.attributeIri
-            for code, context_list in self.settings["MIL_SYMBOL_2525D"]["CONTEXT_LISTS"].items():
+            for code, context_list in self.settings[self.code_type_config]["CONTEXT_LISTS"].items():
                 # TODO ignore case?
                 if context in context_list:
                     self.update_code(self.MIL_SYM_2525D_CONTEXT_IDX, code)
@@ -96,7 +97,7 @@ class MilSymbol2525D(MilSymbol):
 
         if affiliation_attr:
             node_standard_identity = affiliation_attr.attributeValue
-            for code, standard_identity_list in self.settings["MIL_SYMBOL_2525D"]["STANDARD_IDENTITY_LISTS"].items():
+            for code, standard_identity_list in self.settings[self.code_type_config]["STANDARD_IDENTITY_LISTS"].items():
                 if node_standard_identity.lower() in standard_identity_list:
                     self.update_code(self.MIL_SYM_2525D_STD_IDENTITY_IDX, code)
                     self.source_ids.put((self.AFFILIATION_SOURCE_PRIORITY, affiliation_attr.sourceId))
@@ -121,7 +122,7 @@ class MilSymbol2525D(MilSymbol):
             :return: boolean indicating whether update was made or not
             """
             current_iri = current_iri.lower()
-            for code, dimension_iris in self.settings["MIL_SYMBOL_2525D"]["DIMENSION_IRIS"].items():
+            for code, dimension_iris in self.settings[self.code_type_config]["DIMENSION_IRIS"].items():
                 dimension_iris = [dimension_iri.lower() for dimension_iri in dimension_iris]
                 if current_iri in dimension_iris:
                     self.update_code(self.MIL_SYM_2525D_DIMENSION_IDX_0, code[0])
@@ -151,7 +152,7 @@ class MilSymbol2525D(MilSymbol):
 
         if status_attr:
             status = status_attr.attributeValue
-            for code, status_list in self.settings["MIL_SYMBOL_2525D"]["STATUS_LISTS"].items():
+            for code, status_list in self.settings[self.code_type_config]["STATUS_LISTS"].items():
                 if status.lower() in status_list:
                     self.update_code(self.MIL_SYM_2525D_STATUS_IDX, code)
                     self.source_ids.put((self.STATUS_SOURCE_PRIORITY, status_attr.sourceId))
@@ -169,7 +170,7 @@ class MilSymbol2525D(MilSymbol):
 
         if echelon_attr:
             echelon = echelon_attr.attributeValue
-            for code, echelon_list in self.settings["MIL_SYMBOL_2525D"]["AMPLIFIER_LISTS"].items():
+            for code, echelon_list in self.settings[self.code_type_config]["AMPLIFIER_LISTS"].items():
                 if echelon.lower() in echelon_list:
                     self.update_code(self.MIL_SYM_2525D_AMPLIFIER_IDX_0, code[0])
                     self.update_code(self.MIL_SYM_2525D_AMPLIFIER_IDX_1, code[1])
