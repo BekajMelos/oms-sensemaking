@@ -219,7 +219,12 @@ def test_execute(mock_source, db, build_helper):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -273,7 +278,12 @@ def test_execute(mock_source, db, build_helper):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -323,7 +333,12 @@ def test_execute(mock_source, db, build_helper):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -377,7 +392,12 @@ def test_execute(mock_source, db, build_helper):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -536,7 +556,12 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_he
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -591,7 +616,12 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_he
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -644,7 +674,12 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,
@@ -697,7 +732,12 @@ def test_echelon_enrichment(mock_source, db, build_helper):
         oms_crud_tool.create_attribute.assert_any_call(
             CreateAttributeInput(
                 tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, sensemaker.version_string],
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    sensemaker.version_string,
+                    symbol.id_type,
+                ],
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol.new_symbol_id_code,

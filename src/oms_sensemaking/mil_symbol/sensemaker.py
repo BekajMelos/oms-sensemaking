@@ -45,6 +45,7 @@ class SymbolCodeUpdate(FindingBase):
     old_symbol_id_code: str
     new_symbol_id_code: str
     acm: Dict
+    id_type: str
 
     def __str__(self):
         return str(self.to_dict())
@@ -163,28 +164,31 @@ class MilSymbolSensemaker(Sensemaker):
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525d.formatted_code,
             acm=code_2525d.get_acm(),
+            id_type=MilSymbol2525D.code_type_config,
         )
         symbol_code_update_c = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525c.formatted_code,
             acm=code_2525c.get_acm(),
+            id_type=MilSymbol2525C.code_type_config,
         )
 
         symbol_code_update_b = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525b.formatted_code,
             acm=code_2525c.get_acm(),
+            id_type=MilSymbol2525B.code_type_config,
         )
 
         results: List[SymbolCodeUpdate] = [symbol_code_update_d, symbol_code_update_c, symbol_code_update_b]
-
-        self.update_oms_node(oms_node, code_2525c.code)
 
         # We need to have used sourced attributes in order to publish
         # And only publish if there was a change in the symbol
         if not code_2525d.source_ids.empty() and symbol_code_update_d.new_symbol_id_code != before_enrich_2525d:
             source = code_2525d.source_ids.get()[1]
             self.publish_attributes(oms_node, results, source)
+
+        self.update_oms_node(oms_node, code_2525c.code)
 
         return results
 
@@ -253,7 +257,14 @@ class MilSymbolSensemaker(Sensemaker):
             try:
                 for existing_icon, symbol_code_update in zip(attributes.data, symbol_code_updates, strict=True):
                     update_attribute_input = UpdateAttributeInput(
-                        id=existing_icon.id, attributeValue=symbol_code_update.new_symbol_id_code
+                        id=existing_icon.id,
+                        attributeValue=symbol_code_update.new_symbol_id_code,
+                        labels=[
+                            SETTINGS.sm_inferenced_label,
+                            SETTINGS.mil_sym_sm_label,
+                            self.version_string,
+                            symbol_code_update.id_type,
+                        ],
                     )
                     self.oms_crud_tool.update_attribute(update_attribute_input)
             except ValueError:
@@ -263,7 +274,12 @@ class MilSymbolSensemaker(Sensemaker):
             for symbol_code_update in symbol_code_updates:
                 attribute: CreateAttributeInput = CreateAttributeInput(
                     tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                    labels=[SETTINGS.sm_inferenced_label, SETTINGS.mil_sym_sm_label, self.version_string],
+                    labels=[
+                        SETTINGS.sm_inferenced_label,
+                        SETTINGS.mil_sym_sm_label,
+                        self.version_string,
+                        symbol_code_update.id_type,
+                    ],
                     attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                     attributeType=AttributeType.STRING,
                     attributeValue=symbol_code_update.new_symbol_id_code,

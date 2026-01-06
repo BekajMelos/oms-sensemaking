@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.19.1] - 2026-01-06
+
+### Added
+- Add Labels to Mil Symbol Attributes
+
 ## [0.19.0] - 2026-01-05
 
 ### Added
