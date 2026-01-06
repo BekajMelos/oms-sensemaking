@@ -163,6 +163,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
     ):
         """Create a new instance of BaseRabbitMQListener."""
         super().__init__(handle_event)
+
+        self.stopped.set()
         self._name = name
         self._queue_name = queue_name
         self._event_filter = event_filter

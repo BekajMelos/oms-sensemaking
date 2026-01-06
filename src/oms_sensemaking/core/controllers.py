@@ -149,6 +149,9 @@ class SensemakerController:
         # Replace the event consumer
         self.event_consumer = new_listener
 
+        if self.event_consumer.handle_event is None:
+            self.event_consumer.handle_event = self.handle_event
+
     def restart(self) -> None:
         """
         Restart the controller.
