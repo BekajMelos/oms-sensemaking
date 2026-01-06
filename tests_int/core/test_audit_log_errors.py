@@ -59,7 +59,7 @@ def test_db_logging(mock_controller: SensemakerController, db: Session, session_
     assert log.object_type == "NODE"
     assert log.event_type == "CREATE"
     assert log.function_name == "get_oms_data"
-    assert log.line_no == 170
+    assert log.line_no == 173
     assert log.code == "return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)"
     assert log.exception_name == "GraphQLClientError"
     assert log.message is None
