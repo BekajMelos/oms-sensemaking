@@ -75,7 +75,7 @@ class ObjectMinimums(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config_rubrics = rubric_criteria
+        self.rubric_criteria = rubric_criteria
         self.oms_crud_tool = oms_crud_tool
         self.obj_min_rubric = obj_min_rubric
         self.obj_min_retriever = obj_min_retriever
@@ -137,7 +137,7 @@ class ObjectMinimums(Sensemaker):
 
     def _get_required_iris(self, class_iri):
         try:
-            config_rubric_data = self.config_rubrics.get(class_iri, {})
+            config_rubric_data = self.rubric_criteria.get(class_iri, {})
             reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
             reqs_rel_iris = config_rubric_data.get("RELATIONSHIPS", [])
             return reqs_attr_iris, reqs_rel_iris

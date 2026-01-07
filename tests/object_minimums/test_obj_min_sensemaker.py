@@ -17,13 +17,13 @@ class TestObjectMinimumSensemaker(unittest.TestCase):
         self.mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
         self.mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
         self.mock_rubric = MagicMock()
-        rubric_criteria = {}
+        self.rubric_criteria = {}
 
         self.sensemaker = ObjectMinimums(
             oms_crud_tool=self.mock_oms_crud_tool,
             obj_min_retriever=self.mock_retriever,
             obj_min_rubric=self.mock_rubric,
-            rubric_criteria=rubric_criteria,
+            rubric_criteria=self.rubric_criteria,
         )
 
     def test_process_data_no_required_iris(self):
@@ -81,9 +81,9 @@ class TestObjectMinimumSensemaker(unittest.TestCase):
     @patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_node")
     def test_get_required_iris(self, mock_get_node):
         class_iri = "http://example.org/ClassIRI"
-        config_rubrics = {class_iri: {"ATTRIBUTES": ["iri1", "iri2"], "RELATIONSHIPS": ["relIri1"]}}
+        rubric_criteria = {class_iri: {"ATTRIBUTES": ["iri1", "iri2"], "RELATIONSHIPS": ["relIri1"]}}
 
-        self.sensemaker.config_rubrics = config_rubrics
+        self.sensemaker.rubric_criteria = rubric_criteria
         required_attributes, required_relationships = self.sensemaker._get_required_iris(class_iri)
 
         self.assertEqual(required_attributes, ["iri1", "iri2"])
