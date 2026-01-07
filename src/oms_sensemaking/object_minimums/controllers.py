@@ -28,7 +28,7 @@ class ObjectMinimumsSensemakerController(SensemakerController):
         """Start the controller."""
         if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
             with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
-                object_minimum_rubrics = json.load(fd)
+                rubric_criteria = json.load(fd)
 
             self.register(
                 "object minimums",
@@ -36,7 +36,7 @@ class ObjectMinimumsSensemakerController(SensemakerController):
                     self.oms_crud_tool,
                     ObjectMinimumDataRetriever(),
                     ObjectMinimumRubric(),
-                    object_minimum_rubrics,
+                    rubric_criteria,
                 ),
             )
         super().start()

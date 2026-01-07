@@ -12,7 +12,7 @@ from oms_sdk.generated.generated_graphql_client import (
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.models.object_minimums import ObjectMinimumRubric
+from oms_sensemaking.object_minimums.object_minimum_models import ObjectMinimumRubric
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,13 +69,13 @@ class ObjectMinimums(Sensemaker):
         oms_crud_tool: OmsCrudTool,
         obj_min_retriever: ObjectMinimumDataRetriever,
         obj_min_rubric: ObjectMinimumRubric,
-        config_rubrics: dict,
+        rubric_criteria: dict,
     ) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config_rubrics = config_rubrics
+        self.config_rubrics = rubric_criteria
         self.oms_crud_tool = oms_crud_tool
         self.obj_min_rubric = obj_min_rubric
         self.obj_min_retriever = obj_min_retriever

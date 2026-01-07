@@ -17,13 +17,13 @@ class TestObjectMinimumSensemaker(unittest.TestCase):
         self.mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
         self.mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
         self.mock_rubric = MagicMock()
-        config_rubrics = {}
+        rubric_criteria = {}
 
         self.sensemaker = ObjectMinimums(
             oms_crud_tool=self.mock_oms_crud_tool,
             obj_min_retriever=self.mock_retriever,
             obj_min_rubric=self.mock_rubric,
-            config_rubrics=config_rubrics,
+            rubric_criteria=rubric_criteria,
         )
 
     def test_process_data_no_required_iris(self):

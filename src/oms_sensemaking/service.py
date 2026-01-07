@@ -227,12 +227,6 @@ def check_obj_min_rubric_file_path() -> None:
     if not os.path.exists(SETTINGS.object_minimum_settings.rubrics_file_path):
         LOGGER.error("%s is not a valid directory", SETTINGS.object_minimum_settings.rubrics_file_path)
         sys.exit("The object minimums rubric file path is incorrect or does not exist.")
-    try:
-        with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
-            json.load(fd)
-    except json.JSONDecodeError:
-        LOGGER.error("Failed to decode JSON from the rubrics file.")
-        sys.exit("Failed to decode JSON from the rubrics file.")
 
 
 def initialize_settings() -> None:
