@@ -27,18 +27,8 @@ class ObjectMinimumsSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
-            config_settings = SETTINGS.object_minimum_settings
-
-            try:
-                with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
-                    object_minimum_rubrics = json.load(fd)
-                LOGGER.info("Successfully read object minimum rubrics")
-            except FileNotFoundError:
-                LOGGER.error(f"Rubrics file not found: {SETTINGS.object_minimum_settings.rubrics_file_path}")
-                raise
-            except json.JSONDecodeError:
-                LOGGER.error("Failed to decode JSON from the rubrics file.")
-                raise
+            with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
+                object_minimum_rubrics = json.load(fd)
 
             self.register(
                 "object minimums",
@@ -46,7 +36,6 @@ class ObjectMinimumsSensemakerController(SensemakerController):
                     self.oms_crud_tool,
                     ObjectMinimumDataRetriever(),
                     ObjectMinimumRubric(),
-                    config_settings.model_dump(),
                     object_minimum_rubrics,
                 ),
             )

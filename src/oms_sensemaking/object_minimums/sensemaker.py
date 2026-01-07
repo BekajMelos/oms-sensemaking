@@ -69,14 +69,12 @@ class ObjectMinimums(Sensemaker):
         oms_crud_tool: OmsCrudTool,
         obj_min_retriever: ObjectMinimumDataRetriever,
         obj_min_rubric: ObjectMinimumRubric,
-        config_settings: dict,
         config_rubrics: dict,
     ) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
-        self.config_settings = config_settings
         self.config_rubrics = config_rubrics
         self.oms_crud_tool = oms_crud_tool
         self.obj_min_rubric = obj_min_rubric

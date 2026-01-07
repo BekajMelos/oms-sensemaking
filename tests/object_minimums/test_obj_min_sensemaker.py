@@ -17,14 +17,12 @@ class TestObjectMinimumSensemaker(unittest.TestCase):
         self.mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
         self.mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
         self.mock_rubric = MagicMock()
-        config_settings = {}
         config_rubrics = {}
 
         self.sensemaker = ObjectMinimums(
             oms_crud_tool=self.mock_oms_crud_tool,
             obj_min_retriever=self.mock_retriever,
             obj_min_rubric=self.mock_rubric,
-            config_settings=config_settings,
             config_rubrics=config_rubrics,
         )
 
