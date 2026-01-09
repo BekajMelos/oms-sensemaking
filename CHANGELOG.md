@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Removed old NLP models from repository
 
 ### Fixed
 - Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
