@@ -7,11 +7,10 @@ from threading import Event, Lock, Thread
 from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
 
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
-from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, RabbitMQListener
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.observability import with_metrics_collection
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.core.settings import Settings as AppSettings
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -116,49 +115,6 @@ class SensemakerController:
     def is_running(self) -> bool:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
-
-    def update_settings(self, app_settings: AppSettings) -> None:
-        """
-        Update the controller's event consumer with new settings.
-
-        This method creates a new RabbitMQListener with updated settings and replaces
-        the existing event consumer. Only works if the current event consumer is a RabbitMQListener.
-
-        :param app_settings: The new application settings to use.
-        """
-        if not isinstance(self.event_consumer, RabbitMQListener):
-            LOGGER.warning(
-                "update_settings called on controller with non-RabbitMQListener event consumer. " "Skipping update."
-            )
-            return
-
-        old_listener = self.event_consumer
-        # Preserve the handle_event callback
-        handle_event = old_listener.handle_event
-
-        # Create a new listener with the same configuration but new settings
-        new_listener = RabbitMQListener(
-            name=old_listener._name,
-            queue_name=old_listener._queue_name,
-            workers=old_listener.workers,
-            app_settings=app_settings,
-            handle_event=handle_event,
-            event_filter=old_listener._event_filter,
-        )
-
-        # Replace the event consumer
-        self.event_consumer = new_listener
-
-    def restart(self) -> None:
-        """
-        Restart the controller.
-
-        This method starts the controller if it's currently stopped.
-        """
-        if not self.is_running:
-            self.start()
-        else:
-            LOGGER.warning("Controller is already running. Cannot restart.")
 
     def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
         """

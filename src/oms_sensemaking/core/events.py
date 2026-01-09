@@ -230,13 +230,7 @@ class RabbitMQListener(BaseRabbitMQListener):
     ):
         """Create a new instance of RabbitMQListener."""
         super().__init__(name, queue_name, app_settings, handle_event, event_filter)
-        self._workers = workers
         self.pool = ThreadPoolExecutor(max_workers=workers)
-
-    @property
-    def workers(self) -> int:
-        """Return the number of worker threads."""
-        return self._workers
 
     def callback(
         self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes

@@ -129,7 +129,6 @@ async def lifespan(application: FastAPI):
     except Exception as ex:
         LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
 
-    # Create app_settings instance
     app_settings = AppSettings()
 
     controllers: list[tuple[SensemakerController, Thread]] = []
@@ -138,11 +137,7 @@ async def lifespan(application: FastAPI):
         controller_thread.start()
         controllers.append((ctrlr, controller_thread))
 
-    # Save controllers and threads to application state
-    application.state.controllers = [ctrlr for ctrlr, _ in controllers]
-    application.state.controller_threads = [thread for _, thread in controllers]
-
-    yield {}
+    yield
 
     for controller, controller_thread in controllers:
         LOGGER.warning("Handling the keyboard interrupt.")
