@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
 
 ## [0.20.0] - 2026-01-05
 
