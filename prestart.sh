@@ -25,7 +25,7 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
     echo "$alembic_output" >&2
     exit 1
   elif echo $alembic_output | grep -q "ALEMBIC_FAIL:HOST/PORT ISSUE"; then
-    echo "HOST or PORT issues."
+    echo "Unable to reach the database using the provided host and port."
   elif echo $alembic_output | grep -q "ALEMBIC_FAIL:NETWORK ISSUE"; then
     echo "Connection time out."
   fi
