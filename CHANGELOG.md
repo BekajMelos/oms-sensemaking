@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
 
 ## [0.20.0] - 2026-01-05
 
@@ -28,6 +29,8 @@ All notable changes to this project will be documented in this file.
 - Added new configuration toggle for http profile.
 - Base structure for the Object Minimums Sensemaker
 - Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added Object Minimums Sensemaker processing
+- Added ObjectMinimumGrade and ObjectMinimumRubric classes
 - Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
