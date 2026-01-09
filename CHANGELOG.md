@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 - Added new configuration toggle for http profile.
 - Base structure for the Object Minimums Sensemaker
 - Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added Object Minimums Sensemaker processing
+- Added ObjectMinimumGrade and ObjectMinimumRubric classes
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
