@@ -47,7 +47,8 @@ class ObjectMinimumsQueueFilter(EventFilter):
 
     # we should implement a filter similar to the resolution sensemaker
     # to only keep attributes we care about
+
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
-        handled_object_types = [ObjectType.ATTRIBUTE.value]
+        handled_object_types = [ObjectType.ATTRIBUTE.value, ObjectType.RELATIONSHIP.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]
         return audit_log_event.objectType in handled_object_types and audit_log_event.action in handled_event_types
