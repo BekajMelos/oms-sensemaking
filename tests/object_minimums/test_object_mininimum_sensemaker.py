@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute
+from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodesNodes
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from src.oms_sensemaking.object_minimums.sensemaker import (
@@ -46,9 +46,11 @@ def test_process_data_with_attributes_and_relationships(sensemaker):
     attribute_of_node = MagicMock(spec=AttributeAttribute)
     attribute_of_node.nodeId = str(uuid4())
 
+    mock_nodes = MagicMock(spec=NodesNodes)
     mock_node = MagicMock()
     mock_node.classIri = "http://example.org/ClassIRI"
-    sensemaker.oms_crud_tool.get_node.return_value = mock_node
+    mock_nodes.data = [mock_node]
+    sensemaker.oms_crud_tool.get_nodes.return_value = mock_nodes
 
     required_attributes = ["iri1", "iri2"]
     required_relationships = ["relIri1", "relIri2"]
