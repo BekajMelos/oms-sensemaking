@@ -7,7 +7,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+
+### Fixed
+
+## [0.21.0] - 2026-01-12
+
+### Changed
 - RabbitMQ Listener now imports a settings instance upon creation as a parameter
+
 ### Fixed
 - Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
 
