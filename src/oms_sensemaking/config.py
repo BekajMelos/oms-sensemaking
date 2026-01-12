@@ -232,6 +232,7 @@ class ObjectMinimumsSettings(BaseModel):
         description="the RMQ Object Minimums Queue name",
         examples=["object-minimums-trigger"]
     )
+    rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -496,7 +497,7 @@ class Settings(BaseSettings):
     oms_crud_ttl_cache_size: int = Field(1024, description="Max items in OMS CRUD Tool's given TTL Cache")
     oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in OMS CRUD Tool's given TTL Cache")
     omsb_url: str = Field("https://graphql:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-37", description="OMSB Version")
+    omsb_version: str = Field("3.1.1", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     aac_cacert_path: str | None = Field(

@@ -1,5 +1,7 @@
 {
     "https://oms.dodiis.ic.gov/ontology/c-0000000002": {
+        "NAME": "Person",
+        "ACM": {},
         "ATTRIBUTES": [
             "https://oms.dodiis.ic.gov/ontology/p-0000000002",
             "https://oms.dodiis.ic.gov/ontology/p-0000000001",
@@ -10,9 +12,12 @@
             "https://oms.dodiis.ic.gov/ontology/p-0000000008",
             "https://oms.dodiis.ic.gov/ontology/p-0000000022"
         ],
-        "RELATIONSHIPS": []
+        "RELATIONSHIPS": [],
+        "TAGS": []
     },
     "https://oms.dodiis.ic.gov/ontology/c-0000000003": {
+        "NAME": "Military Unit",
+        "ACM": {},
         "ATTRIBUTES": [
             "https://oms.dodiis.ic.gov/ontology/p-0000000002",
             "https://oms.dodiis.ic.gov/ontology/p-0000000001",
@@ -23,6 +28,8 @@
             "https://oms.dodiis.ic.gov/ontology/p-0000000008",
             "https://oms.dodiis.ic.gov/ontology/p-0000000050",
             "https://oms.dodiis.ic.gov/ontology/p-0000000051"
-        ]
+        ],
+        "RELATIONSHIPS": [],
+        "TAGS": []
     }
 }

@@ -312,32 +312,35 @@ class RabbitMQListener(BaseRabbitMQListener):
                 sleep(SETTINGS.rmq_read_wait_seconds)
                 continue
 
-            try:
-                # Start consuming messages
-                self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
+            self._consume_messages()
 
-                while not self.stopped.is_set():
-                    try:
-                        self._connection.process_data_events(time_limit=1)
-                    except Exception as ex:
-                        LOGGER.error("%s Error processing RabbitMQ events: %s", self._name, ex)
-                        break
+    def _consume_messages(self):
+        try:
+            # Start consuming messages
+            self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
 
-            except (AMQPConnectionError, AMQPChannelError) as ex:
-                LOGGER.error("%s RabbitMQ connection error: %s. Reconnecting...", self._name, ex)
+            while not self.stopped.is_set():
+                try:
+                    self._connection.process_data_events(time_limit=1)
+                except Exception as ex:
+                    LOGGER.error("%s Error processing RabbitMQ events: %s", self._name, ex)
+                    break
+
+        except (AMQPConnectionError, AMQPChannelError) as ex:
+            LOGGER.error("%s RabbitMQ connection error: %s. Reconnecting...", self._name, ex)
+            sleep(SETTINGS.rmq_read_wait_seconds)
+        except Exception as ex:
+            LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
+            sleep(SETTINGS.rmq_read_wait_seconds)
+        finally:
+            if not self.stopped.is_set():
+                try:
+                    self._disconnect()
+                except Exception:
+                    LOGGER.exception("_disconnect() failed in finally")
+
+            if not self.stopped.is_set():
                 sleep(SETTINGS.rmq_read_wait_seconds)
-            except Exception as ex:
-                LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
-                sleep(SETTINGS.rmq_read_wait_seconds)
-            finally:
-                if not self.stopped.is_set():
-                    try:
-                        self._disconnect()
-                    except Exception:
-                        LOGGER.exception("_disconnect() failed in finally")
-
-                if not self.stopped.is_set():
-                    sleep(SETTINGS.rmq_read_wait_seconds)
 
     def stop(self) -> None:
         """Stop consuming events and close the connection."""

@@ -1,5 +1,6 @@
 """Object minimums sensemaker controller."""
 
+import json
 import logging
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
@@ -11,7 +12,7 @@ from oms_sensemaking.core.events import (
     EventFilter,
     ObjectType,
 )
-from oms_sensemaking.object_minimums.sensemaker import ObjectMinimums
+from oms_sensemaking.object_minimums.sensemaker import ObjectMinimumDataRetriever, ObjectMinimumRubric, ObjectMinimums
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -26,7 +27,18 @@ class ObjectMinimumsSensemakerController(SensemakerController):
     def start(self) -> None:
         """Start the controller."""
         if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
-            self.register("object minimums", ObjectMinimums(self.oms_crud_tool))
+            with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
+                rubric_criteria = json.load(fd)
+
+            self.register(
+                "object minimums",
+                ObjectMinimums(
+                    self.oms_crud_tool,
+                    ObjectMinimumDataRetriever(),
+                    ObjectMinimumRubric(),
+                    rubric_criteria,
+                ),
+            )
         super().start()
 
 

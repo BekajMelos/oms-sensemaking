@@ -230,12 +230,20 @@ def check_aoi_file_path() -> None:
         sys.exit("The areas of interest directory is incorrect or does not exist.")
 
 
+def check_obj_min_rubric_file_path() -> None:
+    """Check for valid object minimums rubric directory"""
+    if not os.path.exists(SETTINGS.object_minimum_settings.rubrics_file_path):
+        LOGGER.error("%s is not a valid directory", SETTINGS.object_minimum_settings.rubrics_file_path)
+        sys.exit("The object minimums rubric file path is incorrect or does not exist.")
+
+
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
+        check_obj_min_rubric_file_path()
     except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
         LOGGER.error("Unable to initialize settings: %s", e)
         sys.exit("An error occurred during initialization.")

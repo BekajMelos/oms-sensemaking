@@ -5,12 +5,33 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+- Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
+
+## [0.20.0] - 2026-01-05
+
+### Added
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+
+### Changed
+- Updated ATOMS dependency to Starscream 3.1.1
+
+## [0.19.0] - 2026-01-05
+
+### Added
 - Added abstract method `get_graph_data()` in Inference's BaseRule. Placeholder methods to be implemented for each respective rule.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
 - Base structure for the Object Minimums Sensemaker
 - Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added Object Minimums Sensemaker processing
+- Added ObjectMinimumGrade and ObjectMinimumRubric classes
+- Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
@@ -26,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - No longer request for the node object in the Incursion and In/Out Garrison processes
+- Removed unused OS packages for vulnerability reasons
 
 ## [0.18.0] - 2025-12-09
 
