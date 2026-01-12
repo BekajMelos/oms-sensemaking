@@ -20,6 +20,21 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
 
+### Removed
+
+## [0.19.2] - 2026-01-12
+
+### Changed
+- Integrate updated Garrison custom query from SDK, which now includes Activities. Remove calls to `get_activities()`.
+
+### Removed
+- Remove unused `GetGarrisonDataSequential` class from garrison_data_collection.py.
+
+## [0.19.1] - 2026-01-06
+
+### Added
+- Add Labels to Mil Symbol Attributes
+
 ## [0.19.0] - 2026-01-05
 
 ### Added
