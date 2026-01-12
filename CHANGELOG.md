@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
 - Added Object Minimums Sensemaker processing
 - Added ObjectMinimumGrade and ObjectMinimumRubric classes
+- Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
