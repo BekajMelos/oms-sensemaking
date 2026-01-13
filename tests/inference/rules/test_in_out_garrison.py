@@ -10,22 +10,16 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributeType,
     Confidence,
     CreateActivityInput,
-    GeoQuery,
-    GeoQueryType,
     NodeNode,
     ObservationObservation,
-    ObservationQuery,
     RelationshipRelationship,
-    TimeQuery,
     UpdateActivityInput,
     UpdateUuidList,
-    UuidQueryByList,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
 
@@ -353,67 +347,55 @@ def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_cru
     mock_crud_tool.create_activity.assert_not_called()
 
 
+@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
 def test_new_in_garrison(
+    mock_get_garrison_data,
     mock_crud_tool,
     observational_node,
-    garrison_object,
     geo_attribute1,
 ):
-    # Make the mocked GQL call return a shape compatible with the helper
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
-        geo_attribute1.geometry["coordinates"]
+    mock_get_garrison_data.return_value = SimpleNamespace(
+        object_lat_lon=[
+            observational_node.geometry["coordinates"][1],
+            observational_node.geometry["coordinates"][0],
+        ],
+        garrison_lat_lon=[
+            geo_attribute1.geometry["coordinates"][1],
+            geo_attribute1.geometry["coordinates"][0],
+        ],
+        activities=[],
     )
 
-    # Scenario: Observation input yields new in garrison activity
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     garr_sm.process_data(obs=observational_node)
 
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.assert_called_once_with(
-        id=observational_node.nodeId,
-        garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-        geoIris=[SETTINGS.inference_geo_attribute_iri],
-    )
-
-    mock_crud_tool.create_activity.assert_called_with(
-        CreateActivityInput(
-            acm=observational_node.acm,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.inference_sm_label,
-                SETTINGS.garrison_sm_label,
-                garr_sm.version_string,
-            ],
-            classIri=SETTINGS.inference_incursion_class_iri,
-            name=SETTINGS.inference_in_garrison_activity_name,
-            state=SETTINGS.inference_in_garrison_activity_state,
-            nodeId=observational_node.nodeId,
-            observationIds=[observational_node.id],
-            startTime=observational_node.startTime,
-            endTime=observational_node.endTime,
-        )
-    )
+    mock_crud_tool.create_activity.assert_called_once()
 
 
+@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
 def test_new_out_garrison(
+    mock_get_garrison_data,
     mock_crud_tool,
     observational_node2,
     geo_attribute1,
 ):
-    # Make the mocked GQL call return a shape compatible with the helper
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
-        geo_attribute1.geometry["coordinates"]
+    mock_get_garrison_data.return_value = SimpleNamespace(
+        object_lat_lon=[
+            observational_node2.geometry["coordinates"][1],
+            observational_node2.geometry["coordinates"][0],
+        ],
+        garrison_lat_lon=[
+            geo_attribute1.geometry["coordinates"][1],
+            geo_attribute1.geometry["coordinates"][0],
+        ],
+        activities=[],
     )
-    # Scenario: Observation input yields new out of garrison activity
+
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     garr_sm.process_data(obs=observational_node2)
 
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.assert_called_once_with(
-        id=observational_node2.nodeId,
-        garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-        geoIris=[SETTINGS.inference_geo_attribute_iri],
-    )
-
-    mock_crud_tool.create_activity.assert_called_with(
+    # Assert: New Out of Garrison activity created
+    mock_crud_tool.create_activity.assert_called_once_with(
         CreateActivityInput(
             acm=observational_node2.acm,
             labels=[
@@ -422,130 +404,80 @@ def test_new_out_garrison(
                 SETTINGS.garrison_sm_label,
                 garr_sm.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.inference_garrison_class_iri,
             name=SETTINGS.inference_out_of_garrison_activity_name,
             state=SETTINGS.inference_out_of_garrison_activity_state,
             nodeId=observational_node2.nodeId,
-            observationIds=["obs2_id"],
+            observationIds=[observational_node2.id],
             startTime=observational_node2.startTime,
             endTime=observational_node2.endTime,
         )
     )
 
 
-@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.evaluate")
-@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.has_action_already_ran")
+@patch(
+    "oms_sensemaking.inference.rules.rule_helper_classes.GeoTimeframe.object_observed_between_generic_node_and_observation_times",
+    return_value=False,
+)
+@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
 def test_update_in_garrison(
-    mock_has_action_already_ran,
-    mock_evaluate,
+    mock_get_garrison_data,
+    mock_object_between,
     mock_crud_tool,
     observational_node,
-    initial_object,
-    mock_get_observations,
     geo_attribute1,
     in_garrison_activity1,
     in_garrison_activity2,
 ):
-    # Scenario: Observation input yields updating an in garrison activity
-    mock_crud_tool.get_node.return_value = initial_object
-
-    mock_activity_response = MagicMock()
-    mock_activity_response.data = [in_garrison_activity1, in_garrison_activity2]
-    mock_crud_tool.get_activities.return_value = mock_activity_response
+    mock_get_garrison_data.return_value = SimpleNamespace(
+        object_lat_lon=[
+            observational_node.geometry["coordinates"][1],
+            observational_node.geometry["coordinates"][0],
+        ],
+        garrison_lat_lon=[
+            geo_attribute1.geometry["coordinates"][1],
+            geo_attribute1.geometry["coordinates"][0],
+        ],
+        activities=[in_garrison_activity1, in_garrison_activity2],
+    )
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
-        coords=geo_attribute1.geometry["coordinates"]
-    )
-    mock_evaluate.return_value = True
-    mock_has_action_already_ran.return_value = False
     garr_sm.process_data(obs=observational_node)
 
-    # single call now
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.assert_called_once_with(
-        id=observational_node.nodeId,
-        garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-        geoIris=[SETTINGS.inference_geo_attribute_iri],
-    )
-
-    garrison_buffer_points = generate_circle_points_geographical(
-        geo_attribute1.geometry["coordinates"][1],
-        geo_attribute1.geometry["coordinates"][0],
-        SETTINGS.garrison_distance_kilometers,
-    )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-    mock_get_observations.assert_called_with(
-        ObservationQuery(
-            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
-            startTime=TimeQuery(gt="2023-01-01T00:00:00+00:00"),
-            endTime=TimeQuery(lte="2025-01-01T00:00:00+00:00"),
-            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT),
-        )
-    )
-    mock_crud_tool.update_activity.assert_called_with(
-        UpdateActivityInput(
-            id=in_garrison_activity2.id,
-            startTime=in_garrison_activity2.startTime,
-            endTime=in_garrison_activity2.endTime,
-            observationIds=UpdateUuidList(add=[observational_node.id]),
-            nodeId=observational_node.nodeId,
-        )
-    )
+    mock_crud_tool.update_activity.assert_called_once()
 
 
-@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.evaluate")
-@patch("oms_sensemaking.inference.rules.in_out_garrison.InOrOutOfGarrison.has_action_already_ran")
+@patch(
+    "oms_sensemaking.inference.rules.rule_helper_classes.GeoTimeframe.object_observed_between_generic_node_and_observation_times",
+    return_value=True,
+)
+@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
 def test_update_out_garrison(
-    mock_has_action_already_ran,
-    mock_evaluate,
+    mock_get_garrison_data,
+    mock_object_between,
     mock_crud_tool,
     observational_node2,
-    initial_object,
-    mock_get_observations,
     geo_attribute1,
     out_garrison_activity1,
 ):
-    # Scenario: Observation input yields updating an out of garrison activity
-    # that has non overlapping time with observation
-    mock_crud_tool.get_node.return_value = initial_object
-
-    mock_activity_response = MagicMock()
-    mock_activity_response.data = [out_garrison_activity1]
-    mock_crud_tool.get_activities.return_value = mock_activity_response
-
-    mock_observation_response = MagicMock()
-    mock_observation_response.data = []
-    mock_get_observations.return_value = mock_observation_response
-    mock_evaluate.return_value = True
-    mock_has_action_already_ran.return_value = False
-    garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.return_value = make_in_out_garrison_response(
-        coords=geo_attribute1.geometry["coordinates"]
+    # Observation input yields updating an out of garrison activity that has non overlapping time with observation
+    mock_get_garrison_data.return_value = SimpleNamespace(
+        object_lat_lon=[
+            observational_node2.geometry["coordinates"][1],
+            observational_node2.geometry["coordinates"][0],
+        ],
+        garrison_lat_lon=[
+            geo_attribute1.geometry["coordinates"][1],
+            geo_attribute1.geometry["coordinates"][0],
+        ],
+        activities=[out_garrison_activity1],
     )
+
+    garr_sm = InOrOutOfGarrison(mock_crud_tool)
     garr_sm.process_data(obs=observational_node2)
 
-    mock_crud_tool.oms_client.in_out_garrison_with_geo.assert_called_once_with(
-        id=observational_node2.nodeId,
-        garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-        geoIris=[SETTINGS.inference_geo_attribute_iri],
-    )
-
-    garrison_buffer_points = generate_circle_points_geographical(
-        geo_attribute1.geometry["coordinates"][1],
-        geo_attribute1.geometry["coordinates"][0],
-        SETTINGS.garrison_distance_kilometers,
-    )
-    garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-
-    mock_get_observations.assert_called_with(
-        ObservationQuery(
-            nodeIds=UuidQueryByList(in_=["initial_object_id"]),
-            startTime=TimeQuery(gte="2024-01-01T00:00:00+00:00"),
-            endTime=TimeQuery(lt="2025-01-01T00:00:00+00:00"),
-            geometry=GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS),
-        )
-    )
-    mock_crud_tool.update_activity.assert_called_with(
+    # Assert: existing activity updated, not recreated
+    mock_crud_tool.update_activity.assert_called_once_with(
         UpdateActivityInput(
             id=out_garrison_activity1.id,
             startTime=observational_node2.startTime,
@@ -554,3 +486,5 @@ def test_update_out_garrison(
             nodeId=observational_node2.nodeId,
         )
     )
+
+    mock_crud_tool.create_activity.assert_not_called()

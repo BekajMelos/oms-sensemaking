@@ -1,9 +1,11 @@
 """Alembic environment configuration."""
 
+import logging
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.exc import OperationalError
 
 from oms_sensemaking.config import SETTINGS
 
@@ -25,7 +27,7 @@ config.set_main_option("sqlalchemy.url", escaped_uri)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -37,6 +39,8 @@ target_metadata = BaseORM.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+LOGGER = logging.getLogger("alembic")
 
 
 def include_name(name, type_, parent_names):
@@ -90,11 +94,24 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata, include_name=include_name)
+    try:
+        with connectable.connect() as connection:
+            context.configure(connection=connection, target_metadata=target_metadata, include_name=include_name)
 
-        with context.begin_transaction():
-            context.run_migrations()
+            with context.begin_transaction():
+                context.run_migrations()
+
+    except OperationalError as e:
+        err_msg = str(e).lower()
+        if "authentication failed" in err_msg:
+            LOGGER.error("ALEMBIC_FAIL:AUTH_ISSUE")
+        elif "connection timeout expired" in err_msg or "server closed the connection" in err_msg:
+            LOGGER.error("ALEMBIC_FAIL:NETWORK ISSUE")
+        elif "connection refused" in err_msg:
+            LOGGER.error("ALEMBIC_FAIL:HOST/PORT ISSUE")
+        else:
+            LOGGER.exception(f"Unexpected migration error: | {e}")
+        raise
 
 
 if context.is_offline_mode():

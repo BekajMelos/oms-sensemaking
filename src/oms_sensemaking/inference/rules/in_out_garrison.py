@@ -1,16 +1,15 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+from typing import List
+
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
-    ActivityQuery,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
     ObservationObservation,
-    StringQuery,
     UpdateActivityInput,
     UpdateUuidList,
-    UuidQueryByList,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -18,7 +17,7 @@ from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
-from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataRetrieverFactory
+from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
 
 
@@ -32,9 +31,7 @@ class InOrOutOfGarrison(Sensemaker):
         self.oms_crud_tool = oms_crud_tool
         self.name = self.__class__.__name__
         self.version = (1, 0, 0)
-        self._data_retriever = GetGarrisonDataRetrieverFactory(self.oms_crud_tool).get_garrison_data_retriever(
-            SETTINGS.garrison_data_retriever
-        )
+        self._data_retriever = GetGarrisonDataAllAtOnce(self.oms_crud_tool)
 
     def evaluate(self, obs: ObservationObservation) -> bool:
         """
@@ -57,25 +54,29 @@ class InOrOutOfGarrison(Sensemaker):
 
         if not self.evaluate(obs):
             return []
-        object_and_garrison_coords = self._data_retriever.get_all_garrison_data(obs)
-        if not object_and_garrison_coords:
+
+        garrison_data = self._data_retriever.get_all_garrison_data(obs)
+        if not garrison_data:
             return []
-        # Check if observation has already been processed after getting coords
-        # We could fail early and never call has_action_already_ran
-        # if 'object_and_garrison_coords' conditional does not pass
-        if self.has_action_already_ran(obs):
-            return []
-        object_lat_lon, garrison_lat_lon = object_and_garrison_coords
+
+        object_lat_lon = garrison_data.object_lat_lon
+        garrison_lat_lon = garrison_data.garrison_lat_lon
+        activities = garrison_data.activities
+
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
         garrison_buffer_points = generate_circle_points_geographical(
             garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-        self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson)
+        self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson, activities)
         return []
 
     def _create_or_update_garrison_activity(
-        self, obs: ObservationObservation, in_garrison: bool, garrison_buffer_geojson: dict
+        self,
+        obs: ObservationObservation,
+        in_garrison: bool,
+        garrison_buffer_geojson: dict,
+        existing_activities: List[ActivitiesActivitiesData],
     ):
         if in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -87,18 +88,16 @@ class InOrOutOfGarrison(Sensemaker):
             activity_state = SETTINGS.inference_out_of_garrison_activity_state
             geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
 
-        activity_query = ActivityQuery(
-            name=StringQuery(equals=activity_name),
-            states=[activity_state],
-            nodeIds=UuidQueryByList(in_=[obs.nodeId]),
-        )
-        activity_response = self.oms_crud_tool.get_activities(activity_query)
-        existing_activities = activity_response.data
-
         matching_activity_found = False
 
         enhanced_obs = Timeframe(obs)
         for existing_activity in existing_activities:
+            # Query returns both in- and out-of-garrison activities; filter client-side
+            if existing_activity.state != activity_state:
+                continue
+            if existing_activity.name != activity_name:
+                continue
+
             enhanced_activity = GeoTimeframe(existing_activity.startTime, existing_activity.endTime)
             # Update existing activity if times overlap or if node_object stayed in/out of
             # garrison in the time between the observation and activity
@@ -159,20 +158,3 @@ class InOrOutOfGarrison(Sensemaker):
             endTime=observation.endTime,
         )
         self.oms_crud_tool.create_activity(garrison_activity)
-
-    def has_action_already_ran(self, obs: ObservationObservation):
-        """
-        Determine if an in/out of garrison activity pointing to the inputted observation has already been created
-        """
-
-        if not obs:
-            return False
-
-        activity_query = ActivityQuery(observationIds=[obs.id])
-        activities = self.oms_crud_tool.get_activities(activity_query).data
-
-        return any(
-            act.name == SETTINGS.inference_in_garrison_activity_name
-            or act.name == SETTINGS.inference_out_of_garrison_activity_name
-            for act in activities
-        )

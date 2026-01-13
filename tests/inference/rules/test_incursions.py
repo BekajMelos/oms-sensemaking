@@ -697,3 +697,18 @@ def test_new_incursion_region4(
             endTime=observational_node_region4.endTime,
         )
     )
+
+
+def test_process_data_returns_empty_when_evaluate_fails(
+    observation_with_missing_start_time,
+    mock_crud_tool,
+):
+    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+
+    result = incur_sm.process_data(obs=observation_with_missing_start_time)
+
+    assert result == []
+    mock_crud_tool.create_activity.assert_not_called()
+    mock_crud_tool.create_attribute.assert_not_called()
+    # ensures we didn't attempt the expensive query
+    mock_crud_tool.oms_client.incursion_data.assert_not_called()
