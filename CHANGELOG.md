@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - Remove unused `GetGarrisonDataSequential` class from garrison_data_collection.py.
+- Remove `has_action_already_ran()` from Incursion and Garrison workflows. Remove unnecessary queries to activities.
 
 ## [0.19.1] - 2026-01-06
 
