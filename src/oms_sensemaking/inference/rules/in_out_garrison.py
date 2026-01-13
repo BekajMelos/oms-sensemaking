@@ -1,6 +1,5 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
-import logging
 from typing import List
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -20,8 +19,6 @@ from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
-
-LOGGER = logging.getLogger(__name__)
 
 
 class InOrOutOfGarrison(Sensemaker):
