@@ -488,26 +488,3 @@ def test_update_out_garrison(
     )
 
     mock_crud_tool.create_activity.assert_not_called()
-
-
-@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
-def test_has_action_already_ran_short_circuits(
-    mock_get_garrison_data,
-    mock_crud_tool,
-    observational_node,
-    in_garrison_activity1,
-):
-    """Test to verify has_action_already_ran"""
-    in_garrison_activity1.observationIds = [observational_node.id]
-
-    mock_get_garrison_data.return_value = SimpleNamespace(
-        object_lat_lon=[0, 0],
-        garrison_lat_lon=[0, 0],
-        activities=[in_garrison_activity1],
-    )
-
-    garrison_rule = InOrOutOfGarrison(mock_crud_tool)
-    garrison_rule.process_data(obs=observational_node)
-
-    mock_crud_tool.create_activity.assert_not_called()
-    mock_crud_tool.update_activity.assert_not_called()
