@@ -78,10 +78,6 @@ class Incursion(Sensemaker):
                 break
 
         if feature_of_interest:
-            # Check if observation has already been run on after ensuring
-            # the observation falls within a feature of interest, does not waste a request early on
-            if self.has_action_already_ran(obs):
-                return []
             # can we include geo?
             LOGGER.debug("Incursion detected for Observation: %s", obs.id)
             incursion_obs_timeframe = Timeframe(obs)
@@ -259,19 +255,6 @@ class Incursion(Sensemaker):
             valueEnd=observation.endTime,
         )
         self.oms_crud_tool.create_attribute(incursion_attribute)
-
-    def has_action_already_ran(self, obs: ObservationObservation):
-        """
-        Determine if an incursion activity pointing to the inputted observation has already been created
-        """
-
-        if not obs:
-            return False
-
-        activity_query = ActivityQuery(observationIds=[obs.id])
-        activities = self.oms_crud_tool.get_activities(activity_query).data
-
-        return any(activity.name == "Incursion" for activity in activities)
 
     def _truncate_activity_description(self, description: str):
         max_descr_length = 512

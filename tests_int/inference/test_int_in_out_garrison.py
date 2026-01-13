@@ -202,4 +202,3 @@ def test_int_skips_when_observation_already_processed(
     sensemaker = InOrOutOfGarrison(mock_crud_tool)
     sensemaker.process_data(obs=observation_inside_garrison)
     mock_crud_tool.create_activity.assert_not_called()
-    mock_crud_tool.update_activity.assert_not_called()

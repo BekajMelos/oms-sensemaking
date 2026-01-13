@@ -1,5 +1,6 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+import logging
 from typing import List
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -19,6 +20,8 @@ from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+
+LOGGER = logging.getLogger(__name__)
 
 
 class InOrOutOfGarrison(Sensemaker):
@@ -62,12 +65,6 @@ class InOrOutOfGarrison(Sensemaker):
         object_lat_lon = garrison_data.object_lat_lon
         garrison_lat_lon = garrison_data.garrison_lat_lon
         activities = garrison_data.activities
-
-        # Check if observation has already been processed after getting coords
-        # We could fail early and never call has_action_already_ran
-        # if 'object_and_garrison_coords' conditional does not pass
-        if self.has_action_already_ran(obs.id, activities):
-            return []
 
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
         garrison_buffer_points = generate_circle_points_geographical(
@@ -164,19 +161,3 @@ class InOrOutOfGarrison(Sensemaker):
             endTime=observation.endTime,
         )
         self.oms_crud_tool.create_activity(garrison_activity)
-
-    def has_action_already_ran(self, observation_id, activities):
-        """
-        Determine if an in/out of garrison activity pointing to the inputted observation has already been created
-        """
-
-        return any(
-            act.name
-            in {
-                SETTINGS.inference_in_garrison_activity_name,
-                SETTINGS.inference_out_of_garrison_activity_name,
-            }
-            and act.observationIds
-            and observation_id in act.observationIds
-            for act in activities
-        )
