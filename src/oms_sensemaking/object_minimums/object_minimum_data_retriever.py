@@ -20,13 +20,13 @@ class ObjectMinimumDataRetriever:
         required_attributes: list[str],
         required_relationships: list[str],
     ):
-        iris_to_grade = {"attributes": None, "relationships": None}
+        data_to_grade = {"attributes": None, "relationships": None}
         if required_attributes:
             try:
                 attributes_to_grade = oms_crud_tool.get_attributes(
                     AttributeQuery(nodeIds=[node.id], attributeIris=required_attributes)
                 )
-                iris_to_grade["attributes"] = attributes_to_grade
+                data_to_grade["attributes"] = attributes_to_grade
             except Exception as e:
                 LOGGER.error("Error retrieving attributes for node ID %s: %s", node.id, str(e))
                 raise
@@ -38,9 +38,9 @@ class ObjectMinimumDataRetriever:
                         nodes=RelationshipNodeQuery(nodeIds=[node.id]), objectPropertyIris=required_relationships
                     )
                 )
-                iris_to_grade["relationships"] = relationships_to_grade
+                data_to_grade["relationships"] = relationships_to_grade
             except Exception as e:
                 LOGGER.error("Error retrieving relationships for node ID %s: %s", node.id, str(e))
                 raise
 
-        return iris_to_grade
+        return data_to_grade

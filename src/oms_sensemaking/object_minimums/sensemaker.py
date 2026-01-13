@@ -47,7 +47,7 @@ class ObjectMinimums(Sensemaker):
 
     def process_data(
         self,
-        attribute_of_node: AttributeAttribute | RelationshipRelationship,
+        node_characteristic: AttributeAttribute | RelationshipRelationship,
         config: dict | None = None,
     ):
         """
@@ -58,32 +58,26 @@ class ObjectMinimums(Sensemaker):
         :return: Grade
         """
         LOGGER.info("Running Object Minimums Sensemaker")
-
-        """
-        possible structure:
-
-        Probably get the node object by doing: node = crud_tool.get_node(attribute_of_node.nodeId)
-
-        Look at the node obj class iri: iri = node.iri
-
-        call some sort of helper function(s) below to call the grading class
-
-        run the grading rubric made for the specific class iri on the node
-
-        retrieve the grade
-
-        pass the grade to another helper to push the grade info to
-        the node's metadata (discussed with effects team) is this an update? (unsure)
-        """
-
         try:
             # attribute has only one node it is associated with, relationships
             # have a start node and end node. hard to tell what exactly is the node
             # we care about, so let's just care for both
-            if isinstance(attribute_of_node, AttributeAttribute):
-                node_ids = [attribute_of_node.nodeId]
-            if isinstance(attribute_of_node, RelationshipRelationship):
-                node_ids = [attribute_of_node.startNodeId, attribute_of_node.endNodeId]
+
+            """
+            what I want to do here in the future is to check if it is attr and rel
+            and call a custom class/function to retr data all at once with a custom query
+
+            get node(s)
+            get node(s) attrs and rels
+            send the data through helper functions
+
+            this will allow us to eliminate the .retrieve_data_for_grading()
+            or instead move it up/modify it to grab all data all at once
+            """
+            if isinstance(node_characteristic, AttributeAttribute):
+                node_ids = [node_characteristic.nodeId]
+            if isinstance(node_characteristic, RelationshipRelationship):
+                node_ids = [node_characteristic.startNodeId, node_characteristic.endNodeId]
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
@@ -96,14 +90,14 @@ class ObjectMinimums(Sensemaker):
                 else:
                     self.obj_min_rubric.required_iris = required_iris
 
-                iris_to_grade = self.obj_min_retriever.retrieve_data_for_grading(
+                retrieved_node_data = self.obj_min_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_attributes, required_relationships
                 )
-                grade = self._calculate_grade(iris_to_grade["attributes"], iris_to_grade["relationships"])
-
+                grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
+                ### when schema is ready we will update a node with a grade
                 LOGGER.info("Object Minimum grade: %s", grade.completion_score)
         except Exception as e:
-            LOGGER.error("Error processing object minimum data for node ID %s: %s", attribute_of_node.nodeId, str(e))
+            LOGGER.error("Error processing object minimum data for object(s) %s: %s", node_ids, str(e))
 
         return []
 

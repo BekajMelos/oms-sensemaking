@@ -30,7 +30,11 @@ from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSen
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
-from oms_sensemaking.object_minimums.controllers import ObjectMinimumsQueueFilter, ObjectMinimumsSensemakerController
+from oms_sensemaking.object_minimums.controllers import (
+    ObjectMinimumsQueueFilter,
+    ObjectMinimumsSensemakerController,
+    ObjMinDataProvider,
+)
 from oms_sensemaking.resolution.controllers import (
     ResolutionIriProvider,
     ResolutionQueueFilter,
@@ -100,7 +104,7 @@ def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
                 SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
                 workers=SETTINGS.queue_worker_threads,
                 app_settings=app_settings,
-                event_filter=ObjectMinimumsQueueFilter(),
+                event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
             ),
             err_logger,
         ),
