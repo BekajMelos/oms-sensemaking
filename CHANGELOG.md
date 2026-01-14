@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Updated unit test coverage threshold to 80%
 - Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
 - Updated unit test coverage threshold to 80%
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
 
 ### Fixed
 
