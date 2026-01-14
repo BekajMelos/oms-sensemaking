@@ -13,4 +13,4 @@ def in_garrison(object_latlon: list, garrison_latlon: list) -> bool:
     :param garrison_latlon: [lat, lon] coordinates of the garrison
     """
     distance = geodesic(object_latlon, garrison_latlon).kilometers
-    return distance < SETTINGS.garrison_distance_kilometers
+    return distance < SETTINGS.out_of_garrison_settings.garrison_distance_kilometers
