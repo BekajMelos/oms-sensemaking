@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Removed old NLP models from repository
 
 ### Fixed
-
+- Fixed datetime and class-based `config` warnings when running `make test`
 ## [0.21.0] - 2026-01-12
 
 ### Changed

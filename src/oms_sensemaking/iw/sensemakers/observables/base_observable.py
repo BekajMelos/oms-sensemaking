@@ -12,7 +12,7 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipQuery,
     UpdateAttributeInput,
 )
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -34,6 +34,8 @@ class TimeBounds(BaseModel):
     start_time: Optional[Union[datetime, str]] = Field(None, alias="startTime")
     end_time: Optional[Union[datetime, str]] = Field(None, alias="endTime")
 
+    model_config = ConfigDict(populate_by_name=True)
+
     @model_validator(mode="after")
     def validate_time_bounds(self) -> "TimeBounds":
         if not self.since_last_query:
@@ -47,9 +49,6 @@ class TimeBounds(BaseModel):
             self.end_time = format_rfc3339(now)
 
         return self
-
-    class Config:
-        populate_by_name = True
 
 
 class BaseObservable(BaseModel):
@@ -65,15 +64,16 @@ class BaseObservable(BaseModel):
     partially_observed_percentage: Optional[float] = Field(None, alias="partiallyObservedPercentage", ge=0.0, le=100.0)
     fully_observed_percentage: Optional[float] = Field(None, alias="fullyObservedPercentage", ge=0.0, le=100.0)
 
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
     # object properties for instance use
     id: Optional[str] = None
     status_attribute_id: Optional[str] = None
     related_object_ids: Optional[List[str]] = None
     oms_client: Optional[OmsCrudTool] = None
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
+    # class Config:
+    #     populate_by_name = True
+    #     arbitrary_types_allowed = True
 
     def initialize(self, id: str, oms_client: OmsCrudTool) -> "BaseObservable":
         """Initialize the observable with required runtime properties."""
