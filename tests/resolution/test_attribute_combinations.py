@@ -36,6 +36,43 @@ def duplicate_object_iris():
     return {"node123": [["iri1", "iri2"]]}
 
 
+def test_gather_returns_empty_when_no_criteria_configured(mock_attribute, mock_oms_crud_tool):
+    combiner = AttributeCombinations(mock_attribute, mock_oms_crud_tool, {})
+
+    result = combiner.gather("node123")
+
+    assert result == []
+
+
+def test_gather_skips_criteria_not_containing_triggering_attr(mock_attribute, mock_oms_crud_tool):
+    duplicate_object_iris = {
+        "node123": [
+            ["iri2", "iri3"],  # does NOT contain triggering iri1 → should be skipped
+            ["iri1"],  # valid
+        ]
+    }
+
+    combiner = AttributeCombinations(mock_attribute, mock_oms_crud_tool, duplicate_object_iris)
+
+    groups = combiner.gather("node123")
+
+    # Only the second criteria set should produce a group
+    assert groups == [[mock_attribute]]
+
+
+def test_gather_singleton_skips_empty_value(mock_attribute, mock_oms_crud_tool):
+    duplicate_object_iris = {"node123": [["iri1"]]}
+
+    # Make triggering value empty
+    mock_attribute.attributeValue = ""
+
+    combiner = AttributeCombinations(mock_attribute, mock_oms_crud_tool, duplicate_object_iris)
+
+    result = combiner.gather("node123")
+
+    assert result == []  # should NOT include [mock_attribute]
+
+
 def test_gather_with_single_criteria(mock_attribute, mock_oms_crud_tool):
     # only one IRI, so just returns current attribute in list
     combiner = AttributeCombinations(mock_attribute, mock_oms_crud_tool, {"node123": [["iri1"]]})
@@ -115,6 +152,22 @@ def test_gather_with_singleton_alternate_criteria(mock_attribute, mock_oms_crud_
     groups = combiner.gather("node123")
 
     assert groups == [[mock_attribute]]
+
+
+def test_attribute_combinator_returns_empty_when_missing_required_attr(mock_attribute):
+    attr2 = MagicMock(spec=AttributeAttribute)
+    attr2.attributeIri = "iri2"
+    attr2.attributeValue = "value2"
+
+    combiner = AttributeCombinations(mock_attribute, MagicMock(), {})
+
+    # Criteria expects iri1 + iri2 + iri3, but iri3 is missing
+    result = combiner.attribute_combinator(
+        ["iri1", "iri2", "iri3"],
+        [attr2],  # missing iri3
+    )
+
+    assert result == []
 
 
 def test_attribute_combinator_filters_empty_values(mock_attribute):
