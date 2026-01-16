@@ -131,6 +131,23 @@ def tester_db():
     ]
 
 
+@pytest.fixture
+def facility_dual_criteria_config():
+    """
+    Test-only config that allows matching Facilities via either:
+      1) BE_NUMBER + OSUFFIX (primary), or
+      2) SK-only (alternate).
+    """
+    sk_iri = "https://foundry.ai.mil/ontology/4901-001/hasMIBDBFacilitySurrogateKey"
+
+    return {
+        "https://foundry.ai.mil/ontology/4901-001/Facility": [
+            [BE_NUMBER_IRI, OSUFFIX_IRI],
+            [sk_iri],
+        ]
+    }
+
+
 def test_resolution_sensemaker(db, mock_source, tester_db):
     """Test Resolution Sensemaker"""
     with open(SETTINGS.duplicate_object_iris_file_path) as fd:
@@ -264,6 +281,61 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     assert findings[1].acm == tester_db[4].acm
     assert findings[1].finding_data["start_node_id"] == str(new_equipment_node.id)
     assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
+
+
+def test_resolution_matches_using_alternate_criteria_set(db, mock_source, tester_db, facility_dual_criteria_config):
+    """
+    Integration test that proves the Resolution Sensemaker can match
+    duplicates using any valid criteria set (OR semantics), not only
+    the primary BE+OSUFFIX identity. Specifically validates that an
+    SK-only match is sufficient when configured as an alternate key.
+    """
+
+    mock_oms_crud_tool = mock.MagicMock(spec=OmsCrudTool)
+
+    # New facility that only has SK
+    new_facility_sk = NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="new_facility_sk",
+        tier=ObjectTier.PRIMARY,
+        classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
+    )
+
+    sk_iri = "https://foundry.ai.mil/ontology/4901-001/hasMIBDBFacilitySurrogateKey"
+    sk_value = "SK-123"
+
+    new_sk_attribute = AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri=sk_iri,
+        attributeValue=sk_value,
+        nodeId=new_facility_sk.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+    # No existing relationships (has_already_ran = False)
+    mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
+
+    # Class lookup
+    mock_oms_crud_tool.get_node.return_value = new_facility_sk
+
+    # Node has no other attributes (pure SK case)
+    mock_oms_crud_tool.get_node_attribute_by_iri.return_value = []
+
+    # Pretend there is an existing Facility in DB with same SK
+    mock_oms_crud_tool.get_nodes.return_value = NodesNodes.model_construct(
+        data=[tester_db[0]]  # existing facility from tester_db
+    )
+
+    findings = ResolutionSensemaker(facility_dual_criteria_config, mock_oms_crud_tool).execute(new_sk_attribute)
+
+    # Assert: SK-only match should work
+    assert len(findings) == 1
+
+    finding = findings[0]
+    assert finding.start_node_id == new_facility_sk.id
+    assert finding.end_node_id == tester_db[0].id
 
 
 def test_resolution_no_relationship_empty_string(db, mock_source, tester_db):
