@@ -52,7 +52,7 @@ class SensemakerPublisher(ABC):
 
     @abstractmethod
     def publish(self, data: Any, results: Any) -> Any:
-        """Publish output to OMS"""
+        """Publish output to ATOMS"""
         raise NotImplementedError
 
 

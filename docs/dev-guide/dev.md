@@ -64,7 +64,7 @@ applicaton's configuraton.
 ### API Testing (Postman)
 
 In [Postman](https://www.postman.com/downloads/), "Import" the [postman](../../postman) directory.
-Use the `Sensemaking OMS Localhost` environment while running the `Sensemaking Smoke Tests`.
+Use the `Sensemaking ATOMS Localhost` environment while running the `Sensemaking Smoke Tests`.
 
 ## Utilities
 

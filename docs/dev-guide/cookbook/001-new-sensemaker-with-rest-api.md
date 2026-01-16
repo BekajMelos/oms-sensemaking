@@ -193,7 +193,7 @@ text and returns the results of running the algorithm on that text.
 |-------------|------------|--------------------------------------|
 | `POST`      | `/analyze` | Performs analysis on a body of text. |
 
-Since we are working in the OMS ecosystem, it is safe to assume that in addition
+Since we are working in the ATOMS ecosystem, it is safe to assume that in addition
 to a block of text, the input will also need to include an ACM and possibly
 other metadata. Because of this, JSON is the preferred format for modeling the
 input.

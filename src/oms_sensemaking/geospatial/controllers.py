@@ -118,7 +118,7 @@ class GeospatialSensemakerController(SensemakerController):
     @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
-        Handle inbound OMS event.
+        Handle inbound ATOMS event.
 
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
@@ -289,10 +289,11 @@ class GeospatialSensemakerController(SensemakerController):
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
-        Given an OMS Observation ID, get the OMS Observation.  Ensure it is an observation we can use to make a track
+        Given an ATOMS Observation ID, get the ATOMS Observation.
+        Ensure it is an observation we can use to make a track
 
         :param observation_id: ID of the observation
-        :return: None if no observation exists, or the OMS Observation
+        :return: None if no observation exists, or the ATOMS Observation
         """
         # get observation
         oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)

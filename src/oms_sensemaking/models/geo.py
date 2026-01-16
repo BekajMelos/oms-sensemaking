@@ -54,7 +54,7 @@ class TimedCoords(TypedDict):
 
 
 class OmsGeoMixin(MappedAsDataclass):
-    """Declare OMS geospatial metadata."""
+    """Declare ATOMS geospatial metadata."""
 
     location: Mapped[WKTElement] = mapped_column(
         # NOTE: this could alternatively be represented as a 3D point, which
@@ -119,7 +119,7 @@ class OmsGeoMixin(MappedAsDataclass):
 
 class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, AuditMixin):
     """
-    Represents a geolocation in OMS.
+    Represents a geolocation in ATOMS.
 
     This model is also a dataclass. The order of the positional parameters in
     the generated ``__init__()`` method are:

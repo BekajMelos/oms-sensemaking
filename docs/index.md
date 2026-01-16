@@ -25,7 +25,7 @@
         POSTGRES_PASSWORD=password
 
         # ----------------------------------------
-        # OMS SDK Settings
+        # ATOMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
         OMSB_VERSION=Grimlock-INC-37
