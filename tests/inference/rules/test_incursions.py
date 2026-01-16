@@ -1,5 +1,5 @@
 import copy
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 from oms_sdk import DEFAULT_ACM
@@ -18,6 +18,8 @@ from oms_sdk.generated.generated_graphql_client import (
     IncursionDataActivitiesData,
     IncursionDataActivitiesDataAttributes,
     IncursionDataActivitiesDataAttributesData,
+    IncursionDataActivitiesDataObservations,
+    IncursionDataActivitiesDataObservationsData,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -35,7 +37,7 @@ from shapely.geometry import shape
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.inference.rules.incursions import IncursionSensemaker
+from oms_sensemaking.inference.rules.incursions import Incursion, IncursionSensemaker
 from tests.domain.area_of_interest.test_aoi_extractor import FakeAOIExtractor
 
 
@@ -294,7 +296,45 @@ def observation_with_missing_start_time(mocker: MockerFixture):
     return obs
 
 
+@pytest.fixture
+def test_incursion(observational_node_region1, areas_of_interest):
+    test_incursion = Incursion(
+        action="string",
+        incurring_obj_id=observational_node_region1.nodeId,
+        incursion_observations=[observational_node_region1.id],
+        start_time=observational_node_region1.startTime,
+        end_time=observational_node_region1.endTime,
+        area_of_interest_dict=areas_of_interest[0].geometry_dict,
+        acm=observational_node_region1.acm,
+    )
+    return test_incursion
+
+
 # Tests
+def test_incursion_methods(test_incursion, areas_of_interest):
+    assert test_incursion.get_acm() == test_incursion.acm
+
+    assert test_incursion.__str__() == str(test_incursion.to_dict())
+
+    assert test_incursion.__repr__() == test_incursion.__str__()
+
+    assert test_incursion.to_geojson() == {
+        "type": "Feature",
+        "geometry": {
+            "coordinates": [
+                [
+                    [-155.6657274286173, 19.71703656089376],
+                    [-155.6657274286173, 19.673451401822902],
+                    [-155.59775864959937, 19.673451401822902],
+                    [-155.59775864959937, 19.71703656089376],
+                    [-155.6657274286173, 19.71703656089376],
+                ]
+            ],
+            "type": "Polygon",
+        },
+    }
+
+
 def test_evaluate_input(observational_node_region1, observation_with_missing_start_time, mock_crud_tool):
     """Test to verify valid inputs are recognized as such"""
     incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
@@ -447,7 +487,9 @@ def test_new_incursion_region2(
     )
 
 
+@patch("oms_sensemaking.inference.rules.incursions.aac_client")
 def test_two_existing_incursions(
+    mock_aac_client,
     activity1,
     observational_node_region1,
     incurring_object,
@@ -483,11 +525,21 @@ def test_two_existing_incursions(
                         ),
                     ]
                 ),
+                observations=IncursionDataActivitiesDataObservations(
+                    data=[
+                        IncursionDataActivitiesDataObservationsData(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
+                    ]
+                ),
             )
         ]
     )
     # mock responses for correct behavior
     mock_crud_tool.oms_client.incursion_data.return_value = response
+    mock_aac_client.get_acm_rollup.return_value = observational_node_region1.acm
 
     incur_sm.process_data(obs=observational_node_region1)
     mock_crud_tool.oms_client.incursion_data.assert_called_with(
@@ -511,10 +563,14 @@ def test_two_existing_incursions(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
+    mock_aac_client.get_acm_rollup.assert_has_calls(
+        [call([{"ACM": observational_node_region1.acm}, {"ACM": observational_node_region1.acm}])]
+    )
 
     mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
+            acm=observational_node_region1.acm,
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=observational_node_region1.startTime,
             endTime=observational_node_region1.endTime,
@@ -522,6 +578,7 @@ def test_two_existing_incursions(
         ),
         UpdateAttributeInput(
             id=attribute1.id,
+            acm=observational_node_region1.acm,
             valueStart=observational_node_region1.startTime,
             valueEnd=observational_node_region1.endTime,
             labels=[SETTINGS.sm_enriched_label],
@@ -529,7 +586,9 @@ def test_two_existing_incursions(
     )
 
 
+@patch("oms_sensemaking.inference.rules.incursions.aac_client")
 def test_existing_incursion_nonoverlapping_time(
+    mock_aac_client,
     observational_node_region1,
     incurring_object,
     attribute2,
@@ -557,10 +616,21 @@ def test_existing_incursion_nonoverlapping_time(
                         ),
                     ]
                 ),
-            )
+                observations=IncursionDataActivitiesDataObservations(
+                    data=[
+                        IncursionDataActivitiesDataObservationsData(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
+                    ]
+                ),
+            ),
         ]
     )
     mock_crud_tool.oms_client.incursion_data.return_value = response
+    mock_aac_client.get_acm_rollup.return_value = observational_node_region1.acm
+
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
@@ -574,9 +644,14 @@ def test_existing_incursion_nonoverlapping_time(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
+    mock_aac_client.get_acm_rollup.assert_has_calls(
+        [call([{"ACM": observational_node_region1.acm}, {"ACM": observational_node_region1.acm}])]
+    )
+
     mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
+            acm=observational_node_region1.acm,
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
             startTime=attribute2.valueStart,
             endTime=observational_node_region1.endTime,
@@ -584,6 +659,7 @@ def test_existing_incursion_nonoverlapping_time(
         ),
         UpdateAttributeInput(
             id=attribute2.id,
+            acm=observational_node_region1.acm,
             valueStart=attribute2.valueStart,
             valueEnd=observational_node_region1.endTime,
             labels=[
