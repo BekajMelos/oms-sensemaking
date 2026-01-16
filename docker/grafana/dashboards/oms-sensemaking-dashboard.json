@@ -33,8 +33,8 @@
   },
 
   "timezone": "",
-  "title": "OMS Sensemaking Dashboard",
-  "uid": "oms-sensemaking",
+  "title": "ATOMS Sensemaking Dashboard",
+  "uid": "atoms-sensemaking",
   "version": 1,
 
   "panels": [

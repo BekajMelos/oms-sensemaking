@@ -1,4 +1,4 @@
-"""Base ORM models for oms-sensemaking.
+"""Base ORM models for atoms-sensemaking.
 
 Example ORM model:
 

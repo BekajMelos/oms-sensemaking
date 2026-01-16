@@ -2,7 +2,7 @@
 
 ## Problem
 
-You need to add a new Sensemaker to the OMS Sensemaking Service that includes a
+You need to add a new Sensemaker to the ATOMS Sensemaking Service that includes a
 REST Interface.
 
 
@@ -79,7 +79,7 @@ calculating the word count.
     need to import that class. Next the we have the implementation of the
     *WordCountSensemaker*. Subclasses of *Sensemaker* should override two
     methods: `Sensemaker#__init__()` and `Sensemaker#process_data()`.
-    
+
     The `__init__()` method offers and opportunity to declard the version of the
     algorithm. This feature was introduced to allow for tracking of notable
     algorithm changes. The version follows the semantic versioning conventions.
@@ -109,7 +109,7 @@ calculating the word count.
 #### Step 3. Add Unit Tests
 
 At this point, we have a standalone Sensemaker that is ready to be integrated
-into the OMS Sensemaking service. Before we do that, it is worth taking the time
+into the ATOMS Sensemaking service. Before we do that, it is worth taking the time
 to create some basic unit tests for the new sensemaker.
 
 The oms_sensemaking unit tests are located in the `tests` directory. They
@@ -274,7 +274,7 @@ The class level docstring as well as the field level *description* and
     `oms_sensemaking/api/routers`. This new file will be responsible for
     instantiating a FastAPI router, which is then used to annotate the
     functions that define the REST API.
-    
+
     > :material-tooltip:
     > Keeping the sensemaker's REST API separated in it's own file allows for
     > clean separation between the different sensemakers and other API endpoints

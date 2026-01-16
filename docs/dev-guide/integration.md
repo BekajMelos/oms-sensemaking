@@ -1,4 +1,4 @@
-# Integrating Sensemaking with other OMS services
+# Integrating Sensemaking with other ATOMS services
 
 ### Steps to see Sensemaker objects with Chronicle
 
@@ -53,9 +53,9 @@
             1. Follow the setup steps in the `oms-data-gen` readme.
                 1. Update the `.env` to set the `OMSB_URL` and `PKCS12_PASSWORD`
                     * `OMSB_URL="https://localhost:8443/graphql"`
-                    * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `oms-sensemaking`)
+                    * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `atoms-sensemaking`)
         2. Run the `adsb` script to start sending geo data to omsb. Example scripts
             * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 30 -o 18 -t 1 -i N11QN` (Known Loiter and node with proper attributes for Mil Symbol)
             * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 45 -t 3 -i N24211 -i N965NN -i N8318F` (Known Cotravel and Lag-Lead and node with proper attributes for Mil Symbol)
-        3. Observe Geo Points being captured by the sensemakers in the oms-sensemaking container. Upon completion,
+        3. Observe Geo Points being captured by the sensemakers in the atoms-sensemaking container. Upon completion,
            objects will be created in `OMS Bridge` and should be visible in `Chronicle`.

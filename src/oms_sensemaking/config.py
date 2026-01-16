@@ -551,7 +551,7 @@ class Settings(BaseSettings):
         default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
     )
     otel_service_name: str = Field(
-        default="oms-sensemaking", description="OpenTelemetry service name"
+        default="atoms-sensemaking", description="OpenTelemetry service name"
     )
     otel_traces_sampler: str = Field(
         default="always_on", description="OpenTelemetry traces sampler"

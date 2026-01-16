@@ -8,8 +8,8 @@ The script generates high-volume batches of:
 - Relationships (Unit -> Garrison)
 - Observations
 
-Each batch flows through the ATOMS API pipeline and its associated events queue inside RabbitMQ, where the Sensemaking 
-consumers pick them up for processing. 
+Each batch flows through the ATOMS API pipeline and its associated events queue inside RabbitMQ, where the Sensemaking
+consumers pick them up for processing.
 
 ## Setup
 
@@ -57,13 +57,13 @@ To keep steady ingestion pressure over time:
 make load-out-of-garrison limit=2500 loop=20 loop_wait=3
 ```
 
-This creates 20 batches of 2,500 with a 3-minute pause between each batch. 
+This creates 20 batches of 2,500 with a 3-minute pause between each batch.
 
 ## Monitor the system
 
 ### Grafana
 
-Open the [Sensemaking dashboard in Grafana](http://localhost:3001/d/oms-sensemaking/oms-sensemaking-dashboard) to view graphical panels of throughput and identify any failed events.
+Open the [Sensemaking dashboard in Grafana](http://localhost:3001/d/atoms-sensemaking/atoms-sensemaking-dashboard) to view graphical panels of throughput and identify any failed events.
 
 Suggested panels to monitor:
 
@@ -85,7 +85,7 @@ This is a good place to observe:
 ### Practical tips
 
 - For a quicker ramp-up, use multiple loops (e.g., `limit=2500`,`loop=4`) instead of a single iteration (`limit=10000`).
-- For a sustained long-running load test, combine multiple loops with `loop_wait`  (e.g., `limit=2500`,`loop=20`, `loop_wait=3`). 
+- For a sustained long-running load test, combine multiple loops with `loop_wait`  (e.g., `limit=2500`,`loop=20`, `loop_wait=3`).
 - For stress testing consumer behavior, run the load-test script with the `sensemaking` service temporarily stopped,
   then start the service after the load completes. This forces RabbitMQ to accumulate events and helps simulate a backlog
   scenario.

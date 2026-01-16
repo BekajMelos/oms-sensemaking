@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Renamed customer facing instances of OMS to ATOMS
 
 ### Fixed
 
