@@ -37,12 +37,12 @@ def upgrade() -> None:
         existing_comment="The version of OMS that the finding was published to.",
         existing_nullable=True,
     )
-    op.drop_index("idx_points_lookup", table_name="points")
     op.alter_column(
         "tracks",
         "provider_id",
         existing_type=sa.VARCHAR(),
         type_=sa.UUID(),
+        postgresql_using="provider_id::uuid",
         comment="The provider ID of the provider associated with this track.",
         existing_comment="The provider ID representing the provider of the observations of the track",
         existing_nullable=False,
@@ -58,11 +58,11 @@ def downgrade() -> None:
         "provider_id",
         existing_type=sa.UUID(),
         type_=sa.VARCHAR(),
+        postgresql_using="provider_id::varchar",  # TODO:  fix this `alembic downgrade head` leaves this as uuid still
         comment="The provider ID representing the provider of the observations of the track",
         existing_comment="The provider ID of the provider associated with this track.",
         existing_nullable=False,
     )
-    op.create_index("idx_points_lookup", "points", ["source_id", "node_id", "observation_id"], unique=False)
     op.alter_column(
         "findings",
         "oms_version",
