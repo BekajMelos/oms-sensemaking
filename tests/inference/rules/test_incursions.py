@@ -389,7 +389,7 @@ def test_new_incursion_region1(
     # mock response for triggering other calls
     mock_crud_tool.create_activity.return_value = activity1
 
-    incur_sm.process_data(obs=observational_node_region1)
+    result = incur_sm.process_data(obs=observational_node_region1)
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
@@ -432,6 +432,9 @@ def test_new_incursion_region1(
             endTime=observational_node_region1.endTime,
         )
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Created"
+    assert result[0].incursion_observations == [observational_node_region1.id]
 
 
 def test_new_incursion_region2(
@@ -443,7 +446,7 @@ def test_new_incursion_region2(
     # mock responses for triggering correct behavior
     mock_crud_tool.create_activity.return_value = activity1
 
-    incur_sm.process_data(obs=observational_node_region2)
+    result = incur_sm.process_data(obs=observational_node_region2)
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
             attributeIri=SETTINGS.inference_incursion_attribute_iri,
@@ -485,6 +488,9 @@ def test_new_incursion_region2(
             endTime=observational_node_region2.endTime,
         )
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Created"
+    assert result[0].incursion_observations == [observational_node_region2.id]
 
 
 @patch("oms_sensemaking.inference.rules.incursions.aac_client")
@@ -541,7 +547,7 @@ def test_two_existing_incursions(
     mock_crud_tool.oms_client.incursion_data.return_value = response
     mock_aac_client.get_acm_rollup.return_value = observational_node_region1.acm
 
-    incur_sm.process_data(obs=observational_node_region1)
+    result = incur_sm.process_data(obs=observational_node_region1)
     mock_crud_tool.oms_client.incursion_data.assert_called_with(
         query=ActivityQuery(
             name=StringQuery(equals="Incursion"),
@@ -584,6 +590,9 @@ def test_two_existing_incursions(
             labels=[SETTINGS.sm_enriched_label],
         ),
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Updated"
+    assert result[0].acm == observational_node_region1.acm
 
 
 @patch("oms_sensemaking.inference.rules.incursions.aac_client")
@@ -635,7 +644,7 @@ def test_existing_incursion_nonoverlapping_time(
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
 
-    incur_sm.process_data(obs=observational_node_region1)
+    result = incur_sm.process_data(obs=observational_node_region1)
     mock_get_observations.assert_called_with(
         ObservationQuery(
             nodeIds=UuidQueryByList(in_=[incurring_object.id]),
@@ -667,6 +676,9 @@ def test_existing_incursion_nonoverlapping_time(
             ],
         ),
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Updated"
+    assert result[0].acm == observational_node_region1.acm
 
 
 def test_new_incursion_region3(
@@ -677,7 +689,7 @@ def test_new_incursion_region3(
 
     mock_crud_tool.create_activity.return_value = activity1
 
-    incur_sm.process_data(obs=observational_node_region3)
+    result = incur_sm.process_data(obs=observational_node_region3)
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
@@ -720,6 +732,9 @@ def test_new_incursion_region3(
             endTime=observational_node_region3.endTime,
         )
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Created"
+    assert result[0].incursion_observations == [observational_node_region3.id]
 
 
 def test_new_incursion_region4(
@@ -730,7 +745,7 @@ def test_new_incursion_region4(
 
     mock_crud_tool.create_activity.return_value = activity1
 
-    incur_sm.process_data(obs=observational_node_region4)
+    result = incur_sm.process_data(obs=observational_node_region4)
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
@@ -773,6 +788,9 @@ def test_new_incursion_region4(
             endTime=observational_node_region4.endTime,
         )
     )
+    assert isinstance(result[0], Incursion)
+    assert result[0].action == "Incursion Created"
+    assert result[0].incursion_observations == [observational_node_region4.id]
 
 
 def test_process_data_returns_empty_when_evaluate_fails(
