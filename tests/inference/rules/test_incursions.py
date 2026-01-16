@@ -35,7 +35,7 @@ from shapely.geometry import shape
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.inference.rules.incursions import Incursion
+from oms_sensemaking.inference.rules.incursions import IncursionSensemaker
 from tests.domain.area_of_interest.test_aoi_extractor import FakeAOIExtractor
 
 
@@ -297,7 +297,7 @@ def observation_with_missing_start_time(mocker: MockerFixture):
 # Tests
 def test_evaluate_input(observational_node_region1, observation_with_missing_start_time, mock_crud_tool):
     """Test to verify valid inputs are recognized as such"""
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     # Rule should only be ran against observations
     assert not incur_sm.evaluate(observation_with_missing_start_time), "should only run for observations"
@@ -311,7 +311,7 @@ def test_evaluate_input(observational_node_region1, observation_with_missing_sta
 
 def test_no_incursion(no_inc_observational_node, mock_crud_tool):
     # Scenario: Observation not in any area of interest, resulting in no creations or updates
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     incur_sm.process_data(obs=no_inc_observational_node)
     mock_crud_tool.create_activity.assert_not_called()
@@ -319,7 +319,7 @@ def test_no_incursion(no_inc_observational_node, mock_crud_tool):
 
 
 def test_get_incursion_data(observational_node_region1, mock_crud_tool, areas_of_interest):
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
     # Fake activity objects (could be MagicMock or real dataclasses)
     activity1 = MagicMock(spec=IncursionDataActivitiesData)
     activity2 = MagicMock(spec=IncursionDataActivitiesData)
@@ -344,7 +344,7 @@ def test_new_incursion_region1(
     activity1, observational_node_region1, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region1
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     # mock response for triggering other calls
     mock_crud_tool.create_activity.return_value = activity1
@@ -398,7 +398,7 @@ def test_new_incursion_region2(
     activity1, observational_node_region2, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     # mock responses for triggering correct behavior
     mock_crud_tool.create_activity.return_value = activity1
@@ -460,7 +460,7 @@ def test_two_existing_incursions(
     # Scenario: Two existing incursion attributes with same geo of interest- one that
     # is part of an incursion separate from the observation and one that is part of an
     # incursion including the observation, resulting in an attribute/activity update
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     response = IncursionDataActivities(
         data=[
@@ -540,7 +540,7 @@ def test_existing_incursion_nonoverlapping_time(
 ):
     # Scenario: One existing incursion attribute exists matching observation's geo of interest
     # with nonoverlapping time, resulting in attribute/activity updates
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     response = IncursionDataActivities(
         data=[
@@ -597,7 +597,7 @@ def test_new_incursion_region3(
     activity1, observational_node_region3, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     mock_crud_tool.create_activity.return_value = activity1
 
@@ -650,7 +650,7 @@ def test_new_incursion_region4(
     activity1, observational_node_region4, incurring_object, areas_of_interest, mock_crud_tool
 ):
     # Scenario: Observation input yields new incursion and activity in region2
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     mock_crud_tool.create_activity.return_value = activity1
 
@@ -703,7 +703,7 @@ def test_process_data_returns_empty_when_evaluate_fails(
     observation_with_missing_start_time,
     mock_crud_tool,
 ):
-    incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
+    incur_sm = IncursionSensemaker(FakeAOIExtractor(), mock_crud_tool)
 
     result = incur_sm.process_data(obs=observation_with_missing_start_time)
 
