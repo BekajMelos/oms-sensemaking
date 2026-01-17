@@ -58,7 +58,7 @@ def downgrade() -> None:
         "provider_id",
         existing_type=sa.UUID(),
         type_=sa.VARCHAR(),
-        postgresql_using="provider_id::varchar",  # TODO:  fix this `alembic downgrade head` leaves this as uuid still
+        postgresql_using="provider_id::varchar",
         comment="The provider ID representing the provider of the observations of the track",
         existing_comment="The provider ID of the provider associated with this track.",
         existing_nullable=False,
