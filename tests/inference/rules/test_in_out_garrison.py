@@ -303,7 +303,27 @@ def make_in_out_garrison_response(coords):
     return SimpleNamespace(relationships=relationships)
 
 
-# Tests
+# @pytest.fixture
+# def test_garrison(in_garrison_activity1, observational_node):
+#     test_garrison = OutOfGarrison(
+#         action="string",
+#         in_or_out=SETTINGS.inference_in_garrison_activity_name,
+#         vehicle_id=observational_node.nodeId,
+#         garrison_observation=observational_node,
+#         start_time=observational_node.startTime,
+#         end_time=observational_node.endTime,
+#         acm=observational_node.acm,
+#     )
+#     return test_garrison
+
+# # Tests
+# def test_garrison_methods(test_garrison):
+#     assert test_garrison.get_acm() == test_garrison.acm
+#     assert test_garrison.__str__() == str(test_garrison.to_dict())
+#     assert test_garrison.__repr__() == test_garrison.__str__()
+#     assert test_garrison.to_geojson() == {"type": "Points", "coordinates": [-155.6235, 19.7023]}
+
+
 def test_evaluate_input_obs_no_start_time(mock_crud_tool, observation_with_missing_start_time):
     """Test to verify valid inputs are recognized as such"""
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
@@ -420,7 +440,9 @@ def test_new_out_garrison(
     return_value=False,
 )
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_update_in_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_object_between,
     mock_crud_tool,
@@ -438,13 +460,45 @@ def test_update_in_garrison(
             geo_attribute1.geometry["coordinates"][1],
             geo_attribute1.geometry["coordinates"][0],
         ],
-        activities=[in_garrison_activity1, in_garrison_activity2],
+        activities=[
+            SimpleNamespace(
+                id=in_garrison_activity1.id,
+                name=in_garrison_activity1.name,
+                state=in_garrison_activity1.state,
+                nodeId=in_garrison_activity1.nodeId,
+                observationIds=in_garrison_activity1.observationIds,
+                startTime=in_garrison_activity1.startTime,
+                endTime=in_garrison_activity1.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            ),
+            SimpleNamespace(
+                id=in_garrison_activity2.id,
+                name=in_garrison_activity2.name,
+                state=in_garrison_activity2.state,
+                nodeId=in_garrison_activity2.nodeId,
+                observationIds=in_garrison_activity2.observationIds,
+                startTime=in_garrison_activity2.startTime,
+                endTime=in_garrison_activity2.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            ),
+        ],
     )
+
+    mock_aac_client.get_acm_rollup.return_value = "acm"
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     garr_sm.process_data(obs=observational_node)
 
-    mock_crud_tool.update_activity.assert_called_once()
+    mock_crud_tool.update_activity.assert_called_once_with(
+        UpdateActivityInput(
+            id=in_garrison_activity2.id,
+            acm="acm",
+            startTime=observational_node.startTime,
+            endTime=in_garrison_activity2.endTime,
+            observationIds=UpdateUuidList(add=[observational_node.id]),
+            nodeId=observational_node.nodeId,
+        )
+    )
 
 
 @patch(
@@ -452,7 +506,9 @@ def test_update_in_garrison(
     return_value=True,
 )
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_update_out_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_object_between,
     mock_crud_tool,
@@ -470,9 +526,21 @@ def test_update_out_garrison(
             geo_attribute1.geometry["coordinates"][1],
             geo_attribute1.geometry["coordinates"][0],
         ],
-        activities=[out_garrison_activity1],
+        activities=[
+            SimpleNamespace(
+                id=out_garrison_activity1.id,
+                name=out_garrison_activity1.name,
+                state=out_garrison_activity1.state,
+                nodeId=out_garrison_activity1.nodeId,
+                observationIds=out_garrison_activity1.observationIds,
+                startTime=out_garrison_activity1.startTime,
+                endTime=out_garrison_activity1.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            )
+        ],
     )
 
+    mock_aac_client.get_acm_rollup.return_value = "acm"
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     garr_sm.process_data(obs=observational_node2)
 
@@ -480,6 +548,7 @@ def test_update_out_garrison(
     mock_crud_tool.update_activity.assert_called_once_with(
         UpdateActivityInput(
             id=out_garrison_activity1.id,
+            acm="acm",
             startTime=observational_node2.startTime,
             endTime=out_garrison_activity1.endTime,
             observationIds=UpdateUuidList(add=[observational_node2.id]),
