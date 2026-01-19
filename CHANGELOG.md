@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- OutOfGarrison object which inherits from FindingBase
+- Out of Garrison findings are saved to Sensemaking DB
+
 
 ### Changed
 - Renamed customer facing instances of OMS to ATOMS

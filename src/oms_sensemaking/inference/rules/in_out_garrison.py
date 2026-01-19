@@ -1,6 +1,10 @@
 """Module for calculating whether a node observation is in or out of garrison"""
 
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
+from uuid import UUID, uuid4
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -15,10 +19,33 @@ from oms_sdk.generated.generated_graphql_client import (
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.sensemakers import Sensemaker
+from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+
+LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class OutOfGarrison(FindingBase):
+    """Represents a loiter event."""
+
+    FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_OUT_OF_GARRISON)
+    out_of_garrison_id: UUID = field(init=False, default_factory=uuid4)
+    vehicle_id: UUID
+    start_time: datetime
+    end_time: datetime
+    observation: ObservationObservation
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    def __repr__(self):
+        return self.__str__()
+
+    def get_acm(self) -> dict:
+        return self.observation.acm
 
 
 class InOrOutOfGarrison(Sensemaker):
@@ -51,7 +78,7 @@ class InOrOutOfGarrison(Sensemaker):
 
         :param rule_context: Rule context object containing the observation in question
         """
-
+        LOGGER.debug("HERE: %s", self.__dict__)
         if not self.evaluate(obs):
             return []
 
@@ -69,6 +96,11 @@ class InOrOutOfGarrison(Sensemaker):
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
         self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson, activities)
+
+        if not in_garrison_check:
+            object = OutOfGarrison(vehicle_id=obs.id, start_time=obs.startTime, end_time=obs.endTime, observation=obs)
+            self.save_findings([object])
+
         return []
 
     def _create_or_update_garrison_activity(
