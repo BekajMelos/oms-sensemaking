@@ -78,7 +78,6 @@ class InOrOutOfGarrison(Sensemaker):
 
         :param rule_context: Rule context object containing the observation in question
         """
-        LOGGER.debug("HERE: %s", self.__dict__)
         if not self.evaluate(obs):
             return []
 
