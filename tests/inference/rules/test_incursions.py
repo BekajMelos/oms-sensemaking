@@ -1,5 +1,6 @@
 import copy
 from unittest.mock import MagicMock, call, patch
+from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
@@ -297,15 +298,40 @@ def observation_with_missing_start_time(mocker: MockerFixture):
 
 
 @pytest.fixture
-def test_incursion(observational_node_region1, areas_of_interest):
+def test_observation():
+    observation = ObservationObservation(
+        id=uuid4(),
+        version="version",
+        acm="acm",
+        tags=["tag"],
+        labels=["label"],
+        classIri="iri",
+        className="name",
+        displayValue="value",
+        confidence=Confidence.HIGH,
+        sourceId=uuid4(),
+        nodeId=uuid4(),
+        geometry={
+            "type": "Point",
+            "coordinates": [-2.765882, 54.887295, 0.0],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        startTime="2024-01-01T00:00:00+00:00",
+        endTime="2024-01-01T00:00:00+00:00",
+    )
+    return observation
+
+
+@pytest.fixture
+def test_incursion(test_observation, areas_of_interest):
     test_incursion = Incursion(
         action="string",
-        incurring_obj_id=observational_node_region1.nodeId,
-        incursion_observations=[observational_node_region1.id],
-        start_time=observational_node_region1.startTime,
-        end_time=observational_node_region1.endTime,
+        incurring_obj_id=test_observation.nodeId,
+        incursion_observation=test_observation,
+        start_time=test_observation.startTime,
+        end_time=test_observation.endTime,
         area_of_interest_dict=areas_of_interest[0].geometry_dict,
-        acm=observational_node_region1.acm,
+        acm=test_observation.acm,
     )
     return test_incursion
 
@@ -319,19 +345,8 @@ def test_incursion_methods(test_incursion, areas_of_interest):
     assert test_incursion.__repr__() == test_incursion.__str__()
 
     assert test_incursion.to_geojson() == {
-        "type": "Feature",
-        "geometry": {
-            "coordinates": [
-                [
-                    [-155.6657274286173, 19.71703656089376],
-                    [-155.6657274286173, 19.673451401822902],
-                    [-155.59775864959937, 19.673451401822902],
-                    [-155.59775864959937, 19.71703656089376],
-                    [-155.6657274286173, 19.71703656089376],
-                ]
-            ],
-            "type": "Polygon",
-        },
+        "type": "Point",
+        "coordinates": test_incursion.incursion_observation.geometry["coordinates"],
     }
 
 
@@ -434,7 +449,7 @@ def test_new_incursion_region1(
     )
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Created"
-    assert result[0].incursion_observations == [observational_node_region1.id]
+    assert result[0].incursion_observation == observational_node_region1
 
 
 def test_new_incursion_region2(
@@ -490,7 +505,7 @@ def test_new_incursion_region2(
     )
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Created"
-    assert result[0].incursion_observations == [observational_node_region2.id]
+    assert result[0].incursion_observation == observational_node_region2
 
 
 @patch("oms_sensemaking.inference.rules.incursions.aac_client")
@@ -593,6 +608,7 @@ def test_two_existing_incursions(
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Updated"
     assert result[0].acm == observational_node_region1.acm
+    assert result[0].incursion_observation == observational_node_region1
 
 
 @patch("oms_sensemaking.inference.rules.incursions.aac_client")
@@ -679,6 +695,7 @@ def test_existing_incursion_nonoverlapping_time(
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Updated"
     assert result[0].acm == observational_node_region1.acm
+    assert result[0].incursion_observation == observational_node_region1
 
 
 def test_new_incursion_region3(
@@ -734,7 +751,7 @@ def test_new_incursion_region3(
     )
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Created"
-    assert result[0].incursion_observations == [observational_node_region3.id]
+    assert result[0].incursion_observation == observational_node_region3
 
 
 def test_new_incursion_region4(
@@ -790,7 +807,7 @@ def test_new_incursion_region4(
     )
     assert isinstance(result[0], Incursion)
     assert result[0].action == "Incursion Created"
-    assert result[0].incursion_observations == [observational_node_region4.id]
+    assert result[0].incursion_observation == observational_node_region4
 
 
 def test_process_data_returns_empty_when_evaluate_fails(

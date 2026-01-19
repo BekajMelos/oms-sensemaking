@@ -3,7 +3,6 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
 from uuid import UUID, uuid4
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -50,7 +49,7 @@ class Incursion(FindingBase):
     incursion_finding_id: UUID = field(init=False, default_factory=uuid4)
     action: str
     incurring_obj_id: UUID
-    incursion_observations: list[Any]
+    incursion_observation: ObservationObservation
     start_time: datetime
     end_time: datetime
     area_of_interest_dict: dict
@@ -67,9 +66,9 @@ class Incursion(FindingBase):
         return self.__str__()
 
     def to_geojson(self) -> dict:
-        """Geojson representation of the AOI where the incursion took place"""
+        """Geojson representation of the last location of the Incurring object"""
 
-        return {"type": "Feature", "geometry": self.area_of_interest_dict}
+        return {"type": "Point", "coordinates": self.incursion_observation.geometry["coordinates"]}
 
 
 class IncursionSensemaker(Sensemaker):
@@ -265,7 +264,7 @@ class IncursionSensemaker(Sensemaker):
             Incursion(
                 action="Incursion Updated",
                 incurring_obj_id=observation.nodeId,
-                incursion_observations=updated_incursion.updateActivity.observationIds,
+                incursion_observation=observation,
                 start_time=updated_incursion.updateActivity.startTime,
                 end_time=updated_incursion.updateActivity.endTime,
                 area_of_interest_dict=feat_of_int.geometry_dict,
@@ -325,7 +324,7 @@ class IncursionSensemaker(Sensemaker):
             Incursion(
                 action="Incursion Created",
                 incurring_obj_id=new_incursion_activity.nodeId,
-                incursion_observations=new_incursion_activity.observationIds,
+                incursion_observation=observation,
                 start_time=new_incursion_activity.startTime,
                 end_time=new_incursion_activity.endTime,
                 area_of_interest_dict=feature_of_interest.geometry_dict,
