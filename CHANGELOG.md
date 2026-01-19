@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Removed old NLP models from repository
+- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files
 
 ### Fixed
 - Fixed datetime and class-based `config` warnings when running `make test`
