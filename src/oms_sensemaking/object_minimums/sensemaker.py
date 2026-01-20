@@ -57,7 +57,6 @@ class ObjectMinimums(Sensemaker):
         other descriptive objects in the future)
         :return: Grade
         """
-        LOGGER.info("Running Object Minimums Sensemaker")
         try:
             # attribute has only one node it is associated with, relationships
             # have a start node and end node. hard to tell what exactly is the node
@@ -76,8 +75,14 @@ class ObjectMinimums(Sensemaker):
             """
             if isinstance(node_characteristic, AttributeAttribute):
                 node_ids = [node_characteristic.nodeId]
-            if isinstance(node_characteristic, RelationshipRelationship):
+            elif isinstance(node_characteristic, RelationshipRelationship):
                 node_ids = [node_characteristic.startNodeId, node_characteristic.endNodeId]
+            else:
+                LOGGER.warning(
+                    "Unexpected characteristic type %s in ObjectMinimums",
+                    type(node_characteristic),
+                )
+                return []
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
@@ -85,8 +90,11 @@ class ObjectMinimums(Sensemaker):
                 required_iris = required_attributes + required_relationships
 
                 if not required_iris:
-                    LOGGER.info("Object Minimum grade not calculated due to lack of required IRIs")
-                    return []
+                    LOGGER.info(
+                        "Ungradeable class object. Grade was not able to be calculated for the node with id: %s",
+                        node.id,
+                    )
+                    continue
                 else:
                     self.obj_min_rubric.required_iris = required_iris
 
@@ -94,7 +102,7 @@ class ObjectMinimums(Sensemaker):
                     self.oms_crud_tool, node, required_attributes, required_relationships
                 )
                 grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
-                ### when schema is ready we will update a node with a grade
+                # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
                 LOGGER.info("Object Minimum grade: %s", grade.completion_score)
         except Exception as e:
             LOGGER.error("Error processing object minimum data for object(s) %s: %s", node_ids, str(e))
