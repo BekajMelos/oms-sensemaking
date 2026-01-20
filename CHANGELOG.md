@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Removed old NLP models from repository
 - Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
+- Updated unit test coverage to 80%
 
 ### Fixed
 
