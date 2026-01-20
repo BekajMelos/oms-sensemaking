@@ -12,6 +12,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.22.0] - 2026-01-20
+
+### Changed
+- Removed old NLP models from repository
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
+
 ## [0.21.0] - 2026-01-12
 
 ### Changed
