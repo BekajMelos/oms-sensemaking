@@ -1,4 +1,4 @@
-# 20_oms-sensemaking.sh --- Create databases and database user for ATOMS Sensemaking.
+# 20_atoms-sensemaking.sh --- Create databases and database user for ATOMS Sensemaking.
 
 #!/bin/bash
 set -e
