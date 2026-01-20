@@ -61,7 +61,7 @@ def test_mil_sym_controller(
         ),
     )
 
-    # mock oms call
+    # mock atoms call
     oms_node = NodeNode.model_construct(id=uuid4(), name="test", sourceId=uuid4(), acm=DEFAULT_ACM)
     mock_mil_sym_controller.oms_crud_tool.get_node = mock.MagicMock()
     mock_mil_sym_controller.oms_crud_tool.get_node.return_value = oms_node

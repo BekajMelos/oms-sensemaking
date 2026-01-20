@@ -98,7 +98,7 @@ class SensemakerController:
             # 1. register sensemakers
             # TODO: register sensemakers here?
 
-            # 2. setup oms event consumer
+            # 2. setup atoms event consumer
             self.event_consumer.start()
 
             # 3. set "running" event

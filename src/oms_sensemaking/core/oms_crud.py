@@ -115,7 +115,7 @@ class OmsCrudTool(BaseClient):
 
     def publish_attributes(self, attributes: list[CreateAttributeInput]) -> list[CreateAttributeCreateAttribute]:
         """
-        Publish the attributes to oms
+        Publish the attributes to ATOMS
         :param attributes: a list of CreateAttributeInput objects
         """
         # 1. for each attribute, publish it to ATOMS
@@ -145,7 +145,7 @@ class OmsCrudTool(BaseClient):
 
     def create_attribute(self, attribute_input: CreateAttributeInput) -> CreateAttributeCreateAttribute:
         """
-        Publish the attribute to oms
+        Publish the attribute to ATOMS
         :param attribute_input: a CreateAttributeInput object
         """
         # 1. for each attribute, publish it to ATOMS
@@ -153,7 +153,7 @@ class OmsCrudTool(BaseClient):
 
     def create_activity(self, activity_input: CreateActivityInput) -> CreateActivityCreateActivity:
         """
-        Publish the activity to oms
+        Publish the activity to ATOMS
         :param activity_input: a CreateActivityInput object
         """
         # 1. for each activity, publish it to ATOMS

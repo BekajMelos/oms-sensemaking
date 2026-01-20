@@ -30,7 +30,7 @@ class Engine:
 
         :param rule_context: The rule_context to test rule conditions with.  There is
         A LOT of flexibility in this, while everything is simple, just
-        use the basic oms type (eg. attribute, node, relationship, etc...
+        use the basic atoms type (eg. attribute, node, relationship, etc...
         so rules can use rule_context.attribute, rule_context.node, rule_context.relationship,
         rule_context.etc...)
         """
