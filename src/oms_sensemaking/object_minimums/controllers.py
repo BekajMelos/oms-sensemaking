@@ -2,6 +2,7 @@
 
 import json
 import logging
+from itertools import chain
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
 
@@ -15,6 +16,22 @@ from oms_sensemaking.core.events import (
 from oms_sensemaking.object_minimums.sensemaker import ObjectMinimumDataRetriever, ObjectMinimumRubric, ObjectMinimums
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+class ObjMinDataProvider:
+    def __init__(self, file_path=SETTINGS.object_minimum_settings.rubrics_file_path) -> None:
+        self.file_path = file_path
+        self.entries = self._load_from_json()
+        self.criteria = list(
+            chain.from_iterable(
+                entry.get(key, []) for entry in self.entries.values() for key in ("ATTRIBUTES", "RELATIONSHIPS")
+            )
+        )
+
+    def _load_from_json(self):
+        with open(self.file_path) as file:
+            data = json.load(file)
+        return data
 
 
 class ObjectMinimumsSensemakerController(SensemakerController):
@@ -47,7 +64,15 @@ class ObjectMinimumsQueueFilter(EventFilter):
 
     # we should implement a filter similar to the resolution sensemaker
     # to only keep attributes we care about
+    def __init__(self, data_provider: ObjMinDataProvider) -> None:
+        self.obj_min_data = data_provider
+
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
-        handled_object_types = [ObjectType.ATTRIBUTE.value]
+        handled_object_types = [ObjectType.ATTRIBUTE.value, ObjectType.RELATIONSHIP.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]
-        return audit_log_event.objectType in handled_object_types and audit_log_event.action in handled_event_types
+        criteria = self.obj_min_data.criteria
+        return (
+            audit_log_event.objectType in handled_object_types
+            and audit_log_event.action in handled_event_types
+            and audit_log_event.headers.iri in criteria
+        )

@@ -67,8 +67,8 @@ def attribute1(mocker: MockerFixture, areas_of_interest):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "incAttr1"
     attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_incursion_attribute_iri
-    attr.attributeName = SETTINGS.inference_incursion_attribute_iri.split("/")[-1]
+    attr.attributeIri = SETTINGS.incursion_settings.attribute_iri
+    attr.attributeName = SETTINGS.incursion_settings.attribute_iri.split("/")[-1]
     attr.attributeValue = "Incursion"
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
@@ -89,8 +89,8 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "incAttr2"
     attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_incursion_attribute_iri
-    attr.attributeName = SETTINGS.inference_incursion_attribute_iri.split("/")[-1]
+    attr.attributeIri = SETTINGS.incursion_settings.attribute_iri
+    attr.attributeName = SETTINGS.incursion_settings.attribute_iri.split("/")[-1]
     attr.attributeValue = "Incursion"
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
@@ -238,9 +238,9 @@ def activity1(mocker: MockerFixture):
     acti = mocker.Mock(spec=ActivityActivity)
     acti.id = "incActi1"
     acti.acm = DEFAULT_ACM
-    acti.classIri = SETTINGS.inference_incursion_class_iri
+    acti.classIri = SETTINGS.incursion_settings.class_iri
     acti.name = "Incursion"
-    acti.state = SETTINGS.inference_incursion_activity_state
+    acti.state = SETTINGS.incursion_settings.activity_state
     acti.nodeId = "incurring_object_id"
     acti.observationIds = ["obs_id"]
     acti.startTime = "2024-01-01T00:00:00+00:00"
@@ -353,14 +353,14 @@ def test_new_incursion_region1(
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIri=SETTINGS.incursion_settings.attribute_iri,
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region1.confidence,
             sourceId=observational_node_region1.sourceId,  # change to config value
             activityId=activity1.id,
             acm=observational_node_region1.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
@@ -375,17 +375,17 @@ def test_new_incursion_region1(
     mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region1.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
                 incur_sm.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region1.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
             startTime=observational_node_region1.startTime,
@@ -406,14 +406,14 @@ def test_new_incursion_region2(
     incur_sm.process_data(obs=observational_node_region2)
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIri=SETTINGS.incursion_settings.attribute_iri,
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region2.confidence,
             sourceId=observational_node_region2.sourceId,
             activityId=activity1.id,
             acm=observational_node_region2.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
@@ -428,17 +428,17 @@ def test_new_incursion_region2(
     mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region2.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
                 incur_sm.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region2.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
             startTime=observational_node_region2.startTime,
@@ -496,11 +496,11 @@ def test_two_existing_incursions(
             nodeIds=UuidQueryByList(in_=[incurring_object.id]),
             pageParams=PageParams(page=1, pageSize=200),
         ),
-        incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+        incursionAttributeIris=[SETTINGS.incursion_settings.attribute_iri],
         incursionAttributeValue=StringQuery(equals="Incursion"),
         incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
         attributeGeometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict),
-        incursionTags=SETTINGS.incursion_tags,
+        incursionTags=SETTINGS.incursion_settings.tags,
     )
 
     mock_get_observations.assert_called_with(
@@ -605,14 +605,14 @@ def test_new_incursion_region3(
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIri=SETTINGS.incursion_settings.attribute_iri,
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region3.confidence,
             sourceId=observational_node_region3.sourceId,
             activityId=activity1.id,
             acm=observational_node_region3.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
@@ -627,17 +627,17 @@ def test_new_incursion_region3(
     mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region3.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
                 incur_sm.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region3.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             nodeId=observational_node_region3.nodeId,
             observationIds=[observational_node_region3.id],
             startTime=observational_node_region3.startTime,
@@ -658,14 +658,14 @@ def test_new_incursion_region4(
 
     mock_crud_tool.create_attribute.assert_called_with(
         CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIri=SETTINGS.incursion_settings.attribute_iri,
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observational_node_region4.confidence,
             sourceId=observational_node_region4.sourceId,
             activityId=activity1.id,
             acm=observational_node_region4.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
@@ -680,17 +680,17 @@ def test_new_incursion_region4(
     mock_crud_tool.create_activity.assert_called_with(
         CreateActivityInput(
             acm=observational_node_region4.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
                 incur_sm.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region4.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             nodeId=observational_node_region4.nodeId,
             observationIds=[observational_node_region4.id],
             startTime=observational_node_region4.startTime,
