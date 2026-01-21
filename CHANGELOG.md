@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Object Minimum Sensemaker captures, retrieves, and processes relationship data
 - Object Minimum Sensemaker filters on IRI
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+
 
 ### Changed
 - Updated unit test coverage to 80%
