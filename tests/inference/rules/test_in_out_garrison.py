@@ -175,10 +175,10 @@ def in_garrison_activity1(mocker: MockerFixture):
     activity.id = "in_garrison_activity1_id"
     activity.version = "version"
     activity.acm = "acm"
-    activity.classIri = SETTINGS.inference_garrison_class_iri
-    activity.name = SETTINGS.inference_in_garrison_activity_name
+    activity.classIri = SETTINGS.out_of_garrison_settings.garrison_class_iri
+    activity.name = SETTINGS.out_of_garrison_settings.in_garrison_activity_name
     activity.className = "class name"
-    activity.state = SETTINGS.inference_in_garrison_activity_state
+    activity.state = SETTINGS.out_of_garrison_settings.in_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2022-01-01T00:00:00+00:00"
@@ -196,10 +196,10 @@ def in_garrison_activity2(mocker: MockerFixture):
     activity.id = "in_garrison_activity2_id"
     activity.version = "1"
     activity.acm = "acm"
-    activity.classIri = SETTINGS.inference_garrison_class_iri
-    activity.name = SETTINGS.inference_in_garrison_activity_name
+    activity.classIri = SETTINGS.out_of_garrison_settings.garrison_class_iri
+    activity.name = SETTINGS.out_of_garrison_settings.in_garrison_activity_name
     activity.className = "class name"
-    activity.state = SETTINGS.inference_in_garrison_activity_state
+    activity.state = SETTINGS.out_of_garrison_settings.in_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -217,10 +217,10 @@ def out_garrison_activity1(mocker: MockerFixture):
     activity.id = "out_garrison_activity1_id"
     activity.version = "version"
     activity.acm = "acm"
-    activity.classIri = SETTINGS.inference_garrison_class_iri
-    activity.name = SETTINGS.inference_out_of_garrison_activity_name
+    activity.classIri = SETTINGS.out_of_garrison_settings.garrison_class_iri
+    activity.name = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name
     activity.className = "class name"
-    activity.state = SETTINGS.inference_out_of_garrison_activity_state
+    activity.state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -238,10 +238,10 @@ def out_garrison_activity2(mocker: MockerFixture):
     activity.id = "out_garrison_activity2_id"
     activity.version = "1"
     activity.acm = "acm"
-    activity.classIri = SETTINGS.inference_garrison_class_iri
-    activity.name = SETTINGS.inference_out_of_garrison_activity_name
+    activity.classIri = SETTINGS.out_of_garrison_settings.garrison_class_iri
+    activity.name = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name
     activity.className = "class name"
-    activity.state = SETTINGS.inference_out_of_garrison_activity_state
+    activity.state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
     activity.nodeId = "initial_object_id"
     activity.observationIds = ["some_obs_id"]
     activity.startTime = "2025-01-01T00:00:00+00:00"
@@ -404,9 +404,9 @@ def test_new_out_garrison(
                 SETTINGS.garrison_sm_label,
                 garr_sm.version_string,
             ],
-            classIri=SETTINGS.inference_garrison_class_iri,
-            name=SETTINGS.inference_out_of_garrison_activity_name,
-            state=SETTINGS.inference_out_of_garrison_activity_state,
+            classIri=SETTINGS.out_of_garrison_settings.garrison_class_iri,
+            name=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name,
+            state=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state,
             nodeId=observational_node2.nodeId,
             observationIds=[observational_node2.id],
             startTime=observational_node2.startTime,
@@ -488,26 +488,3 @@ def test_update_out_garrison(
     )
 
     mock_crud_tool.create_activity.assert_not_called()
-
-
-@patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
-def test_has_action_already_ran_short_circuits(
-    mock_get_garrison_data,
-    mock_crud_tool,
-    observational_node,
-    in_garrison_activity1,
-):
-    """Test to verify has_action_already_ran"""
-    in_garrison_activity1.observationIds = [observational_node.id]
-
-    mock_get_garrison_data.return_value = SimpleNamespace(
-        object_lat_lon=[0, 0],
-        garrison_lat_lon=[0, 0],
-        activities=[in_garrison_activity1],
-    )
-
-    garrison_rule = InOrOutOfGarrison(mock_crud_tool)
-    garrison_rule.process_data(obs=observational_node)
-
-    mock_crud_tool.create_activity.assert_not_called()
-    mock_crud_tool.update_activity.assert_not_called()

@@ -5,10 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Object Minimum Sensemaker captures, retrieves, and processes relationship data
+- Object Minimum Sensemaker filters on IRI
 
 ### Changed
+- Updated unit test coverage to 80%
 
 ### Fixed
+
+## [0.22.0] - 2026-01-20
+
+### Changed
+- Removed old NLP models from repository
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
 
 ## [0.21.0] - 2026-01-12
 
@@ -36,6 +45,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - Remove unused `GetGarrisonDataSequential` class from garrison_data_collection.py.
+- Remove `has_action_already_ran()` from Incursion and Garrison workflows. Remove unnecessary queries to activities.
 
 ## [0.19.1] - 2026-01-06
 

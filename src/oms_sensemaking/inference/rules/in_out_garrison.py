@@ -63,15 +63,9 @@ class InOrOutOfGarrison(Sensemaker):
         garrison_lat_lon = garrison_data.garrison_lat_lon
         activities = garrison_data.activities
 
-        # Check if observation has already been processed after getting coords
-        # We could fail early and never call has_action_already_ran
-        # if 'object_and_garrison_coords' conditional does not pass
-        if self.has_action_already_ran(obs.id, activities):
-            return []
-
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
         garrison_buffer_points = generate_circle_points_geographical(
-            garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
+            garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.out_of_garrison_settings.garrison_distance_kilometers
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
         self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson, activities)
@@ -85,13 +79,13 @@ class InOrOutOfGarrison(Sensemaker):
         existing_activities: List[ActivitiesActivitiesData],
     ):
         if in_garrison:
-            activity_name = SETTINGS.inference_in_garrison_activity_name
-            activity_state = SETTINGS.inference_in_garrison_activity_state
+            activity_name = SETTINGS.out_of_garrison_settings.in_garrison_activity_name
+            activity_state = SETTINGS.out_of_garrison_settings.in_garrison_activity_state
             geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.DISJOINT)
 
         else:
-            activity_name = SETTINGS.inference_out_of_garrison_activity_name
-            activity_state = SETTINGS.inference_out_of_garrison_activity_state
+            activity_name = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name
+            activity_state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
             geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
 
         matching_activity_found = False
@@ -155,7 +149,7 @@ class InOrOutOfGarrison(Sensemaker):
                 SETTINGS.garrison_sm_label,
                 self.version_string,
             ],
-            classIri=SETTINGS.inference_garrison_class_iri,
+            classIri=SETTINGS.out_of_garrison_settings.garrison_class_iri,
             name=activity_name,
             state=activity_state,
             nodeId=observation.nodeId,
@@ -164,19 +158,3 @@ class InOrOutOfGarrison(Sensemaker):
             endTime=observation.endTime,
         )
         self.oms_crud_tool.create_activity(garrison_activity)
-
-    def has_action_already_ran(self, observation_id, activities):
-        """
-        Determine if an in/out of garrison activity pointing to the inputted observation has already been created
-        """
-
-        return any(
-            act.name
-            in {
-                SETTINGS.inference_in_garrison_activity_name,
-                SETTINGS.inference_out_of_garrison_activity_name,
-            }
-            and act.observationIds
-            and observation_id in act.observationIds
-            for act in activities
-        )

@@ -84,8 +84,8 @@ def existing_in_garrison_activity(mocker):
     activity = mocker.Mock(spec=ActivitiesActivitiesData)
     activity.id = "in_garrison_1"
     activity.nodeId = "object_1"
-    activity.name = SETTINGS.inference_in_garrison_activity_name
-    activity.state = SETTINGS.inference_in_garrison_activity_state
+    activity.name = SETTINGS.out_of_garrison_settings.in_garrison_activity_name
+    activity.state = SETTINGS.out_of_garrison_settings.in_garrison_activity_state
     activity.startTime = "2024-12-01T00:00:00+00:00"
     activity.endTime = "2025-02-01T00:00:00+00:00"
     activity.observationIds = ["old_obs"]
@@ -97,8 +97,8 @@ def existing_out_garrison_activity(mocker):
     activity = mocker.Mock(spec=ActivitiesActivitiesData)
     activity.id = "out_garrison_1"
     activity.nodeId = "object_1"
-    activity.name = SETTINGS.inference_out_of_garrison_activity_name
-    activity.state = SETTINGS.inference_out_of_garrison_activity_state
+    activity.name = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name
+    activity.state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
     activity.startTime = "2024-12-01T00:00:00+00:00"
     activity.endTime = "2025-02-01T00:00:00+00:00"
     activity.observationIds = ["old_obs"]
@@ -202,4 +202,3 @@ def test_int_skips_when_observation_already_processed(
     sensemaker = InOrOutOfGarrison(mock_crud_tool)
     sensemaker.process_data(obs=observation_inside_garrison)
     mock_crud_tool.create_activity.assert_not_called()
-    mock_crud_tool.update_activity.assert_not_called()

@@ -229,8 +229,8 @@ def create_app(config: Settings) -> FastAPI:
 
 def check_aoi_file_path() -> None:
     """Check for valid areas of interest directory"""
-    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
-        LOGGER.error("%s is not a valid directory", SETTINGS.inference_incursion_areas_of_interest_path)
+    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.incursion_settings.areas_of_interest_path)):
+        LOGGER.error("%s is not a valid directory", SETTINGS.incursion_settings.areas_of_interest_path)
         sys.exit("The areas of interest directory is incorrect or does not exist.")
 
 
