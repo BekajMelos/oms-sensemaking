@@ -1,7 +1,7 @@
 """Updated column descriptions
 
 Revision ID: 202601161555
-Revises: 202512101040
+Revises: 202601151616
 Create Date: 2026-01-16 15:55:13.540016
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "202601161555"
-down_revision: Union[str, None] = "202512101040"
+down_revision: Union[str, None] = "202601151616"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
