@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Object Minimum Sensemaker captures, retrieves, and processes relationship data
+- Object Minimum Sensemaker filters on IRI
 
 ### Changed
-- Removed old NLP models from repository
-- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
 - Updated unit test coverage to 80%
 
 ### Fixed
