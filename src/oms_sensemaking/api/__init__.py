@@ -1,1 +1,1 @@
-"""OMS Sensemaking Microservice API."""
+"""ATOMS Sensemaking Microservice API."""

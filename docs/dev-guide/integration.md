@@ -1,4 +1,4 @@
-# Integrating Sensemaking with other OMS services
+# Integrating Sensemaking with other ATOMS services
 
 ### Steps to see Sensemaker objects with Chronicle
 
@@ -32,7 +32,7 @@
          5. If you are still having issues, try closing/reopening Chrome and/or restarting your Macbook
 4. In `oms-bridge`
     1. Follow the  `oms-bridge` _Setup_ and _Running Docker Only Environment_ steps. Choose the branch/tag for the
-       version of OMS you are working with. This can be found in the `oms-bridge` repository.
+       version of ATOMS you are working with. This can be found in the `oms-bridge` repository.
     2. Create a `.env` and include the following
         ```
         COMPOSE_PROFILES=remote
@@ -45,7 +45,7 @@
             * Comment out the `wfs-service` service so that service doesn't take items from the queue.
     4. Run `make refresh`. This may take a few minutes.
       * You can follow the `graphql` logs with `make dockerlogs c=graphql`
-          * Look for "OMS Bridge Started!"
+          * Look for "ATOMS Bridge Started!"
       * When restarting `oms-bridge` the next time, you use `make dockerrefresh`
 5. Trigger Sensemaker execution
     1. For RMQ Listening Sensemakers (Geo, Inference, Resolution, Mil Symbol):
@@ -53,9 +53,9 @@
             1. Follow the setup steps in the `oms-data-gen` readme.
                 1. Update the `.env` to set the `OMSB_URL` and `PKCS12_PASSWORD`
                     * `OMSB_URL="https://localhost:8443/graphql"`
-                    * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `oms-sensemaking`)
+                    * Ask a teammate for the `PKCS12_PASSWORD` (it's the same as the value in `atoms-sensemaking`)
         2. Run the `adsb` script to start sending geo data to omsb. Example scripts
             * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 30 -o 18 -t 1 -i N11QN` (Known Loiter and node with proper attributes for Mil Symbol)
             * `poetry run python -m oms_data_gen.adsb load -j -n 150 -s 45 -t 3 -i N24211 -i N965NN -i N8318F` (Known Cotravel and Lag-Lead and node with proper attributes for Mil Symbol)
-        3. Observe Geo Points being captured by the sensemakers in the oms-sensemaking container. Upon completion,
-           objects will be created in `OMS Bridge` and should be visible in `Chronicle`.
+        3. Observe Geo Points being captured by the sensemakers in the atoms-sensemaking container. Upon completion,
+           objects will be created in `ATOMS Bridge` and should be visible in `Chronicle`.

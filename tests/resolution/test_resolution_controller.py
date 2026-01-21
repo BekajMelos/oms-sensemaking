@@ -49,7 +49,7 @@ def test_res_controller(
         "resolution", ResolutionSensemaker(duplicate_object_iris, mock_res_controller.oms_crud_tool)
     )
 
-    # mock oms call
+    # mock atoms call
     oms_attribute = AttributeAttribute.model_construct(
         id=uuid4(), attributeIri="test", attributeValue="test", nodeId=uuid4(), sourceId=uuid4(), acm=DEFAULT_ACM
     )

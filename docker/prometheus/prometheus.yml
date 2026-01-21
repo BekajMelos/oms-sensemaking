@@ -6,11 +6,11 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-      
-  - job_name: 'oms-sensemaking'
+
+  - job_name: 'atoms-sensemaking'
     scrape_interval: 5s
     static_configs:
-      - targets: ['oms_sensemaking:8443']
+      - targets: ['atoms_sensemaking:8443']
     metrics_path: '/metrics'
     scrape_timeout: 5s
     scheme: https

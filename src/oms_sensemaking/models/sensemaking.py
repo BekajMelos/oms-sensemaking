@@ -61,7 +61,7 @@ class FindingMixin(MappedAsDataclass):
     finding_data: Mapped[dict] = mapped_column(JSONB, nullable=False, comment="The results of running a sensemaker.")
 
     oms_version: Mapped[str] = mapped_column(
-        String, nullable=True, comment="The version of OMS that the finding was published to."
+        String, nullable=True, comment="The version of ATOMS that the finding was published to."
     )
 
     published_at: Mapped[datetime] = mapped_column(

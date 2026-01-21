@@ -194,7 +194,7 @@ def test_geo_controller_with_default_provider_config(
 
     #### start of test 2 ####
     # Test Aircraft without relevant provider
-    # mock oms call. Set classIri to aircraft
+    # mock atoms call. Set classIri to aircraft
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft"
     mock_geo_controller.oms_crud_tool.get_node = mock.MagicMock(return_value=oms_node)
     # set up track buffer

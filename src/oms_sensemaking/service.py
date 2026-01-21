@@ -1,4 +1,4 @@
-"""oms-sensemaking microservice."""
+"""atoms-sensemaking microservice."""
 
 import html
 import json
@@ -100,7 +100,7 @@ async def lifespan(application: FastAPI):
     Handle application lifecycle events.
 
     This function provides a contextmanager that can be registered with a
-    FastAPI application to startup and shutdown the OMS Sensemaking
+    FastAPI application to startup and shutdown the ATOMS Sensemaking
     controllers.
     """
     # startup

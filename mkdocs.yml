@@ -1,12 +1,12 @@
 # mkdocs.yml --- mkdocs configuration.
-site_name: OMS Sensemaking
-site_description: OMS Sensemaking Project Documentation
+site_name: ATOMS Sensemaking
+site_description: ATOMS Sensemaking Project Documentation
 
 dev_addr: '127.0.0.1:4000'
 
 theme:
   name: "material"
-  
+
 nav:
   - Home: index.md
   - Development Guide:

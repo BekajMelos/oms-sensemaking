@@ -1,4 +1,4 @@
-# OMS Sensemaking
+# ATOMS Sensemaking
 
 ## Project layout
 
@@ -12,7 +12,7 @@
 
 ## Quickstart
 
-> Assumes you are using the *oms-sensemaking* Docker environment.
+> Assumes you are using the *atoms-sensemaking* Docker environment.
 
 1. Create a minimal .env file
 
@@ -25,20 +25,20 @@
         POSTGRES_PASSWORD=password
 
         # ----------------------------------------
-        # OMS SDK Settings
+        # ATOMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
         OMSB_VERSION=Grimlock-INC-37
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 
-2. Start the OMS Sensemaking Docker environment
+2. Start the ATOMS Sensemaking Docker environment
 
         docker compose up -d
 
-    This will start the OMS Sensemaking service on port 5001. The REST API
+    This will start the ATOMS Sensemaking service on port 5001. The REST API
     docs can be found [here].
 
-    > To stop the OMS Sensemaking Docker environment, run `docker compose down`
+    > To stop the ATOMS Sensemaking Docker environment, run `docker compose down`
 
 [here]: https://localhost:5001/docs
