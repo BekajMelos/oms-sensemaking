@@ -5,12 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Object Minimum Sensemaker captures, retrieves, and processes relationship data
+- Object Minimum Sensemaker filters on IRI
 - Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+
+
+### Changed
+- Updated unit test coverage to 80%
+
+### Fixed
+
+## [0.22.0] - 2026-01-20
 
 ### Changed
 - Removed old NLP models from repository
-
-### Fixed
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
 
 ## [0.21.0] - 2026-01-12
 

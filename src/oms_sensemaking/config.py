@@ -170,7 +170,8 @@ class LogConfig(BaseSettings):
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
         CommonVars.has_text_value_iri,
-        description="Military Symbol Sensemaker tags")
+        description="Military Symbol Sensemaker tags"
+    )
     mil_symbol_sensemaker_tags: list[str] = Field(
         [CommonVars.base_atoms_sensemaking_tag, "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
@@ -180,22 +181,37 @@ class MilSymbolSettings(BaseModel):
         description="the RMQ Resolution Queue name",
         examples=["mil-symbol-trigger"]
     )
-    mil_sym_attr_retriever: str = Field("AllAtOnce", description="Algorithm for getting mil symbol attributes")
-    enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
+    mil_sym_attr_retriever: str = Field(
+        "AllAtOnce",
+        description="Algorithm for getting mil symbol attributes"
+    )
+    enable_mil_symbol_sensemaker: bool = Field(
+        True,
+        description="Toggle on/off Mil Symbol Sensemaking"
+    )
     affiliation_iris: list[str] = Field(
-        ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")
-    status_iris: list[str] = Field(["https://foundry.ai.mil/ontology/4901-001/hasCondition"], description="Status IRI")
-    echelon_iris: list[str] = Field(["https://oms.dodiis.ic.gov/ontology/p-0000000029"], description="Echelon IRI")
+        ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI"
+    )
+    status_iris: list[str] = Field(
+        ["https://foundry.ai.mil/ontology/4901-001/hasCondition"],
+        description="Status IRI"
+    )
+    echelon_iris: list[str] = Field(
+        ["https://oms.dodiis.ic.gov/ontology/p-0000000029"],
+        description="Echelon IRI"
+    )
     affiliation_controlled_by_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controlledBy"],
-        description="Relationship IRIs used to search for controlling/commanding nodes")
+        description="Relationship IRIs used to search for controlling/commanding nodes"
+    )
     affiliation_controls_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controls"],
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
     attribute_code_iris: list[str] = Field(
         [CommonVars.has_text_value_iri],
-        description="Attribute Iris for full mil symbol codes")
+        description="Attribute Iris for full mil symbol codes"
+    )
 
     # 2525B and 2525C placeholders
     b_c_placeholders: list[str] = Field(
@@ -215,24 +231,78 @@ class MilSymbolSettings(BaseModel):
     # TODO should we skip a default since these are random
     is_reality_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted"],
-        description="Attribute Iri to look for 'is reality' context")
+        description="Attribute Iri to look for 'is reality' context"
+    )
     is_exercise_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Validated"],
-        description="Attribute Iri to look for 'is exercise' context")
+        description="Attribute Iri to look for 'is exercise' context"
+    )
     is_simulation_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
-        description="Attribute Iri to look for 'is simulation' context")
+        description="Attribute Iri to look for 'is simulation' context"
+    )
 
-    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
+    rules_file_path: str = Field(
+        "./data/mil_symbol_rules.json",
+        description="Path to the rules config file"
+    )
 
 class ObjectMinimumsSettings(BaseModel):
-    enable_object_minimums_sensemaker: bool = Field(True, description="Toggle the object minimums sensemaker on/off")
+    enable_object_minimums_sensemaker: bool = Field(
+        True,
+        description="Toggle the object minimums sensemaker on/off"
+    )
     rmq_object_minimums_queue_name:str = Field(
         "object-minimums-trigger",
         description="the RMQ Object Minimums Queue name",
         examples=["object-minimums-trigger"]
     )
     rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
+
+class IncursionSettings(BaseModel):
+    tags: list[str] = Field(
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"],
+        description="Incursion tags"
+    )
+    activity_state: str = Field(
+        "INCURSION",
+        description="String Incursion Activity State"
+    )
+    areas_of_interest_path: str = Field(
+        "./data/areas_of_interest",
+        description="Path to areas of interest file"
+    )
+    class_iri: str = Field(
+        CommonVars.intentional_act_iri,
+        description="IRI for incursion class"
+    )
+    attribute_iri: str = Field(
+        CommonVars.has_coords_iri,
+        description="IRI for incursion attribute"
+    )
+
+class OutOfGarrisonSettings(BaseModel):
+    garrison_class_iri: str = Field(
+        CommonVars.intentional_act_iri,
+        description="IRI for garrison activity class"
+    )
+    in_garrison_activity_name: str = Field(
+        "In Garrison",
+        description="Name for In Garrison activities"
+    )
+    out_of_garrison_activity_name: str = Field(
+        "Out of Garrison",
+        description="Name for Out of Garrison activities"
+    )
+    in_garrison_activity_state: str = Field(
+        "IN_GARRISON",
+        description="String In Garrison Activity State"
+    )
+    out_of_garrison_activity_state: str = Field(
+        "OUT_OF_GARRISON",
+        description="String Out of Garrison Activity State"
+    )
+    garrison_distance_kilometers: int = 2000
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -316,22 +386,6 @@ class Settings(BaseSettings):
     inference_tags: list[str] = Field(
         [CommonVars.base_atoms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
-    incursion_tags: list[str] = Field(
-        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
-    )
-    inference_incursion_activity_state: str = Field(
-        "INCURSION", description="String Incursion Activity State"
-    )
-    inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest", description="Path to areas of interest file"
-    )
-    inference_incursion_class_iri: str = Field(
-        CommonVars.intentional_act_iri, description="IRI for incursion class"
-    )
-    inference_incursion_attribute_iri: str = Field(
-        CommonVars.has_coords_iri,
-        description="IRI for incursion attribute"
-    )
     inference_geo_attribute_iri: str = Field(
         CommonVars.has_coords_iri, description="IRI for geo attribute"
     )
@@ -339,24 +393,6 @@ class Settings(BaseSettings):
         "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
         description="IRI for relationship between an object and its garrison"
     )
-    inference_garrison_class_iri: str = Field(
-        CommonVars.intentional_act_iri,
-        description="IRI for garrison activity class"
-    )
-    inference_in_garrison_activity_name: str = Field(
-        "In Garrison", description="Name for In Garrison activities"
-    )
-    inference_out_of_garrison_activity_name: str = Field(
-        "Out of Garrison", description="Name for Out of Garrison activities"
-    )
-    inference_in_garrison_activity_state: str = Field(
-        "IN_GARRISON", description="String In Garrison Activity State"
-    )
-    inference_out_of_garrison_activity_state: str = Field(
-        "OUT_OF_GARRISON", description="String Out of Garrison Activity State"
-    )
-    garrison_distance_kilometers: int = 2000
-    garrison_data_retriever: str = Field("AllAtOnce", description="Algorithm for getting garrison data")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
@@ -483,6 +519,8 @@ class Settings(BaseSettings):
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
     object_minimum_settings: ObjectMinimumsSettings = ObjectMinimumsSettings()
+    incursion_settings: IncursionSettings = IncursionSettings()
+    out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
