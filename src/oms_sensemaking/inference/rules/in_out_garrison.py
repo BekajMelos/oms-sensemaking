@@ -21,10 +21,11 @@ from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.geo_helpers import generate_circle_points_geographical
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.core.sensemakers import FindingBase, FindingType, Sensemaker
+from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
+from oms_sensemaking.models.sensemaking import FindingType
 
 LOGGER = logging.getLogger(__name__)
 
