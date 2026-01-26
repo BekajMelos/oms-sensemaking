@@ -1,6 +1,6 @@
 # 40_enable-extensions.sh
-# --- Enable OMS's WFS to use hash store for Attributes
-# --- Enable OMS to match on Trigrams
+# --- Enable ATOMS's WFS to use hash store for Attributes
+# --- Enable ATOMS to match on Trigrams
 # --- Enable Postgres performance extension pg_stat_statements
 # !/bin/bash
 set -e

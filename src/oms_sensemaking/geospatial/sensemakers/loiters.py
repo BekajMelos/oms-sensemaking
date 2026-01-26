@@ -204,7 +204,7 @@ class LoiterSensemaker(Sensemaker):
 
     def publish_loiter(self, track: Track, loiter: Loiter) -> None:
         """
-        Publish Loiter to OMS
+        Publish Loiter to ATOMS
 
         :param loiter: Loiter Event to publish
         :return: None

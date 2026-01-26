@@ -9,7 +9,7 @@ from scripts.load_test.utils import create_sourcing, create_with_progress, run_p
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Load-test generator for OMS Sensemaking")
+    parser = argparse.ArgumentParser(description="Load-test generator for ATOMS Sensemaking")
 
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--loop", type=int, default=1)

@@ -20,7 +20,7 @@ class RDFClient:
         Args:
             obj_id (str): The unique identifier of the object to fetch (a node's guideId).
             format (RDFFormat): The RDF serialization format ('turtle', 'json-ld', etc.).
-            oms_crud_tool (OmsCrudTool): An instance of the OMS CRUD tool used to query the object.
+            oms_crud_tool (OmsCrudTool): An instance of the ATOMS CRUD tool used to query the object.
 
         Returns:
             Optional[str]: A string containing the serialized RDF representation of the node object

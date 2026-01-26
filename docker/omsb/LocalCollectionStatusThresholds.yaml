@@ -1,6 +1,6 @@
 # list of acceptable thresholds of time with units for each originator/provider to determine data intake health
 #
-# This is not a comprehensive list of all originators/providers in OMS-Brdige, only those we are tracking at a high level
+# This is not a comprehensive list of all originators/providers in ATOMS-Brdige, only those we are tracking at a high level
 # Acceptable units are: [SECONDS, MINUTES, HOURS, DAYS]
 originators:
   - name: "testOriginator1"

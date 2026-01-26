@@ -1,4 +1,4 @@
-# Integrating Sensemaking with other OMS services
+# Integrating Sensemaking with other ATOMS services
 
 ### Steps to see Sensemaker objects with Chronicle
 

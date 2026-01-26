@@ -3,7 +3,7 @@ name = 'oms-sensemaking'
 authors = [
   { name='Black Cape, Inc.' }
 ]
-description = 'Python module used to perform analytics on OMS data.'
+description = 'Python module used to perform analytics on ATOMS data.'
 license = {text = 'Copyright 2024 Black Cape, Inc. All rights reserved.'}
 readme = 'README.md'
 requires-python = '>=3.12'
