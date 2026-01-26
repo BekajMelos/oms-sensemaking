@@ -20,6 +20,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated unit test coverage to 80%
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+
+### Fixed
 
 ### Fixed
 - Fixed datetime and class-based `config` warnings when running `make test`
