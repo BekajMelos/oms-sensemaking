@@ -260,10 +260,6 @@ class ObjectMinimumsSettings(BaseModel):
     rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
 
 class IncursionSettings(BaseModel):
-    tags: list[str] = Field(
-        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"],
-        description="Incursion tags"
-    )
     activity_state: str = Field(
         "INCURSION",
         description="String Incursion Activity State"
@@ -272,13 +268,17 @@ class IncursionSettings(BaseModel):
         "./data/areas_of_interest",
         description="Path to areas of interest file"
     )
+    attribute_iri: str = Field(
+        CommonVars.has_coords_iri,
+        description="IRI for incursion attribute"
+    )
     class_iri: str = Field(
         CommonVars.intentional_act_iri,
         description="IRI for incursion class"
     )
-    attribute_iri: str = Field(
-        CommonVars.has_coords_iri,
-        description="IRI for incursion attribute"
+    tags: list[str] = Field(
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"],
+        description="Incursion tags"
     )
 
 class OutOfGarrisonSettings(BaseModel):
@@ -286,23 +286,31 @@ class OutOfGarrisonSettings(BaseModel):
         CommonVars.intentional_act_iri,
         description="IRI for garrison activity class"
     )
+    garrison_distance_kilometers: int = Field(
+        2000,
+        description="Distance that determines whether a unit is In or Out of Garrison"
+    )
+    garrisoned_in_relationship_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
+        description="IRI for relationship between an object and its garrison"
+    )
     in_garrison_activity_name: str = Field(
         "In Garrison",
         description="Name for In Garrison activities"
-    )
-    out_of_garrison_activity_name: str = Field(
-        "Out of Garrison",
-        description="Name for Out of Garrison activities"
     )
     in_garrison_activity_state: str = Field(
         "IN_GARRISON",
         description="String In Garrison Activity State"
     )
+    out_of_garrison_activity_name: str = Field(
+        "Out of Garrison",
+        description="Name for Out of Garrison activities"
+    )
     out_of_garrison_activity_state: str = Field(
         "OUT_OF_GARRISON",
         description="String Out of Garrison Activity State"
     )
-    garrison_distance_kilometers: int = 2000
+
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -353,6 +361,9 @@ class Settings(BaseSettings):
     profile_transport: bool = Field(True, description="Allow for profiling of http transport")
 
     # General IRIs
+    geo_attribute_iri: str = Field(
+        CommonVars.has_coords_iri, description="IRI for geo attribute"
+    )
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
@@ -385,13 +396,6 @@ class Settings(BaseSettings):
     toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
         [CommonVars.base_atoms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
-    )
-    inference_geo_attribute_iri: str = Field(
-        CommonVars.has_coords_iri, description="IRI for geo attribute"
-    )
-    inference_garrisoned_in_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
-        description="IRI for relationship between an object and its garrison"
     )
 
     # database settings
