@@ -5,15 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.23.0] - 2026-01-26
+
+### Added
 - Object Minimum Sensemaker captures, retrieves, and processes relationship data
 - Object Minimum Sensemaker filters on IRI
 - Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
-
+- Updates from `grimlock-support` 0.19.3
 
 ### Changed
 - Updated unit test coverage to 80%
-
-### Fixed
 
 ## [0.22.0] - 2026-01-20
 
