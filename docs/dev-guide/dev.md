@@ -31,7 +31,7 @@ applicaton's configuraton.
 | Variable Name | Example                                          | Description |
 |:--------------------|:-------------------------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                                        | The password for the PostgreSQL admmin user |
-| `OMSB_VERSION` | `3.1.1`                                | The version of oms-bridge |
+| `OMSB_VERSION` | `3.1.1`                                | The version of Atoms Core |
 | `OMSB_URL` | `https://localhost:8020/graphql`                 | URL for OMSB |
 | `CERT_PATH` | `./etc/pki/test10.pem`                           | Path to User PEM |
 | `KEY_PATH` | `./etc/pki/test10.key`                           | Path to User Key |
@@ -64,7 +64,7 @@ applicaton's configuraton.
 ### API Testing (Postman)
 
 In [Postman](https://www.postman.com/downloads/), "Import" the [postman](../../postman) directory.
-Use the `Sensemaking OMS Localhost` environment while running the `Sensemaking Smoke Tests`.
+Use the `Sensemaking ATOMS Localhost` environment while running the `Sensemaking Smoke Tests`.
 
 ## Utilities
 

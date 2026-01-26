@@ -442,7 +442,7 @@ class CotravelSensemaker(Sensemaker):
         return points
 
     def publish(self, track: Track, cotravel: Cotravel) -> None:
-        """Publish Potential Duplicate to OMS
+        """Publish Potential Duplicate to ATOMS
 
         :param track: Original Track
         :param cotravel: Cotravel to publish
@@ -455,7 +455,7 @@ class CotravelSensemaker(Sensemaker):
             self.publish_cotravel(track, cotravel)
 
     def publish_potential_duplicate(self, track: Track, cotravel: Cotravel) -> None:
-        """Publish Potential Duplicate to OMS
+        """Publish Potential Duplicate to ATOMS
 
         :param track: Original Track
         :param cotravel: Cotravel to publish
@@ -483,7 +483,7 @@ class CotravelSensemaker(Sensemaker):
         self.oms_crud_tool.publish_relationships([create_relationship_input])
 
     def publish_cotravel(self, track: Track, cotravel: Cotravel) -> None:
-        """Publish Cotravel Events to OMS
+        """Publish Cotravel Events to ATOMS
 
         :param track: Original Track
         :param cotravel: Cotravel to publish

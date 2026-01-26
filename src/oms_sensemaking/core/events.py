@@ -36,14 +36,14 @@ class Properties(pika.spec.BasicProperties):
 
 
 class AuditLogEvent:
-    """Represents an audit log event from OMS."""
+    """Represents an audit log event from ATOMS."""
 
     def __init__(self, userId: str, objectId: UUID, objectType: ObjectType, action: Action):
         """
         Create a new instance of AuditLogEvent.
 
         :param userId: The id of the user that triggered the event.
-        :param objectId: The unique id of the object in OMS.
+        :param objectId: The unique id of the object in ATOMS.
         :param objectType: The type of object that the event was triggered on.
         :param action: They type of event (e.g. create, update, or delete).
         """
@@ -217,7 +217,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
 
 
 class RabbitMQListener(BaseRabbitMQListener):
-    """A RabbitMQ AuditLogEventConsumer that consumes OMS events."""
+    """A RabbitMQ AuditLogEventConsumer that consumes ATOMS events."""
 
     def __init__(
         self,

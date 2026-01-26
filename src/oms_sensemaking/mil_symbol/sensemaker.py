@@ -143,7 +143,7 @@ class MilSymbolSensemaker(Sensemaker):
         LOGGER.info("Parsed 2525C for %s", oms_node.id)
         LOGGER.info("Parsed 2525B for %s", oms_node.id)
 
-        # Get OMS data to enrich codes
+        # Get ATOMS data to enrich codes
         enrichment_attributes = self._attribute_retriever.get_all_mil_sym_attrs_for_enrichment(oms_node)
         ancestor_iris = self.get_node_ancestors_iris(oms_node)
         context_attr, affiliation_attr, status_attr, echelon_attr = (
@@ -307,10 +307,10 @@ class MilSymbolSensemaker(Sensemaker):
         self.oms_crud_tool.update_node(update_node_input)
 
     def get_node_from_input(self, oms_object: AttributeAttribute | NodeNode) -> Optional[NodeNode]:
-        """Get an OMS Node based on the input type
+        """Get an ATOMS Node based on the input type
 
         :param oms_object: The Node to return or the Attribute used to find the Node
-        :return: An OMS Node
+        :return: An ATOMS Node
         """
         if self.is_node(oms_object):
             LOGGER.info("Checking for MilSymbol enrichment based on Node input.")

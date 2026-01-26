@@ -1,1 +1,1 @@
-"""Provides core components for OMS Sensemaking."""
+"""Provides core components for ATOMS Sensemaking."""

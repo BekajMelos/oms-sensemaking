@@ -1,4 +1,4 @@
-"""Base ORM models for oms-sensemaking.
+"""Base ORM models for atoms-sensemaking.
 
 Example ORM model:
 
@@ -193,7 +193,7 @@ class SecurityMarkingMixin(MappedAsDataclass):
 
 
 class RelatedNodeMixin(MappedAsDataclass):
-    """Declare OMS Node Metadata."""
+    """Declare ATOMS Node Metadata."""
 
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, nullable=False, comment="The ID of the node associated with the object."
@@ -205,7 +205,7 @@ class RelatedNodeMixin(MappedAsDataclass):
 
 
 class SourceMixin(MappedAsDataclass):
-    """Declare OMS Source Metadata."""
+    """Declare ATOMS Source Metadata."""
 
     source_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), nullable=False, comment="The ID of the source associated with the object."
@@ -213,7 +213,7 @@ class SourceMixin(MappedAsDataclass):
 
 
 class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
-    """Declare OMS Attribute Metdata."""
+    """Declare ATOMS Attribute Metdata."""
 
     attribute_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -228,7 +228,7 @@ class OmsAttributeMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
 
 
 class OmsObservationMixin(RelatedNodeMixin, SourceMixin, MappedAsDataclass):
-    """Declare OMS Observation Metadata."""
+    """Declare ATOMS Observation Metadata."""
 
     observation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
