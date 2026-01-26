@@ -71,10 +71,6 @@ class BaseObservable(BaseModel):
     related_object_ids: Optional[List[str]] = None
     oms_client: Optional[OmsCrudTool] = None
 
-    # class Config:
-    #     populate_by_name = True
-    #     arbitrary_types_allowed = True
-
     def initialize(self, id: str, oms_client: OmsCrudTool) -> "BaseObservable":
         """Initialize the observable with required runtime properties."""
         self.id = id
