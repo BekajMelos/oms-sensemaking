@@ -4,8 +4,10 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    AttributesAttributes,
     NodeQuery,
     RelationshipRelationship,
+    RelationshipsRelationships,
 )
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -129,9 +131,7 @@ class ObjectMinimums(Sensemaker):
             LOGGER.error("Unexpected error retrieving required IRIs for class IRI %s: %s", class_iri, str(e))
             raise
 
-    def _calculate_grade(
-        self, attributes: None | list[AttributeAttribute], relationships: None | list[RelationshipRelationship]
-    ):
+    def _calculate_grade(self, attributes: AttributesAttributes, relationships: None | RelationshipsRelationships):
         try:
             return self.obj_min_rubric.grade(attributes=attributes, relationships=relationships)
         except Exception as e:
