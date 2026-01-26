@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated unit test coverage to 80%
-- Added a condition to filterout bservations with a IRI that matches the Sensemaking Track IRI setting
+- Added a condition to filter out observations with an IRI that matches the Sensemaking Track IRI setting
 
 ### Fixed
 
