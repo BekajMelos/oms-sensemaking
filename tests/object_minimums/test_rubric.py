@@ -56,9 +56,7 @@ def test_get_current_count(object_minimum_rubric):
 
 
 def test_get_float_score(object_minimum_rubric):
-    assert object_minimum_rubric.get_float_score(
-        len(["iri1", "relIri1"]), object_minimum_rubric.total_required_characteristics_count
-    ) == (2 / 3)
+    assert object_minimum_rubric.get_float_score(len(["iri1", "relIri1"])) == (2 / 3)
 
 
 def test_get_missing_characteristics(object_minimum_rubric):
