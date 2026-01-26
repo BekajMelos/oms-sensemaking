@@ -17,6 +17,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Renamed customer facing instances of OMS to ATOMS
 
+### Added
+- Added `COTRAVEL_POTENTIAL_DUPLICATE` finding type to the `finding_type` enum
+
 ## [0.19.2] - 2026-01-12
 
 ### Changed

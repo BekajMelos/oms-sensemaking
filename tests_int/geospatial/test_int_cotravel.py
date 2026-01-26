@@ -430,7 +430,9 @@ def test_potential_duplicate_success(
 
     # check that cotravels exist in Findings table
     findings = (
-        db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value)).scalars().all()
+        db.execute(select(Finding).filter(Finding.finding_type == FindingType.COTRAVEL_POTENTIAL_DUPLICATE.value))
+        .scalars()
+        .all()
     )
 
     assert len(findings) == 1
