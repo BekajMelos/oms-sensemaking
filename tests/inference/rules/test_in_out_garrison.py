@@ -35,8 +35,8 @@ def geo_attribute1(mocker: MockerFixture):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "garAttr1"
     attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_geo_attribute_iri
-    attr.attributeName = SETTINGS.inference_geo_attribute_iri.split("/")[-1]
+    attr.attributeIri = SETTINGS.geo_attribute_iri
+    attr.attributeName = SETTINGS.geo_attribute_iri.split("/")[-1]
     attr.attributeValue = "Geospatial Location"
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE
@@ -56,8 +56,8 @@ def attribute2(mocker: MockerFixture, areas_of_interest):
     attr = mocker.Mock(spec=AttributeAttribute)
     attr.id = "incAttr2"
     attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_geo_attribute_iri
-    attr.attributeName = SETTINGS.inference_geo_attribute_iri.split("/")[-1]
+    attr.attributeIri = SETTINGS.geo_attribute_iri
+    attr.attributeName = SETTINGS.geo_attribute_iri.split("/")[-1]
     attr.attributeValue = "Incursion"
     attr.attributeType = AttributeType.GEOSPATIAL
     attr.confidence = Confidence.MODERATE

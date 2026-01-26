@@ -35,7 +35,7 @@ def test_services_unhealthy(mocker: MockerFixture):
             "test_spec": OmsCrudTool,
             "spec_attribute": "get_nodes",
             "health_method": health_checker.get_oms_health,
-            "expected": f"{status_msg} OMS",
+            "expected": f"{status_msg} ATOMS",
         },
         {
             "test_spec": AacClient,

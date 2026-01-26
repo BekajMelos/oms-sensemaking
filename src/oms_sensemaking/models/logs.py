@@ -25,7 +25,7 @@ class AuditLogError(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
         insert_default=uuid.uuid4,
     )
     object_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), nullable=False, comment="The unique id of the object in OMS."
+        UUID(as_uuid=True), nullable=False, comment="The unique id of the object in ATOMS."
     )
     object_type: Mapped[str] = mapped_column(
         Enum(ObjectType), nullable=False, comment="The type of object that the event was triggered on."

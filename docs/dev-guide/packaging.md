@@ -1,6 +1,6 @@
 # Packaging & Versioning
 
-## Building the *OMS Sensemaking* project
+## Building the *ATOMS Sensemaking* project
 
 To package the project for distribution:
 
@@ -51,7 +51,7 @@ the local `.git` directory is excluded from the Docker image, the application's
 version needs to be provided as a build argument. This circumvents the automatic
 detection of the version number during the image build process.
 
-To Build the OMS Sensemaking Docker Image:
+To Build the ATOMS Sensemaking Docker Image:
 
 1. Ensure you have a local virtual environment (e.g. `.venv`)
 
@@ -75,9 +75,9 @@ To Build the OMS Sensemaking Docker Image:
     .
     ```
 
-## Versioning *OMS Sensemaking*
+## Versioning *ATOMS Sensemaking*
 
-*OMS Sensemaking* leverages [setuptools-scm] for dynamic versioning based on Git tags.
+*ATOMS Sensemaking* leverages [setuptools-scm] for dynamic versioning based on Git tags.
 
 To cut new release:
 
@@ -124,7 +124,7 @@ To cut new release:
 1. Update the changelog
     - User facing updates only and remember to update links at the bottom
 2. Create a git tag
-    - Follow [Versioning Instructions](#versioning-oms-sensemaking) to create tag
+    - Follow [Versioning Instructions](#versioning-atoms-sensemaking) to create tag
 3. Run the sync job locally
     - Clone the Devops/sync-artifacts repo
     - Install the `aws` cli https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html

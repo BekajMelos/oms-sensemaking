@@ -14,7 +14,7 @@ def get_healthcheck():
     """Get healthy/unhealthy report about dependencies"""
     system_health = {}
 
-    system_health["oms"] = health_checker.get_oms_health(oms_crud_tool)
+    system_health["atoms"] = health_checker.get_oms_health(oms_crud_tool)
 
     system_health["aac"] = health_checker.get_aac_health(aac_client)
 

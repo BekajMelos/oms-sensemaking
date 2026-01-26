@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.23.0] - 2026-01-26
+
+### Added
 - Object Minimum Sensemaker captures, retrieves, and processes relationship data
 - Object Minimum Sensemaker filters on IRI
 - Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
 - Added unit tests for `GeoQueueFilter` to check if an observation's IRI matches the track IRI
-
+- Updates from `grimlock-support` 0.19.3
 
 ### Changed
 - Updated unit test coverage to 80%
@@ -41,6 +49,11 @@ All notable changes to this project will be documented in this file.
 - Updated ATOMS dependency to Starscream 3.1.1
 
 ### Removed
+
+## [0.19.3] - 2026-01-26
+
+### Changed
+- Renamed customer facing instances of OMS to ATOMS
 
 ## [0.19.2] - 2026-01-12
 

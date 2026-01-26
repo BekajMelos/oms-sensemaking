@@ -9,6 +9,6 @@ def test_healthcheck_endpoint(client: TestClient):
     data: dict = response.json()
 
     # Basic structure validation
-    assert "oms" in data
+    assert "atoms" in data
     assert "aac" in data
     assert "db" in data

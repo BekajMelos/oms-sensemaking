@@ -114,7 +114,7 @@ class TrackGenerator:
                 oms_track = APITrack(track).create_oms_track()
 
                 tracks.append(track)
-                LOGGER.info("OMS Track published: %s", oms_track.id)
+                LOGGER.info("ATOMS Track published: %s", oms_track.id)
 
         if not tracks:
             raise TrackLengthError("Not enough points for track.") from None

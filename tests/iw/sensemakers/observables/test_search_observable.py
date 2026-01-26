@@ -32,7 +32,7 @@ class TestSearchObservable:
 
     @pytest.fixture
     def mock_oms_client(self, mocker: MockerFixture):
-        """mock OMS client"""
+        """mock ATOMS client"""
         return mocker.Mock(spec=OmsCrudTool)
 
     @pytest.fixture
