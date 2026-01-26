@@ -7,11 +7,15 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Renamed customer facing instances of OMS to ATOMS
 
 ### Fixed
 
 ### Removed
+
+## [0.19.3] - 2026-01-26
+
+### Changed
+- Renamed customer facing instances of OMS to ATOMS
 
 ## [0.19.2] - 2026-01-12
 
