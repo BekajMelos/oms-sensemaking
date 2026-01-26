@@ -23,8 +23,8 @@ class ObjectMinimumGrade:
 
 class ObjectMinimumRubric:
     def __init__(self):
-        self.required_attrs: None | list[str] = None
-        self.required_rels: None | list[str] = None
+        self.required_attrs: list[str] = []
+        self.required_rels: list[str] = []
 
     @property
     def total_required_characteristics(self):
