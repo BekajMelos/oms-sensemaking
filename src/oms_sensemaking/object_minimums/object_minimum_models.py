@@ -41,23 +41,23 @@ class ObjectMinimumRubric:
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has
         """
         # Of the 'current' data on the node, get their IRIs to compare against the totatal required
-        current_attr_iris = []
-        current_relationship_iris = []
+        current_attrs = []
+        current_rels = []
         if attributes:
             for attr in attributes.data:
-                current_attr_iris.append(attr.attributeIri)
+                current_attrs.append(attr.attributeIri)
 
         if relationships:
             for rel in relationships.data:
-                current_relationship_iris.append(rel.objectPropertyIri)
+                current_rels.append(rel.objectPropertyIri)
 
-        current_characteristics_list = current_attr_iris + current_relationship_iris
+        current_characteristics_list = current_attrs + current_rels
 
         # not sure if get_current_count is needed considering the pipeline to this point
         # grabs attributes specified by IRI in the criteria already anyways
         current_characteristics_count = self.get_current_count(current_characteristics_list)
         float_score = self.get_float_score(current_characteristics_count)
-        violations = self.get_missing_characteristics(current_attr_iris, current_relationship_iris)
+        violations = self.get_missing_characteristics(current_attrs, current_rels)
         # TODO apply what was said in in the comments of the .get_missing_characteristics(...) function definition
         grade = ObjectMinimumGrade(
             float_score, violations, current_characteristics_count, self.total_required_characteristics_count
@@ -71,15 +71,17 @@ class ObjectMinimumRubric:
     def get_float_score(self, current_characteristics_count: int) -> float:
         return current_characteristics_count / self.total_required_characteristics_count
 
-    def get_missing_characteristics(self, curr_attr_iris: list[str], curr_rel_iris: list[str]):
+    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]):
         # TODO this function will craft violation objects and return them in a list
         # when the schema is ready
         violations = []
-        for iri in self.required_attrs:
-            if iri not in curr_attr_iris:
-                violations.append(iri)
-        for iri in self.required_rels:
-            if iri not in curr_rel_iris:
-                violations.append(iri)
+        if self.required_attrs:
+            for iri in self.required_attrs:
+                if iri not in curr_attrs:
+                    violations.append(iri)
+        if self.required_rels:
+            for iri in self.required_rels:
+                if iri not in curr_rels:
+                    violations.append(iri)
 
         return violations
