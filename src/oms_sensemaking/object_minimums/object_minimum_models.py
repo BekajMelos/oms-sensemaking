@@ -23,8 +23,8 @@ class ObjectMinimumGrade:
 
 class ObjectMinimumRubric:
     def __init__(self):
-        self.required_attrs: None | list[str]
-        self.required_rels: None | list[str]
+        self.required_attrs: None | list[str] = None
+        self.required_rels: None | list[str] = None
 
     @property
     def total_required_characteristics(self):
@@ -56,7 +56,7 @@ class ObjectMinimumRubric:
         # not sure if get_current_count is needed considering the pipeline to this point
         # grabs attributes specified by IRI in the criteria already anyways
         current_characteristics_count = self.get_current_count(current_characteristics_list)
-        float_score = self.get_float_score(current_characteristics_count, self.total_required_characteristics_count)
+        float_score = self.get_float_score(current_characteristics_count)
         violations = self.get_missing_characteristics(current_attr_iris, current_relationship_iris)
         # TODO apply what was said in in the comments of the .get_missing_characteristics(...) function definition
         grade = ObjectMinimumGrade(
@@ -68,8 +68,8 @@ class ObjectMinimumRubric:
     def get_current_count(self, total_list: list[str]) -> int:
         return sum(1 for i in total_list if i in self.total_required_characteristics)
 
-    def get_float_score(self, current_characteristics_count: int, total_characteristics_count: int) -> float:
-        return current_characteristics_count / total_characteristics_count
+    def get_float_score(self, current_characteristics_count: int) -> float:
+        return current_characteristics_count / self.total_required_characteristics_count
 
     def get_missing_characteristics(self, curr_attr_iris: list[str], curr_rel_iris: list[str]):
         # TODO this function will craft violation objects and return them in a list
