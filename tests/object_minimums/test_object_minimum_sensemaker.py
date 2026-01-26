@@ -2,7 +2,12 @@ from unittest.mock import MagicMock, call, patch
 from uuid import uuid4
 
 import pytest
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodesNodes, RelationshipRelationship
+from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
+    NodesNodes,
+    OntologyClassOntologyClass,
+    RelationshipRelationship,
+)
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from src.oms_sensemaking.object_minimums.sensemaker import (
@@ -188,3 +193,138 @@ def test_process_data_rel_passed_in(sensemaker):
     sensemaker._get_required_iris.assert_has_calls([call(mock_node.classIri), call(mock_node2.classIri)])
 
     assert result == []
+
+
+def test_get_required_iris_with_parent_class():
+    """Test that parent class rubric is used when child class has no rubric."""
+    mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
+    mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
+    mock_rubric = MagicMock()
+    mock_ontology_client = MagicMock()
+
+    child_class_iri = "http://example.org/MilitaryJet"
+    parent_class_iri = "http://example.org/Airplane"
+
+    # Create mock parent ontology class
+    mock_parent_ontology_class = MagicMock(spec=OntologyClassOntologyClass)
+    mock_parent_ontology_class.parentOntologyClasses = []
+
+    # Create mock child ontology class with parent
+    mock_child_ontology_class = MagicMock(spec=OntologyClassOntologyClass)
+    mock_parent_ref = MagicMock()
+    mock_parent_ref.iri = parent_class_iri
+    mock_child_ontology_class.parentOntologyClasses = [mock_parent_ref]
+
+    # Setup ontology client to return child class for child IRI, parent class for parent IRI
+    def get_ontology_class_side_effect(iri):
+        if iri == child_class_iri:
+            return mock_child_ontology_class
+        elif iri == parent_class_iri:
+            return mock_parent_ontology_class
+        return None
+
+    mock_ontology_client.get_ontology_class.side_effect = get_ontology_class_side_effect
+
+    # Rubric exists only for parent class
+    rubric_criteria = {parent_class_iri: {"ATTRIBUTES": ["attr1", "attr2"], "RELATIONSHIPS": ["rel1"]}}
+
+    sensemaker = ObjectMinimums(
+        oms_crud_tool=mock_oms_crud_tool,
+        obj_min_retriever=mock_retriever,
+        obj_min_rubric=mock_rubric,
+        rubric_criteria=rubric_criteria,
+    )
+
+    # Replace the ontology client with our mock
+    sensemaker.ontology_client = mock_ontology_client
+
+    required_attributes, required_relationships = sensemaker._get_required_iris(child_class_iri)
+
+    assert required_attributes == ["attr1", "attr2"]
+    assert required_relationships == ["rel1"]
+    # Verify ontology client was called to get child class (to find its parent)
+    mock_ontology_client.get_ontology_class.assert_called_with(child_class_iri)
+
+
+def test_get_required_iris_no_rubric_after_max_levels():
+    """Test that empty lists are returned when no rubric found after 5 levels."""
+    mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
+    mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
+    mock_rubric = MagicMock()
+    mock_ontology_client = MagicMock()
+
+    class_iri = "http://example.org/ClassIRI"
+
+    # Setup ontology client to always return a class with a parent (creating a chain)
+    # This creates an infinite chain, but we stop after 5 levels
+    def get_ontology_class_side_effect(iri):
+        mock_class = MagicMock(spec=OntologyClassOntologyClass)
+        # Create a parent reference that points to a different IRI
+        mock_parent = MagicMock()
+        mock_parent.iri = f"{iri}_parent"
+        mock_class.parentOntologyClasses = [mock_parent]
+        return mock_class
+
+    mock_ontology_client.get_ontology_class.side_effect = get_ontology_class_side_effect
+
+    # No rubric exists for any class
+    rubric_criteria = {}
+
+    sensemaker = ObjectMinimums(
+        oms_crud_tool=mock_oms_crud_tool,
+        obj_min_retriever=mock_retriever,
+        obj_min_rubric=mock_rubric,
+        rubric_criteria=rubric_criteria,
+    )
+
+    # Replace the ontology client with our mock
+    sensemaker.ontology_client = mock_ontology_client
+
+    required_attributes, required_relationships = sensemaker._get_required_iris(class_iri)
+
+    assert required_attributes == []
+    assert required_relationships == []
+    # Verify ontology client was called 4 times (for levels 0-3, checking up to 5 levels total)
+    # Level 0: check class_iri (no ontology call needed, just dict lookup)
+    # Level 1: check class_iri_parent (calls get_ontology_class for class_iri)
+    # Level 2: check class_iri_parent_parent (calls get_ontology_class for class_iri_parent)
+    # Level 3: check class_iri_parent_parent_parent (calls get_ontology_class for class_iri_parent_parent)
+    # Level 4: check class_iri_parent_parent_parent_parent (calls get_ontology_class for class_iri_parent_parent_parent)
+    # Total: 4 calls (one for each level after the first)
+    assert mock_ontology_client.get_ontology_class.call_count == 4
+
+
+def test_get_required_iris_no_parent_class():
+    """Test that empty lists are returned when no parent class exists."""
+    mock_oms_crud_tool = MagicMock(spec=OmsCrudTool)
+    mock_retriever = MagicMock(spec=ObjectMinimumDataRetriever)
+    mock_rubric = MagicMock()
+    mock_ontology_client = MagicMock()
+
+    class_iri = "http://example.org/ClassIRI"
+
+    # Create mock ontology class with no parent
+    mock_ontology_class = MagicMock(spec=OntologyClassOntologyClass)
+    mock_ontology_class.parentOntologyClasses = []
+
+    mock_ontology_client.get_ontology_class.return_value = mock_ontology_class
+
+    # No rubric exists for the class
+    rubric_criteria = {}
+
+    sensemaker = ObjectMinimums(
+        oms_crud_tool=mock_oms_crud_tool,
+        obj_min_retriever=mock_retriever,
+        obj_min_rubric=mock_rubric,
+        rubric_criteria=rubric_criteria,
+    )
+
+    # Replace the ontology client with our mock
+    sensemaker.ontology_client = mock_ontology_client
+
+    required_attributes, required_relationships = sensemaker._get_required_iris(class_iri)
+
+    assert required_attributes == []
+    assert required_relationships == []
+    # Verify ontology client was called once (to check for parent after level 0 finds no rubric)
+    mock_ontology_client.get_ontology_class.assert_called_once_with(class_iri)

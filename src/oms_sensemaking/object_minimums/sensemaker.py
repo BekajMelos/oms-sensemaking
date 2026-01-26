@@ -8,6 +8,7 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipRelationship,
 )
 
+from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.object_minimums.object_minimum_data_retriever import ObjectMinimumDataRetriever
@@ -44,6 +45,7 @@ class ObjectMinimums(Sensemaker):
         self.oms_crud_tool = oms_crud_tool
         self.obj_min_rubric = obj_min_rubric
         self.obj_min_retriever = obj_min_retriever
+        self.ontology_client = OntologyClient(oms_crud_tool)
 
     def process_data(
         self,
@@ -110,17 +112,61 @@ class ObjectMinimums(Sensemaker):
         return []
 
     def _get_required_iris(self, class_iri):
-        try:
-            config_rubric_data = self.rubric_criteria.get(class_iri, {})
+        """
+        Get required IRIs for a class by traversing up the class hierarchy.
+
+        First checks the class_iri itself, then traverses up parent classes
+        until a rubric is found or 5 levels have been checked.
+
+        :param class_iri: The IRI of the class to get required IRIs for
+        :return: Tuple of (required_attributes, required_relationships)
+        """
+        max_levels = 5
+        current_iri = class_iri
+
+        for level in range(max_levels):
+            config_rubric_data = self.rubric_criteria.get(current_iri, {})
             reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
             reqs_rel_iris = config_rubric_data.get("RELATIONSHIPS", [])
-            return reqs_attr_iris, reqs_rel_iris
-        except KeyError as e:
-            LOGGER.error("Missing configuration for class IRI %s: %s", class_iri, str(e))
-            raise
-        except Exception as e:
-            LOGGER.error("Unexpected error retrieving required IRIs for class IRI %s: %s", class_iri, str(e))
-            raise
+
+            # If we found a rubric with at least one requirement, return it
+            if reqs_attr_iris or reqs_rel_iris:
+                if level > 0:
+                    LOGGER.info(
+                        "Found rubric for parent class %s (level %d) when checking class %s",
+                        current_iri,
+                        level,
+                        class_iri,
+                    )
+                return reqs_attr_iris, reqs_rel_iris
+
+            # If no rubric found and we haven't reached max levels, try parent class
+            if level < max_levels - 1:
+                ontology_class = self.ontology_client.get_ontology_class(current_iri)
+
+                if not ontology_class or not ontology_class.parentOntologyClasses:
+                    LOGGER.debug(
+                        "No parent class found for %s at level %d, stopping search",
+                        current_iri,
+                        level,
+                    )
+                    break
+
+                parent_iri = ontology_class.parentOntologyClasses[0].iri
+                LOGGER.debug(
+                    "No rubric found for %s at level %d, checking parent class %s",
+                    current_iri,
+                    level,
+                    parent_iri,
+                )
+                current_iri = parent_iri
+
+        LOGGER.info(
+            "No rubric found for class %s after checking %d levels in the hierarchy",
+            class_iri,
+            max_levels,
+        )
+        return [], []
 
     def _calculate_grade(self, attributes, relationships):
         try:
