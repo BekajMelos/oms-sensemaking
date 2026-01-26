@@ -86,30 +86,37 @@ class ObjectMinimums(Sensemaker):
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
-                required_attributes, required_relationships = self._get_required_iris(node.classIri)
-                required_iris = required_attributes + required_relationships
+                required_attr_iris, required_rel_iris = self._get_required_iris(node.classIri)
 
-                if not required_iris:
+                # The case where there is nothing to grade.
+                # Still valid if one exists, but the other does not (i.e. rel iris exist, but not attr iris)
+                # Can still grade based off rels if thats all there is. *At least one needs to exist
+                if not required_attr_iris and not required_rel_iris:
                     LOGGER.info(
                         "Ungradeable class object. Grade was not able to be calculated for the node with id: %s",
                         node.id,
                     )
                     continue
                 else:
-                    self.obj_min_rubric.required_iris = required_iris
+                    # set the required IRIs for the rubric
+                    self.obj_min_rubric.required_attrs = required_attr_iris
+                    self.obj_min_rubric.required_rels = required_rel_iris
 
+                # retrieve the 'available' data connected to the node of interest
                 retrieved_node_data = self.obj_min_retriever.retrieve_data_for_grading(
-                    self.oms_crud_tool, node, required_attributes, required_relationships
+                    self.oms_crud_tool, node, required_attr_iris, required_rel_iris
                 )
                 grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
-                LOGGER.info("Object Minimum grade: %s", grade.completion_score)
+                LOGGER.info("Object Minimum float grade for object %s: %s", node.id, grade.float_score)
+                LOGGER.info("Object Minmum ratio grade for object %s: %s", node.id, grade.ratio)
+                LOGGER.info("Object Minimums violations for object %s: %s", node.id, grade.violations)
         except Exception as e:
             LOGGER.error("Error processing object minimum data for object(s) %s: %s", node_ids, str(e))
 
         return []
 
-    def _get_required_iris(self, class_iri):
+    def _get_required_iris(self, class_iri: str):
         try:
             config_rubric_data = self.rubric_criteria.get(class_iri, {})
             reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
@@ -122,7 +129,9 @@ class ObjectMinimums(Sensemaker):
             LOGGER.error("Unexpected error retrieving required IRIs for class IRI %s: %s", class_iri, str(e))
             raise
 
-    def _calculate_grade(self, attributes, relationships):
+    def _calculate_grade(
+        self, attributes: None | list[AttributeAttribute], relationships: None | list[RelationshipRelationship]
+    ):
         try:
             return self.obj_min_rubric.grade(attributes=attributes, relationships=relationships)
         except Exception as e:
