@@ -8,11 +8,12 @@ All notable changes to this project will be documented in this file.
 - Object Minimum Sensemaker captures, retrieves, and processes relationship data
 - Object Minimum Sensemaker filters on IRI
 - Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+- Added unit tests for `GeoQueueFilter` to check if an observation's IRI matches the track IRI
 
 
 ### Changed
 - Updated unit test coverage to 80%
-- Added a condition to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
 
 ### Fixed
 
