@@ -26,7 +26,7 @@ def tester_db(db: Session) -> Iterator[Session]:
         datetime.now(timezone.utc),
         FindingType.UNKNOWN,
         {"msg": "yo!"},
-        "Grimlock-INC-37",
+        "1.2.3",
         None,
         FINDING_ID_1,
     )
@@ -39,7 +39,7 @@ def tester_db(db: Session) -> Iterator[Session]:
         datetime.now(timezone.utc),
         FindingType.UNKNOWN,
         {"msg": "yo!"},
-        "Grimlock-INC-37",
+        "1.2.3",
         None,
         FINDING_ID_2,
     )
@@ -55,7 +55,7 @@ def tester_db(db: Session) -> Iterator[Session]:
             datetime.now(timezone.utc),
             FindingType.UNKNOWN,
             {"msg": "yo!"},
-            "Grimlock-INC-37",
+            "1.2.3",
             None,
             uuid4(),
         )

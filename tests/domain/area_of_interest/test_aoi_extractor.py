@@ -7,7 +7,7 @@ from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
 
 def test_real_aoi_extractor_init():
     extractor = RealAOIDataExtractor()
-    assert extractor.path == SETTINGS.inference_incursion_areas_of_interest_path
+    assert extractor.path == SETTINGS.incursion_settings.areas_of_interest_path
 
 
 def test_get_aois():

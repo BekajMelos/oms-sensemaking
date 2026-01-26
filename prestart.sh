@@ -4,7 +4,7 @@ DB_MAX_CONNECTION_ATTEMPTS=10
 DB_CONNECTION_ATTEMPT_INTERVAL=5
 
 echo "Initializing database."
-
+sleep 3
 count=0
 alembic_output=''
 while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
@@ -15,17 +15,29 @@ while [ ${count} -lt ${DB_MAX_CONNECTION_ATTEMPTS} ]; do
   retval=$?
   set -e
 
-  if [ $retval -eq 0 ]; then
+  if [ ${retval} -eq 0 ]; then
+    echo "Database initialized successfully."
     break
   fi
 
-  sleep ${DB_CONNECTION_ATTEMPT_INTERVAL}
-done
+  if echo $alembic_output | grep -q "ALEMBIC_FAIL:AUTH_ISSUE"; then
+    echo "Incorrect database credentials."
+    echo "$alembic_output" >&2
+    exit 1
+  elif echo $alembic_output | grep -q "ALEMBIC_FAIL:HOST/PORT ISSUE"; then
+    echo "Unable to reach the database using the provided host and port."
+  elif echo $alembic_output | grep -q "ALEMBIC_FAIL:NETWORK ISSUE"; then
+    echo "Connection time out."
+  fi
 
-if [ $count -eq $DB_MAX_CONNECTION_ATTEMPTS ]; then
-  echo "Unable to establish database connection, exiting."
-  echo "$alembic_output" >&2
-  sleep 100000
-  exit 1
-fi
+  echo "Attempting connection in ${DB_CONNECTION_ATTEMPT_INTERVAL} seconds (${count}/${DB_MAX_CONNECTION_ATTEMPTS})..."
+  sleep ${DB_CONNECTION_ATTEMPT_INTERVAL}
+  if [ ${count} -eq ${DB_MAX_CONNECTION_ATTEMPTS} ]; then
+    echo "Unable to establish database connection. Exiting."
+    echo "$alembic_output" >&2
+    sleep 100000
+    exit 1
+  fi
+done
 echo "$alembic_output" >&2
+

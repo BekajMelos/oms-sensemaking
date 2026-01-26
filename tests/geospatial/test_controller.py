@@ -19,6 +19,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import RabbitMQListener
 from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.geospatial.sensemakers import CotravelSensemaker
 from oms_sensemaking.models.geo import Point, Track
@@ -26,11 +27,14 @@ from oms_sensemaking.models.geo import Point, Track
 
 @pytest.fixture
 def mock_geo_controller(mock_oms_client):
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = GeospatialSensemakerController(
         RabbitMQListener(
             "geo test queue listener",
             SETTINGS.rmq_geo_queue_name,
             SETTINGS.queue_worker_threads,
+            app_settings=app_settings,
             event_filter=GeoQueueFilter(),
         ),
         RethrowErrorLogger(ErrorLogger()),

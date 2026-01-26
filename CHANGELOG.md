@@ -5,10 +5,38 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Object Minimum Sensemaker captures, retrieves, and processes relationship data
+- Object Minimum Sensemaker filters on IRI
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+
 
 ### Changed
+- Updated unit test coverage to 80%
 
 ### Fixed
+
+## [0.22.0] - 2026-01-20
+
+### Changed
+- Removed old NLP models from repository
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
+
+## [0.21.0] - 2026-01-12
+
+### Changed
+- RabbitMQ Listener now imports a settings instance upon creation as a parameter
+
+### Fixed
+- Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
+
+## [0.20.0] - 2026-01-05
+
+### Added
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+
+### Changed
+- Updated ATOMS dependency to Starscream 3.1.1
 
 ### Removed
 
@@ -38,6 +66,11 @@ All notable changes to this project will be documented in this file.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added Object Minimums Sensemaker processing
+- Added ObjectMinimumGrade and ObjectMinimumRubric classes
+- Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms
