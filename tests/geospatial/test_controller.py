@@ -10,6 +10,7 @@ import pytest
 import shapely
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Confidence, NodeNode, ObservationObservation, SourceSource
+from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
@@ -454,3 +455,31 @@ def test_process_track_handles_unexpected_exception(mocker, mock_geo_controller)
     mock_geo_controller._process_track(track_uuid)
     assert track_uuid in mock_geo_controller.track_times
     assert mock_geo_controller.track_times[track_uuid] is None
+
+
+def test_geo_queue_filter_blocks_track_iri_event():
+    filter_ = GeoQueueFilter()
+
+    event = mock.Mock()
+    event.objectType = ObjectType.OBSERVATION.value
+    event.action = Action.CREATE.value
+
+    headers = mock.Mock()
+    headers.iri = SETTINGS.track_iri
+    event.headers = headers
+
+    assert filter_.passes_filter(event) is False
+
+
+def test_geo_queue_filter_allows_non_track_iri_event():
+    filter_ = GeoQueueFilter()
+
+    event = mock.Mock()
+    event.objectType = ObjectType.OBSERVATION.value
+    event.action = Action.CREATE.value
+
+    headers = mock.Mock()
+    headers.iri = "some-other-iri"
+    event.headers = headers
+
+    assert filter_.passes_filter(event) is True
