@@ -4,8 +4,8 @@ import json
 from typing import Any
 
 from oms_sdk.generated.generated_graphql_client import (
-    AttributesAttributes,
-    RelationshipsRelationships,
+    AttributesAttributesData,
+    RelationshipsRelationshipsData,
 )
 
 
@@ -35,7 +35,9 @@ class ObjectMinimumRubric:
         return len(self.total_required_characteristics)
 
     def grade(
-        self, attributes: AttributesAttributes | None, relationships: RelationshipsRelationships | None
+        self,
+        attributes: list[AttributesAttributesData] | None,
+        relationships: list[RelationshipsRelationshipsData] | None,
     ) -> ObjectMinimumGrade:
         """
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has
@@ -44,11 +46,11 @@ class ObjectMinimumRubric:
         current_attrs = []
         current_rels = []
         if attributes:
-            for attr in attributes.data:
+            for attr in attributes:
                 current_attrs.append(attr.attributeIri)
 
         if relationships:
-            for rel in relationships.data:
+            for rel in relationships:
                 current_rels.append(rel.objectPropertyIri)
 
         current_characteristics_list = current_attrs + current_rels
