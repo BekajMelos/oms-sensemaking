@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added the ability for the Object Minimum Sensemaker to record missing object characteristics
 
 ### Changed
+- Along with a float score, the Object Minimum Sensemaker also outputs the ratio of completion, and a list of missing characteristics (currently just IRIs)
 
 ### Fixed
 
