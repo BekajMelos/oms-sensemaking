@@ -1,71 +1,50 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+import pytest
 from dateutil.parser import isoparse
+from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import Confidence, ObservationObservation
+from pytest_mock import MockerFixture
 
 from oms_sensemaking.models.geo import decompose_observation_geometry
 
-#: The default ACM markings.
-DEFAULT_ACM = {
-    "version": "2.1.0",
-    "classif": "U",
-    "owner_prod": ["USA"],
-    "atom_energy": [],
-    "sar_id": [],
-    "sci_ctrls": [],
-    "disponly_to": [""],
-    "dissem_ctrls": [],
-    "non_ic": [],
-    "rel_to": [],
-    "fgi_open": [],
-    "fgi_protect": [],
-    "portion": "U",
-    "banner": "UNCLASSIFIED",
-    "dissem_countries": ["USA"],
-    "accms": [],
-    "macs": [],
-    "oc_attribs": [{"orgs": [], "missions": [], "regions": []}],
-    "f_clearance": ["u"],
-    "f_sci_ctrls": [],
-    "f_accms": [],
-    "f_oc_org": [],
-    "f_regions": [],
-    "f_missions": [],
-    "f_share": [],
-    "f_sar_id": [],
-    "f_atom_energy": [],
-    "f_macs": [],
-    "disp_only": "",
-}
+
+@pytest.fixture
+def mock_observation(mocker: MockerFixture) -> ObservationObservation:
+    oms_obs = mocker.Mock(spec=ObservationObservation)
+    oms_obs.id = uuid4()
+    oms_obs.version = 0
+    oms_obs.acm = DEFAULT_ACM
+    oms_obs.tags = ["Aircraft" "UAL1598 " "Location"]
+    oms_obs.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation"
+    oms_obs.className = "Geospatial Location"
+    oms_obs.displayValue = "ADSB-test-data-UAL1598"
+    oms_obs.labels = []
+    oms_obs.confidence = Confidence.HIGH
+    oms_obs.sourceId = uuid4()
+    oms_obs.nodeId = uuid4()
+    oms_obs.geometry = mocker.Mock()
+    oms_obs.startTime = mocker.Mock()
+    oms_obs.endTime = mocker.Mock()
+
+    return oms_obs
 
 
-def test_single_point():
-    start_time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
-    end_time = start_time
-    oms_obs = ObservationObservation(
-        id=uuid4(),
-        version=0,
-        acm=DEFAULT_ACM,
-        tags=["Aircraft", "UAL1598 ", "Location"],
-        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-        className="Geospatial Location",
-        displayValue="ADSB-test-data-UAL1598",
-        labels=[],
-        confidence=Confidence.HIGH,
-        sourceId=uuid4(),
-        nodeId=uuid4(),
-        geometry={
-            "type": "Point",
-            "coordinates": [-77.04007, 38.85109],
-            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-        },
-        startTime=start_time.isoformat(),
-        endTime=end_time.isoformat(),
-    )
+def test_single_point(mock_observation: ObservationObservation):
+    oms_obs = mock_observation
+    oms_obs.geometry = {
+        "type": "Point",
+        "coordinates": [-77.04007, 38.85109],
+        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+    }
+    time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
+    oms_obs.startTime = time.isoformat()
+    oms_obs.endTime = time.isoformat()
+
     timed_coords = decompose_observation_geometry(oms_obs)
     assert len(timed_coords) == 1
-    assert timed_coords[0]["detection_time"] == start_time
+    assert timed_coords[0]["detection_time"] == time
 
 
 def test_zero_time():
