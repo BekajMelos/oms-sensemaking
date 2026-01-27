@@ -49,10 +49,12 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
                         SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name,
                     ]
                 ),
-                states=[
-                    SETTINGS.out_of_garrison_settings.in_garrison_activity_state,
-                    SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state,
-                ],
+                states=StringQuery(
+                    in_=[
+                        SETTINGS.out_of_garrison_settings.in_garrison_activity_state,
+                        SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state,
+                    ]
+                ),
             ),
         )
 
