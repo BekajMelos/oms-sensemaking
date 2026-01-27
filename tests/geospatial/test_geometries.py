@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 import pytest
 from dateutil.parser import isoparse
-from oms_sdk import DEFAULT_ACM
-from oms_sdk.generated.generated_graphql_client import Confidence, ObservationObservation
+from oms_sdk.generated.generated_graphql_client import ObservationObservation
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.models.geo import decompose_observation_geometry
@@ -13,17 +11,6 @@ from oms_sensemaking.models.geo import decompose_observation_geometry
 @pytest.fixture
 def mock_observation(mocker: MockerFixture) -> ObservationObservation:
     oms_obs = mocker.Mock(spec=ObservationObservation)
-    oms_obs.id = uuid4()
-    oms_obs.version = 0
-    oms_obs.acm = DEFAULT_ACM
-    oms_obs.tags = ["Aircraft" "UAL1598 " "Location"]
-    oms_obs.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation"
-    oms_obs.className = "Geospatial Location"
-    oms_obs.displayValue = "ADSB-test-data-UAL1598"
-    oms_obs.labels = []
-    oms_obs.confidence = Confidence.HIGH
-    oms_obs.sourceId = uuid4()
-    oms_obs.nodeId = uuid4()
     oms_obs.geometry = mocker.Mock()
     oms_obs.startTime = mocker.Mock()
     oms_obs.endTime = mocker.Mock()
@@ -47,88 +34,58 @@ def test_single_point(mock_observation: ObservationObservation):
     assert timed_coords[0]["detection_time"] == time
 
 
-def test_zero_time():
-    start_time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
-    end_time = start_time
+def test_zero_time(mock_observation: ObservationObservation):
+    oms_obs = mock_observation
+
     coordinates = [[-77.00000, 38.00000], [-77.00000, 38.50000], [-77.00000, 39.00000]]
-    oms_obs = ObservationObservation(
-        id=uuid4(),
-        version=0,
-        acm=DEFAULT_ACM,
-        tags=["Aircraft", "UAL1598 ", "Location"],
-        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-        className="Geospatial Location",
-        displayValue="ADSB-test-data-UAL1598",
-        labels=[],
-        confidence=Confidence.HIGH,
-        sourceId=uuid4(),
-        nodeId=uuid4(),
-        geometry={
-            "type": "LineString",
-            "coordinates": coordinates,
-            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-        },
-        startTime=start_time.isoformat(),
-        endTime=end_time.isoformat(),
-    )
+    oms_obs.geometry = {
+        "type": "LineString",
+        "coordinates": coordinates,
+        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+    }
+
+    time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
+    oms_obs.startTime = time.isoformat()
+    oms_obs.endTime = time.isoformat()
+
     timed_coords = decompose_observation_geometry(oms_obs)
     assert [tc["coordinates"] for tc in timed_coords] == coordinates
-    assert all(tc["detection_time"] == start_time for tc in timed_coords)
+    assert all(tc["detection_time"] == time for tc in timed_coords)
 
 
-def test_zero_distance():
+def test_zero_distance(mock_observation: ObservationObservation):
+    oms_obs = mock_observation
+    coordinates = [[-77.00000, 38.00000], [-77.00000, 38.00000], [-77.00000, 38.00000]]
+    oms_obs.geometry = {
+        "type": "LineString",
+        "coordinates": coordinates,
+        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+    }
+
     start_time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
     end_time = start_time + timedelta(hours=1)
-    coordinates = [[-77.00000, 38.00000], [-77.00000, 38.00000], [-77.00000, 38.00000]]
-    oms_obs = ObservationObservation(
-        id=uuid4(),
-        version=0,
-        acm=DEFAULT_ACM,
-        tags=["Aircraft", "UAL1598 ", "Location"],
-        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-        className="Geospatial Location",
-        displayValue="ADSB-test-data-UAL1598",
-        labels=[],
-        confidence=Confidence.HIGH,
-        sourceId=uuid4(),
-        nodeId=uuid4(),
-        geometry={
-            "type": "LineString",
-            "coordinates": coordinates,
-            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-        },
-        startTime=start_time.isoformat(),
-        endTime=end_time.isoformat(),
-    )
+    oms_obs.startTime = start_time.isoformat()
+    oms_obs.endTime = end_time.isoformat()
+
     timed_coords = decompose_observation_geometry(oms_obs)
     assert [tc["coordinates"] for tc in timed_coords] == coordinates
     assert [tc["detection_time"] for tc in timed_coords] == [start_time, start_time + timedelta(minutes=30), end_time]
 
 
-def test_normal_linestring():
+def test_normal_linestring(mock_observation: ObservationObservation):
+    oms_obs = mock_observation
+    coordinates = [[-77.00000, 38.00000], [-77.00000, 39.00000], [-77.00000, 39.50000]]
+    oms_obs.geometry = {
+        "type": "LineString",
+        "coordinates": coordinates,
+        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+    }
+
     start_time = isoparse("2022-12-01T00:20:14.000Z").replace(tzinfo=timezone.utc)
     end_time = start_time + timedelta(hours=1, minutes=30)
-    coordinates = [[-77.00000, 38.00000], [-77.00000, 39.00000], [-77.00000, 39.50000]]
-    oms_obs = ObservationObservation(
-        id=uuid4(),
-        version=0,
-        acm=DEFAULT_ACM,
-        tags=["Aircraft", "UAL1598 ", "Location"],
-        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-        className="Geospatial Location",
-        displayValue="ADSB-test-data-UAL1598",
-        labels=[],
-        confidence=Confidence.HIGH,
-        sourceId=uuid4(),
-        nodeId=uuid4(),
-        geometry={
-            "type": "LineString",
-            "coordinates": coordinates,
-            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-        },
-        startTime=start_time.isoformat(),
-        endTime=end_time.isoformat(),
-    )
+    oms_obs.startTime = start_time.isoformat()
+    oms_obs.endTime = end_time.isoformat()
+
     timed_coords = decompose_observation_geometry(oms_obs)
 
     def round_time_seconds(dt: datetime) -> datetime:
