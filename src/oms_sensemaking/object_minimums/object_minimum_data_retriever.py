@@ -22,7 +22,10 @@ class ObjectMinimumDataRetriever:
         required_attributes: list[str],
         required_relationships: list[str],
     ) -> dict[str, list[AttributesAttributesData] | list[RelationshipsRelationshipsData] | None]:
-        data_to_grade = {"attributes": None, "relationships": None}
+        data_to_grade: dict[str, list[AttributesAttributesData] | list[RelationshipsRelationshipsData] | None] = {
+            "attributes": None,
+            "relationships": None,
+        }
         if required_attributes:
             try:
                 attributes_to_grade = oms_crud_tool.get_attributes(
