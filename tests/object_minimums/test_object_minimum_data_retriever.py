@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -77,7 +78,7 @@ def test_data_retriever_no_data(mock_crud_tool, person_obj):
 def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
     data_retriever = ObjectMinimumDataRetriever()
     test_attr_iri_list = ["some_iri"]
-    mock_crud_tool.get_attributes.return_value = [person_name_attr]
+    mock_crud_tool.get_attributes.return_value = SimpleNamespace(data=[person_name_attr])
 
     result = data_retriever.retrieve_data_for_grading(mock_crud_tool, person_obj, test_attr_iri_list, [])
     mock_crud_tool.get_attributes.assert_called_with(
@@ -90,7 +91,7 @@ def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
 def test_data_retriever_rel_only(mock_crud_tool, person_obj, person_to_base_rel):
     data_retriever = ObjectMinimumDataRetriever()
     test_rel_iri_list = ["some_iri"]
-    mock_crud_tool.get_relationships.return_value = [person_to_base_rel]
+    mock_crud_tool.get_relationships.return_value = SimpleNamespace(data=[person_to_base_rel])
 
     result = data_retriever.retrieve_data_for_grading(mock_crud_tool, person_obj, [], test_rel_iri_list)
     mock_crud_tool.get_relationships.assert_called_with(
@@ -104,8 +105,8 @@ def test_data_retriever_attr_rel(mock_crud_tool, person_obj, person_name_attr, p
     data_retriever = ObjectMinimumDataRetriever()
     test_attr_iri_list = ["some_iri"]
     test_rel_iri_list = ["some_iri"]
-    mock_crud_tool.get_attributes.return_value = [person_name_attr]
-    mock_crud_tool.get_relationships.return_value = [person_to_base_rel]
+    mock_crud_tool.get_attributes.return_value = SimpleNamespace(data=[person_name_attr])
+    mock_crud_tool.get_relationships.return_value = SimpleNamespace(data=[person_to_base_rel])
 
     result = data_retriever.retrieve_data_for_grading(mock_crud_tool, person_obj, test_attr_iri_list, test_rel_iri_list)
     mock_crud_tool.get_attributes.assert_called_with(
