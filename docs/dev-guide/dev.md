@@ -31,7 +31,7 @@ applicaton's configuraton.
 | Variable Name | Example                                          | Description |
 |:--------------------|:-------------------------------------------------|:------------------------------------------------------|
 | `POSTGRES_PASSWORD` | `xxxxxxx`                                        | The password for the PostgreSQL admmin user |
-| `OMSB_VERSION` | `3.1.3`                                | The version of Atoms Core |
+| `OMSB_VERSION` | `3.1.4`                                | The version of Atoms Core |
 | `OMSB_URL` | `https://localhost:8020/graphql`                 | URL for OMSB |
 | `CERT_PATH` | `./etc/pki/test10.pem`                           | Path to User PEM |
 | `KEY_PATH` | `./etc/pki/test10.key`                           | Path to User Key |
