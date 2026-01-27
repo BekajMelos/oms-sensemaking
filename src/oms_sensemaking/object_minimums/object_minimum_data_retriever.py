@@ -21,7 +21,7 @@ class ObjectMinimumDataRetriever:
         node: NodeNode,
         required_attributes: list[str],
         required_relationships: list[str],
-    ) -> dict[str, list[AttributesAttributesData | RelationshipsRelationshipsData] | None]:
+    ) -> dict[str, list[AttributesAttributesData] | list[RelationshipsRelationshipsData] | None]:
         data_to_grade = {"attributes": None, "relationships": None}
         if required_attributes:
             try:
