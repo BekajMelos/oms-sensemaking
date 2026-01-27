@@ -37,7 +37,7 @@ class GetGarrisonData(ABC):
 
 class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
-        result = self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
+        result = self.oms_crud_tool.oms_client.in_out_garrison_with_geo_deprecated(
             id=obs.nodeId,
             garrisonIris=[SETTINGS.out_of_garrison_settings.garrisoned_in_relationship_iri],
             geoIris=[SETTINGS.geo_attribute_iri],
