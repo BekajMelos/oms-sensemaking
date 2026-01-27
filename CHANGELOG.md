@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Updated ATOMS dependency to Starscream 3.1.4
+- Changed ActivityQuery `state` to StringQuery
+- Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
+- Updated tests to use Mock Observation instances
 
 ### Fixed
 
