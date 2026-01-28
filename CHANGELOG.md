@@ -5,14 +5,18 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added the ability for the Object Minimum Sensemaker to record missing object characteristics
 
 ### Changed
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+- Along with a float score, the Object Minimum Sensemaker also outputs the ratio of completion, and a list of missing characteristics (currently just IRIs)
 - Updated ATOMS dependency to Starscream 3.1.4
 - Changed ActivityQuery `state` to StringQuery
 - Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
 - Updated tests to use Mock Observation instances
 
 ### Fixed
+- ActivityQuery `name`'s StrinQuery built with `in_`
 
 ## [0.23.0] - 2026-01-26
 
@@ -24,9 +28,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated unit test coverage to 80%
-- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
-
-### Fixed
 
 ## [0.22.0] - 2026-01-20
 
