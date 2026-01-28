@@ -59,21 +59,21 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
         )
 
     def _execute_query(self, obs: ObservationObservation):
-        return self.oms_crud_tool.oms_client.in_out_garrison_with_geo_deprecated(
+        return self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
             id=obs.nodeId,
-            garrisonIris=[SETTINGS.out_of_garrison_settings.garrisoned_in_relationship_iri],
-            geoIris=[SETTINGS.geo_attribute_iri],
+            garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
+            geoIris=[SETTINGS.inference_geo_attribute_iri],
             activityQuery=ActivityQuery(
                 nodeIds=UuidQueryByList(in_=[obs.nodeId]),
                 name=StringQuery(
                     or_=[
-                        StringQuery(equals=SETTINGS.out_of_garrison_settings.in_garrison_activity_name),
-                        StringQuery(equals=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name),
+                        StringQuery(equals=SETTINGS.inference_in_garrison_activity_name),
+                        StringQuery(equals=SETTINGS.inference_out_of_garrison_activity_name),
                     ]
                 ),
                 states=[
-                    StringQuery(equals=SETTINGS.out_of_garrison_settings.in_garrison_activity_state),
-                    StringQuery(equals=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state),
+                    SETTINGS.inference_in_garrison_activity_state,
+                    SETTINGS.inference_out_of_garrison_activity_state,
                 ],
             ),
         )
