@@ -14,10 +14,10 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     GeoQuery,
     GeoQueryType,
-    IncursionDataActivities,
-    IncursionDataActivitiesData,
-    IncursionDataActivitiesDataAttributes,
-    IncursionDataActivitiesDataAttributesData,
+    IncursionDataDeprecatedActivities,
+    IncursionDataDeprecatedActivitiesData,
+    IncursionDataDeprecatedActivitiesDataAttributes,
+    IncursionDataDeprecatedActivitiesDataAttributesData,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -321,23 +321,23 @@ def test_no_incursion(no_inc_observational_node, mock_crud_tool):
 def test_get_incursion_data(observational_node_region1, mock_crud_tool, areas_of_interest):
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
     # Fake activity objects (could be MagicMock or real dataclasses)
-    activity1 = MagicMock(spec=IncursionDataActivitiesData)
-    activity2 = MagicMock(spec=IncursionDataActivitiesData)
-    activity3 = MagicMock(spec=IncursionDataActivitiesData)
+    activity1 = MagicMock(spec=IncursionDataDeprecatedActivitiesData)
+    activity2 = MagicMock(spec=IncursionDataDeprecatedActivitiesData)
+    activity3 = MagicMock(spec=IncursionDataDeprecatedActivitiesData)
 
     # Page 1 returns full page, page 2 returns partial and then stop
     responses = [
-        IncursionDataActivities(data=[activity1, activity2]),  # page 1
-        IncursionDataActivities(data=[activity3]),  # page 2
+        IncursionDataDeprecatedActivities(data=[activity1, activity2]),  # page 1
+        IncursionDataDeprecatedActivities(data=[activity3]),  # page 2
     ]
     mock_incursion_data = MagicMock(side_effect=responses)
-    mock_crud_tool.oms_client.incursion_data = mock_incursion_data
+    mock_crud_tool.oms_client.incursion_data_deprecated = mock_incursion_data
     result = incur_sm.get_all_incursion_data(
         incurring_object_id=observational_node_region1.nodeId, feature_of_interest=areas_of_interest[0], pagesize=2
     )
 
     assert result == [activity1, activity2, activity3]
-    assert mock_crud_tool.oms_client.incursion_data.call_count == 2
+    assert mock_crud_tool.oms_client.incursion_data_deprecated.call_count == 2
 
 
 def test_new_incursion_region1(
@@ -462,20 +462,20 @@ def test_two_existing_incursions(
     # incursion including the observation, resulting in an attribute/activity update
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    response = IncursionDataActivities(
+    response = IncursionDataDeprecatedActivities(
         data=[
-            IncursionDataActivitiesData(
+            IncursionDataDeprecatedActivitiesData(
                 id=activity1.id,
                 labels=activity1.labels,
-                attributes=IncursionDataActivitiesDataAttributes(
+                attributes=IncursionDataDeprecatedActivitiesDataAttributes(
                     data=[
-                        IncursionDataActivitiesDataAttributesData(
+                        IncursionDataDeprecatedActivitiesDataAttributesData(
                             id=attribute2.id,
                             labels=attribute2.labels,
                             valueStart=attribute2.valueStart,
                             valueEnd=attribute2.valueEnd,
                         ),
-                        IncursionDataActivitiesDataAttributesData(
+                        IncursionDataDeprecatedActivitiesDataAttributesData(
                             id=attribute1.id,
                             labels=attribute1.labels,
                             valueStart=attribute1.valueStart,
@@ -487,10 +487,10 @@ def test_two_existing_incursions(
         ]
     )
     # mock responses for correct behavior
-    mock_crud_tool.oms_client.incursion_data.return_value = response
+    mock_crud_tool.oms_client.incursion_data_deprecated.return_value = response
 
     incur_sm.process_data(obs=observational_node_region1)
-    mock_crud_tool.oms_client.incursion_data.assert_called_with(
+    mock_crud_tool.oms_client.incursion_data_deprecated.assert_called_with(
         query=ActivityQuery(
             name=StringQuery(equals="Incursion"),
             nodeIds=UuidQueryByList(in_=[incurring_object.id]),
@@ -512,7 +512,7 @@ def test_two_existing_incursions(
         )
     )
 
-    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes_deprecated.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
@@ -542,14 +542,14 @@ def test_existing_incursion_nonoverlapping_time(
     # with nonoverlapping time, resulting in attribute/activity updates
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    response = IncursionDataActivities(
+    response = IncursionDataDeprecatedActivities(
         data=[
-            IncursionDataActivitiesData(
+            IncursionDataDeprecatedActivitiesData(
                 id=activity1.id,
                 labels=activity1.labels,
-                attributes=IncursionDataActivitiesDataAttributes(
+                attributes=IncursionDataDeprecatedActivitiesDataAttributes(
                     data=[
-                        IncursionDataActivitiesDataAttributesData(
+                        IncursionDataDeprecatedActivitiesDataAttributesData(
                             id=attribute2.id,
                             labels=attribute2.labels,
                             valueStart=attribute2.valueStart,
@@ -560,7 +560,7 @@ def test_existing_incursion_nonoverlapping_time(
             )
         ]
     )
-    mock_crud_tool.oms_client.incursion_data.return_value = response
+    mock_crud_tool.oms_client.incursion_data_deprecated.return_value = response
     mock_observation_response = MagicMock()
     mock_observation_response.data = []
     mock_get_observations.return_value = mock_observation_response
@@ -574,7 +574,7 @@ def test_existing_incursion_nonoverlapping_time(
             geometry=GeoQuery(queryGeoJson=areas_of_interest[0].geometry_dict, queryType=GeoQueryType.DISJOINT),
         )
     )
-    mock_crud_tool.oms_client.update_incursion_activity_and_attributes.assert_called_with(
+    mock_crud_tool.oms_client.update_incursion_activity_and_attributes_deprecated.assert_called_with(
         UpdateActivityInput(
             id="incActi1",
             observationIds=UpdateUuidList(add=[observational_node_region1.id]),
