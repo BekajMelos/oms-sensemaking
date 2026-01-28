@@ -151,7 +151,7 @@ class Incursion(Sensemaker):
                 nodeIds=UuidQueryByList(in_=[incurring_object_id]),
                 pageParams=PageParams(page=page, pageSize=pagesize),
             )
-            response = self.oms_crud_tool.oms_client.incursion_data(
+            response = self.oms_crud_tool.oms_client.incursion_data_deprecated(
                 query=activity_query,
                 incursionAttributeValue=StringQuery(equals="Incursion"),
                 incursionAttributeIris=[SETTINGS.incursion_settings.attribute_iri],
@@ -203,7 +203,7 @@ class Incursion(Sensemaker):
             labels=attribute_labels,
         )
 
-        self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
+        self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes_deprecated(
             updated_activity_input, updated_attribute_input
         )
 
