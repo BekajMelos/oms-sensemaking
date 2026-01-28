@@ -113,7 +113,7 @@ class ObjectMinimums(Sensemaker):
                 grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
                 LOGGER.info("Object Minimum float grade for object %s: %s", node.id, grade.float_score)
-                LOGGER.info("Object Minmum ratio grade for object %s: %s", node.id, grade.ratio)
+                LOGGER.info("Object Minimum ratio grade for object %s: %s", node.id, grade.ratio)
                 LOGGER.info("Object Minimums violations for object %s: %s", node.id, grade.violations)
         except Exception as e:
             LOGGER.error("Error processing object minimum data for object(s) %s: %s", node_ids, str(e))
