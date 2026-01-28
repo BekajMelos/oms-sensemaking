@@ -66,15 +66,15 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
             activityQuery=ActivityQuery(
                 nodeIds=UuidQueryByList(in_=[obs.nodeId]),
                 name=StringQuery(
-                    in_=[
-                        SETTINGS.out_of_garrison_settings.in_garrison_activity_name,
-                        SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name,
+                    or_=[
+                        StringQuery(equals=SETTINGS.out_of_garrison_settings.in_garrison_activity_name),
+                        StringQuery(equals=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name),
                     ]
                 ),
                 states=StringQuery(
-                    in_=[
-                        SETTINGS.out_of_garrison_settings.in_garrison_activity_state,
-                        SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state,
+                    or_=[
+                        StringQuery(equals=SETTINGS.out_of_garrison_settings.in_garrison_activity_state),
+                        StringQuery(equals=SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state),
                     ]
                 ),
             ),
