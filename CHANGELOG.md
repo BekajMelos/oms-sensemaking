@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - ActivityQuery `name`'s StrinQuery built with `in_`
+- Fixed datetime and class-based `config` warnings when running `make test`
 
 ## [0.23.0] - 2026-01-26
 
@@ -30,7 +31,6 @@ All notable changes to this project will be documented in this file.
 - Updated unit test coverage to 80%
 
 ### Fixed
-- Fixed datetime and class-based `config` warnings when running `make test`
 ## [0.22.0] - 2026-01-20
 
 ### Changed
