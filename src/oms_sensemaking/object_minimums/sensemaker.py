@@ -120,7 +120,7 @@ class ObjectMinimums(Sensemaker):
 
         return []
 
-    def _get_required_iris(self, class_iri):
+    def _get_required_iris(self, class_iri: str):
         """
         Get required IRIs for a class by traversing up the class hierarchy.
 
