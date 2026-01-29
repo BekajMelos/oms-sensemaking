@@ -141,6 +141,22 @@ class Cotravel(FindingBase):
         ls1 = LineString([point.coordinates for point in self.track1.points])
         ls2 = LineString([point.coordinates for point in self.track2.points])
         self.geometry = MultiLineString([ls1, ls2])
+        # Set FINDING_TYPE based on cotravel_type
+        self._set_cotravel_type(self.cotravel_type)
+
+    def _set_cotravel_type(self, cotravel_type: CotravelType) -> None:
+        """Set both cotravel_type and FINDING_TYPE together.
+
+        When cotravel_type is potential_duplicate, FINDING_TYPE is set to
+        CotravelPotentialDuplicate. Otherwise, FINDING_TYPE is set to GEO_COTRAVEL.
+
+        :param cotravel_type: The cotravel type to set
+        """
+        self.cotravel_type = cotravel_type
+        if cotravel_type == CotravelType.potential_duplicate:
+            self.FINDING_TYPE = FindingType.COTRAVEL_POTENTIAL_DUPLICATE
+        else:
+            self.FINDING_TYPE = FindingType.GEO_COTRAVEL
 
     def __str__(self):
         return str(self.to_dict())
@@ -279,7 +295,7 @@ class CotravelSensemaker(Sensemaker):
             # Coerce potential duplicate into cotravel if it's not an NSO Node
             if cotravel.cotravel_type == CotravelType.potential_duplicate and not node.isNso:
                 # Potential Duplicate only valid on NSO nodes
-                cotravel.cotravel_type = CotravelType.cotravel
+                cotravel._set_cotravel_type(CotravelType.cotravel)
 
             LOGGER.debug("Cotravel (%s) geometry: %s" % (cotravel.cotravel_type, cotravel.geometry.wkt))
             self.publish(data, cotravel)

@@ -14,6 +14,7 @@ from oms_sensemaking.geospatial.sensemakers.cotravel import (
     PotentialMatch,
 )
 from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.sensemaking import FindingType
 
 DEFAULT_ACM = {
     "version": "2.1.0",
@@ -458,3 +459,35 @@ def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_trac
     assert attribute_input.geometry == {"type": "LineString"}
     assert attribute_input.valueStart == "start"
     assert attribute_input.valueEnd == "end"
+
+
+def test_set_cotravel_type_updates_finding_type():
+    # Arrange: minimal mock track + points
+    mock_point = MagicMock()
+    mock_point.coordinates = (0.0, 0.0)
+    mock_point.acm = {"some": "data"}
+
+    mock_track = MagicMock()
+    mock_track.points = [mock_point, mock_point]
+
+    cotravel = Cotravel(
+        track1=mock_track,
+        track2=mock_track,
+        start_time=datetime.now(timezone.utc),
+        last_time=datetime.now(timezone.utc),
+        cotravel_type=CotravelType.cotravel,
+    )
+
+    # Act: switch to potential duplicate
+    cotravel._set_cotravel_type(CotravelType.potential_duplicate)
+
+    # Assert
+    assert cotravel.cotravel_type == CotravelType.potential_duplicate
+    assert cotravel.FINDING_TYPE == FindingType.COTRAVEL_POTENTIAL_DUPLICATE
+
+    # Act: switch back to normal cotravel
+    cotravel._set_cotravel_type(CotravelType.cotravel)
+
+    # Assert
+    assert cotravel.cotravel_type == CotravelType.cotravel
+    assert cotravel.FINDING_TYPE == FindingType.GEO_COTRAVEL
