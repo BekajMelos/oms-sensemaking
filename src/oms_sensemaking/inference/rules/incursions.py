@@ -157,7 +157,7 @@ class IncursionSensemaker(Sensemaker):
         existing_attributes: list[IncursionDataActivitiesDataAttributesData],
         existing_observations: list[IncursionDataActivitiesDataObservationsData],
         obs_timeframe: Timeframe,
-    ) -> None | Incursion:
+    ):
         """
         function to check for existing incursions given an activity object
         and its connected attributes
