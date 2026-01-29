@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
 
 ## [0.23.1] - 2026-01-28
 
