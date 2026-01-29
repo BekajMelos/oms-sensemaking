@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.23.1] - 2026-01-28
+
+### Added
 - Added the ability for the Object Minimum Sensemaker to record missing object characteristics
 
 ### Changed
