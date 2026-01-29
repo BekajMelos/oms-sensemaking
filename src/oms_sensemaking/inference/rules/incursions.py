@@ -95,7 +95,7 @@ class IncursionSensemaker(Sensemaker):
 
         return obs and obs.nodeId and obs.geometry and obs.classIri != SETTINGS.track_iri
 
-    def process_data(self, obs: ObservationObservation, config: dict | None = None):
+    def process_data(self, obs: ObservationObservation, config: dict | None = None) -> list[Incursion]:
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
@@ -134,7 +134,7 @@ class IncursionSensemaker(Sensemaker):
                 LOGGER.debug("%x Existing Incursion Observations", len(existing_incursion_observations))
                 LOGGER.debug("%d Existing Incursion Attributes", len(existing_incursion_attributes))
 
-                matching_incursion_attribute_found, incursion_finding = self._check_existing_incursion_and_update(
+                incursion_finding = self._check_existing_incursion_and_update(
                     obs,
                     feature_of_interest,
                     existing_incursion_activity,
@@ -142,6 +142,7 @@ class IncursionSensemaker(Sensemaker):
                     existing_incursion_observations,
                     incursion_obs_timeframe,
                 )
+                matching_incursion_attribute_found = bool(incursion_finding)
 
             # Observation not found as part of any existing incursions in relevant area of interest
             if not matching_incursion_attribute_found:
@@ -156,7 +157,7 @@ class IncursionSensemaker(Sensemaker):
         existing_attributes: list[IncursionDataActivitiesDataAttributesData],
         existing_observations: list[IncursionDataActivitiesDataObservationsData],
         obs_timeframe: Timeframe,
-    ) -> tuple[bool, None | Incursion]:
+    ) -> None | Incursion:
         """
         function to check for existing incursions given an activity object
         and its connected attributes
@@ -182,8 +183,8 @@ class IncursionSensemaker(Sensemaker):
                     existing_observations,
                     inc_attr_geo_timeframe,
                 )
-                return True, incursion_finding
-        return False, None
+                return incursion_finding
+        return None
 
     def get_all_incursion_data(self, incurring_object_id: UUID, feature_of_interest: AOI, pagesize: int = 200):
         incursion_activities: list[IncursionDataActivitiesData] = []
