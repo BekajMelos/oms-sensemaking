@@ -1,4 +1,4 @@
-name: Test OMS Sensemaking
+name: Test ATOMS Sensemaking
 run-name: ${{ gitea.actor }} is testing oms_sensemaking
 
 on: push
@@ -90,5 +90,5 @@ jobs:
       - name: Test with pytest
         run: |
           source .venv/bin/activate
-          pytest tests --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html --cov-fail-under=79.5
+          pytest tests --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html --cov-fail-under=80
         continue-on-error: false

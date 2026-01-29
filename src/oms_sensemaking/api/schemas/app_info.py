@@ -6,6 +6,6 @@ from pydantic import BaseModel, Field
 class AppInfo(BaseModel):
     """Provides metadata about an application."""
 
-    title: str = Field(..., examples=["OMS Sensemaking Service"])
+    title: str = Field(..., examples=["ATOMS Sensemaking Service"])
     version: str = Field(..., examples=["1.2.3"])
-    description: str = Field(..., examples=["A service for performing analytics on OMS data."])
+    description: str = Field(..., examples=["A service for performing analytics on ATOMS data."])

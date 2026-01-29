@@ -118,7 +118,7 @@ class GeospatialSensemakerController(SensemakerController):
     @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
-        Handle inbound OMS event.
+        Handle inbound ATOMS event.
 
         :param event: The event to process.
         :return: True if the audit log event was successfully processed, False otherwise.
@@ -135,7 +135,8 @@ class GeospatialSensemakerController(SensemakerController):
             return True
 
         # Ensure node has associated track ID
-        track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
+        with self.lock:
+            track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
 
         # Retrieve node version
         node = self.oms_crud_tool.get_node(oms_obs.nodeId)
@@ -260,7 +261,9 @@ class GeospatialSensemakerController(SensemakerController):
                 # Thread-safe cleanup of expired track data
                 self.track_times[track_uuid] = None
                 self.track_node_buffer.pop(track_uuid)
-                self.node_track_mapping = {k: v for k, v in self.node_track_mapping.items() if v != track_uuid}
+                keys_to_delete = [k for k, v in self.node_track_mapping.items() if v == track_uuid]
+                for k in keys_to_delete:
+                    del self.node_track_mapping[k]
 
         return True
 
@@ -289,10 +292,11 @@ class GeospatialSensemakerController(SensemakerController):
 
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
-        Given an OMS Observation ID, get the OMS Observation.  Ensure it is an observation we can use to make a track
+        Given an ATOMS Observation ID, get the ATOMS Observation.
+        Ensure it is an observation we can use to make a track
 
         :param observation_id: ID of the observation
-        :return: None if no observation exists, or the OMS Observation
+        :return: None if no observation exists, or the ATOMS Observation
         """
         # get observation
         oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
@@ -316,4 +320,8 @@ class GeoQueueFilter(EventFilter):
     def passes_filter(self, audit_event: AuditLogEvent):
         handled_object_types = [ObjectType.OBSERVATION.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
-        return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types
+        return (
+            audit_event.objectType in handled_object_types
+            and audit_event.action in handled_event_types
+            and audit_event.headers.iri != SETTINGS.track_iri
+        )

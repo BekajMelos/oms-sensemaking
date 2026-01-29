@@ -1,20 +1,20 @@
-# Contributing to oms-sensemaking
+# Contributing to atoms-sensemaking
 
-Contributions to *oms-sensemaking* are welcome! If you find a bug or have an
-idea for enhancements, please report them through the [Jira] or reach out to
-oms-sensemaking team to create a ticket on your behalf. Changes should be
+Contributions to *atoms-sensemaking* are welcome! If you find a bug or have an
+idea for enhancements, please reach out to
+atoms-sensemaking team to create a ticket on your behalf. Changes should be
 submitted as a pull request.
 
 ## Getting Started
 
 Consider reviewing the [README](./README.md) for information how to set up your
 development environment as well as more information on the different components
-of oms-sensemaking.
+of atoms-sensemaking.
 
 ## Workflow
 
 The following denotes the typical workflow to follow when making contributions
-to *oms-sensemaking*.
+to *atoms-sensemaking*.
 
 ### Tracking Work
 
@@ -28,7 +28,7 @@ Ask a teammate for guidance.
   + This branch should typically be branched from *main*
 
   + Ensure that the branch has a name in the format:
-    `{fix|feature}/{prefix}-{ticket number}_{optional short description}`
+    `{prefix}-{ticket number}-{optional short description}`
 
     For example:
 
@@ -102,5 +102,4 @@ will be resonsible for resolving them.
 
 
 [How to Write a Git Commit Message]: https://chris.beams.io/posts/git-commit/
-[Ticket Tracker]: https://jira.code.dodiis.mil
-[Pull Requests]: Repository for oms-sensemaking
+[Pull Requests]: Repository for atoms-sensemaking

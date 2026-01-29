@@ -10,6 +10,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer, RabbitMQListener
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.inference.controllers import (
     InferenceQueueFilter,
     InferenceSensemakerController,
@@ -19,11 +20,14 @@ from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 @pytest.fixture
 def mock_inference_controller():
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = InferenceSensemakerController(
         RabbitMQListener(
             "InferenceRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
+            app_settings=app_settings,
             event_filter=InferenceQueueFilter(),
         ),
         RethrowErrorLogger(ErrorLogger()),
@@ -51,7 +55,7 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_inference_contr
     with (
         mock.patch("oms_sensemaking.config.SETTINGS") as settings_mock,
         mock.patch.object(mock_inference_controller, "register") as register_mock,
-        mock.patch("oms_sensemaking.inference.controllers.InferenceSensemaker") as sensemaker_mock,
+        mock.patch("oms_sensemaking.inference.controllers.InOrOutOfGarrison") as sensemaker_mock,
         mock.patch.object(SensemakerController, "start", autospec=True) as super_start_mock,
     ):
         # configure settings
@@ -63,7 +67,7 @@ def test_start_registers_resolution_sensemaker_when_enabled(mock_inference_contr
         sensemaker_mock.assert_called_once()
 
         # Verify register called
-        register_mock.assert_called_once_with("inference", sensemaker_mock.return_value)
+        register_mock.assert_called_with("garrison", sensemaker_mock.return_value)
 
         # Verify super().start() called
         super_start_mock.assert_called_once_with(mock_inference_controller)

@@ -25,7 +25,7 @@ test: ## Run all tests
 	python -m pytest $(PYTEST_FLAGS) --cov-fail-under=80
 
 unit-test: ## Run unit tests
-	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=79.5
+	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=80
 
 int-test: ## Run integration tests
 	python -m pytest tests_int $(PYTEST_FLAGS)
@@ -40,10 +40,10 @@ lint:  ## Run linter
 lint-stats:
 	ruff check --statistics
 
-local: ## Start oms-sensemaking locally
+local: ## Start atoms-sensemaking locally
 	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
 
-no-oms: ## start oms-sensemaking without supporting oms env containers
+no-atoms: ## start atoms-sensemaking without supporting atoms env containers
 	docker compose up -d
 
 fix:  ## Run linter and apply fixes
@@ -77,17 +77,17 @@ version:  ## Display the project version
 list-versions: ## Display the tagged versions
 	@git tag -n
 
-up: ## Start oms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
+up: ## Start atoms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
 	docker compose up -d ${DOCKER_FLAGS}
 
-stop: ## Stop oms-sensemaking docker environment
+stop: ## Stop atoms-sensemaking docker environment
 	docker compose stop
 
-down: ## Stop oms-sensemaking docker environment and remove containers
+down: ## Stop atoms-sensemaking docker environment and remove containers
 	docker compose down
 
-shell: ## Open a shell inside the oms_sensemaking container
-	@docker compose exec oms_sensemaking /bin/bash
+shell: ## Open a shell inside the atoms_sensemaking container
+	@docker compose exec atoms_sensemaking /bin/bash
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis

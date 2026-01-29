@@ -22,5 +22,8 @@ Migrations are automatically applied through the Sensemaking container to the da
 alembic upgrade head
 
 # revert migration
-alembic downgrade head
+alembic downgrade -1
+
+# view history
+alembic history
 ```

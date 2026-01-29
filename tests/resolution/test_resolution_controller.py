@@ -14,21 +14,26 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemaker,
     ResolutionSensemakerController,
 )
+from src.oms_sensemaking.core.event_model import AuditLogHeaders
 
 
 @pytest.fixture
 def mock_res_controller():
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = ResolutionSensemakerController(
         RabbitMQListener(
             "ResolutionRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
-            event_filter=ResolutionQueueFilter(),
+            app_settings=app_settings,
+            event_filter=ResolutionQueueFilter(MockIriProvider()),
         ),
         RethrowErrorLogger(ErrorLogger()),
     )
@@ -48,7 +53,7 @@ def test_res_controller(
         "resolution", ResolutionSensemaker(duplicate_object_iris, mock_res_controller.oms_crud_tool)
     )
 
-    # mock oms call
+    # mock atoms call
     oms_attribute = AttributeAttribute.model_construct(
         id=uuid4(), attributeIri="test", attributeValue="test", nodeId=uuid4(), sourceId=uuid4(), acm=DEFAULT_ACM
     )
@@ -115,14 +120,22 @@ def test_start_does_nothing_when_disabled(mock_res_controller):
         super_start_mock.assert_called_once_with(mock_res_controller)
 
 
-def test_passes_filter_returns_true_for_handled_event():
-    filt = ResolutionQueueFilter()
+@pytest.mark.parametrize(
+    "obj_type, action",
+    [
+        ("ATTRIBUTE", Action.CREATE.value),
+        ("ATTRIBUTE", Action.RESTORE.value),
+    ],
+)
+def test_passes_filter_returns_true_for_handled_event(obj_type, action):
+    mock_iri_provider = MockIriProvider()
+    filt = ResolutionQueueFilter(mock_iri_provider)
 
-    event = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
-    )
+    event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
+    # These are attributes from duplicate_object_iris.json
+    event.headers = AuditLogHeaders(mock_iri_provider.attribute_iris[0])
 
-    assert filt.passes_filter(event) is True
+    assert filt.passes_filter(event)
 
 
 @pytest.mark.parametrize(
@@ -134,8 +147,12 @@ def test_passes_filter_returns_true_for_handled_event():
     ],
 )
 def test_passes_filter_returns_false_for_unhandled(obj_type, action):
-    filt = ResolutionQueueFilter()
-
+    filt = ResolutionQueueFilter(MockIriProvider())
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
     assert filt.passes_filter(event) is False
+
+
+class MockIriProvider:
+    def __init__(self):
+        self.attribute_iris = ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"]

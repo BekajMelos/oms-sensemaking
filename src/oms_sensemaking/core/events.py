@@ -24,6 +24,7 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
+from oms_sensemaking.core.settings import Settings as AppSettings
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -35,14 +36,14 @@ class Properties(pika.spec.BasicProperties):
 
 
 class AuditLogEvent:
-    """Represents an audit log event from OMS."""
+    """Represents an audit log event from ATOMS."""
 
     def __init__(self, userId: str, objectId: UUID, objectType: ObjectType, action: Action):
         """
         Create a new instance of AuditLogEvent.
 
         :param userId: The id of the user that triggered the event.
-        :param objectId: The unique id of the object in OMS.
+        :param objectId: The unique id of the object in ATOMS.
         :param objectType: The type of object that the event was triggered on.
         :param action: They type of event (e.g. create, update, or delete).
         """
@@ -156,6 +157,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self,
         name: str,
         queue_name: str,
+        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
@@ -166,6 +168,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._event_filter = event_filter
         self._connection: BlockingConnection = None
         self._channel: BlockingChannel = None
+        settings_dict = app_settings.get_settings()
+        self._prefetch_count = settings_dict.get("rabbitmq_prefetch_count", SETTINGS.rabbitmq_prefetch_count)
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
@@ -185,7 +189,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             self._channel.queue_declare(
                 queue=self._queue_name, durable=True, arguments={"x-delivery-limit": -1, "x-queue-type": "quorum"}
             )
-            self._channel.basic_qos(0, SETTINGS.rabbitmq_prefetch_count, False)
+            self._channel.basic_qos(0, self._prefetch_count, False)
             LOGGER.info("Connected to RabbitMQ queue: %s", self._queue_name)
             return True
         except (AMQPConnectionError, AMQPChannelError, socket.gaierror) as ex:
@@ -213,18 +217,19 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
 
 
 class RabbitMQListener(BaseRabbitMQListener):
-    """A RabbitMQ AuditLogEventConsumer that consumes OMS events."""
+    """A RabbitMQ AuditLogEventConsumer that consumes ATOMS events."""
 
     def __init__(
         self,
         name: str,
         queue_name: str,
         workers: int,
+        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
         """Create a new instance of RabbitMQListener."""
-        super().__init__(name, queue_name, handle_event, event_filter)
+        super().__init__(name, queue_name, app_settings, handle_event, event_filter)
         self.pool = ThreadPoolExecutor(max_workers=workers)
 
     def callback(
@@ -307,32 +312,35 @@ class RabbitMQListener(BaseRabbitMQListener):
                 sleep(SETTINGS.rmq_read_wait_seconds)
                 continue
 
-            try:
-                # Start consuming messages
-                self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
+            self._consume_messages()
 
-                while not self.stopped.is_set():
-                    try:
-                        self._connection.process_data_events(time_limit=1)
-                    except Exception as ex:
-                        LOGGER.error("%s Error processing RabbitMQ events: %s", self._name, ex)
-                        break
+    def _consume_messages(self):
+        try:
+            # Start consuming messages
+            self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
 
-            except (AMQPConnectionError, AMQPChannelError) as ex:
-                LOGGER.error("%s RabbitMQ connection error: %s. Reconnecting...", self._name, ex)
+            while not self.stopped.is_set():
+                try:
+                    self._connection.process_data_events(time_limit=1)
+                except Exception as ex:
+                    LOGGER.error("%s Error processing RabbitMQ events: %s", self._name, ex)
+                    break
+
+        except (AMQPConnectionError, AMQPChannelError) as ex:
+            LOGGER.error("%s RabbitMQ connection error: %s. Reconnecting...", self._name, ex)
+            sleep(SETTINGS.rmq_read_wait_seconds)
+        except Exception as ex:
+            LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
+            sleep(SETTINGS.rmq_read_wait_seconds)
+        finally:
+            if not self.stopped.is_set():
+                try:
+                    self._disconnect()
+                except Exception:
+                    LOGGER.exception("_disconnect() failed in finally")
+
+            if not self.stopped.is_set():
                 sleep(SETTINGS.rmq_read_wait_seconds)
-            except Exception as ex:
-                LOGGER.error("%s Unexpected error in RabbitMQ listener: %s", self._name, ex)
-                sleep(SETTINGS.rmq_read_wait_seconds)
-            finally:
-                if not self.stopped.is_set():
-                    try:
-                        self._disconnect()
-                    except Exception:
-                        LOGGER.exception("_disconnect() failed in finally")
-
-                if not self.stopped.is_set():
-                    sleep(SETTINGS.rmq_read_wait_seconds)
 
     def stop(self) -> None:
         """Stop consuming events and close the connection."""

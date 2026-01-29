@@ -73,7 +73,7 @@ class CommonVars:
     SonarQube code smells for duplicated values
     '''
     has_text_value_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/has_text_value"
-    base_oms_sensemaking_tag = "Atoms Sensemaking"
+    base_atoms_sensemaking_tag = "Atoms Sensemaking"
     intentional_act_iri = "http://www.ontologyrepository.com/CommonCoreOntologies/IntentionalAct"
     has_coords_iri = "https://foundry.ai.mil/ontology/4901-001/hasCoordinates"
 
@@ -170,9 +170,10 @@ class LogConfig(BaseSettings):
 class MilSymbolSettings(BaseModel):
     symbol_attribute_iri: str = Field(
         CommonVars.has_text_value_iri,
-        description="Military Symbol Sensemaker tags")
+        description="Military Symbol Sensemaker tags"
+    )
     mil_symbol_sensemaker_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Military Symbol Sensemaker"],
+        [CommonVars.base_atoms_sensemaking_tag, "Military Symbol Sensemaker"],
         description="Military Symbol Sensemaker tags"
     )
     rmq_mil_symbol_queue_name: str = Field(
@@ -180,22 +181,37 @@ class MilSymbolSettings(BaseModel):
         description="the RMQ Resolution Queue name",
         examples=["mil-symbol-trigger"]
     )
-    mil_sym_attr_retriever: str = Field("AllAtOnce", description="Algorithm for getting mil symbol attributes")
-    enable_mil_symbol_sensemaker: bool = Field(True, description="Toggle on/off Mil Symbol Sensemaking")
+    mil_sym_attr_retriever: str = Field(
+        "AllAtOnce",
+        description="Algorithm for getting mil symbol attributes"
+    )
+    enable_mil_symbol_sensemaker: bool = Field(
+        True,
+        description="Toggle on/off Mil Symbol Sensemaking"
+    )
     affiliation_iris: list[str] = Field(
-        ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI")
-    status_iris: list[str] = Field(["https://foundry.ai.mil/ontology/4901-001/hasCondition"], description="Status IRI")
-    echelon_iris: list[str] = Field(["https://oms.dodiis.ic.gov/ontology/p-0000000029"], description="Echelon IRI")
+        ["https://oms.dodiis.ic.gov/ontology/p-0000000033"], description="Affiliation IRI"
+    )
+    status_iris: list[str] = Field(
+        ["https://foundry.ai.mil/ontology/4901-001/hasCondition"],
+        description="Status IRI"
+    )
+    echelon_iris: list[str] = Field(
+        ["https://oms.dodiis.ic.gov/ontology/p-0000000029"],
+        description="Echelon IRI"
+    )
     affiliation_controlled_by_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controlledBy"],
-        description="Relationship IRIs used to search for controlling/commanding nodes")
+        description="Relationship IRIs used to search for controlling/commanding nodes"
+    )
     affiliation_controls_iris: list[str] = Field(
         ["https://foundry.ai.mil/ontology/4901-001/controls"],
         description="Relationship IRIs used to search for controlling/commanding nodes"
     )
     attribute_code_iris: list[str] = Field(
         [CommonVars.has_text_value_iri],
-        description="Attribute Iris for full mil symbol codes")
+        description="Attribute Iris for full mil symbol codes"
+    )
 
     # 2525B and 2525C placeholders
     b_c_placeholders: list[str] = Field(
@@ -215,15 +231,86 @@ class MilSymbolSettings(BaseModel):
     # TODO should we skip a default since these are random
     is_reality_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Vetted"],
-        description="Attribute Iri to look for 'is reality' context")
+        description="Attribute Iri to look for 'is reality' context"
+    )
     is_exercise_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Validated"],
-        description="Attribute Iri to look for 'is exercise' context")
+        description="Attribute Iri to look for 'is exercise' context"
+    )
     is_simulation_context_iris: list[str] = Field(
         ["https://foundry.ai.mil/MIDB_GST/v1/Target_Restriction"],
-        description="Attribute Iri to look for 'is simulation' context")
+        description="Attribute Iri to look for 'is simulation' context"
+    )
 
-    rules_file_path: str = Field("./data/mil_symbol_rules.json", description="Path to the rules config file")
+    rules_file_path: str = Field(
+        "./data/mil_symbol_rules.json",
+        description="Path to the rules config file"
+    )
+
+class ObjectMinimumsSettings(BaseModel):
+    enable_object_minimums_sensemaker: bool = Field(
+        True,
+        description="Toggle the object minimums sensemaker on/off"
+    )
+    rmq_object_minimums_queue_name:str = Field(
+        "object-minimums-trigger",
+        description="the RMQ Object Minimums Queue name",
+        examples=["object-minimums-trigger"]
+    )
+    rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
+
+class IncursionSettings(BaseModel):
+    activity_state: str = Field(
+        "INCURSION",
+        description="String Incursion Activity State"
+    )
+    areas_of_interest_path: str = Field(
+        "./data/areas_of_interest",
+        description="Path to areas of interest file"
+    )
+    attribute_iri: str = Field(
+        CommonVars.has_coords_iri,
+        description="IRI for incursion attribute"
+    )
+    class_iri: str = Field(
+        CommonVars.intentional_act_iri,
+        description="IRI for incursion class"
+    )
+    tags: list[str] = Field(
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data", "Incursion"],
+        description="Incursion tags"
+    )
+
+class OutOfGarrisonSettings(BaseModel):
+    garrison_class_iri: str = Field(
+        CommonVars.intentional_act_iri,
+        description="IRI for garrison activity class"
+    )
+    garrison_distance_kilometers: int = Field(
+        2000,
+        description="Distance that determines whether a unit is In or Out of Garrison"
+    )
+    garrisoned_in_relationship_iri: str = Field(
+        "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
+        description="IRI for relationship between an object and its garrison"
+    )
+    in_garrison_activity_name: str = Field(
+        "In Garrison",
+        description="Name for In Garrison activities"
+    )
+    in_garrison_activity_state: str = Field(
+        "IN_GARRISON",
+        description="String In Garrison Activity State"
+    )
+    out_of_garrison_activity_name: str = Field(
+        "Out of Garrison",
+        description="Name for Out of Garrison activities"
+    )
+    out_of_garrison_activity_state: str = Field(
+        "OUT_OF_GARRISON",
+        description="String Out of Garrison Activity State"
+    )
+
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -266,20 +353,24 @@ class Settings(BaseSettings):
 
     gzip_minimum_size: int = 1000
 
-    oms_version_env: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of OMS")
+    oms_version_env: str = Field(os.getenv("OMSB_VERSION") or "", description="Current version of ATOMS")
 
     # OMS_SDK-related settings
     create_source_if_none: bool = Field(False, description="Allow creation of source")
     create_provider_if_none: bool = Field(False, description="Allow creation of provider")
+    profile_transport: bool = Field(True, description="Allow for profiling of http transport")
 
     # General IRIs
+    geo_attribute_iri: str = Field(
+        CommonVars.has_coords_iri, description="IRI for geo attribute"
+    )
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
     maximum_oms_api_calls: int = Field(5000,
-                                       description="Maximum amount of requests made to the OMS API per time period")
+        description="Maximum amount of requests made to the ATOMS API per time period")
     oms_api_call_period_seconds: int = Field(30,
-                                             description="Alloted amount of time for maximum OMS API calls to be made")
+        description="Alloted amount of time for maximum ATOMS API calls to be made")
 
     # Labels
     sm_connected_track: str = Field("SM_CONNECTED_TRACK", description="Label for tracks generated by sensemaking")
@@ -304,49 +395,8 @@ class Settings(BaseSettings):
     toggle_incursion_rule: bool = Field(True, description="Toggle on/off Incursion Rule")
     toggle_test_endpoints: bool = Field(True, description="Toggle on/off test endpoints")
     inference_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
+        [CommonVars.base_atoms_sensemaking_tag, "Inferred Data"], description="Inference Sensemaker tags"
     )
-    incursion_tags: list[str] = Field(
-        [CommonVars.base_oms_sensemaking_tag, "Inferred Data", "Incursion"], description="Incursion tags"
-    )
-    inference_incursion_activity_state: str = Field(
-        "UNKNOWN", description="String Incursion Activity State"
-    )
-    inference_incursion_areas_of_interest_path: str = Field(
-        "./data/areas_of_interest", description="Path to areas of interest file"
-    )
-    inference_incursion_class_iri: str = Field(
-        CommonVars.intentional_act_iri, description="IRI for incursion class"
-    )
-    inference_incursion_attribute_iri: str = Field(
-        CommonVars.has_coords_iri,
-        description="IRI for incursion attribute"
-    )
-    inference_geo_attribute_iri: str = Field(
-        CommonVars.has_coords_iri, description="IRI for geo attribute"
-    )
-    inference_garrisoned_in_iri: str = Field(
-        "https://foundry.ai.mil/ontology/4901-001/garrisonedIn",
-        description="IRI for relationship between an object and its garrison"
-    )
-    inference_garrison_class_iri: str = Field(
-        CommonVars.intentional_act_iri,
-        description="IRI for garrison activity class"
-    )
-    inference_in_garrison_activity_name: str = Field(
-        "In Garrison", description="Name for In Garrison activities"
-    )
-    inference_out_of_garrison_activity_name: str = Field(
-        "Out of Garrison", description="Name for Out of Garrison activities"
-    )
-    inference_in_garrison_activity_state: str = Field(
-        "IN_GARRISON", description="String In Garrison Activity State"
-    )
-    inference_out_of_garrison_activity_state: str = Field(
-        "OUT_OF_GARRISON", description="String Out of Garrison Activity State"
-    )
-    garrison_distance_kilometers: int = 2000
-    garrison_data_retriever: str = Field("AllAtOnce", description="Algorithm for getting garrison data")
 
     # database settings
     db_host: str = Field("localhost", description="Database hostname or IP address.")
@@ -370,7 +420,7 @@ class Settings(BaseSettings):
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
     cache_entry_expire_sec: int = Field(30, description="How long to wait for new points before creating a new Track")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
-    geo_sensemaker_event_tag: str = Field("geosensemaker_tag",
+    geo_sensemaker_event_tag: str = Field("geosensemaker",
         description="Tag for OMSB objects from the geospatial sensemakers")
     max_track_time_length_seconds: int = Field(7 * 24 * 60 * 60,
         description="Max amount of time in seconds a track can be from earliest start time to last start time",
@@ -460,7 +510,7 @@ class Settings(BaseSettings):
         examples=["resolution-trigger"]
     )
     enable_resolution_sensemaker: bool = Field(True, description="Toggle on/off Entity Resolution")
-    resolution_sensemaker_tag: str = Field("resolution_tag",
+    resolution_sensemaker_tag: str = Field("resolution",
                                            description="Tag for OMSB objects from the resolution sensemaker")
     resolution_relationship_name: str = Field("Same As",
                                            description="Relationship IRI for resolution sensemaker suggestions")
@@ -472,6 +522,9 @@ class Settings(BaseSettings):
     )
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
+    object_minimum_settings: ObjectMinimumsSettings = ObjectMinimumsSettings()
+    incursion_settings: IncursionSettings = IncursionSettings()
+    out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
@@ -483,10 +536,10 @@ class Settings(BaseSettings):
 
     ttl_cache_size: int = Field(1024, description="Max items in a given TTL Cache")
     ttl_cache_seconds: int = Field(3600, description="Max time to live in a given TTL Cache")
-    oms_crud_ttl_cache_size: int = Field(1024, description="Max items in OMS CRUD Tool's given TTL Cache")
-    oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in OMS CRUD Tool's given TTL Cache")
+    oms_crud_ttl_cache_size: int = Field(1024, description="Max items in ATOMS CRUD Tool's given TTL Cache")
+    oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in ATOMS CRUD Tool's given TTL Cache")
     omsb_url: str = Field("https://graphql:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("Grimlock-INC-36", description="OMSB Version")
+    omsb_version: str = Field("3.1.4", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     aac_cacert_path: str | None = Field(
@@ -533,7 +586,7 @@ class Settings(BaseSettings):
 
     root_path: str = Field("", description="BaseUrl to the service", examples=["/services/sensemaking/1.0", ""])
 
-    sm_test_tags: list[str] = Field(["SM_TEST_TAG"], description="Tag for Sensemaking test processes")
+    sm_test_tags: list[str] = Field(["SM_TEST"], description="Tag for Sensemaking test processes")
     enable_audit_log_error_logging: bool = Field(True, description="Enable logging of sensemaking errors")
     audit_log_error_max_tb_chars: int = Field(200, ge=0, description="Max length for audit log error tracebacks")
     audit_log_error_json_file_path: str = Field(
@@ -550,7 +603,7 @@ class Settings(BaseSettings):
         default="http://tempo:4317", description="OpenTelemetry OTLP exporter endpoint"
     )
     otel_service_name: str = Field(
-        default="oms-sensemaking", description="OpenTelemetry service name"
+        default="atoms-sensemaking", description="OpenTelemetry service name"
     )
     otel_traces_sampler: str = Field(
         default="always_on", description="OpenTelemetry traces sampler"

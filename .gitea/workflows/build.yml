@@ -1,4 +1,4 @@
-name: Build OMS Sensemaking
+name: Build ATOMS Sensemaking
 run-name: ${{ gitea.actor }} is building oms_sensemaking
 
 on:

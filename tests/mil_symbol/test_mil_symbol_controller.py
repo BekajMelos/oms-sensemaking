@@ -17,6 +17,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.event_model import AuditLogHeaders
 from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.mil_symbol.controllers import (
     MilSymbolQueueFilter,
     MilSymbolSensemaker,
@@ -27,11 +28,14 @@ from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFacto
 
 @pytest.fixture
 def mock_mil_sym_controller():
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = MilSymbolSensemakerController(
         RabbitMQListener(
             "MilSymbolRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
+            app_settings=app_settings,
             event_filter=MilSymbolQueueFilter(),
         ),
         RethrowErrorLogger(ErrorLogger()),
@@ -61,7 +65,7 @@ def test_mil_sym_controller(
         ),
     )
 
-    # mock oms call
+    # mock atoms call
     oms_node = NodeNode.model_construct(id=uuid4(), name="test", sourceId=uuid4(), acm=DEFAULT_ACM)
     mock_mil_sym_controller.oms_crud_tool.get_node = mock.MagicMock()
     mock_mil_sym_controller.oms_crud_tool.get_node.return_value = oms_node

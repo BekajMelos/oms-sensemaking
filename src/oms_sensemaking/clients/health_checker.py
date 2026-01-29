@@ -20,14 +20,14 @@ class HealthChecker:
     _unhealthy = "Unable to communicate with"
 
     def get_oms_health(self, oms_crud_tool: OmsCrudTool):
-        LOGGER.debug("Checking OMS health")
+        LOGGER.debug("Checking ATOMS health")
         try:
             query = NodeQuery(pageParams=PageParams(pageSize=1))
             oms_crud_tool.get_nodes(query)
             return self._healthy
         except Exception as e:
             LOGGER.error(repr(e))
-            return f"{self._unhealthy} OMS"
+            return f"{self._unhealthy} ATOMS"
 
     def get_db_health(self, ping_db: Callable[[], bool]):
         LOGGER.debug("Checking DB health")

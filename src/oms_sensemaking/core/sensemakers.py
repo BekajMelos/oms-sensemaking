@@ -52,7 +52,7 @@ class SensemakerPublisher(ABC):
 
     @abstractmethod
     def publish(self, data: Any, results: Any) -> Any:
-        """Publish output to OMS"""
+        """Publish output to ATOMS"""
         raise NotImplementedError
 
 
@@ -211,6 +211,46 @@ class Sensemaker(ABC, SensemakerMetaData):
         logic. Subclasses must override this method.
         """
         raise NotImplementedError()
+
+
+class AsyncSensemaker(Sensemaker, ABC):
+    """
+    Abstract Base Class
+
+    Inherits the synchronous structure and overrides it to enforce async methods.
+    """
+
+    async def execute(self, *data: Any) -> Any:
+        """
+        Execute the Sensemaker.
+
+        Boiler plate from synchronus Sensemaker class for async
+        """
+        try:
+            self.setup()
+            with self.lock:
+                self.executed_at = datetime.now(tz=timezone.utc)
+                LOGGER.info("Running %s %s", self.name, self.version_string)
+                results: Any = await self.process_data(*data)
+                self.save_findings(results)
+                try:
+                    if results:
+                        self.publisher.publish(data, results)
+                except httpx.RequestError as exc:
+                    LOGGER.exception("An error occurred while requesting %r.", exc.request.url)
+
+                LOGGER.info("Sensemaker %s %s completed", self.name, self.version_string)
+        finally:
+            self.teardown()
+
+        return results
+
+    @abstractmethod
+    async def process_data(self, data: Any, config: Any) -> Any:
+        """
+        AsyncSensemaker subclasses to implement async process_data.
+        """
+        raise NotImplementedError("AsyncSensemaker subclasses must implement async process_data.")
 
 
 class FindingWriter:

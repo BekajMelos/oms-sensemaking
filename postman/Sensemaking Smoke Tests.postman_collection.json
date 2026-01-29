@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "697ce977-18d8-43d7-9e5c-8c55ec0b5e88",
+		"_postman_id": "3853397a-8224-4e6b-8b20-7b074dfc2d20",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33434330"
+		"_exporter_id": "41624740"
 	},
 	"item": [
 		{
@@ -97,7 +97,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -142,7 +142,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -187,7 +187,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -232,7 +232,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Loiter Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -287,7 +287,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.754606,\n                    51.263632\n                ]\n            }\n            startTime: \"2024-03-12T16:22:32.000Z\"\n            endTime: \"2024-03-12T16:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -342,7 +342,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.054606,\n                    51.513632\n                ]\n            }\n            startTime: \"2024-03-15T18:22:32.000Z\"\n            endTime: \"2024-03-15T18:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -397,7 +397,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.188881,\n                    51.481851\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -452,7 +452,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190917, \n                    51.481500\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -507,7 +507,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192849,\n                    51.481375\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -562,7 +562,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.190697,\n                    51.480557\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -617,7 +617,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.192030,\n                    51.482643\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -672,7 +672,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.400326,\n                    51.477984\n                ]\n            }\n            startTime: \"2024-03-15T19:28:32.000Z\"\n            endTime: \"2024-03-15T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -727,7 +727,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -1.000000,\n                    52.000000\n                ]\n            }\n            startTime: \"2024-03-25T19:28:32.000Z\"\n            endTime: \"2024-03-25T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -782,7 +782,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -1.500000,\n                    52.500000\n                ]\n            }\n            startTime: \"2024-03-26T19:28:32.000Z\"\n            endTime: \"2024-03-26T19:28:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -802,23 +802,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Add small delay to avoid read-before-write race condition",
-											"eval(pm.globals.get(\"waitFn\"));",
-											"wait(1500);",
-											"",
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {},
@@ -829,44 +813,21 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.nodes && ",
-											"                      response.data.nodes.data && ",
-											"                      response.data.nodes.data.length > 0 && ",
-											"                      response.data.nodes.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
+											"const success = retryUntil({",
+											"  conditionFn: () =>",
+											"    response?.data?.nodes?.data?.length > 0,",
+											"  maxAttempts: 4,",
+											"  delayMs: 30000",
+											"});",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
+											"if (success) {",
+											"  pm.test(\"Loiter node exists\", () => {",
+											"    pm.expect(response.data.nodes.data.length).to.be.greaterThan(0);",
+											"  });",
 											"}"
 										],
 										"type": "text/javascript",
@@ -887,7 +848,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker_tag\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
+										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
 										"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\"\n}"
 									}
 								},
@@ -998,7 +959,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $nodeId: UUID!\n){\n\tupdateNode(\n        input: {\n            id: $nodeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"nodeId\": \"{{loiternodeId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"nodeId\": \"{{loiternodeId}}\"\n}"
 									}
 								},
 								"url": {
@@ -1107,7 +1068,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{loitertrackobsId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{loitertrackobsId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -1150,7 +1111,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{loitertrackobsId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{loitertrackobsId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -1192,7 +1153,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{loiterrelId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{loiterrelId}}\"\n}"
 									}
 								},
 								"url": {
@@ -1300,7 +1261,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{loiterattrId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{loiterattrId}}\"\n}"
 									}
 								},
 								"url": {
@@ -1457,7 +1418,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -1502,7 +1463,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -1547,7 +1508,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -1592,7 +1553,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Cotravel Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -1647,7 +1608,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -1.021999,\n                    52.896946\n                ]\n            }\n            startTime: \"2024-03-15T18:40:32.000Z\"\n            endTime: \"2024-03-15T18:40:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1702,7 +1663,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.980760,\n                    52.894048\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1757,7 +1718,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.946252, \n                    52.892036\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1812,7 +1773,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.901139,\n                    52.892320\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1867,7 +1828,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.856156,\n                    52.893247\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1922,7 +1883,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.809296,\n                    52.8919974\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -1977,7 +1938,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.765882,\n                    52.887295\n                ]\n            }\n            startTime: \"2024-03-15T19:00:32.000Z\"\n            endTime: \"2024-03-15T19:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -2022,7 +1983,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Cotravel Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -2077,7 +2038,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -1.022999,\n                    52.895946\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2132,7 +2093,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.982760,\n                    52.895048\n                ]\n            }\n            startTime: \"2024-03-15T18:43:32.000Z\"\n            endTime: \"2024-03-15T18:43:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2187,7 +2148,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.947252, \n                    52.894036\n                ]\n            }\n            startTime: \"2024-03-15T18:48:32.000Z\"\n            endTime: \"2024-03-15T18:48:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2242,7 +2203,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.902139,\n                    52.893320\n                ]\n            }\n            startTime: \"2024-03-15T18:52:32.000Z\"\n            endTime: \"2024-03-15T18:52:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2297,7 +2258,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.855156,\n                    52.892247\n                ]\n            }\n            startTime: \"2024-03-15T18:55:32.000Z\"\n            endTime: \"2024-03-15T18:55:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2352,7 +2313,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.808296,\n                    52.8929974\n                ]\n            }\n            startTime: \"2024-03-15T18:59:32.000Z\"\n            endTime: \"2024-03-15T18:59:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2407,7 +2368,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -0.766882,\n                    52.886295\n                ]\n            }\n            startTime: \"2024-03-15T19:02:32.000Z\"\n            endTime: \"2024-03-15T19:02:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2427,68 +2388,40 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 4;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}",
 											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.nodes && ",
-											"                      response.data.nodes.data && ",
-											"                      response.data.nodes.data.length > 0 && ",
-											"                      response.data.nodes.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"// Retry until the response meets success criteria",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.nodes?.data?.length > 0 &&",
+											"        response?.data?.nodes?.totalSize > 0,",
+											"    maxAttempts: 4,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.nodes.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.nodes.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
-											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 4) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Step 6: Retry request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"        setTimeout(function(){}, 30000);",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -2504,7 +2437,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker_tag\"]\n            name: {\n                contains: \"Cotravel\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
+										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"Cotravel\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
 										"variables": "{\n    \"iri\": \"{{COTRAVEL_IRI}}\"\n}"
 									}
 								},
@@ -2834,7 +2767,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $nodeId: UUID!\n){\n\tupdateNode(\n        input: {\n            id: $nodeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"nodeId\": \"{{cotravelnode1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"nodeId\": \"{{cotravelnode1}}\"\n}"
 									}
 								},
 								"url": {
@@ -2876,7 +2809,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{cotravelrelId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{cotravelrelId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -2918,7 +2851,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{cotravelrelId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{cotravelrelId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2961,7 +2894,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cotraveltrackobsId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -3004,7 +2937,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -3098,7 +3031,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{cotravelattrId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{cotravelattrId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -3255,7 +3188,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -3300,7 +3233,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -3345,7 +3278,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -3390,7 +3323,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"NSO Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -3445,7 +3378,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -3.021999,\n                    54.896946\n                ]\n            }\n            startTime: \"2024-03-15T18:40:32.000Z\"\n            endTime: \"2024-03-15T18:40:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3500,7 +3433,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.980760,\n                    54.894048\n                ]\n            }\n            startTime: \"2024-03-15T18:42:32.000Z\"\n            endTime: \"2024-03-15T18:42:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3555,7 +3488,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.946252, \n                    54.892036\n                ]\n            }\n            startTime: \"2024-03-15T18:46:32.000Z\"\n            endTime: \"2024-03-15T18:46:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3610,7 +3543,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.901139,\n                    54.892320\n                ]\n            }\n            startTime: \"2024-03-15T18:50:32.000Z\"\n            endTime: \"2024-03-15T18:50:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3665,7 +3598,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.856156,\n                    54.893247\n                ]\n            }\n            startTime: \"2024-03-15T18:54:32.000Z\"\n            endTime: \"2024-03-15T18:54:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3720,7 +3653,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.809296,\n                    54.8919974\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3775,7 +3708,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            startTime: \"2024-03-15T19:00:32.000Z\"\n            endTime: \"2024-03-15T19:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -3820,7 +3753,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"NSO Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: true\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -3875,7 +3808,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -3.022999,\n                    54.895946\n                ]\n            }\n            startTime: \"2024-03-15T18:40:33.000Z\"\n            endTime: \"2024-03-15T18:40:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -3930,7 +3863,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.982760,\n                    54.895048\n                ]\n            }\n            startTime: \"2024-03-15T18:42:33.000Z\"\n            endTime: \"2024-03-15T18:42:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -3985,7 +3918,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.947252, \n                    54.894036\n                ]\n            }\n            startTime: \"2024-03-15T18:46:33.000Z\"\n            endTime: \"2024-03-15T18:46:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4040,7 +3973,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.902139,\n                    54.893320\n                ]\n            }\n            startTime: \"2024-03-15T18:50:33.000Z\"\n            endTime: \"2024-03-15T18:50:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4095,7 +4028,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.855156,\n                    54.892247\n                ]\n            }\n            startTime: \"2024-03-15T18:54:33.000Z\"\n            endTime: \"2024-03-15T18:54:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4150,7 +4083,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.808296,\n                    54.8929974\n                ]\n            }\n            startTime: \"2024-03-15T18:58:33.000Z\"\n            endTime: \"2024-03-15T18:58:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4205,7 +4138,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.766882,\n                    54.886295\n                ]\n            }\n            startTime: \"2024-03-15T19:00:33.000Z\"\n            endTime: \"2024-03-15T19:00:33.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4225,78 +4158,50 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Get the JSON response",
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"if (isValidResponse) {",
+											"const response = pm.response.json();",
+											"",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.relationships?.data?.length > 0 &&",
+											"        response?.data?.relationships?.totalSize > 0,",
+											"    maxAttempts: 4,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.relationships.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.relationships.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
 											"",
 											"    pm.test(\"Correct Relationship Name\", function () {",
-											"        pm.expect(response.data.relationships.data[0].name).to.equal(\"Potential Duplicate\");",
+											"        pm.expect(response.data.relationships.data[0].name)",
+											"            .to.equal(\"Potential Duplicate\");",
 											"    });",
 											"",
-											"    // Set the attribute ID",
-											"    pm.collectionVariables.set(\"cotravelrelId1\", response.data.relationships.data[0].id);",
-											"",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
-											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 4) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.test(\"Getting Potential Duplicate Relationship\", function() {",
-											"            pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"        });",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Step 6: Retry request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
-											"}",
-											""
+											"    // Store relationship ID for later requests",
+											"    pm.collectionVariables.set(",
+											"        \"cotravelrelId1\",",
+											"        response.data.relationships.data[0].id",
+											"    );",
+											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 4;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}",
 											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -4477,7 +4382,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{cotravelrelId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{cotravelrelId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -4520,7 +4425,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cotraveltrackobsId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -4563,7 +4468,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -4724,7 +4629,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -4769,7 +4674,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -4814,7 +4719,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -4859,7 +4764,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Incursion Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -4914,7 +4819,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.70,\n                    19.65\n                ]\n            }\n            startTime: \"2024-03-15T18:00:32.000Z\"\n            endTime: \"2024-03-15T18:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -4969,7 +4874,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.68,\n                    19.66\n                ]\n            }\n            startTime: \"2024-03-15T18:20:32.000Z\"\n            endTime: \"2024-03-15T18:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -5024,7 +4929,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.67,\n                    19.67\n                ]\n            }\n            startTime: \"2024-03-15T18:38:32.000Z\"\n            endTime: \"2024-03-15T18:38:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -5079,7 +4984,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.66,\n                    19.68\n                ]\n            }\n            startTime: \"2024-03-15T18:58:32.000Z\"\n            endTime: \"2024-03-15T18:58:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -5134,7 +5039,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -155.63,\n                    19.70\n                ]\n            }\n            startTime: \"2024-03-15T19:20:32.000Z\"\n            endTime: \"2024-03-15T19:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -5154,71 +5059,45 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.observations && ",
-											"                      response.data.observations.data && ",
-											"                      response.data.observations.data.length > 0 && ",
-											"                      response.data.observations.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.observations?.data?.length > 0 &&",
+											"        response?.data?.observations?.totalSize > 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.observations.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.observations.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    pm.collectionVariables.set(\"incursiontrackobs\", response.data.observations.data[0].id);",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 15 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
+											"    // Store observation ID for later requests",
+											"    pm.collectionVariables.set(",
+											"        \"incursiontrackobs\",",
+											"        response.data.observations.data[0].id",
+											"    );",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -5277,7 +5156,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
 									}
 								},
 								"url": {
@@ -5371,7 +5250,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $activityid: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityid\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
 									}
 								},
 								"url": {
@@ -5391,71 +5270,45 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.attributes && ",
-											"                      response.data.attributes.data && ",
-											"                      response.data.attributes.data.length > 0 && ",
-											"                      response.data.attributes.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.attributes?.data?.length > 0 &&",
+											"        response?.data?.attributes?.totalSize > 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 15000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.attributes.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.attributes.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    pm.collectionVariables.set(\"incursionattrid\", response.data.attributes.data[0].id);",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 15000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
+											"    // Store attribute ID for later requests",
+											"    pm.collectionVariables.set(",
+											"        \"incursionattrid\",",
+											"        response.data.attributes.data[0].id",
+											"    );",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -5514,7 +5367,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
 									}
 								},
 								"url": {
@@ -5670,7 +5523,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -5715,7 +5568,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -5760,7 +5613,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -5805,7 +5658,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Out of Garrison Facility Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{FACILITY_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{FACILITY_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -5858,7 +5711,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n    $sourceId: UUID!\n    $nodeId: UUID!\n    $testTag: String!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"attribute value\"\n            attributeDisplayValue: \"display value\"\n            attributeNormalizedValue: \"normalized value\"\n            attributeType: GEOSPATIAL\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            confidence: HIGH,\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isUserEntered: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{HAS_COORDINATES_IRI}}\",\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{facilityNodeId}}\",\n    \"testTag\": \"{{TEST_TAG}}\"\n}"
+										"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{HAS_COORDINATES_IRI}}\",\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{facilityNodeId}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
 									}
 								},
 								"url": {
@@ -5906,7 +5759,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Garrison Unit Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{MILITARY_IRI}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{MILITARY_IRI}}\"\n}"
 									}
 								},
 								"url": {
@@ -5949,7 +5802,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $startNodeId: UUID!\n    $endNodeId: UUID!\n    $sourceId: UUID!\n){\n\tcreateRelationship(\n        input: {\n            tags: [\"T1\", \"T2\", $testTag]\n            labels: [\"SM_ENRICHED\"]\n            name: \"name\"\n            startNodeId: $startNodeId\n            endNodeId: $endNodeId\n            sourceId: $sourceId\n            acm: $acm\n            confidence: HIGH\n            objectPropertyIri: $iri\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GARRISONED_AT_IRI}}\",\n    \"startNodeId\": {{nodeId}},\n    \"endNodeId\": \"{{facilityNodeId}}\",\n    \"sourceId\": \"{{sourceId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GARRISONED_AT_IRI}}\",\n    \"startNodeId\": {{nodeId}},\n    \"endNodeId\": \"{{facilityNodeId}}\",\n    \"sourceId\": \"{{sourceId}}\"\n}"
 									}
 								},
 								"url": {
@@ -6004,7 +5857,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            startTime: \"2024-03-15T18:00:32.000Z\"\n            endTime: \"2024-03-15T18:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -6059,7 +5912,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -2.765882,\n                    54.887295\n                ]\n            }\n            startTime: \"2024-03-15T18:05:32.000Z\"\n            endTime: \"2024-03-15T18:05:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -6114,7 +5967,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    2,\n                    2\n                ]\n            }\n            startTime: \"2024-03-15T18:06:32.000Z\"\n            endTime: \"2024-03-15T18:06:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -6169,7 +6022,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    2,\n                    2\n                ]\n            }\n            startTime: \"2024-03-15T18:10:32.000Z\"\n            endTime: \"2024-03-15T18:10:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
 									}
 								},
 								"url": {
@@ -6189,57 +6042,43 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.activities && ",
-											"                      response.data.activities.data && ",
-											"                      response.data.activities.data.length > 0 && ",
-											"                      response.data.activities.totalSize > 0;",
-											"let hasExpectedData = response.data.activities.data[0].observationIds.length == 2;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse && hasExpectedData) {",
+											"const success = retryUntil({",
+											"    conditionFn: () => {",
+											"        const activity = response?.data?.activities?.data?.[0];",
+											"        return (",
+											"            response?.data?.activities?.data?.length > 0 &&",
+											"            response?.data?.activities?.totalSize > 0 &&",
+											"            Array.isArray(activity?.observationIds) &&",
+											"            activity.observationIds.length === 2",
+											"        );",
+											"    },",
+											"    maxAttempts: 3,",
+											"    delayMs: 30000",
+											"});",
 											"",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"        // Set the activity ID",
-											"        pm.collectionVariables.set(\"garrisonActivityId\", response.data.activities.data[0].id);",
+											"if (success) {",
+											"    const activity = response.data.activities.data[0];",
+											"",
+											"    pm.test(\"Response contains valid activity data\", function () {",
+											"        pm.expect(response.data.activities.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.activities.totalSize).to.be.greaterThan(0);",
+											"",
+											"        // Store activity ID for later requests",
+											"        pm.collectionVariables.set(",
+											"            \"garrisonActivityId\",",
+											"            activity.id",
+											"        );",
 											"    });",
 											"",
 											"    pm.test(\"Activity includes both observations\", function () {",
-											"        const numObs = response.data.activities.data[0].observationIds.length;",
-											"        pm.expect(numObs).to.equal(2);  // always true b/c of above if statement",
-											"        pm.expect(response.data.activities.data[0].startTime).to.equal(\"2024-03-15T18:00:32.000Z\");",
-											"        pm.expect(response.data.activities.data[0].endTime).to.equal(\"2024-03-15T18:05:32.000Z\");",
+											"        pm.expect(activity.observationIds.length).to.equal(2);",
+											"        pm.expect(activity.startTime).to.equal(\"2024-03-15T18:00:32.000Z\");",
+											"        pm.expect(activity.endTime).to.equal(\"2024-03-15T18:05:32.000Z\");",
 											"    });",
-											"",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
-											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"        pm.expect(hasExpectedData).to.be.true",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"",
-											"        // Step 6: Retry request",
-											"        pm.execution.setNextRequest(pm.info.requestName);",
-											"    }",
 											"}"
 										],
 										"type": "text/javascript",
@@ -6253,21 +6092,7 @@
 										"exec": [
 											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
-											"wait(1500);",
-											"",
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    pm.execution.setNextRequest(null); // Stop execution",
-											"}"
+											"wait(1500);"
 										],
 										"type": "text/javascript",
 										"packages": {},
@@ -6331,7 +6156,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $activityId: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityId\": \"{{garrisonActivityId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityId\": \"{{garrisonActivityId}}\"\n}"
 									}
 								},
 								"url": {
@@ -6351,54 +6176,43 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.activities && ",
-											"                      response.data.activities.data && ",
-											"                      response.data.activities.data.length > 0 && ",
-											"                      response.data.activities.totalSize > 0;",
-											"let hasExpectedData = response.data.activities.data[0].observationIds.length == 2;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse && response.data.activities.data[0].observationIds.length == 2) {",
+											"const success = retryUntil({",
+											"    conditionFn: () => {",
+											"        const activity = response?.data?.activities?.data?.[0];",
+											"        return (",
+											"            response?.data?.activities?.data?.length > 0 &&",
+											"            response?.data?.activities?.totalSize > 0 &&",
+											"            Array.isArray(activity?.observationIds) &&",
+											"            activity.observationIds.length === 2",
+											"        );",
+											"    },",
+											"    maxAttempts: 3,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
+											"    const activity = response.data.activities.data[0];",
+											"",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"        // Set the activity ID",
-											"        pm.collectionVariables.set(\"nonGarrisonActivityId\", response.data.activities.data[0].id);",
+											"        pm.expect(response.data.activities.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.activities.totalSize).to.be.greaterThan(0);",
+											"",
+											"        // Store activity ID for later requests",
+											"        pm.collectionVariables.set(",
+											"            \"nonGarrisonActivityId\",",
+											"            activity.id",
+											"        );",
 											"    });",
 											"",
 											"    pm.test(\"Activity includes both observations\", function () {",
-											"        const numObs = response.data.activities.data[0].observationIds.length;",
-											"        pm.expect(numObs).to.equal(2);  // always true b/c of above if statement",
-											"        pm.expect(response.data.activities.data[0].startTime).to.equal(\"2024-03-15T18:06:32.000Z\");",
-											"        pm.expect(response.data.activities.data[0].endTime).to.equal(\"2024-03-15T18:10:32.000Z\");",
+											"        pm.expect(activity.observationIds.length).to.equal(2);",
+											"        pm.expect(activity.startTime).to.equal(\"2024-03-15T18:06:32.000Z\");",
+											"        pm.expect(activity.endTime).to.equal(\"2024-03-15T18:10:32.000Z\");",
 											"    });",
-											"",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
-											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= pm.environment.get(\"MAX_RETRIES\")) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"        pm.expect(hasExpectedData).to.be.true;",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 30 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"",
-											"        // Step 6: Retry request",
-											"        pm.execution.setNextRequest(pm.info.requestName);",
-											"    }",
 											"}"
 										],
 										"type": "text/javascript",
@@ -6412,21 +6226,7 @@
 										"exec": [
 											"// Add small delay to avoid read-before-write race condition",
 											"eval(pm.globals.get(\"waitFn\"));",
-											"wait(1500);",
-											"",
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    pm.execution.setNextRequest(null); // Stop execution",
-											"}"
+											"wait(1500);"
 										],
 										"type": "text/javascript",
 										"packages": {},
@@ -6490,7 +6290,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $activityId: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"activityId\": \"{{nonGarrisonActivityId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityId\": \"{{nonGarrisonActivityId}}\"\n}"
 									}
 								},
 								"url": {
@@ -6510,71 +6310,45 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.observations && ",
-											"                      response.data.observations.data && ",
-											"                      response.data.observations.data.length > 0 && ",
-											"                      response.data.observations.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.observations?.data?.length > 0 &&",
+											"        response?.data?.observations?.totalSize > 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.observations.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.observations.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    pm.collectionVariables.set(\"incursiontrackobs\", response.data.observations.data[0].id);",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 15 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 30000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
-											"    }",
+											"    // Store observation ID for later requests",
+											"    pm.collectionVariables.set(",
+											"        \"incursiontrackobs\",",
+											"        response.data.observations.data[0].id",
+											"    );",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -6633,7 +6407,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{incursiontrackobs}}\"\n}"
 									}
 								},
 								"url": {
@@ -6794,7 +6568,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -6839,7 +6613,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -6884,7 +6658,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -6929,7 +6703,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -7085,7 +6859,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -7215,74 +6989,47 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.relationships?.data?.length > 0 &&",
+											"        response?.data?.relationships?.totalSize > 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 5000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.relationships.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.relationships.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
-											"        let id = response.data.relationships.data[i].id",
-											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
-											"    }",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 5000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"    // Store all relationship IDs for later steps",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++) {",
+											"        pm.collectionVariables.set(",
+											"            `resolutionrelationshipid${i + 1}`,",
+											"            response.data.relationships.data[i].id",
+											"        );",
 											"    }",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -7341,7 +7088,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
 									}
 								},
 								"url": {
@@ -7405,7 +7152,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
 									}
 								},
 								"url": {
@@ -7561,7 +7308,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -7606,7 +7353,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -7651,7 +7398,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -7696,7 +7443,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -8017,7 +7764,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -8147,74 +7894,47 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"// Validate if the response meets success criteria",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
+											"const response = pm.response.json();",
 											"",
-											"if (isValidResponse) {",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.relationships?.data?.length > 0 &&",
+											"        response?.data?.relationships?.totalSize > 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 5000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
+											"        pm.expect(response.data.relationships.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.relationships.totalSize).to.be.greaterThan(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
-											"        let id = response.data.relationships.data[i].id",
-											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
-											"    }",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 5000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"    // Store all relationship IDs for later steps",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++) {",
+											"        pm.collectionVariables.set(",
+											"            `resolutionrelationshipid${i + 1}`,",
+											"            response.data.relationships.data[i].id",
+											"        );",
 											"    }",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -8273,7 +7993,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid1}}\"\n}"
 									}
 								},
 								"url": {
@@ -8337,7 +8057,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{resolutionrelationshipid2}}\"\n}"
 									}
 								},
 								"url": {
@@ -8493,7 +8213,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -8538,7 +8258,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -8583,7 +8303,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -8628,7 +8348,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -8784,7 +8504,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -8914,67 +8634,45 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"if (response.data.relationships.totalSize == 0) {",
+											"const response = pm.response.json();",
+											"",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.relationships?.totalSize === 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 5000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains no relationships\", function () {",
-											"    pm.expect(response.data.relationships.totalSize).to.eql(0);",
+											"        pm.expect(response.data.relationships.totalSize).to.eql(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
-											"        let id = response.data.relationships.data[i].id",
-											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
-											"    }",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 5000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"    // No relationships expected",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++) {",
+											"        pm.collectionVariables.set(",
+											"            `resolutionrelationshipid${i + 1}`,",
+											"            response.data.relationships.data[i].id",
+											"        );",
 											"    }",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -9147,7 +8845,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
 									}
 								},
 								"url": {
@@ -9192,7 +8890,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
 									}
 								},
 								"url": {
@@ -9237,7 +8935,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
 									}
 								},
 								"url": {
@@ -9282,7 +8980,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 1\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -9438,7 +9136,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Resolution Node 2\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST_TAG}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/Facility\"\n}"
 									}
 								},
 								"url": {
@@ -9568,67 +9266,45 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Step 4: Check if request succeeded based on response data",
-											"let response = pm.response.json(); ",
+											"eval(pm.globals.get(\"retryUntil\"));",
 											"",
-											"if (response.data.relationships.totalSize == 0) {",
+											"const response = pm.response.json();",
+											"",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.relationships?.totalSize === 0,",
+											"    maxAttempts: 3,",
+											"    delayMs: 5000",
+											"});",
+											"",
+											"if (success) {",
 											"    pm.test(\"Response contains no relationships\", function () {",
-											"    pm.expect(response.data.relationships.totalSize).to.eql(0);",
+											"        pm.expect(response.data.relationships.totalSize).to.eql(0);",
 											"    });",
-											"    console.log(\"Valid response received. Stopping retries.\");",
-											"    pm.environment.unset(\"retryCount\"); // Reset on success",
-											"    for (let i = 0; i < response.data.relationships.totalSize; i++){",
-											"        let id = response.data.relationships.data[i].id",
-											"        pm.collectionVariables.set(`resolutionrelationshipid${i + 1}`, id);",
-											"    }",
-											"} else {",
-											"    console.warn(\"Invalid response received. Retrying...\");",
 											"",
-											"    // Step 5: Increment retry count",
-											"    let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"    retryCount = parseInt(retryCount, 10) + 1;",
-											"",
-											"    if (retryCount >= 3) {",
-											"        console.error(\"Max retries reached with invalid responses. Stopping execution.\");",
-											"        pm.environment.unset(\"retryCount\");",
-											"        pm.expect(isValidResponse).to.be.true;  // Display error when not found",
-											"    } else {",
-											"        pm.environment.set(\"retryCount\", retryCount);",
-											"",
-											"        // Sleep for 30 seconds before making the request",
-											"        console.log(`Sleeping for 5 seconds before attempt ${retryCount + 1}...`);",
-											"",
-											"        setTimeout(function(){}, 5000);",
-											"",
-											"        // Step 6: Retry request",
-											"        postman.setNextRequest(pm.info.requestName);",
+											"    // No relationships expected",
+											"    for (let i = 0; i < response.data.relationships.totalSize; i++) {",
+											"        pm.collectionVariables.set(",
+											"            `resolutionrelationshipid${i + 1}`,",
+											"            response.data.relationships.data[i].id",
+											"        );",
 											"    }",
 											"}"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Set max retries",
-											"const maxRetries = 3;",
-											"",
-											"// Get current retry count (or initialize)",
-											"let retryCount = pm.environment.get(\"retryCount\") || 0;",
-											"retryCount = parseInt(retryCount, 10);",
-											"",
-											"// Step 1: Check if we've exceeded the retry limit",
-											"if (retryCount >= maxRetries) {",
-											"    console.error(\"Max retries reached. Stopping execution.\");",
-											"    pm.environment.unset(\"retryCount\");",
-											"    postman.setNextRequest(null); // Stop execution",
-											"}"
+											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -9714,6 +9390,302 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Object Minimum",
+			"item": [
+				{
+					"name": "Cleanup Test Data Before",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(pm.response.text());",
+									"pm.test(\"Data Cleaned Up\", function () {",
+									"    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{WHITELIST_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation {\n\tcleanUpSmokeTestData\n}",
+								"variables": ""
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Originator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the JSON response",
+									"var json = pm.response.json();",
+									"pm.test(\"Originator created\", function () {",
+									"    pm.expect(json.data.createOriginator.id).to.exist;",
+									"});",
+									"// Set the originator ID",
+									"pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+								"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Provider",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the JSON response",
+									"var json = pm.response.json();",
+									"pm.test(\"Provider created\", function () {",
+									"    pm.expect(json.data.createProvider.id).to.exist;",
+									"});",
+									"// Set the provider ID",
+									"pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+								"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Source",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the JSON response",
+									"var json = pm.response.json();",
+									"pm.test(\"Source created\", function () {",
+									"    pm.expect(json.data.createSource.id).to.exist;",
+									"});",
+									"// Set the source ID",
+									"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+								"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Node",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the JSON response",
+									"var json = pm.response.json();",
+									"pm.test(\"Node created\", function () {",
+									"    pm.expect(json.data.createNode.id).to.exist;",
+									"});",
+									"// Set the node ID",
+									"pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Loiter Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+								"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/c-0000000002\"\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Attribute",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the JSON response",
+									"var json = pm.response.json();",
+									"pm.test(\"Attribute Created\", function () {",
+									"    pm.expect(json.data.createAttribute.id).to.exist;",
+									"});",
+									"// Set the attribute ID",
+									"pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "user_dn",
+								"value": "{{TS_USER_DN}}"
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+								"variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/p-0000000002\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+							}
+						},
+						"url": {
+							"raw": "https://{{GRAPHQL_ENDPOINT}}",
+							"protocol": "https",
+							"host": [
+								"{{GRAPHQL_ENDPOINT}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -9730,6 +9702,48 @@
 					"function wait(ms) {",
 					"    var end = Date.now() + ms;",
 					"    while (Date.now() < end) {}",
+					"}",
+					"`);",
+					"",
+					"// GLOBAL retry helper used to wait for async system state to become observable.",
+					"// Read requests may temporarily return incomplete data. This helper retries the",
+					"// current request until a condition is met or a retry limit is reached.",
+					"pm.globals.set(\"retryUntil\", `",
+					"function retryUntil({ conditionFn, maxAttempts = 3, delayMs = 1000 }) {",
+					"  const attempt = Number(pm.environment.get(\"retryAttempt\") || 0);",
+					"",
+					"  if (conditionFn()) {",
+					"    console.log(\"✅ Condition met. Continuing execution.\");",
+					"    pm.environment.unset(\"retryAttempt\");",
+					"    pm.environment.unset(\"retryStartTime\");",
+					"    return true;",
+					"  }",
+					"",
+					"  if (attempt >= maxAttempts - 1) {",
+					"    const totalMs = (attempt + 1) * delayMs;",
+					"    pm.environment.unset(\"retryAttempt\");",
+					"    pm.environment.unset(\"retryStartTime\");",
+					"    throw new Error(",
+					"      \\`Condition not met after \\${maxAttempts} attempts (\\${totalMs}ms total)\\`",
+					"    );",
+					"  }",
+					"",
+					"  const nextAttempt = attempt + 1;",
+					"  pm.environment.set(\"retryAttempt\", nextAttempt);",
+					"",
+					"  if (!pm.environment.get(\"retryStartTime\")) {",
+					"    pm.environment.set(\"retryStartTime\", Date.now());",
+					"  }",
+					"",
+					"  console.log(",
+					"    \\`⏳ Sleeping for \\${(delayMs / 1000).toFixed(1)}s before attempt \\${nextAttempt + 1} of \\${maxAttempts}…\\`",
+					"  );",
+					"",
+					"  setTimeout(() => {",
+					"    pm.execution.setNextRequest(pm.info.requestName);",
+					"  }, delayMs);",
+					"",
+					"  return false;",
 					"}",
 					"`);",
 					"",
@@ -10352,6 +10366,10 @@
 		},
 		{
 			"key": "nonGarrisonActivityId",
+			"value": ""
+		},
+		{
+			"key": "nodeId1",
 			"value": ""
 		}
 	]

@@ -78,6 +78,7 @@ class TelemetryManager(BaseTelemetryManager):
         return cls._instance
 
     def __init__(self):
+        """Pass through init"""
         pass
 
     def initialize(self):
@@ -90,7 +91,7 @@ class TelemetryManager(BaseTelemetryManager):
 
         try:
             # Set up OpenTelemetry tracing
-            resource = Resource.create({"service.name": "oms-sensemaking"})
+            resource = Resource.create({"service.name": SETTINGS.otel_service_name})
 
             # OTLP exporter for traces
             otlp_exporter = OTLPSpanExporter(endpoint=SETTINGS.otel_exporter_otlp_endpoint)
@@ -196,12 +197,14 @@ def record_request_metrics(method: str, path: str, status_code: int, duration: f
         exemplar = {"TraceID": trace_id} if trace_id else None
 
         # Record duration with exemplar
-        REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name="oms-sensemaking").observe(
+        REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name=SETTINGS.otel_service_name).observe(
             duration, exemplar=exemplar
         )
 
         # Record total requests
-        REQUESTS_TOTAL.labels(method=method, path=path, status_code=status_code, app_name="oms-sensemaking").inc()
+        REQUESTS_TOTAL.labels(
+            method=method, path=path, status_code=status_code, app_name=SETTINGS.otel_service_name
+        ).inc()
 
     except Exception as e:
         logging.error(f"Failed to record request metrics: {e}")
@@ -213,7 +216,7 @@ def record_queue_processing_time(queue_name: str, processing_time_seconds: float
         trace_id = get_current_trace_id()
         exemplar = {"TraceID": trace_id} if trace_id else None
 
-        QUEUE_PROCESSING_TIME.labels(queue_name=queue_name, app_name="oms-sensemaking").observe(
+        QUEUE_PROCESSING_TIME.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).observe(
             processing_time_seconds, exemplar=exemplar
         )
 
@@ -226,7 +229,7 @@ def record_queue_processing_time(queue_name: str, processing_time_seconds: float
 def record_event_processed(queue_name: str):
     """Record event processed counter."""
     try:
-        EVENTS_PROCESSED.labels(queue_name=queue_name, app_name="oms-sensemaking").inc()
+        EVENTS_PROCESSED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
 
         logging.debug(f"Event processed counter incremented for queue: {queue_name}")
 
@@ -237,7 +240,7 @@ def record_event_processed(queue_name: str):
 def record_event_failed(queue_name: str):
     """Record event failed counter."""
     try:
-        EVENTS_FAILED.labels(queue_name=queue_name, app_name="oms-sensemaking").inc()
+        EVENTS_FAILED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
 
         logging.debug(f"Event failed counter incremented for queue: {queue_name}")
 

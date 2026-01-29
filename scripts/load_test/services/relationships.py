@@ -19,7 +19,7 @@ def assign_garrisons(units, garrisons, sourcing):
                 endNodeId=g.facility.id,
                 sourceId=sourcing.source.id,
                 confidence="LOW",
-                objectPropertyIri=SETTINGS.inference_garrisoned_in_iri,
+                objectPropertyIri=SETTINGS.garrisoned_in_relationship_iri,
             )
         )
         rels.append(rel)

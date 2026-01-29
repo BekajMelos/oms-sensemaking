@@ -13,10 +13,11 @@ Mention if there are new dependencies or resources needed to verify this branch.
 * checkout this branch
 * Run `source .venv/bin/activate`
 * Copy updates from `.env.template` to `.env`
-* Run `make install`
+* Run `make install refresh` to apply dependency updates
 * Run `make up`
 * Run `make fix`, verify no changes
 * Run `make test`, verify no failures
+* Run `Sensemaking Smoke Tests` collection in Postman, verify no failures
 * Add additional testing steps here...
 
 ## Checklist before requesting a review

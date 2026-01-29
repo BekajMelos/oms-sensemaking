@@ -98,7 +98,7 @@ class SensemakerController:
             # 1. register sensemakers
             # TODO: register sensemakers here?
 
-            # 2. setup oms event consumer
+            # 2. setup atoms event consumer
             self.event_consumer.start()
 
             # 3. set "running" event
@@ -118,17 +118,17 @@ class SensemakerController:
 
     def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
         """
-        Given an OMS data object's ID, get the object we'll pass to the sensemaker
+        Given an ATOMS data object's ID, get the object we'll pass to the sensemaker
 
         :param event: the object whose creation, update, or deletion we need to process
-        :return: None if no object exists, or the OMS Object if it's a type we handle
+        :return: None if no object exists, or the ATOMS Object if it's a type we handle
         """
         return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)
 
     @with_metrics_collection
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
-        Handle inbound OMS event.
+        Handle inbound ATOMS event.
 
         This function is intended as the entrypoint for controlling the flow of
         data to the sensemakers.
@@ -138,7 +138,7 @@ class SensemakerController:
         LOGGER.debug("Received AuditLogEvent(objectId=%s)", event.objectId)
 
         try:
-            # extract info from OMS via API calls
+            # extract info from ATOMS via API calls
             oms_obj = self.get_oms_data(event)
         except Exception as e:
             message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
@@ -150,17 +150,17 @@ class SensemakerController:
             return False
 
         try:
-            with ThreadPoolExecutor() as executor:
+            with ThreadPoolExecutor() as sync_executor:
                 futures = []
                 for sensemaker in self._registry.values():
-                    future = executor.submit(sensemaker.execute, oms_obj)
+                    future = sync_executor.submit(sensemaker.execute, oms_obj)
                     futures.append(future)
 
                 # make sure errors are caught
                 for future in as_completed(futures):
                     _ = future.result()
 
-                executor.shutdown(wait=True)
+                sync_executor.shutdown(wait=True)
 
         except Exception as e:
             message = f"Error encountered while processing object {event.objectId}: {str(e)}"

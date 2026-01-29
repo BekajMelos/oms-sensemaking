@@ -1,4 +1,4 @@
-"""oms-sensemaking microservice."""
+"""atoms-sensemaking microservice."""
 
 import html
 import json
@@ -25,11 +25,21 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
-from oms_sensemaking.resolution.controllers import ResolutionQueueFilter, ResolutionSensemakerController
+from oms_sensemaking.object_minimums.controllers import (
+    ObjectMinimumsQueueFilter,
+    ObjectMinimumsSensemakerController,
+    ObjMinDataProvider,
+)
+from oms_sensemaking.resolution.controllers import (
+    ResolutionIriProvider,
+    ResolutionQueueFilter,
+    ResolutionSensemakerController,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -39,7 +49,7 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 initialize_observability()
 
 
-def get_controllers() -> list[SensemakerController]:
+def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
 
     err_logger: ErrorLogger | RethrowErrorLogger = ErrorLogger()
@@ -52,6 +62,7 @@ def get_controllers() -> list[SensemakerController]:
                 "GeoRMQListener",
                 SETTINGS.rmq_geo_queue_name,
                 workers=SETTINGS.queue_worker_threads,
+                app_settings=app_settings,
                 event_filter=GeoQueueFilter(),
             ),
             err_logger,
@@ -62,6 +73,7 @@ def get_controllers() -> list[SensemakerController]:
                 "InferenceRMQListener",
                 SETTINGS.rmq_inference_queue_name,
                 workers=SETTINGS.queue_worker_threads,
+                app_settings=app_settings,
                 event_filter=InferenceQueueFilter(),
             ),
             err_logger,
@@ -71,7 +83,8 @@ def get_controllers() -> list[SensemakerController]:
                 "ResolutionRMQListener",
                 SETTINGS.rmq_res_queue_name,
                 workers=SETTINGS.queue_worker_threads,
-                event_filter=ResolutionQueueFilter(),
+                app_settings=app_settings,
+                event_filter=ResolutionQueueFilter(ResolutionIriProvider()),
             ),
             err_logger,
         ),
@@ -80,7 +93,18 @@ def get_controllers() -> list[SensemakerController]:
                 "MilSymbolRMQListener",
                 SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
                 workers=SETTINGS.queue_worker_threads,
+                app_settings=app_settings,
                 event_filter=MilSymbolQueueFilter(),
+            ),
+            err_logger,
+        ),
+        ObjectMinimumsSensemakerController(
+            RabbitMQListener(
+                "ObjectMinimumsRMQListener",
+                SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
+                workers=SETTINGS.queue_worker_threads,
+                app_settings=app_settings,
+                event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
             ),
             err_logger,
         ),
@@ -96,7 +120,7 @@ async def lifespan(application: FastAPI):
     Handle application lifecycle events.
 
     This function provides a contextmanager that can be registered with a
-    FastAPI application to startup and shutdown the OMS Sensemaking
+    FastAPI application to startup and shutdown the ATOMS Sensemaking
     controllers.
     """
     # startup
@@ -109,8 +133,10 @@ async def lifespan(application: FastAPI):
     except Exception as ex:
         LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
 
+    app_settings = AppSettings()
+
     controllers: list[tuple[SensemakerController, Thread]] = []
-    for ctrlr in get_controllers():
+    for ctrlr in get_controllers(app_settings):
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
         controller_thread.start()
         controllers.append((ctrlr, controller_thread))
@@ -203,9 +229,16 @@ def create_app(config: Settings) -> FastAPI:
 
 def check_aoi_file_path() -> None:
     """Check for valid areas of interest directory"""
-    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.inference_incursion_areas_of_interest_path)):
-        LOGGER.error("%s is not a valid directory", SETTINGS.inference_incursion_areas_of_interest_path)
+    if SETTINGS.toggle_incursion_rule and (not os.path.isdir(SETTINGS.incursion_settings.areas_of_interest_path)):
+        LOGGER.error("%s is not a valid directory", SETTINGS.incursion_settings.areas_of_interest_path)
         sys.exit("The areas of interest directory is incorrect or does not exist.")
+
+
+def check_obj_min_rubric_file_path() -> None:
+    """Check for valid object minimums rubric directory"""
+    if not os.path.exists(SETTINGS.object_minimum_settings.rubrics_file_path):
+        LOGGER.error("%s is not a valid directory", SETTINGS.object_minimum_settings.rubrics_file_path)
+        sys.exit("The object minimums rubric file path is incorrect or does not exist.")
 
 
 def initialize_settings() -> None:
@@ -215,6 +248,7 @@ def initialize_settings() -> None:
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
+        check_obj_min_rubric_file_path()
     except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
         LOGGER.error("Unable to initialize settings: %s", e)
         sys.exit("An error occurred during initialization.")

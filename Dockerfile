@@ -13,9 +13,9 @@
 # virtual envrionment needs to activated either by the CMD or by an ENTRYPOINT
 # that wraps a CMD.
 #
-# OMS Sensemaking
+# ATOMS Sensemaking
 # ===============
-# The oms-sensemaking service is configured with a startup script in
+# The atoms-sensemaking service is configured with a startup script in
 # /script.sh. This script is responsible for activating the virtual environment
 # and starting the service with uvicorn. The following environment variables can
 # be used to customize how the service is run.
@@ -59,7 +59,7 @@ ENV APP_HOME=/app
 
 ENV LANG=C.UTF-8
 
-LABEL maintainer="OMS Team <oms@blackcape.io>"
+LABEL maintainer="ATOMS Team <oms@blackcape.io>"
 
 WORKDIR ${APP_HOME}
 
@@ -193,7 +193,7 @@ mkdir -p /usr/share/doc/$APP_SHORT_NAME/contrib
 alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_SHORT_NAME-schema.sql.gz
 
 # clean up os packages
-dnf remove -y gcc python3.12-devel && \
+dnf remove -y gcc python3.12-devel emac-filesystem oniguruma && \
 dnf autoremove -y && \
 dnf clean all
 
@@ -211,13 +211,15 @@ rm -rf /usr/bin/pip*
 rm -rf /usr/local/bin/pip*
 rm -rf /usr/local/lib/python3.12/site-packages/pip*
 
+dnf remove -y tar
+
 EOF
 
-LABEL maintainer="The OMS Team <oms@blackcape.io>"
+LABEL maintainer="The ATOMS Team <oms@blackcape.io>"
 LABEL org.label-schema.build-date=${BUILD_DATE}
-LABEL org.label-schema.name="oms-sensemaking"
-LABEL org.label-schema.description="Docker image for oms-sensemaking"
-LABEL org.label-schema.vcs-url="https://gitlab.code.dodiis.mil/aio4/services/omsbridge/oms-sensemaking"
+LABEL org.label-schema.name="atoms-sensemaking"
+LABEL org.label-schema.description="Docker image for atoms-sensemaking"
+LABEL org.label-schema.vcs-url="https://gitlab.code.dodiis.mil/di/mars/oms/oms-sensemaking"
 LABEL org.label-schema.vcs-ref=${VCS_REF}
 LABEL org.label-schema.version=${APP_VERSION}
 
