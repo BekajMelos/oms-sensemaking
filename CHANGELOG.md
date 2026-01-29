@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+
 ### Fixed
+- Out of Garrison query uses `in_` to retrieve matching names
 
 ### Removed
 
