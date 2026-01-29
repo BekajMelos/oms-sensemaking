@@ -7,11 +7,18 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Renamed customer facing instances of OMS to ATOMS
-
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
 ### Fixed
 
 ### Removed
+
+## [0.19.3] - 2026-01-26
+
+### Changed
+- Renamed customer facing instances of OMS to ATOMS
+
+### Added
+- Added `COTRAVEL_POTENTIAL_DUPLICATE` finding type to the `finding_type` enum
 
 ## [0.19.2] - 2026-01-12
 
