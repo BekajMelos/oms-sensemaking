@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - ActivityQuery `name`'s StrinQuery built with `in_`
+- Resolved integration tests warnings when running `make test`
 
 ## [0.23.0] - 2026-01-26
 
@@ -28,7 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated unit test coverage to 80%
-
+git 
 ## [0.22.0] - 2026-01-20
 
 ### Changed

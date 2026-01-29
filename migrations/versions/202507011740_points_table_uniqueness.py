@@ -27,7 +27,6 @@ def upgrade() -> None:
         existing_type=sa.INTEGER(),
         comment="The unique ID of the Sensemaking Point.",
         existing_nullable=False,
-        autoincrement=True,
         existing_server_default=sa.text("nextval('points_point_id_seq'::regclass)"),
     )
     op.drop_constraint("fk_track_points_point_id_points", "track_points", type_="foreignkey")
@@ -46,7 +45,6 @@ def upgrade() -> None:
         comment="The unique ID of the Track within the database only.",
         existing_comment="The unique ID of the Sensemaking Track.",
         existing_nullable=False,
-        autoincrement=True,
     )
     # ### end Alembic commands ###
 
@@ -61,7 +59,6 @@ def downgrade() -> None:
         comment="The unique ID of the Sensemaking Track.",
         existing_comment="The unique ID of the Track within the database only.",
         existing_nullable=False,
-        autoincrement=True,
     )
     op.create_unique_constraint("points_point_id_key", "points", ["point_id"])
     op.alter_column(
@@ -71,7 +68,6 @@ def downgrade() -> None:
         comment=None,
         existing_comment="The unique ID of the Sensemaking Point.",
         existing_nullable=False,
-        autoincrement=True,
         existing_server_default=sa.text("nextval('points_point_id_seq'::regclass)"),
     )
     # ### end Alembic commands ###
