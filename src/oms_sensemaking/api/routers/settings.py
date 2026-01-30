@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, Response
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
 from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.core.events import LISTENERS
 from oms_sensemaking.models.settings import Setting
+from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -53,6 +55,14 @@ def create_or_update_settings(
                 new_setting = Setting(field_name=field_name, field_value=field_value)
                 db.add(new_setting)
         db.commit()
+
+    for k, v in settings_update.settings.items():
+        RUNTIME_SETTINGS.set(k, int(v))
+
+    if "rabbitmq_prefetch_count" in settings_update.settings:
+        new_val = int(settings_update.settings["rabbitmq_prefetch_count"])
+        for listener in LISTENERS:
+            listener.update_prefetch(new_val)
 
     return Response(status_code=201)
 

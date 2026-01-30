@@ -22,7 +22,7 @@ from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontolog
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
-from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener
+from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener, register_listener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
 from oms_sensemaking.core.settings import Settings as AppSettings
@@ -56,58 +56,62 @@ def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
     if SETTINGS.rethrow_errors_enabled:
         err_logger = RethrowErrorLogger(err_logger)
 
+    geo_listener = RabbitMQListener(
+        "GeoRMQListener",
+        SETTINGS.rmq_geo_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        app_settings=app_settings,
+        event_filter=GeoQueueFilter(),
+    )
+    register_listener(geo_listener)
+    geo_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+
+    inference_listener = RabbitMQListener(
+        "InferenceRMQListener",
+        SETTINGS.rmq_inference_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        app_settings=app_settings,
+        event_filter=InferenceQueueFilter(),
+    )
+    register_listener(inference_listener)
+    inference_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+
+    resolution_listener = RabbitMQListener(
+        "ResolutionRMQListener",
+        SETTINGS.rmq_res_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        app_settings=app_settings,
+        event_filter=ResolutionQueueFilter(ResolutionIriProvider()),
+    )
+    register_listener(resolution_listener)
+    resolution_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+
+    mil_symbol_listener = RabbitMQListener(
+        "MilSymbolRMQListener",
+        SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        app_settings=app_settings,
+        event_filter=MilSymbolQueueFilter(),
+    )
+    register_listener(mil_symbol_listener)
+    mil_symbol_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+
+    obj_min_listener = RabbitMQListener(
+        "ObjectMinimumsRMQListener",
+        SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        app_settings=app_settings,
+        event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
+    )
+    register_listener(obj_min_listener)
+    obj_min_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+
     controllers: list[SensemakerController] = [
-        GeospatialSensemakerController(
-            RabbitMQListener(
-                "GeoRMQListener",
-                SETTINGS.rmq_geo_queue_name,
-                workers=SETTINGS.queue_worker_threads,
-                app_settings=app_settings,
-                event_filter=GeoQueueFilter(),
-            ),
-            err_logger,
-            ontology_service,
-        ),
-        InferenceSensemakerController(
-            RabbitMQListener(
-                "InferenceRMQListener",
-                SETTINGS.rmq_inference_queue_name,
-                workers=SETTINGS.queue_worker_threads,
-                app_settings=app_settings,
-                event_filter=InferenceQueueFilter(),
-            ),
-            err_logger,
-        ),
-        ResolutionSensemakerController(
-            RabbitMQListener(
-                "ResolutionRMQListener",
-                SETTINGS.rmq_res_queue_name,
-                workers=SETTINGS.queue_worker_threads,
-                app_settings=app_settings,
-                event_filter=ResolutionQueueFilter(ResolutionIriProvider()),
-            ),
-            err_logger,
-        ),
-        MilSymbolSensemakerController(
-            RabbitMQListener(
-                "MilSymbolRMQListener",
-                SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
-                workers=SETTINGS.queue_worker_threads,
-                app_settings=app_settings,
-                event_filter=MilSymbolQueueFilter(),
-            ),
-            err_logger,
-        ),
-        ObjectMinimumsSensemakerController(
-            RabbitMQListener(
-                "ObjectMinimumsRMQListener",
-                SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
-                workers=SETTINGS.queue_worker_threads,
-                app_settings=app_settings,
-                event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
-            ),
-            err_logger,
-        ),
+        GeospatialSensemakerController(geo_listener, err_logger, ontology_service),
+        InferenceSensemakerController(inference_listener, err_logger),
+        ResolutionSensemakerController(resolution_listener, err_logger),
+        MilSymbolSensemakerController(mil_symbol_listener, err_logger),
+        ObjectMinimumsSensemakerController(obj_min_listener, err_logger),
         ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 
@@ -244,7 +248,7 @@ def check_obj_min_rubric_file_path() -> None:
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
-        SETTINGS.load_settings_with_db_override()
+        # SETTINGS.load_settings_with_db_override()
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
