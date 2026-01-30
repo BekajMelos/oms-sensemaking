@@ -258,6 +258,11 @@ class ObjectMinimumsSettings(BaseModel):
         examples=["object-minimums-trigger"]
     )
     rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
+    max_rubric_hierarchy_levels: int = Field(
+        5,
+        description="Max number of class hierarchy levels to check when looking for a rubric (class + ancestors)",
+    )
+
 
 class IncursionSettings(BaseModel):
     activity_state: str = Field(
