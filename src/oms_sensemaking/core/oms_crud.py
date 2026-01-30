@@ -49,6 +49,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ProviderQuery,
     ProvidersProviders,
     RelationshipQuery,
+    RelationshipRelationship,
     RelationshipsRelationships,
     SourceQuery,
     SourceSource,
@@ -204,6 +205,11 @@ class OmsCrudTool(BaseClient):
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
 
+    def get_relationship(self, id: UUID) -> RelationshipRelationship:
+        """Get existing Relationship from ATOMS"""
+        relationship = self.oms_client.relationship(IdQuery(id=id))
+        return relationship
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from ATOMS"""
         nodes = self.oms_client.nodes(query=node_info)
@@ -339,6 +345,7 @@ class OmsCrudTool(BaseClient):
             ObjectType.ATTRIBUTE: self.get_attribute,
             ObjectType.OBSERVATION: self.get_observation,
             ObjectType.NODE: self.get_node,
+            ObjectType.RELATIONSHIP: self.get_relationship,
         }
 
         return obj_getter_mapping[object_type](object_id)
