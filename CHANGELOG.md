@@ -7,7 +7,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files 
 - Resolved various warnings during the `make test` process, specifically addressing datetime issues, class-based configuration, and integration tests
 
 ### Fixed
