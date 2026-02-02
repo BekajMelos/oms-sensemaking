@@ -77,6 +77,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 @rate_limiter(
+    # NOTE: lambdas are required so rate limits hot-reload at runtime
     calls=lambda: SETTINGS.maximum_oms_api_calls,
     period=lambda: SETTINGS.oms_api_call_period_seconds,
 )
