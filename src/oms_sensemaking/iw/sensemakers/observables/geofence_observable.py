@@ -4,7 +4,7 @@ from typing import List, Literal
 
 from oms_sdk.generated.generated_graphql_client import GeoQuery, GeoQueryType, ObservationQuery, TimeQuery
 from oms_sdk.generated.generated_graphql_client.input_types import AttributeQuery
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from oms_sensemaking.config import SETTINGS
 
@@ -17,8 +17,7 @@ class GeoJSONPolygon(BaseModel):
     type: Literal["Polygon"] = "Polygon"
     coordinates: List[List[List[float]]]  # [[[lon, lat], [lon, lat], ...]]
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class GeofenceObservable(BaseObservable):

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, TypeAdapter
 
 from oms_sensemaking.config import SETTINGS
 
-from .base_observable import BaseObservable
+from .base_observable import BaseObservable, ConfigDict
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -16,8 +16,7 @@ class StatusCriteria(BaseModel):
     attribute_iri: str = Field(..., alias="attributeIri")
     triggering_values: List[Any] = Field(..., alias="triggeringValues")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class SearchObservable(BaseObservable):
