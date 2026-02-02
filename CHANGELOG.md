@@ -7,12 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files
+- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files 
+- Resolved various warnings during the `make test` process, specifically addressing datetime issues, class-based configuration, and integration tests
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
-- Fixed datetime and class-based `config` warnings when running `make test`
-- Resolved integration tests warnings when running `make test`
 
 ## [0.23.1] - 2026-01-28
 
