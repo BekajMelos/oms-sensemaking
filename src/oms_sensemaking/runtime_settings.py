@@ -6,13 +6,13 @@ class RuntimeSettings:
         self._lock = RLock()
 
     def get(self, key):
-        from oms_sensemaking.config import SETTINGS  # lazy import
+        from oms_sensemaking.config import SETTINGS
 
         with self._lock:
             return getattr(SETTINGS, key)
 
     def set(self, key, value):
-        from oms_sensemaking.config import SETTINGS  # lazy import
+        from oms_sensemaking.config import SETTINGS
 
         with self._lock:
             setattr(SETTINGS, key, value)

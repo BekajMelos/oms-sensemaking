@@ -746,5 +746,4 @@ class Settings(BaseSettings):
         return field_value
 
 
-
 SETTINGS: Settings = Settings()

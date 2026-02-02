@@ -229,7 +229,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         try:
             LOGGER.info("%s applying new prefetch %s", self._name, new_prefetch)
 
-            # Stop receiving new messages (RMQ thread ✅)
+            # Stop receiving new messages (RMQ thread)
             if self._channel and self._channel.is_open and self._consumer_tag:
                 LOGGER.info("%s cancelling consumer to drain inflight messages", self._name)
                 try:
@@ -240,7 +240,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             # Update the value immediately so the next _connect() uses it
             self._prefetch_count = int(new_prefetch)
 
-            # Drain & reconnect asynchronously (don’t block RMQ thread)
+            # Drain & reconnect asynchronously
             Thread(target=self._drain_pool_and_reconnect, daemon=True).start()
 
         except Exception:
