@@ -745,27 +745,6 @@ class Settings(BaseSettings):
             raise ValueError("Classification banner color must be a valid hex color (e.g., #00c853).")
         return field_value
 
-    # def load_settings_with_db_override(self) -> None:
-    #     """
-    #     Load settings from the DB and override values on this
-    #     Settings instance.
-    #
-    #     This mutates the existing object in place.
-    #     """
-    #     from oms_sensemaking.api.routers.settings import _fetch_settings_from_db
-    #
-    #     try:
-    #         db_settings = _fetch_settings_from_db()
-    #     except Exception as e:
-    #         LOGGER.warning(
-    #             "Failed to load DB settings, using existing settings: %s",
-    #             e,
-    #         )
-    #         return
-    #
-    #     for key, value in db_settings.items():
-    #         if key in self.model_fields:
-    #             setattr(self, key, value)
 
 
 SETTINGS: Settings = Settings()

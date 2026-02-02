@@ -9,6 +9,7 @@ from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.core.events import LISTENERS
+from oms_sensemaking.core.settings import fetch_settings_from_db
 from oms_sensemaking.models.settings import Setting
 from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
 
@@ -43,7 +44,7 @@ def create_or_update_settings(
     LOGGER.info("Updating %d settings", len(settings_update.settings))
 
     if not settings_update.settings:
-        LOGGER.info("No settings to update, skipping database operations")
+        LOGGER.info("No values in Settings update request")
         return Response(status_code=201)
 
     with db_session() as db:
@@ -67,13 +68,6 @@ def create_or_update_settings(
     return Response(status_code=201)
 
 
-def _fetch_settings_from_db() -> dict[str, str]:
-    """Fetch all persisted settings from the database."""
-    with db_session() as db:
-        rows = db.query(Setting).all()
-        return {row.field_name: row.field_value for row in rows}
-
-
 @router.get("/settings", response_model=dict[str, Any])
 def get_settings(user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]) -> dict[str, str]:
-    return _fetch_settings_from_db()
+    return fetch_settings_from_db()

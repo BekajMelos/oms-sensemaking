@@ -25,7 +25,7 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
-from oms_sensemaking.core.settings import Settings as AppSettings
+from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -158,7 +158,6 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self,
         name: str,
         queue_name: str,
-        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
@@ -169,8 +168,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._event_filter = event_filter
         self._connection: BlockingConnection = None
         self._channel: BlockingChannel = None
-        settings_dict = app_settings.get_settings()
-        self._prefetch_count = settings_dict.get("rabbitmq_prefetch_count", SETTINGS.rabbitmq_prefetch_count)
+        self._prefetch_count = RUNTIME_SETTINGS.get("rabbitmq_prefetch_count")
         self._consumer_tag: str | None = None
 
     def _connect(self) -> bool:
@@ -231,28 +229,41 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         try:
             LOGGER.info("%s applying new prefetch %s", self._name, new_prefetch)
 
-            # Stop receiving new messages
+            # Stop receiving new messages (RMQ thread ✅)
             if self._channel and self._channel.is_open and self._consumer_tag:
                 LOGGER.info("%s cancelling consumer to drain inflight messages", self._name)
-                self._channel.basic_cancel(self._consumer_tag)
-                self._consumer_tag = None
+                try:
+                    self._channel.basic_cancel(self._consumer_tag)
+                finally:
+                    self._consumer_tag = None
 
-            # Wait for worker threads to finish processing
+            # Update the value immediately so the next _connect() uses it
+            self._prefetch_count = int(new_prefetch)
+
+            # Drain & reconnect asynchronously (don’t block RMQ thread)
+            Thread(target=self._drain_pool_and_reconnect, daemon=True).start()
+
+        except Exception:
+            LOGGER.exception("%s error during prefetch update", self._name)
+
+    def _drain_pool_and_reconnect(self) -> None:
+        try:
             LOGGER.info("%s waiting for worker pool to drain", self._name)
             self.pool.shutdown(wait=True)
 
             # Recreate pool so listener keeps working
             self.pool = ThreadPoolExecutor(max_workers=self.pool._max_workers)
 
-            # Close connection so _connect() runs again with new prefetch
+            # Ask the RMQ thread to close the connection so the consumer reconnects
             if self._connection and self._connection.is_open:
-                LOGGER.info("%s closing connection to apply new prefetch", self._name)
-                self._connection.close()
-
-            self._prefetch_count = new_prefetch
+                LOGGER.info("%s drained — scheduling connection close for reconnect", self._name)
+                try:
+                    self._connection.add_callback_threadsafe(self._connection.close)
+                except Exception:
+                    LOGGER.exception("%s failed to schedule connection close", self._name)
 
         except Exception:
-            LOGGER.exception("%s error during prefetch update", self._name)
+            LOGGER.exception("%s error during async drain/reconnect", self._name)
 
     @abstractmethod
     def process_audit_log_events(self) -> None:
@@ -273,12 +284,11 @@ class RabbitMQListener(BaseRabbitMQListener):
         name: str,
         queue_name: str,
         workers: int,
-        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
         """Create a new instance of RabbitMQListener."""
-        super().__init__(name, queue_name, app_settings, handle_event, event_filter)
+        super().__init__(name, queue_name, handle_event, event_filter)
         self.pool = ThreadPoolExecutor(max_workers=workers)
         self._draining = False
         self._inflight_lock = threading.Lock()

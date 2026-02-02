@@ -25,7 +25,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener, register_listener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
-from oms_sensemaking.core.settings import Settings as AppSettings
+from oms_sensemaking.core.settings import load_runtime_settings_from_db
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
@@ -40,6 +40,7 @@ from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemakerController,
 )
+from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ dictConfig(LogConfig().model_dump())  # initialize logging
 initialize_observability()
 
 
-def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
+def get_controllers() -> list[SensemakerController]:
     """Return a list of initialized sensemaker controllers."""
 
     err_logger: ErrorLogger | RethrowErrorLogger = ErrorLogger()
@@ -60,51 +61,46 @@ def get_controllers(app_settings: AppSettings) -> list[SensemakerController]:
         "GeoRMQListener",
         SETTINGS.rmq_geo_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        app_settings=app_settings,
         event_filter=GeoQueueFilter(),
     )
     register_listener(geo_listener)
-    geo_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+    geo_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     inference_listener = RabbitMQListener(
         "InferenceRMQListener",
         SETTINGS.rmq_inference_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        app_settings=app_settings,
         event_filter=InferenceQueueFilter(),
     )
     register_listener(inference_listener)
-    inference_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+    inference_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     resolution_listener = RabbitMQListener(
         "ResolutionRMQListener",
         SETTINGS.rmq_res_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        app_settings=app_settings,
         event_filter=ResolutionQueueFilter(ResolutionIriProvider()),
     )
     register_listener(resolution_listener)
-    resolution_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+    resolution_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     mil_symbol_listener = RabbitMQListener(
         "MilSymbolRMQListener",
         SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        app_settings=app_settings,
         event_filter=MilSymbolQueueFilter(),
     )
     register_listener(mil_symbol_listener)
-    mil_symbol_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+    mil_symbol_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     obj_min_listener = RabbitMQListener(
         "ObjectMinimumsRMQListener",
         SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        app_settings=app_settings,
         event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
     )
     register_listener(obj_min_listener)
-    obj_min_listener.update_prefetch(SETTINGS.rabbitmq_prefetch_count)
+    obj_min_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(geo_listener, err_logger, ontology_service),
@@ -137,10 +133,11 @@ async def lifespan(application: FastAPI):
     except Exception as ex:
         LOGGER.warning("Dependency readiness checks encountered an issue: %s", ex)
 
-    app_settings = AppSettings()
+    # Apply runtime settings from database
+    load_runtime_settings_from_db()
 
     controllers: list[tuple[SensemakerController, Thread]] = []
-    for ctrlr in get_controllers(app_settings):
+    for ctrlr in get_controllers():
         controller_thread: Thread = Thread(target=run_controller, args=(ctrlr,))
         controller_thread.start()
         controllers.append((ctrlr, controller_thread))
@@ -248,7 +245,6 @@ def check_obj_min_rubric_file_path() -> None:
 def initialize_settings() -> None:
     """Initialize Settings"""
     try:
-        # SETTINGS.load_settings_with_db_override()
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
