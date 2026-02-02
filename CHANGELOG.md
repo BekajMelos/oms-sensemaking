@@ -26,7 +26,7 @@ All notable changes to this project will be documented in this file.
 - Changed ActivityQuery `state` to StringQuery
 - Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
 - Updated tests to use Mock Observation instances
-
+    
 ### Fixed
 - ActivityQuery `name`'s StrinQuery built with `in_`
 
