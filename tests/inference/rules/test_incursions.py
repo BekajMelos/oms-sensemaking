@@ -482,6 +482,15 @@ def test_two_existing_incursions(
                         ),
                     ]
                 ),
+                observations=SimpleNamespace(
+                    data=[
+                        SimpleNamespace(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
+                    ]
+                ),
             )
         ]
     )
@@ -556,7 +565,16 @@ def test_existing_incursion_nonoverlapping_time(
                         ),
                     ]
                 ),
-            )
+                observations=SimpleNamespace(
+                    data=[
+                        SimpleNamespace(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
+                    ]
+                ),
+            ),
         ]
     )
     mock_crud_tool.oms_client.incursion_data.return_value = response
