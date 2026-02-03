@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.19.4] - 2026-02-03
+
+### Added
 - Add atoms_id and atoms_type to findings table in sensemaking database.
 - Make atoms_id, atoms_type, and finding_type indexes to not slow performance.
 
