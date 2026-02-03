@@ -325,7 +325,6 @@ def test_observation():
 @pytest.fixture
 def test_incursion(test_observation, areas_of_interest):
     test_incursion = Incursion(
-        action="string",
         incurring_obj_id=test_observation.nodeId,
         incursion_observation=test_observation,
         start_time=test_observation.startTime,
@@ -448,7 +447,6 @@ def test_new_incursion_region1(
         )
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Created"
     assert result[0].incursion_observation == observational_node_region1
 
 
@@ -504,7 +502,6 @@ def test_new_incursion_region2(
         )
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Created"
     assert result[0].incursion_observation == observational_node_region2
 
 
@@ -606,7 +603,6 @@ def test_two_existing_incursions(
         ),
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Updated"
     assert result[0].acm == observational_node_region1.acm
     assert result[0].incursion_observation == observational_node_region1
 
@@ -693,7 +689,6 @@ def test_existing_incursion_nonoverlapping_time(
         ),
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Updated"
     assert result[0].acm == observational_node_region1.acm
     assert result[0].incursion_observation == observational_node_region1
 
@@ -750,7 +745,6 @@ def test_new_incursion_region3(
         )
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Created"
     assert result[0].incursion_observation == observational_node_region3
 
 
@@ -806,7 +800,6 @@ def test_new_incursion_region4(
         )
     )
     assert isinstance(result[0], Incursion)
-    assert result[0].action == "Incursion Created"
     assert result[0].incursion_observation == observational_node_region4
 
 

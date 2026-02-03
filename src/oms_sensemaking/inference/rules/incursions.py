@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
@@ -36,7 +36,7 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.domain.area_of_interest.base import AOI, AOIExtractor
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
-from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,8 +46,6 @@ class Incursion(FindingBase):
     """Represents a loiter event."""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_INCURSION)
-    incursion_finding_id: UUID = field(init=False, default_factory=uuid4)
-    action: str
     incurring_obj_id: UUID
     incursion_observation: ObservationObservation
     start_time: datetime
@@ -261,17 +259,20 @@ class IncursionSensemaker(Sensemaker):
         updated_incursion = self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
             updated_activity_input, updated_attribute_input
         )
-        return [
-            Incursion(
-                action="Incursion Updated",
-                incurring_obj_id=observation.nodeId,
-                incursion_observation=observation,
-                start_time=updated_incursion.updateActivity.startTime,
-                end_time=updated_incursion.updateActivity.endTime,
-                area_of_interest_dict=feat_of_int.geometry_dict,
-                acm=rolled_up_acm,
-            )
-        ]
+        incursion_finding = Incursion(
+            incurring_obj_id=observation.nodeId,
+            incursion_observation=observation,
+            start_time=updated_incursion.updateActivity.startTime,
+            end_time=updated_incursion.updateActivity.endTime,
+            area_of_interest_dict=feat_of_int.geometry_dict,
+            acm=rolled_up_acm,
+        )
+        incursion_finding.atoms_id = existing_incursion_activity.id
+        incursion_finding.atoms_type = AtomsType.ACTIVITY
+        incursion_finding.query_atoms_id = existing_incursion_activity.id
+        incursion_finding.query_atoms_type = AtomsType.ACTIVITY
+
+        return [incursion_finding]
 
     def _handle_new_incursion(self, observation: ObservationObservation, feature_of_interest: AOI):
         """
@@ -321,17 +322,19 @@ class IncursionSensemaker(Sensemaker):
             valueEnd=observation.endTime,
         )
         self.oms_crud_tool.create_attribute(incursion_attribute)
-        return [
-            Incursion(
-                action="Incursion Created",
-                incurring_obj_id=new_incursion_activity.nodeId,
-                incursion_observation=observation,
-                start_time=new_incursion_activity.startTime,
-                end_time=new_incursion_activity.endTime,
-                area_of_interest_dict=feature_of_interest.geometry_dict,
-                acm=new_incursion_activity.acm,
-            )
-        ]
+
+        incursion_finding = Incursion(
+            incurring_obj_id=new_incursion_activity.nodeId,
+            incursion_observation=observation,
+            start_time=new_incursion_activity.startTime,
+            end_time=new_incursion_activity.endTime,
+            area_of_interest_dict=feature_of_interest.geometry_dict,
+            acm=new_incursion_activity.acm,
+        )
+        incursion_finding.atoms_id = new_incursion_activity.id
+        incursion_finding.atoms_type = AtomsType.ACTIVITY
+
+        return [incursion_finding]
 
     def _truncate_activity_description(self, description: str):
         max_descr_length = 512
