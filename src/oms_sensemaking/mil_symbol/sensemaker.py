@@ -33,6 +33,7 @@ from oms_sensemaking.mil_symbol.mil_symbol_maker import MilSymbolMaker
 from oms_sensemaking.mil_symbol.std_2525b import MilSymbol2525B
 from oms_sensemaking.mil_symbol.std_2525c import MilSymbol2525C
 from oms_sensemaking.mil_symbol.std_2525d import MilSymbol2525D
+from oms_sensemaking.models.sensemaking import AtomsType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -187,6 +188,12 @@ class MilSymbolSensemaker(Sensemaker):
         if not code_2525d.source_ids.empty() and symbol_code_update_d.new_symbol_id_code != before_enrich_2525d:
             source = code_2525d.source_ids.get()[1]
             self.publish_attributes(oms_node, results, source)
+        else:
+            # Condition where we don't have an update so no attribute is created but a finding
+            # is so need to store the node id for symbol objects
+            for symbol_code_update in results:
+                symbol_code_update.atoms_id = oms_node.id
+                symbol_code_update.atoms_type = AtomsType.NODE
 
         self.update_oms_node(oms_node, code_2525c.code)
 
@@ -266,7 +273,12 @@ class MilSymbolSensemaker(Sensemaker):
                             symbol_code_update.id_type,
                         ],
                     )
-                    self.oms_crud_tool.update_attribute(update_attribute_input)
+                    updated_symbol_code_attr = self.oms_crud_tool.update_attribute(update_attribute_input)
+                    LOGGER.info(f"updated_symbol_code_attr: {updated_symbol_code_attr.id}")
+                    symbol_code_update.atoms_id = updated_symbol_code_attr.id
+                    symbol_code_update.atoms_type = AtomsType.ATTRIBUTE
+                    symbol_code_update.query_atoms_id = updated_symbol_code_attr.id
+                    symbol_code_update.query_atoms_type = AtomsType.ATTRIBUTE
             except ValueError:
                 LOGGER.exception("Unable to update Icon Attributes.")
                 raise
@@ -288,7 +300,14 @@ class MilSymbolSensemaker(Sensemaker):
                     nodeId=oms_node.id,
                     sourceId=source_id,
                 )
-                self.oms_crud_tool.create_attribute(attribute)
+                created_symbol_code_attr = self.oms_crud_tool.create_attribute(attribute)
+                LOGGER.info(f"created_symbol_code_attr.id: {created_symbol_code_attr.id}")
+                # Update the entire object
+                symbol_code_update.atoms_id = created_symbol_code_attr.id
+                symbol_code_update.atoms_type = AtomsType.ATTRIBUTE
+                # Save how to query on atoms_id and atoms_type
+                symbol_code_update.query_atoms_id = oms_node.id
+                symbol_code_update.query_atoms_type = AtomsType.NODE
 
         LOGGER.info("Mil Symbol Sensemaker updated symbol codes for %s", oms_node.id)
 

@@ -5,10 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Add atoms_id and atoms_type to findings table in sensemaking database.
+- Make atoms_id, atoms_type, and finding_type indexes to not slow performance.
 
 ### Changed
 - Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+- Added `COTRAVEL_POTENTIAL_DUPLICATE` finding type to the `finding_type` enum
+
 ### Fixed
+- Out of Garrison query uses `in_` to retrieve matching names
 
 ### Removed
 
@@ -18,7 +23,6 @@ All notable changes to this project will be documented in this file.
 - Renamed customer facing instances of OMS to ATOMS
 
 ### Added
-- Added `COTRAVEL_POTENTIAL_DUPLICATE` finding type to the `finding_type` enum
 
 ## [0.19.2] - 2026-01-12
 

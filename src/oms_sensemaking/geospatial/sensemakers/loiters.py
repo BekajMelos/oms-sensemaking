@@ -18,7 +18,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.models.geo import Point, Track
-from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -228,6 +228,9 @@ class LoiterSensemaker(Sensemaker):
             isNso=True,
         )
         published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
+
+        loiter.atoms_id = published_node.id
+        loiter.atoms_type = AtomsType.NODE
 
         create_relationship_input = CreateRelationshipInput(
             tags=tags,

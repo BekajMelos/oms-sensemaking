@@ -8,6 +8,7 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    CreateRelationshipCreateRelationship,
     NodeNode,
     NodesNodes,
     RelationshipRelationship,
@@ -152,6 +153,8 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     )
     # Get Relationships Mock
     mock_oms_crud_tool.get_relationships.return_value = RelationshipsRelationships.model_construct(data=[])
+    mock_response = CreateRelationshipCreateRelationship.model_construct(id=uuid4())
+    mock_oms_crud_tool.create_relationship.return_value = mock_response
 
     # Get Node Mock
     mock_oms_crud_tool.get_node.return_value = new_facility_node
