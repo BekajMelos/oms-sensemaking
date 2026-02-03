@@ -469,10 +469,9 @@ def test_apply_prefetch_update_cancels_consumer_and_starts_thread(mock_thread):
 
 @mock.patch("oms_sensemaking.core.events.ThreadPoolExecutor")
 def test_drain_pool_and_reconnect_recreates_pool(mock_executor):
-    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+    listener = RabbitMQListener("L", "q", workers=4, handle_event=lambda *_: True)
 
     mock_pool = MagicMock()
-    mock_pool._max_workers = 4
     listener.pool = mock_pool
 
     listener._connection = MagicMock(is_open=True)
