@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Silenced noisy warnings and resolved async warning in Python tests.
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
@@ -23,9 +24,11 @@ All notable changes to this project will be documented in this file.
 - Changed ActivityQuery `state` to StringQuery
 - Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
 - Updated tests to use Mock Observation instances
+- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files
 
 ### Fixed
 - ActivityQuery `name`'s StrinQuery built with `in_`
+- Fixed datetime and class-based `config` warnings when running `make test`
 
 ## [0.23.0] - 2026-01-26
 

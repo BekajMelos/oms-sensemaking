@@ -109,6 +109,10 @@ testpaths = [
     'tests',
     'tests_int'
 ]
+filterwarnings = [
+    # Alembic Postgres autoincrement noise
+    "ignore:autoincrement and existing_autoincrement only make sense for MySQL:UserWarning:alembic",
+]
 #log_cli = True
 required_plugins = [
     'pytest-cov==5.0.0'

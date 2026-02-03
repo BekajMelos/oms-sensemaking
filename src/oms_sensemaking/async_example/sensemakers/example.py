@@ -26,5 +26,5 @@ class ExampleAsyncSensemaker(AsyncSensemaker):
 
             response = self.async_oms_crud_tool.create_attribute(attribute)
 
-            return response
+            return await response
         return None
