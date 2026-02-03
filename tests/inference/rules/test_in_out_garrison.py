@@ -332,7 +332,6 @@ def test_observation():
 @pytest.fixture
 def test_garrison(test_observation):
     test_garrison = OutOfGarrison(
-        action="string",
         in_or_out=SETTINGS.inference_in_garrison_activity_name,
         vehicle_id=test_observation.nodeId,
         garrison_observation=test_observation,
@@ -419,7 +418,6 @@ def test_new_in_garrison(
     mock_crud_tool.create_activity.assert_called_once()
     assert result[0].vehicle_id == observational_node.nodeId
     assert result[0].garrison_observation == observational_node
-    assert result[0].action == "Garrison Activity Created"
 
 
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
@@ -465,7 +463,6 @@ def test_new_out_garrison(
     )
     assert result[0].vehicle_id == observational_node2.nodeId
     assert result[0].garrison_observation == observational_node2
-    assert result[0].action == "Garrison Activity Created"
 
 
 @patch(
@@ -534,7 +531,6 @@ def test_update_in_garrison(
     )
     assert result[0].vehicle_id == observational_node.nodeId
     assert result[0].garrison_observation == observational_node
-    assert result[0].action == "Garrison Activity Updated"
 
 
 @patch(
@@ -595,4 +591,3 @@ def test_update_out_garrison(
     mock_crud_tool.create_activity.assert_not_called()
     assert result[0].vehicle_id == observational_node2.nodeId
     assert result[0].garrison_observation == observational_node2
-    assert result[0].action == "Garrison Activity Updated"

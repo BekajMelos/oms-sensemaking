@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
@@ -25,7 +25,7 @@ from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.domain.in_or_out_garrison.utils import in_garrison
 from oms_sensemaking.inference.rules.garrison_data_collection import GetGarrisonDataAllAtOnce
 from oms_sensemaking.inference.rules.rule_helper_classes import GeoTimeframe, Timeframe
-from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,8 +35,6 @@ class OutOfGarrison(FindingBase):
     """Represents a loiter event."""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_OUT_OF_GARRISON)
-    out_of_garrison_finding_id: UUID = field(init=False, default_factory=uuid4)
-    action: str
     in_or_out: str
     vehicle_id: UUID
     garrison_observation: ObservationObservation
@@ -175,17 +173,20 @@ class InOrOutOfGarrison(Sensemaker):
             nodeId=observation.nodeId,
         )
         updated_garrison_activity = self.oms_crud_tool.update_activity(updated_activity_input)
-        return [
-            OutOfGarrison(
-                action="Garrison Activity Updated",
-                in_or_out=updated_garrison_activity.name,
-                vehicle_id=observation.nodeId,
-                garrison_observation=observation,
-                start_time=updated_garrison_activity.startTime,
-                end_time=updated_garrison_activity.endTime,
-                acm=rolled_up_acm,
-            )
-        ]
+        garrison_finding = OutOfGarrison(
+            in_or_out=updated_garrison_activity.name,
+            vehicle_id=observation.nodeId,
+            garrison_observation=observation,
+            start_time=updated_garrison_activity.startTime,
+            end_time=updated_garrison_activity.endTime,
+            acm=rolled_up_acm,
+        )
+        garrison_finding.atoms_id = existing_activity.id
+        garrison_finding.atoms_type = AtomsType.ACTIVITY
+        garrison_finding.query_atoms_id = existing_activity.id
+        garrison_finding.query_atoms_type = AtomsType.ACTIVITY
+
+        return [garrison_finding]
 
     def _handle_new_activity(self, observation: ObservationObservation, activity_name: str, activity_state: str):
         """
@@ -210,14 +211,15 @@ class InOrOutOfGarrison(Sensemaker):
             endTime=observation.endTime,
         )
         new_garrison_activity = self.oms_crud_tool.create_activity(garrison_activity)
-        return [
-            OutOfGarrison(
-                action="Garrison Activity Created",
-                in_or_out=new_garrison_activity.name,
-                vehicle_id=observation.nodeId,
-                garrison_observation=observation,
-                start_time=new_garrison_activity.startTime,
-                end_time=new_garrison_activity.endTime,
-                acm=new_garrison_activity.acm,
-            )
-        ]
+        garrison_finding = OutOfGarrison(
+            in_or_out=new_garrison_activity.name,
+            vehicle_id=observation.nodeId,
+            garrison_observation=observation,
+            start_time=new_garrison_activity.startTime,
+            end_time=new_garrison_activity.endTime,
+            acm=new_garrison_activity.acm,
+        )
+        garrison_finding.atoms_id = new_garrison_activity.id
+        garrison_finding.atoms_type = AtomsType.ACTIVITY
+
+        return [garrison_finding]
