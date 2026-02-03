@@ -3,6 +3,7 @@
 
 """Tests for the service application."""
 
+from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,8 +11,9 @@ from fastapi import APIRouter, FastAPI, status
 from fastapi.testclient import TestClient
 from httpx import Response
 
+import oms_sensemaking.service as service_module
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.service import check_aoi_file_path, create_app
+from oms_sensemaking.service import check_aoi_file_path, create_app, get_controllers
 
 router: APIRouter = APIRouter()
 
@@ -81,3 +83,53 @@ def test_check_aoi_file_path_skips_when_toggle_off(mock_settings, monkeypatch):
 
     # should silently pass because toggle is False
     check_aoi_file_path()
+
+
+def test_get_controllers_builds_listeners_and_controllers(monkeypatch):
+    fake_settings = mock.MagicMock()
+    fake_settings.rethrow_errors_enabled = False
+    fake_settings.rmq_geo_queue_name = "geo-q"
+    fake_settings.rmq_inference_queue_name = "inf-q"
+    fake_settings.rmq_res_queue_name = "res-q"
+    fake_settings.queue_worker_threads = 3
+    fake_settings.iw_settings.observable_query_interval = 5
+    fake_settings.mil_symbol_settings.rmq_mil_symbol_queue_name = "mil-q"
+    fake_settings.object_minimum_settings.rmq_object_minimums_queue_name = "obj-q"
+
+    monkeypatch.setattr("oms_sensemaking.config.SETTINGS", fake_settings)
+    monkeypatch.setattr("oms_sensemaking.core.runtime_settings.RUNTIME_SETTINGS.get", lambda k: 10)
+
+    with (
+        mock.patch.object(service_module, "RabbitMQListener") as mock_listener,
+        mock.patch.object(service_module, "register_listener") as mock_register,
+        mock.patch.object(service_module, "CronEventEmitter"),
+        mock.patch.object(service_module, "GeospatialSensemakerController") as geospatial,
+        mock.patch.object(service_module, "InferenceSensemakerController") as inference,
+        mock.patch.object(service_module, "ResolutionSensemakerController") as resolution,
+        mock.patch.object(service_module, "MilSymbolSensemakerController") as mil_symbol,
+        mock.patch.object(service_module, "ObjectMinimumsSensemakerController") as object_minimums,
+        mock.patch.object(service_module, "ObservableSensemakerController") as observable,
+    ):
+        # Each listener instance should be unique
+        listener_instances = [mock.MagicMock() for _ in range(5)]
+        mock_listener.side_effect = listener_instances
+
+        controllers = get_controllers()
+
+        # 5 RMQ listeners registered
+        assert mock_register.call_count == 5
+
+        # Prefetch applied to each listener
+        for listener in listener_instances:
+            listener.update_prefetch.assert_called_once_with(10)
+
+        # controllers returned
+        assert len(controllers) == 6
+
+        # Controllers constructed
+        geospatial.assert_called_once()
+        inference.assert_called_once()
+        resolution.assert_called_once()
+        mil_symbol.assert_called_once()
+        object_minimums.assert_called_once()
+        observable.assert_called_once()
