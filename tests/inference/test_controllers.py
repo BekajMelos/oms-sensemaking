@@ -10,7 +10,6 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer, RabbitMQListener
-from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.inference.controllers import (
     InferenceQueueFilter,
     InferenceSensemakerController,
@@ -20,14 +19,11 @@ from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 @pytest.fixture
 def mock_inference_controller():
-    app_settings = AppSettings()
-    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = InferenceSensemakerController(
         RabbitMQListener(
             "InferenceRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
-            app_settings=app_settings,
             event_filter=InferenceQueueFilter(),
         ),
         RethrowErrorLogger(ErrorLogger()),
