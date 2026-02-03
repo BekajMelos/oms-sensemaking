@@ -77,3 +77,53 @@ def test_load_runtime_settings_raw_values(mock_fetch, mock_runtime):
     core_settings.load_runtime_settings_from_db()
 
     mock_runtime.bulk_set.assert_called_once_with(mock_settings)
+
+
+def test_apply_settings_updates_sets_state_and_triggers_handler():
+    with (
+        mock.patch.object(core_settings.RUNTIME_SETTINGS, "set") as mock_set,
+        mock.patch.object(core_settings, "_handle_runtime_setting_change") as mock_handler,
+    ):
+        updates = {"a": 1, "b": 2}
+        core_settings.apply_settings_updates(updates)
+
+        mock_set.assert_any_call("a", 1)
+        mock_set.assert_any_call("b", 2)
+        assert mock_set.call_count == 2
+
+        mock_handler.assert_any_call("a", 1)
+        mock_handler.assert_any_call("b", 2)
+        assert mock_handler.call_count == 2
+
+
+def test_handle_runtime_setting_change_updates_listeners():
+    mock_listener = mock.MagicMock()
+
+    with mock.patch.object(core_settings, "LISTENERS", [mock_listener]):
+        core_settings._handle_runtime_setting_change("rabbitmq_prefetch_count", 50)
+
+        mock_listener.update_prefetch.assert_called_once_with(50)
+
+
+def test_handle_runtime_setting_change_ignores_other_keys():
+    mock_listener = mock.MagicMock()
+
+    with mock.patch.object(core_settings, "LISTENERS", [mock_listener]):
+        core_settings._handle_runtime_setting_change("other_setting", 10)
+
+        mock_listener.update_prefetch.assert_not_called()
+
+
+def test_handle_runtime_setting_change_handles_listener_exception():
+    bad_listener = mock.MagicMock()
+    bad_listener.update_prefetch.side_effect = Exception("boom")
+
+    with (
+        mock.patch.object(core_settings, "LISTENERS", [bad_listener]),
+        mock.patch.object(core_settings.LOGGER, "exception") as mock_log,
+    ):
+        # Should not raise
+        core_settings._handle_runtime_setting_change("rabbitmq_prefetch_count", 30)
+
+        bad_listener.update_prefetch.assert_called_once_with(30)
+        mock_log.assert_called_once()
