@@ -95,7 +95,7 @@ def test_db_logging_within_sensemaker(
     assert log.object_type == "NODE"
     assert log.event_type == "CREATE"
     assert log.function_name == "execute"  # execute since process_data is in this tests_int dir
-    assert log.line_no == 186
+    assert log.line_no == 194
     assert log.code == "results: Any = self.process_data(*data)"
     assert node_id in log.message
     assert "sensemaker failed" in log.exc_text

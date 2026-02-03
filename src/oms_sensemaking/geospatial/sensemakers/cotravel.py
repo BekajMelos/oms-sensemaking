@@ -23,7 +23,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
-from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -496,7 +496,10 @@ class CotravelSensemaker(Sensemaker):
             objectPropertyIri=SETTINGS.resolution_relationship_iri,
             sourceId=source_id,
         )
-        self.oms_crud_tool.publish_relationships([create_relationship_input])
+        potential_dup_rel = self.oms_crud_tool.create_relationship(create_relationship_input)
+        # Get the atoms_id and set atoms_type for this cotravel
+        cotravel.atoms_id = potential_dup_rel.id
+        cotravel.atoms_type = AtomsType.RELATIONSHIP
 
     def publish_cotravel(self, track: Track, cotravel: Cotravel) -> None:
         """Publish Cotravel Events to ATOMS
@@ -526,6 +529,10 @@ class CotravelSensemaker(Sensemaker):
             isNso=True,
         )
         published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
+
+        # Save the created node id and type
+        cotravel.atoms_id = published_node.id
+        cotravel.atoms_type = AtomsType.NODE
 
         # vehicle 1 relationship
         create_relationship_input1 = CreateRelationshipInput(

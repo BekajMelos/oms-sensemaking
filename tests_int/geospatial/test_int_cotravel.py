@@ -13,6 +13,7 @@ from oms_sdk.generated.generated_graphql_client.client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     CreateNodeInput,
+    CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
     NodeNode,
 )
@@ -403,6 +404,7 @@ def test_potential_duplicate_success(
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
+    mock_oms_client.create_relationship.return_value = CreateRelationshipCreateRelationship.model_construct(id=uuid4())
 
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
@@ -461,6 +463,7 @@ def test_potential_duplicate_with_nso(
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
     mock_oms_client.create_attribute.return_value = MagicMock()
+    mock_oms_client.create_relationship.return_value = CreateRelationshipCreateRelationship.model_construct(id=uuid4())
 
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
