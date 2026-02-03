@@ -170,7 +170,9 @@ def build_helper(mil_symbol_rules):
     ontology_service = OntologyClient(oms_crud_tool)
 
     # mock create_attribute
-    oms_crud_tool.create_attribute = mock.MagicMock()
+    mock_attr_res = mock.MagicMock()
+    mock_attr_res.id = uuid4()
+    oms_crud_tool.create_attribute = mock.MagicMock(return_value=mock_attr_res)
     oms_crud_tool.update_node = mock.MagicMock()
 
     return FixtureHelper(

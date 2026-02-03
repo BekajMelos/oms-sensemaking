@@ -37,24 +37,7 @@ class GetGarrisonData(ABC):
 
 class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
-        result = self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
-            id=obs.nodeId,
-            garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
-            geoIris=[SETTINGS.inference_geo_attribute_iri],
-            activityQuery=ActivityQuery(
-                nodeIds=UuidQueryByList(in_=[obs.nodeId]),
-                name=StringQuery(
-                    in_=[
-                        SETTINGS.inference_in_garrison_activity_name,
-                        SETTINGS.inference_out_of_garrison_activity_name,
-                    ]
-                ),
-                states=[
-                    SETTINGS.inference_in_garrison_activity_state,
-                    SETTINGS.inference_out_of_garrison_activity_state,
-                ],
-            ),
-        )
+        result = self._execute_query(obs)
 
         end_node = result.node.relationships.data[0].endNode if result.node and result.node.relationships.data else None
         attribute_data = (
@@ -73,4 +56,24 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
             object_lat_lon=[object_lon_lat[1], object_lon_lat[0]],
             garrison_lat_lon=[garrison_lon_lat[1], garrison_lon_lat[0]],
             activities=result.activities.data,
+        )
+
+    def _execute_query(self, obs: ObservationObservation):
+        return self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
+            id=obs.nodeId,
+            garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
+            geoIris=[SETTINGS.inference_geo_attribute_iri],
+            activityQuery=ActivityQuery(
+                nodeIds=UuidQueryByList(in_=[obs.nodeId]),
+                name=StringQuery(
+                    or_=[
+                        StringQuery(equals=SETTINGS.inference_in_garrison_activity_name),
+                        StringQuery(equals=SETTINGS.inference_out_of_garrison_activity_name),
+                    ]
+                ),
+                states=[
+                    SETTINGS.inference_in_garrison_activity_state,
+                    SETTINGS.inference_out_of_garrison_activity_state,
+                ],
+            ),
         )

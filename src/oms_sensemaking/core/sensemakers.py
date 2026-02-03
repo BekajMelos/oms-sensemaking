@@ -3,10 +3,11 @@
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from threading import Lock
-from typing import Any, Protocol
+from typing import Any, Optional, Protocol
+from uuid import UUID
 
 import httpx
 from geoalchemy2 import WKBElement
@@ -19,11 +20,13 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
 )
+from sqlalchemy import update
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.models.sensemaking import Finding, FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, Finding, FindingType
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -108,6 +111,11 @@ class OmsPublisher(SensemakerPublisher):
 @dataclass
 class FindingBase(ABC):
     FINDING_TYPE: FindingType
+
+    atoms_id: Optional[UUID] = field(init=False, default=None)
+    atoms_type: Optional[AtomsType] = field(init=False, default=None)
+    query_atoms_id: Optional[UUID] = field(init=False, default=None)
+    query_atoms_type: Optional[AtomsType] = field(init=False, default=None)
 
     def to_dict(self) -> dict:
         """Return a dictionary representation of the object."""
@@ -255,30 +263,74 @@ class AsyncSensemaker(Sensemaker, ABC):
 
 class FindingWriter:
     def save_findings(self, finding_objects: Iterable[FindingBase], alg_meta_data: SensemakerMetaData) -> None:
-        """
-        Write the findings to the sensemaking db
-
-        :param finding_objects: List of finding objects to write as findings
-        """
-
+        """Write the findings to the sensemaking db."""
         if finding_objects:
             LOGGER.info("Saving findings from %s %s to DB", alg_meta_data.name, alg_meta_data.version_string)
 
-        findings: list = []
-        for finding_object in finding_objects:
-            finding = Finding(
-                acm=finding_object.get_acm(),
-                algorithm_name=alg_meta_data.name,
-                algorithm_version=f"{alg_meta_data.version[0]}.{alg_meta_data.version[1]}.{alg_meta_data.version[2]}",
-                algorithm_configuration=alg_meta_data.config,
-                executed_at=alg_meta_data.executed_at,
-                finding_type=finding_object.FINDING_TYPE,
-                finding_data=finding_object.to_dict(),
-                oms_version=SETTINGS.omsb_version,
-                published_at=datetime.now(tz=timezone.utc),
-            )
-            findings.append(finding)
+        new_findings: list[Finding] = []
 
         with db_session() as db:
-            db.add_all(findings)
+            for finding_obj in finding_objects:
+                # Check for existing IDs to update
+                existing_id = self._get_existing_finding_id(db, finding_obj)
+
+                if existing_id:
+                    self._update_existing_findings(db, existing_id, finding_obj, alg_meta_data)
+                else:
+                    new_findings.append(self._create_finding_model(finding_obj, alg_meta_data))
+
+            if new_findings:
+                db.add_all(new_findings)
+
             db.commit()
+
+    def _get_existing_finding_id(self, db: Session, finding_obj: FindingBase) -> UUID | None:
+        """Queries for existing findings based on atom IDs and type."""
+        q_id = getattr(finding_obj, "query_atoms_id", None)
+        q_type = getattr(finding_obj, "query_atoms_type", None)
+
+        if not all([q_id, q_type]):
+            return None
+
+        row = (
+            db.query(Finding.finding_id)
+            .filter(Finding.atoms_id == q_id)
+            .filter(Finding.finding_type == finding_obj.FINDING_TYPE)
+            .filter(Finding.atoms_type == q_type)
+            .first()
+        )
+        return row[0] if row else None
+
+    def _update_existing_findings(
+        self, db: Session, finding_id: UUID, finding_obj: FindingBase, meta: SensemakerMetaData
+    ) -> None:
+        """Executes update for existing records."""
+        stmt = (
+            update(Finding)
+            .where(Finding.finding_id == finding_id)
+            .values(
+                acm=finding_obj.get_acm(),
+                finding_type=finding_obj.FINDING_TYPE,
+                finding_data=finding_obj.to_dict(),
+                executed_at=meta.executed_at,
+                atoms_id=getattr(finding_obj, "atoms_id", None),  # type: ignore[arg-type]
+                atoms_type=getattr(finding_obj, "atoms_type", None),  # type: ignore[arg-type]
+            )
+        )
+        db.execute(stmt)
+
+    def _create_finding_model(self, finding_obj: FindingBase, meta: SensemakerMetaData) -> Finding:
+        """Instantiates a new Finding model."""
+        return Finding(
+            acm=finding_obj.get_acm(),
+            algorithm_name=meta.name,
+            algorithm_version=f"{meta.version[0]}.{meta.version[1]}.{meta.version[2]}",
+            algorithm_configuration=meta.config,
+            executed_at=meta.executed_at,
+            finding_type=finding_obj.FINDING_TYPE,
+            finding_data=finding_obj.to_dict(),
+            oms_version=SETTINGS.omsb_version,
+            published_at=datetime.now(tz=timezone.utc),
+            atoms_id=getattr(finding_obj, "atoms_id", None),  # type: ignore[arg-type]
+            atoms_type=getattr(finding_obj, "atoms_type", None),  # type: ignore[arg-type]
+        )

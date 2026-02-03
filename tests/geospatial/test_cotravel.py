@@ -408,9 +408,9 @@ def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sam
     sensemaker.publish_potential_duplicate(sample_track, cotravel)
 
     # Assert
-    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
-    args, _ = sensemaker.oms_crud_tool.publish_relationships.call_args
-    [relationship_input] = args[0]
+    sensemaker.oms_crud_tool.create_relationship.assert_called_once()
+    args, _ = sensemaker.oms_crud_tool.create_relationship.call_args
+    relationship_input = args[0]
 
     assert relationship_input.startNodeId == "track1-id"
     assert relationship_input.endNodeId == "track2-id"
