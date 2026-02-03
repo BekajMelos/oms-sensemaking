@@ -25,7 +25,7 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
-from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
+from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

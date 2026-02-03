@@ -25,6 +25,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener, register_listener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
+from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 from oms_sensemaking.core.settings import load_runtime_settings_from_db
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
@@ -40,7 +41,6 @@ from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemakerController,
 )
-from oms_sensemaking.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
