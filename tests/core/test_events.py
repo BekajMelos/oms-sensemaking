@@ -429,3 +429,78 @@ def test_rabbitmq_listener_stop_closes_resources():
 
     # stop_consuming should have been scheduled
     listener._connection.add_callback_threadsafe.assert_called()
+
+
+def test_update_prefetch_no_change():
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+    listener._prefetch_count = 10
+    listener._connection = MagicMock(is_open=True)
+
+    listener.update_prefetch(10)
+
+    listener._connection.add_callback_threadsafe.assert_not_called()
+
+
+def test_update_prefetch_schedules_callback():
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+    listener._prefetch_count = 5
+    listener._connection = MagicMock(is_open=True)
+
+    listener.update_prefetch(20)
+
+    listener._connection.add_callback_threadsafe.assert_called_once()
+
+
+@mock.patch("oms_sensemaking.core.events.Thread")
+def test_apply_prefetch_update_cancels_consumer_and_starts_thread(mock_thread):
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+
+    listener._channel = MagicMock(is_open=True)
+    listener._consumer_tag = "tag123"
+    listener._prefetch_count = 5
+
+    listener._apply_prefetch_update(15)
+
+    listener._channel.basic_cancel.assert_called_once_with("tag123")
+    assert listener._consumer_tag is None
+    assert listener._prefetch_count == 15
+    mock_thread.assert_called_once()
+
+
+@mock.patch("oms_sensemaking.core.events.ThreadPoolExecutor")
+def test_drain_pool_and_reconnect_recreates_pool(mock_executor):
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+
+    mock_pool = MagicMock()
+    mock_pool._max_workers = 4
+    listener.pool = mock_pool
+
+    listener._connection = MagicMock(is_open=True)
+
+    listener._drain_pool_and_reconnect()
+
+    mock_pool.shutdown.assert_called_once_with(wait=True)
+    assert mock_executor.call_args_list[-1] == mock.call(max_workers=4)
+    listener._connection.add_callback_threadsafe.assert_called_once()
+
+
+def test_drain_pool_without_connection():
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+
+    mock_pool = MagicMock(_max_workers=2)
+    listener.pool = mock_pool
+
+    listener._drain_pool_and_reconnect()
+
+    mock_pool.shutdown.assert_called_once_with(wait=True)
+
+
+def test_update_prefetch_logs_exception():
+    listener = RabbitMQListener("L", "q", workers=1, handle_event=lambda *_: True)
+
+    listener._connection = MagicMock()
+    listener._connection.is_open = True
+    listener._connection.add_callback_threadsafe.side_effect = Exception("boom")
+
+    # Should not raise
+    listener.update_prefetch(20)
