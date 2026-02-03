@@ -170,6 +170,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._channel: BlockingChannel = None
         self._prefetch_count = RUNTIME_SETTINGS.get("rabbitmq_prefetch_count")
         self._consumer_tag: str | None = None
+        self.pool: ThreadPoolExecutor
+        self._max_workers: int
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
@@ -252,7 +254,7 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             self.pool.shutdown(wait=True)
 
             # Recreate pool so listener keeps working
-            self.pool = ThreadPoolExecutor(max_workers=self.pool._max_workers)
+            self.pool = ThreadPoolExecutor(max_workers=self._max_workers)
 
             # Ask the RMQ thread to close the connection so the consumer reconnects
             if self._connection and self._connection.is_open:
@@ -289,7 +291,8 @@ class RabbitMQListener(BaseRabbitMQListener):
     ):
         """Create a new instance of RabbitMQListener."""
         super().__init__(name, queue_name, handle_event, event_filter)
-        self.pool = ThreadPoolExecutor(max_workers=workers)
+        self._max_workers = workers
+        self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._draining = False
         self._inflight_lock = threading.Lock()
         self._inflight = 0

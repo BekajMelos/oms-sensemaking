@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate
@@ -17,9 +17,7 @@ router: APIRouter = APIRouter()
 
 
 @router.patch("/settings", status_code=204)
-def update_settings(
-    settings_update: SettingsBatchUpdate, user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]
-) -> Response:
+def update_settings(settings_update: SettingsBatchUpdate, user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]):
     """Update runtime settings in batch."""
     LOGGER.info("Updating %d settings: %s", len(settings_update.settings), settings_update.settings)
 
