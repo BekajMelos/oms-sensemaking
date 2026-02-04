@@ -9,6 +9,57 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
+
+## [0.23.1] - 2026-01-28
+
+### Added
+- Added the ability for the Object Minimum Sensemaker to record missing object characteristics
+
+### Changed
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+- Along with a float score, the Object Minimum Sensemaker also outputs the ratio of completion, and a list of missing characteristics (currently just IRIs)
+- Updated ATOMS dependency to Starscream 3.1.4
+- Changed ActivityQuery `state` to StringQuery
+- Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
+- Updated tests to use Mock Observation instances
+
+### Fixed
+- ActivityQuery `name`'s StrinQuery built with `in_`
+
+## [0.23.0] - 2026-01-26
+
+### Added
+- Object Minimum Sensemaker captures, retrieves, and processes relationship data
+- Object Minimum Sensemaker filters on IRI
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+- Updates from `grimlock-support` 0.19.3
+
+### Changed
+- Updated unit test coverage to 80%
+
+## [0.22.0] - 2026-01-20
+
+### Changed
+- Removed old NLP models from repository
+- Updated settings to group Incursion settings and Out Of Garrison settings, and references to settings
+
+## [0.21.0] - 2026-01-12
+
+### Changed
+- RabbitMQ Listener now imports a settings instance upon creation as a parameter
+
+### Fixed
+- Resolved occasional RuntimeError due to multiple threads iterating over node_track_mapping in the Geospatial controller.
+
+## [0.20.0] - 2026-01-05
+
+### Added
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+
+### Changed
+- Updated ATOMS dependency to Starscream 3.1.1
 
 ## [0.19.4] - 2026-02-03
 
@@ -53,6 +104,11 @@ All notable changes to this project will be documented in this file.
 - Restoring code to split tracks by provider
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
+- Base structure for the Object Minimums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added Object Minimums Sensemaker processing
+- Added ObjectMinimumGrade and ObjectMinimumRubric classes
+- Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
 
 ### Changed
 - Updated tags to reference Atoms instead of oms

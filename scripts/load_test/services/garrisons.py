@@ -40,7 +40,7 @@ class GarrisonService:
             CreateAttributeInput(
                 nodeId=facility.id,
                 acm=DEFAULT_ACM,
-                attributeIri=SETTINGS.inference_geo_attribute_iri,
+                attributeIri=SETTINGS.geo_attribute_iri,
                 attributeValue="location",
                 attributeType=AttributeType.GEOSPATIAL,
                 geometry=gen_random_location(),

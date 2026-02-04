@@ -18,7 +18,6 @@
 
 - [brew](https://brew.sh/)
 - [Git](https://formulae.brew.sh/formula/git)
-- [Git LFS](https://formulae.brew.sh/formula/git-lfs)
 - [mkdocs](https://formulae.brew.sh/formula/mkdocs)
 - [Postman](https://www.postman.com/downloads/)
 
