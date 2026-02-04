@@ -73,3 +73,10 @@ def test_get_settings_returns_db_state(client, db):
     assert data["rabbitmq_prefetch_count"] == 250
 
     app.dependency_overrides.clear()
+
+
+def test_patch_settings_invalid_value(client, db):
+    client.app.dependency_overrides[check_user_dn_in_whitelist] = _auth_override
+
+    resp = client.patch("/settings", json={"settings": {"rabbitmq_prefetch_count": -1}})
+    assert resp.status_code == 422

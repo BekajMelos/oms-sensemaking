@@ -35,8 +35,7 @@ def update_settings(settings_update: SettingsBatchUpdate, user_dn: Annotated[str
                 db.add(new_setting)
         db.commit()
 
-    updates = {key: int(value) for key, value in settings_update.settings.items()}
-    apply_settings_updates(updates)
+    apply_settings_updates(settings_update.settings)
 
     return
 
