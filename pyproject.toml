@@ -34,7 +34,7 @@ dependencies = [
     'opentelemetry-instrumentation-fastapi==0.45b0',
     'opentelemetry-instrumentation-logging==0.45b0',
     'prometheus-client==0.20.0',
-    'oms_sdk==11.0.0',
+    'oms_sdk==13.0.0',
     'pandas==2.2.2',
     'pika==1.3.2',
     'psycopg[binary,pool]==3.2.1',
@@ -108,6 +108,10 @@ addopts = '-ra -q --cov=oms_sensemaking --cov-report term --cov-report html'
 testpaths = [
     'tests',
     'tests_int'
+]
+filterwarnings = [
+    # Alembic Postgres autoincrement noise
+    "ignore:autoincrement and existing_autoincrement only make sense for MySQL:UserWarning:alembic",
 ]
 #log_cli = True
 required_plugins = [

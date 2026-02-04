@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -14,6 +14,7 @@ from oms_sensemaking.geospatial.sensemakers.cotravel import (
     PotentialMatch,
 )
 from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.sensemaking import FindingType
 
 DEFAULT_ACM = {
     "version": "2.1.0",
@@ -111,10 +112,10 @@ def test_potential_match_post_init(
     "start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration",
     [
         (
-            datetime.utcnow(),
-            datetime.utcnow(),
-            datetime.utcnow() + timedelta(seconds=15),
-            datetime.utcnow() + timedelta(seconds=15),
+            datetime.now(UTC),
+            datetime.now(UTC),
+            datetime.now(UTC) + timedelta(seconds=15),
+            datetime.now(UTC) + timedelta(seconds=15),
             True,
         ),
     ],
@@ -407,9 +408,9 @@ def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sam
     sensemaker.publish_potential_duplicate(sample_track, cotravel)
 
     # Assert
-    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
-    args, _ = sensemaker.oms_crud_tool.publish_relationships.call_args
-    [relationship_input] = args[0]
+    sensemaker.oms_crud_tool.create_relationship.assert_called_once()
+    args, _ = sensemaker.oms_crud_tool.create_relationship.call_args
+    relationship_input = args[0]
 
     assert relationship_input.startNodeId == "track1-id"
     assert relationship_input.endNodeId == "track2-id"
@@ -458,3 +459,35 @@ def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_trac
     assert attribute_input.geometry == {"type": "LineString"}
     assert attribute_input.valueStart == "start"
     assert attribute_input.valueEnd == "end"
+
+
+def test_set_cotravel_type_updates_finding_type():
+    # Arrange: minimal mock track + points
+    mock_point = MagicMock()
+    mock_point.coordinates = (0.0, 0.0)
+    mock_point.acm = {"some": "data"}
+
+    mock_track = MagicMock()
+    mock_track.points = [mock_point, mock_point]
+
+    cotravel = Cotravel(
+        track1=mock_track,
+        track2=mock_track,
+        start_time=datetime.now(timezone.utc),
+        last_time=datetime.now(timezone.utc),
+        cotravel_type=CotravelType.cotravel,
+    )
+
+    # Act: switch to potential duplicate
+    cotravel._set_cotravel_type(CotravelType.potential_duplicate)
+
+    # Assert
+    assert cotravel.cotravel_type == CotravelType.potential_duplicate
+    assert cotravel.FINDING_TYPE == FindingType.COTRAVEL_POTENTIAL_DUPLICATE
+
+    # Act: switch back to normal cotravel
+    cotravel._set_cotravel_type(CotravelType.cotravel)
+
+    # Assert
+    assert cotravel.cotravel_type == CotravelType.cotravel
+    assert cotravel.FINDING_TYPE == FindingType.GEO_COTRAVEL

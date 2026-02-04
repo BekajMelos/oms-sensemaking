@@ -21,7 +21,7 @@ from oms_sdk.generated.generated_graphql_client.enums import Confidence
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
-from oms_sensemaking.models.sensemaking import FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 from oms_sensemaking.resolution.attribute_combinations import AttributeCombinations
 
 LOGGER = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class ResolutionSensemaker(Sensemaker):
         # can we print value
         LOGGER.debug("id: %s attrIri: %s", attribute.id, attribute.attributeIri)
 
-        results = []
+        results: list[DupFinding] = []
 
         criterion: list[list[AttributeAttribute]] = self.gather_criteria(attribute)
         if criterion:
@@ -135,7 +135,7 @@ class ResolutionSensemaker(Sensemaker):
         """
 
         current_node_id = attribute.nodeId
-        dups = []
+        dups: list[DupFinding] = []
 
         for node in nodes:
             # Ignore the node we're currently looking at
@@ -143,7 +143,6 @@ class ResolutionSensemaker(Sensemaker):
                 continue
 
             dup = DupFinding(start_node_id=current_node_id, end_node_id=node.id, acm=node.acm)
-            dups.append(dup)
 
             rel: CreateRelationshipInput = CreateRelationshipInput(
                 name=SETTINGS.resolution_relationship_name,
@@ -156,7 +155,11 @@ class ResolutionSensemaker(Sensemaker):
                 acm=attribute.acm,
                 objectPropertyIri=SETTINGS.resolution_relationship_iri,
             )
-            self.oms_crud_tool.create_relationship(rel)
+            created_dup_resolution_rel = self.oms_crud_tool.create_relationship(rel)
+            dup.atoms_id = created_dup_resolution_rel.id
+            dup.atoms_type = AtomsType.RELATIONSHIP
+            dups.append(dup)
+
             LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, node.id)
 
         return dups

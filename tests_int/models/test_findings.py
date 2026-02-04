@@ -27,6 +27,8 @@ def tester_db(db: Session) -> Iterator[Session]:
         FindingType.UNKNOWN,
         {"msg": "yo!"},
         "1.2.3",
+        datetime.now(timezone.utc),
+        None,
         None,
         FINDING_ID_1,
     )
@@ -40,6 +42,8 @@ def tester_db(db: Session) -> Iterator[Session]:
         FindingType.UNKNOWN,
         {"msg": "yo!"},
         "1.2.3",
+        datetime.now(timezone.utc),
+        None,
         None,
         FINDING_ID_2,
     )
@@ -56,6 +60,8 @@ def tester_db(db: Session) -> Iterator[Session]:
             FindingType.UNKNOWN,
             {"msg": "yo!"},
             "1.2.3",
+            datetime.now(timezone.utc),
+            None,
             None,
             uuid4(),
         )
@@ -87,6 +93,8 @@ def test_get_or_create_new_record(db: Session):
             algorithm_version="1.0.0",
             algorithm_configuration={},
             executed_at=datetime.now(timezone.utc),
+            atoms_id=None,
+            atoms_type=None,
         ),
         finding_id=FINDING_ID_1,
     )
@@ -111,6 +119,8 @@ def test_point_updated_at_no_timezone(tester_db: Session):
             algorithm_version="1.0.0",
             algorithm_configuration={},
             executed_at=datetime.now(timezone.utc),
+            atoms_id=None,
+            atoms_type=None,
         ),
         finding_id=finding_id,
     )

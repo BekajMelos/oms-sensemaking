@@ -5,13 +5,30 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+- Silenced noisy warnings and resolved async warning in Python tests.
+
+### Fixed
+- Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
+
+## [0.23.1] - 2026-01-28
+
+### Added
 - Added the ability for the Object Minimum Sensemaker to record missing object characteristics
 
 ### Changed
 - Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
 - Along with a float score, the Object Minimum Sensemaker also outputs the ratio of completion, and a list of missing characteristics (currently just IRIs)
+- Updated ATOMS dependency to Starscream 3.1.4
+- Changed ActivityQuery `state` to StringQuery
+- Changed old Incursion and Out of Garrison AtomsClient methods to "deprecated"
+- Updated tests to use Mock Observation instances
+- Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files
 
 ### Fixed
+- ActivityQuery `name`'s StrinQuery built with `in_`
+- Fixed datetime and class-based `config` warnings when running `make test`
 
 ## [0.23.0] - 2026-01-26
 
@@ -47,12 +64,27 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
 
+## [0.19.4] - 2026-02-03
+
+### Added
+- Add atoms_id and atoms_type to findings table in sensemaking database.
+- Make atoms_id, atoms_type, and finding_type indexes to not slow performance.
+
+### Changed
+- Modified the `GeoQueueFilter` function to filter out observations with an IRI that matches the Sensemaking Track IRI setting
+- Added `COTRAVEL_POTENTIAL_DUPLICATE` finding type to the `finding_type` enum
+
+### Fixed
+- Out of Garrison query uses `in_` to retrieve matching names
+
 ### Removed
 
 ## [0.19.3] - 2026-01-26
 
 ### Changed
 - Renamed customer facing instances of OMS to ATOMS
+
+### Added
 
 ## [0.19.2] - 2026-01-12
 
