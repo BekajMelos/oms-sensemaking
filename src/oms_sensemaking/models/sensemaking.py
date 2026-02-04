@@ -33,6 +33,16 @@ class AlgorithmMixin(MappedAsDataclass):
     )
 
 
+class AtomsType(enum.Enum):
+    """Represents the atoms type"""
+
+    ACTIVITY = "ACTIVITY"
+    ATTRIBUTE = "ATTRIBUTE"
+    EVENTS = "EVENTS"
+    NODE = "NODE"
+    RELATIONSHIP = "RELATIONSHIP"
+
+
 class FindingType(enum.Enum):
     """Represents the type of finding."""
 
@@ -45,6 +55,7 @@ class FindingType(enum.Enum):
     INF_INCURSION = "INF_INCURSION"
     RESOLUTION_DUPLICATE = "RESOLUTION_DUPLICATE"
     MIL_SYMBOL_UPDATE = "MIL_SYMBOL_UPDATE"
+    COTRAVEL_POTENTIAL_DUPLICATE = "COTRAVEL_POTENTIAL_DUPLICATE"
 
 
 class FindingMixin(MappedAsDataclass):
@@ -68,6 +79,14 @@ class FindingMixin(MappedAsDataclass):
         UtcDateTime, unique=False, nullable=True, comment="The time the finding was published."
     )
 
+    atoms_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), unique=False, nullable=True, comment="The atom's ID correlating in the oms_db."
+    )
+
+    atoms_type: Mapped[AtomsType] = mapped_column(
+        Enum(AtomsType), nullable=True, unique=False, comment="Atoms type the atoms_id references."
+    )
+
 
 class Finding(BaseORM, FindingMixin, AlgorithmMixin, SecurityMarkingMixin, AuditMixin):
     """
@@ -82,6 +101,8 @@ class Finding(BaseORM, FindingMixin, AlgorithmMixin, SecurityMarkingMixin, Audit
       - finding_data
       - oms_version
       - published_at
+      - atoms_id
+      - atoms_type
       - algorithm_name
       - algorithm_version
       - algorithm_configuration
