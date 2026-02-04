@@ -106,13 +106,20 @@ def attr_status_data(attribute_iri=None, attribute_value=None, acm=DEFAULT_ACM) 
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.sensemakers.FindingWriter")
 def test_process_data(
-    mock_get_acm: AacClient, mock_oms_crud_tool: OmsCrudTool, oms_node: NodeNode, build_sensemaker: MilSymbolSensemaker
+    mock_finding_writer: mock.MagicMock,
+    mock_get_acm: AacClient,
+    mock_oms_crud_tool: OmsCrudTool,
+    oms_node: NodeNode,
+    build_sensemaker: MilSymbolSensemaker,
 ):
     sensemaker = build_sensemaker
     ### Mocks
     ## Mock getting acm
     mock_get_acm.return_value = DEFAULT_ACM
+    ## Mock finding writer
+    mock_finding_writer.return_value.save_findings.return_value = None
 
     # case 1
     sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
@@ -396,7 +403,9 @@ def test_get_node_ancestors_iris(
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.sensemakers.FindingWriter")
 def test_dimension_enrichment(
+    mock_finding_writer: mock.MagicMock,
     mock_get_acm: mock.MagicMock,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
@@ -409,6 +418,8 @@ def test_dimension_enrichment(
     ### Mocks
     ## Mock getting acm
     mock_get_acm.return_value = DEFAULT_ACM
+    ## Mock finding writer
+    mock_finding_writer.return_value.save_findings.return_value = None
 
     # mock getting the ontology classes
     # UnknownHelicopter is not in dimension rules but Aircraft is so should use Air dimension values
@@ -481,15 +492,20 @@ def test_dimension_enrichment(
     assert code_b.new_symbol_id_code == "SHAP------*****"
 
 
+@mock.patch("oms_sensemaking.core.sensemakers.FindingWriter")
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.aac_client")
 def test_acms(
     mock_aac_client: mock.MagicMock,
+    mock_finding_writer_class: mock.MagicMock,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
     build_sensemaker: MilSymbolSensemaker,
     ts_acm: Dict,
 ):
+    mock_instance = mock_finding_writer_class.return_value
+    mock_instance.save_findings.return_value = None
     sensemaker = build_sensemaker
+    sensemaker._finding_writer = mock_instance
 
     # case 1
     sensemaker._attribute_retriever.get_all_mil_sym_attrs_for_enrichment = mock.MagicMock(
@@ -506,6 +522,7 @@ def test_acms(
         return_value=["http://www.ontologyrepository.com/CommonCoreOntologies/Vehicle"]
     )
     mock_oms_crud_tool.get_attributes = mock.MagicMock(return_value=AttributesAttributes(rollupAcm=None, data=[]))
+    mock_aac_client.get_acm_rollup.return_value = {"ACM": ts_acm}
     oms_node.symbolIdCode = "10-0-0-30-0-0-32-000000-00-00"
     oms_node.classIri = "http://www.ontologyrepository.com/CommonCoreOntologies/Watercraft"
 
@@ -526,7 +543,9 @@ def test_acms(
 
 
 @mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+@mock.patch("oms_sensemaking.core.sensemakers.FindingWriter")
 def test_affiliation_fallback_to_parent_is_triggered(
+    mock_finding_writer: mock.MagicMock,
     mock_get_acm: AacClient,
     mock_oms_crud_tool: OmsCrudTool,
     oms_node: NodeNode,
@@ -534,9 +553,10 @@ def test_affiliation_fallback_to_parent_is_triggered(
 ):
     """Test that affiliation enrichment falls back to parent affiliation."""
 
-    sensemaker = build_sensemaker
-
     mock_get_acm.return_value = DEFAULT_ACM
+    mock_finding_writer.return_value.save_findings.return_value = None
+
+    sensemaker = build_sensemaker
 
     msa = MilSymbolAttributes.model_construct()
     msa.affiliation = MilSymbolAttributesAffiliation.model_construct(data=None)

@@ -260,7 +260,7 @@ class GeospatialSensemakerController(SensemakerController):
             with self.lock:
                 # Thread-safe cleanup of expired track data
                 self.track_times[track_uuid] = None
-                self.track_node_buffer.pop(track_uuid)
+                self.track_node_buffer.pop(track_uuid, None)
                 keys_to_delete = [k for k, v in self.node_track_mapping.items() if v == track_uuid]
                 for k in keys_to_delete:
                     del self.node_track_mapping[k]
