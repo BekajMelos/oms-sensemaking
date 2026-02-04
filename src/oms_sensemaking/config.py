@@ -420,11 +420,11 @@ class Settings(BaseSettings):
                                                        description="Name for OMSB Potential Duplicate")
     cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
     lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
-    cotravel_event_node_iri: str = Field(CommonVars.intentional_act_iri,
+    cotravel_event_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
+    cotravel_event_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Cotravel Event Node Geo Attribute IRI")
     cotravel_track_to_event_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")

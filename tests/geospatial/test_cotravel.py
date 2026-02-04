@@ -430,32 +430,33 @@ def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_trac
     cotravel.to_geojson.return_value = {"type": "LineString"}
 
     # Fake published node with an ID
-    published_node = MagicMock()
-    published_node.id = "node-id"
+    published_event = MagicMock()
+    published_event.id = "event-id"
+    published_event.geometry = {"type": "LineString"}
 
-    sensemaker.oms_crud_tool.create_node.return_value = published_node
+    sensemaker.oms_crud_tool.create_event.return_value = published_event
 
     # Act
     sensemaker.publish_cotravel(sample_track, cotravel)
 
-    # Assert: node creation
-    sensemaker.oms_crud_tool.create_node.assert_called_once()
-    create_node_input = sensemaker.oms_crud_tool.create_node.call_args.kwargs["node_input"]
-    assert create_node_input.name == "Cotravel"
-    assert create_node_input.acm == {"acm": "fake"}
+    # Assert: event creation
+    sensemaker.oms_crud_tool.create_event.assert_called_once()
+    create_event_input = sensemaker.oms_crud_tool.create_event.call_args.kwargs["event_input"]
+    assert create_event_input.name == "Cotravel"
+    assert create_event_input.acm == {"acm": "fake"}
 
-    # Assert: relationships published
-    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
-    relationships = sensemaker.oms_crud_tool.publish_relationships.call_args[0][0]
-    assert len(relationships) == 2
-    assert relationships[0].startNodeId == "node-id"
-    assert relationships[0].endNodeId == "track1-id"
-    assert relationships[1].endNodeId == "track2-id"
+    # # Assert: relationships published
+    # sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
+    # relationships = sensemaker.oms_crud_tool.publish_relationships.call_args[0][0]
+    # assert len(relationships) == 2
+    # assert relationships[0].startNodeId == "node-id"
+    # assert relationships[0].endNodeId == "track1-id"
+    # assert relationships[1].endNodeId == "track2-id"
 
     # Assert: attribute published
     sensemaker.oms_crud_tool.publish_attributes.assert_called_once()
     [attribute_input] = sensemaker.oms_crud_tool.publish_attributes.call_args[0][0]
-    assert attribute_input.nodeId == "node-id"
+    assert attribute_input.eventId == "event-id"
     assert attribute_input.geometry == {"type": "LineString"}
     assert attribute_input.valueStart == "start"
     assert attribute_input.valueEnd == "end"

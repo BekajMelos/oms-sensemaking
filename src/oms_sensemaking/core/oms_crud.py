@@ -18,6 +18,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
+    CreateEventCreateEvent,
+    CreateEventInput,
     CreateNodeCreateNode,
     CreateNodeInput,
     CreateObservationCreateObservation,
@@ -158,6 +160,13 @@ class OmsCrudTool(BaseClient):
         """
         # 1. for each activity, publish it to ATOMS
         return self.oms_client.create_activity(activity_input)
+
+    def create_event(self, event_input: CreateEventInput) -> CreateEventCreateEvent:
+        """
+        Publish the event to ATOMS
+        :param event_input: a CreateEventInput object
+        """
+        return self.oms_client.create_event(event_input)
 
     def create_source(self, source_input: CreateSourceInput) -> CreateSourceCreateSource:
         """
