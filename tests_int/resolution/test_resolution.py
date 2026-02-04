@@ -331,7 +331,9 @@ def test_resolution_matches_using_alternate_criteria_set(db, mock_source, tester
         data=[tester_db[0]]  # existing facility from tester_db
     )
 
-    findings = ResolutionSensemaker(facility_dual_criteria_config, mock_oms_crud_tool).execute(new_sk_attribute)
+    sensemaker = ResolutionSensemaker(facility_dual_criteria_config, mock_oms_crud_tool)
+    sensemaker.save_findings = mock.MagicMock()
+    findings = sensemaker.execute(new_sk_attribute)
 
     # Assert: SK-only match should work
     assert len(findings) == 1
