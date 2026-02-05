@@ -6,7 +6,7 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import (
@@ -128,7 +128,6 @@ class Cotravel(FindingBase):
     """Represents a Cotravel Event"""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.GEO_COTRAVEL)
-    cotravel_id: UUID = field(init=False, default_factory=uuid4)
     track1: Track
     track2: Track
     start_time: datetime
@@ -215,10 +214,10 @@ class CotravelSensemaker(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.config = {
-            "cotravel_event_node_attribute_iri": SETTINGS.cotravel_event_attribute_iri,
+            "cotravel_event_attribute_iri": SETTINGS.cotravel_event_attribute_iri,
             "cotravel_relationship_iri": SETTINGS.cotravel_relationship_iri,
             "cotravel_track_to_event_relation_name": SETTINGS.cotravel_track_to_event_relation_name,
-            "cotravel_event_node_iri": SETTINGS.cotravel_event_iri,
+            "cotravel_event_iri": SETTINGS.cotravel_event_iri,
             "cotravel_event_name": SETTINGS.cotravel_event_name,
             "lag_lead_event_name": SETTINGS.lag_lead_event_name,
             "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
@@ -531,35 +530,9 @@ class CotravelSensemaker(Sensemaker):
             endTime=cotravel.last_time,
         )
         published_event = self.oms_crud_tool.create_event(event_input=create_event_input)
-        # Save the created node id and type
+        # Save the created event id and type
         cotravel.atoms_id = published_event.id
         cotravel.atoms_type = AtomsType.EVENTS
-
-        # # vehicle 1 relationship
-        # create_relationship_input1 = CreateRelationshipInput(
-        #     tags=tags,
-        #     labels=labels,
-        #     name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-        #     startNodeId=published_node.id,
-        #     endNodeId=cotravel.track1.node_id,
-        #     confidence=Confidence.HIGH,
-        #     acm=cotravel.get_acm(),
-        #     objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-        #     sourceId=source_id,
-        # )
-        # # vehicle 2 relationship
-        # create_relationship_input2 = CreateRelationshipInput(
-        #     tags=tags,
-        #     labels=labels,
-        #     name=f"{name} {SETTINGS.cotravel_track_to_event_relation_name}",
-        #     startNodeId=published_node.id,
-        #     endNodeId=cotravel.track2.node_id,
-        #     confidence=Confidence.HIGH,
-        #     acm=cotravel.get_acm(),
-        #     objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-        #     sourceId=source_id,
-        # )
-        # self.oms_crud_tool.publish_relationships([create_relationship_input1, create_relationship_input2])
 
         # attribute for geometry
         created_attribute_input = CreateAttributeInput(
