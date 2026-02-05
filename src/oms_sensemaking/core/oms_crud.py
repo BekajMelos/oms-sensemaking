@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Any, List, Optional, Union
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 from cachetools import TTLCache, cached
@@ -340,14 +340,14 @@ class OmsCrudTool(BaseClient):
         :param object_id: Id of ATOMS object to retrieve
         :param object_type: ObjectType type of object to retrieve
         """
-        obj_getter_mapping: dict[ObjectType, Any] = {
+        obj_getter_mapping: Dict[ObjectType, UUID] = {
             ObjectType.ACTIVITY: self.get_activity,
             ObjectType.ATTRIBUTE: self.get_attribute,
             ObjectType.OBSERVATION: self.get_observation,
             ObjectType.NODE: self.get_node,
             ObjectType.RELATIONSHIP: self.get_relationship,
         }
-
+        print(f"obj_getter_mapping: {obj_getter_mapping}")
         return obj_getter_mapping[object_type](object_id)
 
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
