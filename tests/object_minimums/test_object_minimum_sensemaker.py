@@ -9,6 +9,7 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+from src.oms_sensemaking.object_minimums.object_minimum_models import RequiredIris
 from src.oms_sensemaking.object_minimums.sensemaker import (
     ObjectMinimumDataRetriever,
     ObjectMinimums,
@@ -40,7 +41,7 @@ def test_process_data_no_required_iris(sensemaker):
     mock_node.classIri = "http://example.org/ClassIRI"
     sensemaker.oms_crud_tool.get_node.return_value = mock_node
 
-    sensemaker._get_required_iris = MagicMock(return_value=([], []))
+    sensemaker._get_required_iris = MagicMock(return_value=RequiredIris())
 
     result = sensemaker.process_data(attribute_of_node)
 
@@ -61,7 +62,9 @@ def test_process_data_with_attributes_and_relationships(sensemaker):
     required_attributes = ["iri1", "iri2"]
     required_relationships = ["relIri1", "relIri2"]
 
-    sensemaker._get_required_iris = MagicMock(return_value=(required_attributes, required_relationships))
+    sensemaker._get_required_iris = MagicMock(
+        return_value=RequiredIris(attribute_iris=required_attributes, relationship_iris=required_relationships)
+    )
 
     mock_attributes = [{"attribute": "value"}]
     mock_relationships = [{"relationship": "value"}]
@@ -102,10 +105,10 @@ def test_get_required_iris(mock_get_node):
         rubric_criteria=rubric_criteria,
     )
 
-    required_attributes, required_relationships = sensemaker._get_required_iris(mock_node)
+    required_iris = sensemaker._get_required_iris(mock_node)
 
-    assert required_attributes == ["iri1", "iri2"]
-    assert required_relationships == ["relIri1"]
+    assert required_iris.attribute_iris == ["iri1", "iri2"]
+    assert required_iris.relationship_iris == ["relIri1"]
 
 
 @patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_node")
@@ -134,7 +137,9 @@ def test_process_data_attribute_passed_in(sensemaker):
     required_attributes = ["iri1", "iri2"]
     required_relationships = ["relIri1", "relIri2"]
 
-    sensemaker._get_required_iris = MagicMock(return_value=(required_attributes, required_relationships))
+    sensemaker._get_required_iris = MagicMock(
+        return_value=RequiredIris(attribute_iris=required_attributes, relationship_iris=required_relationships)
+    )
 
     mock_attributes = [{"attribute": "value"}]
     mock_relationships = [{"relationship": "value"}]
@@ -173,7 +178,9 @@ def test_process_data_rel_passed_in(sensemaker):
     required_attributes = ["iri1", "iri2"]
     required_relationships = ["relIri1", "relIri2"]
 
-    sensemaker._get_required_iris = MagicMock(return_value=(required_attributes, required_relationships))
+    sensemaker._get_required_iris = MagicMock(
+        return_value=RequiredIris(attribute_iris=required_attributes, relationship_iris=required_relationships)
+    )
 
     mock_attributes = [{"attribute": "value"}]
     mock_relationships = [{"relationship": "value"}]
@@ -214,7 +221,7 @@ def test_get_required_iris_with_parent_class():
     mock_node = MagicMock()
     mock_node.classIri = child_class_iri
 
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.return_value = [parent_class_iri]
+    mock_ontology_service.get_node_ancestors_iris.return_value = [parent_class_iri]
 
     rubric_criteria = {parent_class_iri: {"ATTRIBUTES": ["attr1", "attr2"], "RELATIONSHIPS": ["rel1"]}}
 
@@ -226,11 +233,11 @@ def test_get_required_iris_with_parent_class():
         rubric_criteria=rubric_criteria,
     )
 
-    required_attributes, required_relationships = sensemaker._get_required_iris(mock_node)
+    required_iris = sensemaker._get_required_iris(mock_node)
 
-    assert required_attributes == ["attr1", "attr2"]
-    assert required_relationships == ["rel1"]
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.assert_called_once_with(mock_node)
+    assert required_iris.attribute_iris == ["attr1", "attr2"]
+    assert required_iris.relationship_iris == ["rel1"]
+    mock_ontology_service.get_node_ancestors_iris.assert_called_once_with(mock_node)
 
 
 def test_get_required_iris_no_rubric_after_max_levels():
@@ -245,9 +252,7 @@ def test_get_required_iris_no_rubric_after_max_levels():
     mock_node.classIri = class_iri
 
     # Return 4 ancestors so we check class_iri + 4 ancestors = 5 levels, none have rubrics
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.return_value = [
-        f"http://example.org/parent_{i}" for i in range(4)
-    ]
+    mock_ontology_service.get_node_ancestors_iris.return_value = [f"http://example.org/parent_{i}" for i in range(4)]
 
     rubric_criteria = {}
 
@@ -259,11 +264,11 @@ def test_get_required_iris_no_rubric_after_max_levels():
         rubric_criteria=rubric_criteria,
     )
 
-    required_attributes, required_relationships = sensemaker._get_required_iris(mock_node)
+    required_iris = sensemaker._get_required_iris(mock_node)
 
-    assert required_attributes == []
-    assert required_relationships == []
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.assert_called_once_with(mock_node)
+    assert required_iris.attribute_iris == []
+    assert required_iris.relationship_iris == []
+    mock_ontology_service.get_node_ancestors_iris.assert_called_once_with(mock_node)
 
 
 def test_get_required_iris_no_parent_class():
@@ -277,7 +282,7 @@ def test_get_required_iris_no_parent_class():
     mock_node = MagicMock()
     mock_node.classIri = class_iri
 
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.return_value = []
+    mock_ontology_service.get_node_ancestors_iris.return_value = []
 
     rubric_criteria = {}
 
@@ -289,8 +294,8 @@ def test_get_required_iris_no_parent_class():
         rubric_criteria=rubric_criteria,
     )
 
-    required_attributes, required_relationships = sensemaker._get_required_iris(mock_node)
+    required_iris = sensemaker._get_required_iris(mock_node)
 
-    assert required_attributes == []
-    assert required_relationships == []
-    mock_ontology_service.mil_symbol_get_node_ancestors_iris.assert_called_once_with(mock_node)
+    assert required_iris.attribute_iris == []
+    assert required_iris.relationship_iris == []
+    mock_ontology_service.get_node_ancestors_iris.assert_called_once_with(mock_node)

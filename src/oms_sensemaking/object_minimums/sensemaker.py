@@ -16,7 +16,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.object_minimums.object_minimum_data_retriever import ObjectMinimumDataRetriever
-from oms_sensemaking.object_minimums.object_minimum_models import ObjectMinimumRubric
+from oms_sensemaking.object_minimums.object_minimum_models import ObjectMinimumRubric, RequiredIris
 
 LOGGER = logging.getLogger(__name__)
 
@@ -93,12 +93,12 @@ class ObjectMinimums(Sensemaker):
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
-                required_attr_iris, required_rel_iris = self._get_required_iris(node)
+                required_iris = self._get_required_iris(node)
 
                 # The case where there is nothing to grade.
                 # Still valid if one exists, but the other does not (i.e. rel iris exist, but not attr iris)
                 # Can still grade based off rels if thats all there is. *At least one needs to exist
-                if not required_attr_iris and not required_rel_iris:
+                if not required_iris.attribute_iris and not required_iris.relationship_iris:
                     LOGGER.info(
                         "Ungradeable class object. Grade was not able to be calculated for the node with id: %s",
                         node.id,
@@ -106,12 +106,12 @@ class ObjectMinimums(Sensemaker):
                     continue
                 else:
                     # set the required IRIs for the rubric
-                    self.obj_min_rubric.required_attrs = required_attr_iris
-                    self.obj_min_rubric.required_rels = required_rel_iris
+                    self.obj_min_rubric.required_attrs = required_iris.attribute_iris
+                    self.obj_min_rubric.required_rels = required_iris.relationship_iris
 
                 # retrieve the 'available' data connected to the node of interest
                 retrieved_node_data = self.obj_min_retriever.retrieve_data_for_grading(
-                    self.oms_crud_tool, node, required_attr_iris, required_rel_iris
+                    self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
                 grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
@@ -123,16 +123,16 @@ class ObjectMinimums(Sensemaker):
 
         return []
 
-    def _get_rubric_requirements(self, class_iri: str) -> tuple[list[str], list[str]] | None:
-        """Return (required_attrs, required_rels) if class has a rubric with at least one requirement."""
+    def _get_rubric_requirements(self, class_iri: str) -> RequiredIris | None:
+        """Return RequiredIris if class has a rubric with at least one requirement."""
         config_rubric_data = self.rubric_criteria.get(class_iri, {})
         reqs_attr_iris = config_rubric_data.get("ATTRIBUTES", [])
         reqs_rel_iris = config_rubric_data.get("RELATIONSHIPS", [])
         if reqs_attr_iris or reqs_rel_iris:
-            return (reqs_attr_iris, reqs_rel_iris)
+            return RequiredIris(attribute_iris=reqs_attr_iris, relationship_iris=reqs_rel_iris)
         return None
 
-    def _get_required_iris(self, node: NodeNode) -> tuple[list[str], list[str]]:
+    def _get_required_iris(self, node: NodeNode) -> RequiredIris:
         """
         Get required IRIs for a node's class by traversing up the class hierarchy.
 
@@ -140,14 +140,14 @@ class ObjectMinimums(Sensemaker):
         until a rubric is found or max_rubric_hierarchy_levels (config) have been checked.
 
         :param node: The node whose class IRI (and ancestor chain) to use
-        :return: Tuple of (required_attributes, required_relationships)
+        :return: RequiredIris with attribute_iris and relationship_iris
         """
         class_iri = node.classIri
         reqs = self._get_rubric_requirements(class_iri)
         if reqs is not None:
             return reqs
 
-        ancestor_iris = self.ontology_service.mil_symbol_get_node_ancestors_iris(node)
+        ancestor_iris = self.ontology_service.get_node_ancestors_iris(node)
         max_ancestors_to_check = SETTINGS.object_minimum_settings.max_rubric_hierarchy_levels - 1
         for ancestor_iri in ancestor_iris[:max_ancestors_to_check]:
             reqs = self._get_rubric_requirements(ancestor_iri)
@@ -164,7 +164,7 @@ class ObjectMinimums(Sensemaker):
             class_iri,
             SETTINGS.object_minimum_settings.max_rubric_hierarchy_levels,
         )
-        return [], []
+        return RequiredIris()
 
     def _calculate_grade(
         self,
