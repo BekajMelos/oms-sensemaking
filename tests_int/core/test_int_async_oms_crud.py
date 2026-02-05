@@ -79,7 +79,7 @@ def cleanup_data(inject_tags, sync_oms_crud_tool):
 
 
 @pytest.fixture
-@pytest.mark.asyncio
+# @pytest.mark.asyncio
 async def starter_graph(atoms_crud_tool, node_input, cleanup_data):
     node = await atoms_crud_tool.create_node(node_input)
 

@@ -169,7 +169,7 @@ class GeospatialSensemakerController(SensemakerController):
                             "node_version": int(node_version),
                             "observation_version": int(oms_obs.version),
                         },
-                        location=f'Point({point_data["coordinates"][0]} {point_data["coordinates"][1]})',
+                        location=f"Point({point_data['coordinates'][0]} {point_data['coordinates'][1]})",
                         node_id=self._ensure_uuid(oms_obs.nodeId),
                         observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,

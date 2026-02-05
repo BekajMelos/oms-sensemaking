@@ -45,14 +45,12 @@ def upgrade() -> None:
     # Create a temporary "_findingtype" type, convert and drop the "old" type
     tmp_type.create(op.get_bind(), checkfirst=False)
     op.execute(
-        "ALTER TABLE findings ALTER COLUMN finding_type TYPE _findingtype" " USING finding_type::text::_findingtype"
+        "ALTER TABLE findings ALTER COLUMN finding_type TYPE _findingtype USING finding_type::text::_findingtype"
     )
     old_type.drop(op.get_bind(), checkfirst=False)
     # Create and convert to the "new" findingtype type
     new_type.create(op.get_bind(), checkfirst=False)
-    op.execute(
-        "ALTER TABLE findings ALTER COLUMN finding_type TYPE findingtype" " USING finding_type::text::findingtype"
-    )
+    op.execute("ALTER TABLE findings ALTER COLUMN finding_type TYPE findingtype USING finding_type::text::findingtype")
     tmp_type.drop(op.get_bind(), checkfirst=False)
     # ### end Alembic commands ###
 
@@ -68,13 +66,11 @@ def downgrade() -> None:
     # Create a temporary "_findingtype" type, convert and drop the "new" type
     tmp_type.create(op.get_bind(), checkfirst=False)
     op.execute(
-        "ALTER TABLE findings ALTER COLUMN finding_type TYPE _findingtype" " USING finding_type::text::_findingtype"
+        "ALTER TABLE findings ALTER COLUMN finding_type TYPE _findingtype USING finding_type::text::_findingtype"
     )
     new_type.drop(op.get_bind(), checkfirst=False)
     # Create and convert to the "old" findingtype type
     old_type.create(op.get_bind(), checkfirst=False)
-    op.execute(
-        "ALTER TABLE findings ALTER COLUMN finding_type TYPE findingtype" " USING finding_type::text::findingtype"
-    )
+    op.execute("ALTER TABLE findings ALTER COLUMN finding_type TYPE findingtype USING finding_type::text::findingtype")
     tmp_type.drop(op.get_bind(), checkfirst=False)
     # ### end Alembic commands ###

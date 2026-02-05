@@ -73,7 +73,7 @@ def test_rethrow_db_error_logging(mock_db_session: Session, ts_acm):
     # limit to 100 chars since the paths won't be accurate in build job
     SETTINGS.audit_log_error_max_tb_chars = 100
     truncated_expected_exc_text = (
-        "  _ = foo.fake_attr\n        " "^^^^^^^^^^^^^\nAttributeError: 'Foo' object has no attribute 'fake_attr'\n"
+        "  _ = foo.fake_attr\n        ^^^^^^^^^^^^^\nAttributeError: 'Foo' object has no attribute 'fake_attr'\n"
     )
 
     expected_audit_event = AuditLogError(
