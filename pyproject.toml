@@ -18,7 +18,7 @@ dependencies = [
     'alembic==1.18.3',
     'cachetools==7.0.0',
     'collections-extended==2.0.2',
-    'fastapi[standard]==0.128.1',
+    'fastapi[standard]==0.128.2',
     'fastapi-offline==1.7.6',
     'fastkml==1.4.0',
     'geoalchemy2==0.18.1',
