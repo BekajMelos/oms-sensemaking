@@ -11,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
     AttributeType,
     AttributeTypeQuery,
+    CreateActivityCreateActivity,
     CreateActivityInput,
     CreateAttributeInput,
     GeoQuery,
@@ -24,6 +25,7 @@ from oms_sdk.generated.generated_graphql_client import (
     StringQuery,
     UpdateActivityInput,
     UpdateAttributeInput,
+    UpdateIncursionActivityAndAttributesUpdateActivity,
     UpdateUuidList,
     UuidQueryByList,
 )
@@ -43,7 +45,7 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class Incursion(FindingBase):
-    """Represents a loiter event."""
+    """Represents an Incursion."""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_INCURSION)
     incurring_obj_id: UUID
@@ -67,6 +69,39 @@ class Incursion(FindingBase):
         """Geojson representation of the last location of the Incurring object"""
 
         return {"type": "Point", "coordinates": self.incursion_observation.geometry["coordinates"]}
+
+    @classmethod
+    def from_update(
+        cls,
+        obs: ObservationObservation,
+        updated_activity: UpdateIncursionActivityAndAttributesUpdateActivity,
+        aoi: dict,
+        rolled_up_acm: dict,
+    ):
+        return cls(
+            incurring_obj_id=obs.nodeId,
+            incursion_observation=obs,
+            start_time=updated_activity.startTime,
+            end_time=updated_activity.endTime,
+            area_of_interest_dict=aoi,
+            acm=rolled_up_acm,
+        )
+
+    @classmethod
+    def from_create(
+        cls,
+        obs: ObservationObservation,
+        new_activity: CreateActivityCreateActivity,
+        aoi: dict,
+    ):
+        return cls(
+            incurring_obj_id=new_activity.nodeId,
+            incursion_observation=obs,
+            start_time=new_activity.startTime,
+            end_time=new_activity.endTime,
+            area_of_interest_dict=aoi,
+            acm=new_activity.acm,
+        )
 
 
 class IncursionSensemaker(Sensemaker):
@@ -259,18 +294,13 @@ class IncursionSensemaker(Sensemaker):
         updated_incursion = self.oms_crud_tool.oms_client.update_incursion_activity_and_attributes(
             updated_activity_input, updated_attribute_input
         )
-        incursion_finding = Incursion(
-            incurring_obj_id=observation.nodeId,
-            incursion_observation=observation,
-            start_time=updated_incursion.updateActivity.startTime,
-            end_time=updated_incursion.updateActivity.endTime,
-            area_of_interest_dict=feat_of_int.geometry_dict,
-            acm=rolled_up_acm,
+        incursion_finding = Incursion.from_update(
+            observation, updated_incursion.updateActivity, feat_of_int.geometry_dict, rolled_up_acm
         )
-        incursion_finding.atoms_id = existing_incursion_activity.id
-        incursion_finding.atoms_type = AtomsType.ACTIVITY
-        incursion_finding.query_atoms_id = existing_incursion_activity.id
-        incursion_finding.query_atoms_type = AtomsType.ACTIVITY
+        incursion_finding.atoms_id = (existing_incursion_activity.id,)
+        incursion_finding.atoms_type = (AtomsType.ACTIVITY,)
+        incursion_finding.query_atoms_id = (existing_incursion_activity.id,)
+        incursion_finding.query_atoms_type = (AtomsType.ACTIVITY,)
 
         return [incursion_finding]
 
@@ -323,16 +353,11 @@ class IncursionSensemaker(Sensemaker):
         )
         self.oms_crud_tool.create_attribute(incursion_attribute)
 
-        incursion_finding = Incursion(
-            incurring_obj_id=new_incursion_activity.nodeId,
-            incursion_observation=observation,
-            start_time=new_incursion_activity.startTime,
-            end_time=new_incursion_activity.endTime,
-            area_of_interest_dict=feature_of_interest.geometry_dict,
-            acm=new_incursion_activity.acm,
+        incursion_finding = Incursion.from_create(
+            observation, new_incursion_activity, feature_of_interest.geometry_dict
         )
-        incursion_finding.atoms_id = new_incursion_activity.id
-        incursion_finding.atoms_type = AtomsType.ACTIVITY
+        incursion_finding.atoms_id = (new_incursion_activity.id,)
+        incursion_finding.atoms_type = (AtomsType.ACTIVITY,)
 
         return [incursion_finding]
 
