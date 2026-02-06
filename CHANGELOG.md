@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- The In/Out of Garrison Sensemaker now creates a finding type upon processing data
 
 ### Changed
+- Grimlock now uses SDK version 12.0.0
 
 ### Fixed
 

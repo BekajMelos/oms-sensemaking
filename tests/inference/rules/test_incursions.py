@@ -1,4 +1,5 @@
 import copy
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,8 +17,6 @@ from oms_sdk.generated.generated_graphql_client import (
     GeoQueryType,
     IncursionDataActivities,
     IncursionDataActivitiesData,
-    IncursionDataActivitiesDataAttributes,
-    IncursionDataActivitiesDataAttributesData,
     NodeNode,
     ObservationObservation,
     ObservationQuery,
@@ -462,25 +461,34 @@ def test_two_existing_incursions(
     # incursion including the observation, resulting in an attribute/activity update
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    response = IncursionDataActivities(
+    response = SimpleNamespace(
         data=[
-            IncursionDataActivitiesData(
+            SimpleNamespace(
                 id=activity1.id,
                 labels=activity1.labels,
-                attributes=IncursionDataActivitiesDataAttributes(
+                attributes=SimpleNamespace(
                     data=[
-                        IncursionDataActivitiesDataAttributesData(
+                        SimpleNamespace(
                             id=attribute2.id,
                             labels=attribute2.labels,
                             valueStart=attribute2.valueStart,
                             valueEnd=attribute2.valueEnd,
                         ),
-                        IncursionDataActivitiesDataAttributesData(
+                        SimpleNamespace(
                             id=attribute1.id,
                             labels=attribute1.labels,
                             valueStart=attribute1.valueStart,
                             valueEnd=attribute1.valueEnd,
                         ),
+                    ]
+                ),
+                observations=SimpleNamespace(
+                    data=[
+                        SimpleNamespace(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
                     ]
                 ),
             )
@@ -542,14 +550,14 @@ def test_existing_incursion_nonoverlapping_time(
     # with nonoverlapping time, resulting in attribute/activity updates
     incur_sm = Incursion(FakeAOIExtractor(), mock_crud_tool)
 
-    response = IncursionDataActivities(
+    response = SimpleNamespace(
         data=[
-            IncursionDataActivitiesData(
+            SimpleNamespace(
                 id=activity1.id,
                 labels=activity1.labels,
-                attributes=IncursionDataActivitiesDataAttributes(
+                attributes=SimpleNamespace(
                     data=[
-                        IncursionDataActivitiesDataAttributesData(
+                        SimpleNamespace(
                             id=attribute2.id,
                             labels=attribute2.labels,
                             valueStart=attribute2.valueStart,
@@ -557,7 +565,16 @@ def test_existing_incursion_nonoverlapping_time(
                         ),
                     ]
                 ),
-            )
+                observations=SimpleNamespace(
+                    data=[
+                        SimpleNamespace(
+                            id=observational_node_region1.id,
+                            acm=observational_node_region1.acm,
+                            geometry=observational_node_region1.geometry,
+                        )
+                    ]
+                ),
+            ),
         ]
     )
     mock_crud_tool.oms_client.incursion_data.return_value = response
