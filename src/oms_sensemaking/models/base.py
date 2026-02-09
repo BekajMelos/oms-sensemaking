@@ -20,7 +20,7 @@ import json
 import uuid
 from dataclasses import asdict
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Optional
 
 from oms_sdk.generated.generated_graphql_client import Confidence
 from sqlalchemy import DateTime, Dialect, Integer, MetaData, String, TypeDecorator, select
@@ -103,7 +103,7 @@ class UtcDateTime(TypeDecorator):
         """Returns the Python type."""
         return datetime
 
-    def process_bind_param(self, value: Any | None, dialect: Dialect) -> datetime:
+    def process_bind_param(self, value: Any | None, dialect: Dialect) -> Optional[datetime]:
         """
         Convert the value to UTC and strip the timezone information.
 
@@ -121,7 +121,7 @@ class UtcDateTime(TypeDecorator):
 
         return value
 
-    def process_result_value(self, value: Any | None, dialect: Dialect) -> datetime:
+    def process_result_value(self, value: Any | None, dialect: Dialect) -> Optional[datetime]:
         """
         Ensure the return value is timezone aware.
 

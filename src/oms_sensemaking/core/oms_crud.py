@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from cachetools import TTLCache, cached
@@ -340,7 +340,7 @@ class OmsCrudTool(BaseClient):
         :param object_id: Id of ATOMS object to retrieve
         :param object_type: ObjectType type of object to retrieve
         """
-        obj_getter_mapping = {
+        obj_getter_mapping: Dict[ObjectType, Any] = {
             ObjectType.ACTIVITY: self.get_activity,
             ObjectType.ATTRIBUTE: self.get_attribute,
             ObjectType.OBSERVATION: self.get_observation,

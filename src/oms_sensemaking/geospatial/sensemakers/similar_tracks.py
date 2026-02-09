@@ -323,7 +323,7 @@ class SimilarTracksSensemaker(Sensemaker):
 
             # combine the start bookends with the end bookends by track_uuid
             groups = defaultdict(list)
-            for track_uuid, bookend in start_groups + end_groups:
+            for track_uuid, bookend in list(start_groups) + list(end_groups):
                 groups[track_uuid].append(bookend)
 
         return [GroupByTrackIdProjection(track_uuid, bookends) for track_uuid, bookends in groups.items()]
