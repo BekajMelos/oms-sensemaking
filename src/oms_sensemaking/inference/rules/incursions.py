@@ -297,10 +297,10 @@ class IncursionSensemaker(Sensemaker):
         incursion_finding = Incursion.from_update(
             observation, updated_incursion.updateActivity, feat_of_int.geometry_dict, rolled_up_acm
         )
-        incursion_finding.atoms_id = (existing_incursion_activity.id,)
-        incursion_finding.atoms_type = (AtomsType.ACTIVITY,)
-        incursion_finding.query_atoms_id = (existing_incursion_activity.id,)
-        incursion_finding.query_atoms_type = (AtomsType.ACTIVITY,)
+        incursion_finding.atoms_id = existing_incursion_activity.id
+        incursion_finding.atoms_type = AtomsType.ACTIVITY
+        incursion_finding.query_atoms_id = existing_incursion_activity.id
+        incursion_finding.query_atoms_type = AtomsType.ACTIVITY
 
         return [incursion_finding]
 
@@ -356,8 +356,8 @@ class IncursionSensemaker(Sensemaker):
         incursion_finding = Incursion.from_create(
             observation, new_incursion_activity, feature_of_interest.geometry_dict
         )
-        incursion_finding.atoms_id = (new_incursion_activity.id,)
-        incursion_finding.atoms_type = (AtomsType.ACTIVITY,)
+        incursion_finding.atoms_id = new_incursion_activity.id
+        incursion_finding.atoms_type = AtomsType.ACTIVITY
 
         return [incursion_finding]
 
