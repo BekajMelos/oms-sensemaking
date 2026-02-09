@@ -66,6 +66,8 @@ class MilSymbol2525BandC(MilSymbol):
         self.enrich_dimension(oms_node, ancestor_iris)
         self.enrich_status(status_attr)
         self.enrich_echelon(echelon_attr)
+        if not self.acms:
+            self.acms.append(oms_node.acm)
 
     def enrich_affiliation(self, affiliation_attr: Optional[AttributeAttribute]) -> None:
         """Update Affilation
