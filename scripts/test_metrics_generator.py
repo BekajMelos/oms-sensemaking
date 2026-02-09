@@ -100,9 +100,9 @@ def generate_hello_world_metrics() -> None:
     for i in range(3):
         result = make_request(TEST_ENDPOINTS["hello_world"], method="POST")
         if "error" not in result:
-            print(f"  Request {i+1}: {result.get('message', 'Success')}")
+            print(f"  Request {i + 1}: {result.get('message', 'Success')}")
         else:
-            print(f"  Request {i+1}: {result['error']}")
+            print(f"  Request {i + 1}: {result['error']}")
         time.sleep(0.5)
 
 
@@ -113,9 +113,9 @@ def generate_basic_metrics() -> None:
     for i in range(2):
         result = make_request(TEST_ENDPOINTS["metrics_test"], method="POST")
         if "error" not in result:
-            print(f"  Request {i+1}: {result.get('message', 'Success')}")
+            print(f"  Request {i + 1}: {result.get('message', 'Success')}")
         else:
-            print(f"  Request {i+1}: {result['error']}")
+            print(f"  Request {i + 1}: {result['error']}")
         time.sleep(0.5)
 
 
@@ -152,7 +152,7 @@ def generate_json_custom_metrics() -> None:
     ]
 
     for i, payload in enumerate(test_payloads):
-        print(f"  Test payload {i+1}: {payload}")
+        print(f"  Test payload {i + 1}: {payload}")
         result = make_request(TEST_ENDPOINTS["custom_event_json"], method="POST", data=payload)
 
         if "error" not in result:

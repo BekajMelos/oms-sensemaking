@@ -124,7 +124,7 @@ class TestMetricsEndpoints:
 
             assert (
                 response.status_code == 200
-            ), f"Expected 200 for payload {i+1}, got {response.status_code}: {response.text}"
+            ), f"Expected 200 for payload {i + 1}, got {response.status_code}: {response.text}"
 
             data = response.json()
             assert "message" in data
