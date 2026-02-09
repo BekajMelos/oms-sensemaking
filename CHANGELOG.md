@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - The In/Out of Garrison Sensemaker now creates a finding type upon processing data
+- The Incursion Sensemaker now creates a finding type upon processing data
 
 ### Changed
 - Grimlock now uses SDK version 12.0.0
 - Bump opentelemetry packages to resolve missing dependency
+- Mil Symbol Sensemaker pulls ACM from the node as a default when no other ACM is available through enrichment
 
 ### Fixed
 
