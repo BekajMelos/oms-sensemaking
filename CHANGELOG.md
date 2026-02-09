@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
+- Object Minimum rubric applies to the most specific class now.
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
