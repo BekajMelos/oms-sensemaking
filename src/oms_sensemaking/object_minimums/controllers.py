@@ -6,6 +6,7 @@ from itertools import chain
 
 from oms_sdk.generated.generated_graphql_client.enums import Action
 
+from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import (
@@ -51,6 +52,7 @@ class ObjectMinimumsSensemakerController(SensemakerController):
                 "object minimums",
                 ObjectMinimums(
                     self.oms_crud_tool,
+                    ontology_service,
                     ObjectMinimumDataRetriever(),
                     ObjectMinimumRubric(),
                     rubric_criteria,

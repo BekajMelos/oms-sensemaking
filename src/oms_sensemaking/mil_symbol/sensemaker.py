@@ -237,7 +237,7 @@ class MilSymbolSensemaker(Sensemaker):
         :param oms_node: Node to grab the status for
         :return: The Node's ancestor's iri list
         """
-        return self._ontology_service.mil_symbol_get_node_ancestors_iris(oms_node)
+        return self._ontology_service.get_node_ancestors_iris(oms_node)
 
     def publish_attributes(
         self, oms_node: NodeNode, symbol_code_updates: List[SymbolCodeUpdate], source_id: uuid.UUID

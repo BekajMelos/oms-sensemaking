@@ -18,7 +18,7 @@ def test_ontology_service(mocker: MockerFixture):
 
     svc.get_ontology_class("https://some/iri")
     svc.geospatial_get_node_ancestors_iris(node)
-    svc.mil_symbol_get_node_ancestors_iris(node)
+    svc.get_node_ancestors_iris(node)
     svc.get_default_symbol_id_code("https://some/iri")
 
 
