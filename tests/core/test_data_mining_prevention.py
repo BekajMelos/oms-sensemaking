@@ -42,9 +42,9 @@ class TestDataMiningPreventionConfig:
 
             assert settings.db_pool_size == 15, f"Expected db_pool_size=15, got {settings.db_pool_size}"
             assert settings.db_max_overflow == 25, f"Expected db_max_overflow=25, got {settings.db_max_overflow}"
-            assert (
-                settings.db_pool_timeout_seconds == 45
-            ), f"Expected db_pool_timeout_seconds=45, got {settings.db_pool_timeout_seconds}"
+            assert settings.db_pool_timeout_seconds == 45, (
+                f"Expected db_pool_timeout_seconds=45, got {settings.db_pool_timeout_seconds}"
+            )
 
 
 class TestDatabaseConnectionPooling:
@@ -58,12 +58,12 @@ class TestDatabaseConnectionPooling:
         # Verify pool settings
         assert pool._pre_ping is True, "pool_pre_ping should be True"
         assert pool.size() == SETTINGS.db_pool_size, f"Expected pool_size={SETTINGS.db_pool_size}, got {pool.size()}"
-        assert (
-            pool._max_overflow == SETTINGS.db_max_overflow
-        ), f"Expected max_overflow={SETTINGS.db_max_overflow}, got {pool._max_overflow}"
-        assert (
-            pool._timeout == SETTINGS.db_pool_timeout_seconds
-        ), f"Expected pool_timeout={SETTINGS.db_pool_timeout_seconds}, got {pool._timeout}"
+        assert pool._max_overflow == SETTINGS.db_max_overflow, (
+            f"Expected max_overflow={SETTINGS.db_max_overflow}, got {pool._max_overflow}"
+        )
+        assert pool._timeout == SETTINGS.db_pool_timeout_seconds, (
+            f"Expected pool_timeout={SETTINGS.db_pool_timeout_seconds}, got {pool._timeout}"
+        )
 
     def test_pool_pre_ping_enabled(self):
         """Test that pool_pre_ping is enabled to handle stale connections."""
