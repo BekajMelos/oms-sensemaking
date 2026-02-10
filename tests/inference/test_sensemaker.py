@@ -5,7 +5,7 @@ import pytest
 # Assuming your imports
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.domain.area_of_interest.base import AOIExtractor
-from oms_sensemaking.inference.rules.incursions import Incursion
+from oms_sensemaking.inference.rules.incursions import IncursionSensemaker
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def test_init_adds_rules_based_on_settings(mocker, mock_engine, mock_crud_tool, 
     mock_settings.toggle_add_garrison_rule = True
     mock_settings.toggle_incursion_rule = True
 
-    sensemaker = Incursion(mock_extractor, mock_crud_tool)
+    sensemaker = IncursionSensemaker(mock_extractor, mock_crud_tool)
     print("Config rules:", sensemaker.config["rules"])
     print("Add_rule calls:", mock_engine.return_value.add_rule.call_args_list)
 
