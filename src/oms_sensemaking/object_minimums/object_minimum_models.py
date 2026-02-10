@@ -7,6 +7,14 @@ from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
     RelationshipsRelationshipsData,
 )
+from pydantic import BaseModel, Field
+
+
+class RequiredIris(BaseModel):
+    """Required attribute and relationship IRIs for a rubric."""
+
+    attribute_iris: list[str] = Field(default_factory=list)
+    relationship_iris: list[str] = Field(default_factory=list)
 
 
 class ObjectMinimumGrade:

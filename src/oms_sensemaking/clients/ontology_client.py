@@ -17,7 +17,7 @@ class OntologyService(Protocol):
         """Return a unique set of ancestor IRIs"""
         pass
 
-    def mil_symbol_get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
+    def get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
         """Return a list of ancestor IRIs"""
         pass
 
@@ -61,19 +61,16 @@ class OntologyClient(OntologyService):
 
         return iris
 
-    def mil_symbol_get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
+    def get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
         """Get ancestor's iris.
 
         :param oms_node: Node to grab the status for
         :return: The Node's ancestor's iri list
         """
-
         # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
-
         iris = []
-        has_parent = True
         current_iri = oms_node.classIri
-        while has_parent:
+        while True:
             ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=current_iri)
 
             if not ontology_class or not ontology_class.parentOntologyClasses:
