@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Extended Kalman Filter to track weaver algorithms.
 
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.

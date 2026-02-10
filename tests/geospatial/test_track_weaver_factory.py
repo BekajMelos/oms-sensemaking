@@ -8,7 +8,7 @@ def test_builds_valid_weaver():
     Do a simple check to make sure it built a track weaver
     """
     factory = TrackWeaverFactory()
-    track_weavers = ["naive", "time_bin_weighted_average"]
+    track_weavers = ["extended_kalman_filter", "naive", "time_bin_weighted_average"]
     for track_weaver in track_weavers:
         strategy = factory.make_track_weaver(track_weaver)
         assert strategy is not None

@@ -21,6 +21,7 @@ dependencies = [
     'fastapi[standard]==0.128.2',
     'fastapi-offline==1.7.6',
     'fastkml==1.4.0',
+    'filterpy~=1.4.5',
     'geoalchemy2==0.18.1',
     'pygeohash==3.2.2',
     'geopy==2.4.1',
