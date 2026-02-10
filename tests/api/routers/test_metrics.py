@@ -92,9 +92,9 @@ class TestMetricsEndpoints:
             if response.status_code == 404:
                 pytest.skip("Test endpoints are disabled. Set TOGGLE_TEST_ENDPOINTS=true to enable them.")
 
-            assert (
-                response.status_code == 200
-            ), f"Expected 200 for queue {queue_name}, got {response.status_code}: {response.text}"
+            assert response.status_code == 200, (
+                f"Expected 200 for queue {queue_name}, got {response.status_code}: {response.text}"
+            )
 
             data = response.json()
             assert "message" in data
@@ -122,9 +122,9 @@ class TestMetricsEndpoints:
             if response.status_code == 404:
                 pytest.skip("Test endpoints are disabled. Set TOGGLE_TEST_ENDPOINTS=true to enable them.")
 
-            assert (
-                response.status_code == 200
-            ), f"Expected 200 for payload {i + 1}, got {response.status_code}: {response.text}"
+            assert response.status_code == 200, (
+                f"Expected 200 for payload {i + 1}, got {response.status_code}: {response.text}"
+            )
 
             data = response.json()
             assert "message" in data
