@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Apply throttle settings updates at application start-ups and runtime, via call to `PATCH /settings`.
 
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
+- Support two settings endpoints: `PATCH /settings` to update any settings at runtime and future start-ups, and `GET /settings` to get all settings stored for admin dashboard.
+
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
