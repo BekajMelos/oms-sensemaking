@@ -14,6 +14,8 @@ import geopy.distance as gd
 import numpy
 import pygeohash as pgh
 from dateutil.parser import isoparse
+from filterpy.common.discretization import Q_discrete_white_noise
+from filterpy.kalman import ExtendedKalmanFilter
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
@@ -446,6 +448,101 @@ class TimeBinTrackWeaver(TrackWeaverBase):
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
             acm=aac_client.get_acm_rollup([point.acm for point in weighted_points]),
+            provider_id=provider_id,
+        )
+
+
+class ExtendedKalmanTrackWeaver(TrackWeaverBase):
+    """
+    A track weaver that uses an Extended Kalman Filter to smooth Points. Points are converted into ECEF
+    coordinates for the Kalman Filter, then converted back to lat/lon for the final Point.
+    """
+
+    def __init__(self) -> None:
+        """Create a new instance of ExtendedKalmanTrackWeaver."""
+        super().__init__()
+
+        self.version = (1, 1, 0)
+        self.name = self.__class__.__name__
+        self.process_noise = 0.01
+        self.measurement_noise = 0.001
+        self.dimensions = 2
+        self.ekf = ExtendedKalmanFilter(dim_x=self.dimensions, dim_z=self.dimensions)
+        self.dt: float = 0.0
+        self.algorithm = "extended_kalman_filter"
+
+    def _init_ekf(self, point: Point):
+        """
+        Initialize the Kalman filter with the first Point in the list.
+        :param point: The first Point in the list.
+        :return: A Kalman filter object. Used to smooth the Points.
+        """
+        self.ekf.x = numpy.array([[point.coordinates[0]], [point.coordinates[1]]])  # type: ignore
+        self.ekf.F = numpy.eye(self.dimensions)  # State transition matrix
+        self.ekf.P = numpy.eye(self.dimensions)
+        self.ekf.R = numpy.eye(self.dimensions) * self.measurement_noise  # Measurement noise
+        self.ekf.Q = Q_discrete_white_noise(dim=self.dimensions, dt=self.dt, var=self.process_noise)  # Process noise
+
+    def process_point(self, point: Point) -> dict:
+        """
+        Process a Point through the Kalman filter.
+        :param point: The Point to process.
+        :return: A dictionary with the smoothed Point attributes.
+        """
+        weight = point.weight
+
+        self.ekf.predict()
+        measurement = numpy.array([[point.coordinates[0]], [point.coordinates[1]]])  # type: ignore
+
+        # Update the Kalman filter with the measurement
+        self.ekf.Q = Q_discrete_white_noise(dim=self.dimensions, dt=self.dt, var=self.process_noise)
+        self.ekf.R = (
+            (numpy.eye(self.dimensions) * self.measurement_noise) / weight
+            if weight > 0
+            else numpy.eye(self.dimensions) / self.measurement_noise**6
+        )
+
+        self.ekf.update(measurement, HJacobian=lambda _: numpy.eye(self.dimensions), Hx=lambda x: x[: self.dimensions])
+        smoothed_position = self.ekf.x[: self.dimensions]
+
+        return {
+            "node_id": point.node_id,
+            "node_version": point.node_version,
+            "source_id": point.source_id,
+            "observation_id": point.observation_id,
+            "observation_version": point.observation_version,
+            "altitude": point.altitude,
+            "detection_time": point.detection_time,
+            "location": f"Point({round(smoothed_position[0, 0], 5)} {round(smoothed_position[1, 0], 5)})",
+            "acm": point.acm,
+            "observation_confidence": point.observation_confidence,
+            "weight": point.weight,
+        }
+
+    def execute(self, points: list[Point], provider_id: uuid.UUID) -> Track:
+        points.sort(key=lambda x: x.detection_time)
+        self._init_ekf(points[0])
+        smoothed_points: list[Point] = [points[0]]
+
+        with db_session() as db:
+            db.expire_on_commit = False
+            for point in points[1:]:
+                self.dt = (point.detection_time - smoothed_points[-1].detection_time).total_seconds()
+                smoothed_point, _ = Point.get_or_create(db, defaults=None, **self.process_point(point))
+                smoothed_points.append(smoothed_point)
+
+        grouped_by_confidence: dict[Confidence, list[Point]] = {}
+        for point in points:
+            if point.observation_confidence not in grouped_by_confidence:
+                grouped_by_confidence[point.observation_confidence] = []
+            grouped_by_confidence[point.observation_confidence].append(point)
+
+        return Track(
+            points=smoothed_points,
+            node_id=smoothed_points[0].node_id,
+            algorithm=self.algorithm,
+            observation_ids={p.observation_id for p in points},  # type: ignore
+            acm=aac_client.get_acm_rollup([point.acm for point in smoothed_points]),
             provider_id=provider_id,
         )
 

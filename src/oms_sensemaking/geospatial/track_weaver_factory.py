@@ -1,4 +1,4 @@
-from oms_sensemaking.models.geo import NaiveTrackWeaver, TimeBinTrackWeaver, TrackWeaverBase
+from oms_sensemaking.models.geo import ExtendedKalmanTrackWeaver, NaiveTrackWeaver, TimeBinTrackWeaver, TrackWeaverBase
 
 
 class TrackWeaverFactory:
@@ -11,6 +11,8 @@ class TrackWeaverFactory:
     def make_track_weaver(self, algorithm: str) -> TrackWeaverBase:
         """Build a new track weaver instance"""
         match algorithm:
+            case "extended_kalman_filter":
+                return ExtendedKalmanTrackWeaver()
             case "naive":
                 return NaiveTrackWeaver()
             case "time_bin_weighted_average":

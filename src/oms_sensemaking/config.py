@@ -446,7 +446,7 @@ class Settings(BaseSettings):
     track_weaver_algorithm: str = Field(
         "naive",
         description="The algorithm to use for making tracks",
-        examples=["naive", "time_bin_weighted_average"]
+        examples=["extended_kalman_filter","naive", "time_bin_weighted_average"]
     )
     time_bin_size_seconds: int = Field(
         60,

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Extended Kalman Filter to track weaver algorithms.
 - Apply throttle settings updates at application start-ups and runtime, via call to `PATCH /settings`.
 
 ### Changed
@@ -12,7 +13,6 @@ All notable changes to this project will be documented in this file.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
 - Object Minimum rubric applies to the most specific class now.
 - Support two settings endpoints: `PATCH /settings` to update any settings at runtime and future start-ups, and `GET /settings` to get all settings stored for admin dashboard.
-
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
