@@ -8,8 +8,6 @@ from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivityActivity,
     ActivityQuery,
-    AttributeAttribute,
-    AttributeType,
     Confidence,
     CreateActivityInput,
     GeoQuery,
@@ -53,51 +51,6 @@ def areas_of_interest(observational_node_region1, observational_node_region2, ob
         else:
             test_aois[3] = aoi
     return test_aois
-
-
-# Mocked nodes
-@pytest.fixture
-def attribute1(mocker: MockerFixture, areas_of_interest):
-    """
-    An existing incursion attribute
-    """
-    attr = mocker.Mock(spec=AttributeAttribute)
-    attr.id = "incAttr1"
-    attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_incursion_attribute_iri
-    attr.attributeName = SETTINGS.inference_incursion_attribute_iri.split("/")[-1]
-    attr.attributeValue = "Incursion"
-    attr.attributeType = AttributeType.GEOSPATIAL
-    attr.confidence = Confidence.MODERATE
-    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.activityId = "incActi1"
-    attr.geometry = areas_of_interest[0].geometry_dict
-    attr.valueStart = "2024-01-01T00:00:00+00:00"
-    attr.valueEnd = "2024-05-01T00:00:00+00:00"
-    attr.labels = []
-    return attr
-
-
-@pytest.fixture
-def attribute2(mocker: MockerFixture, areas_of_interest):
-    """
-    An existing incursion attribute
-    """
-    attr = mocker.Mock(spec=AttributeAttribute)
-    attr.id = "incAttr2"
-    attr.acm = DEFAULT_ACM
-    attr.attributeIri = SETTINGS.inference_incursion_attribute_iri
-    attr.attributeName = SETTINGS.inference_incursion_attribute_iri.split("/")[-1]
-    attr.attributeValue = "Incursion"
-    attr.attributeType = AttributeType.GEOSPATIAL
-    attr.confidence = Confidence.MODERATE
-    attr.sourceId = "559cf331-ac45-4a78-816a-b4b3835d3dbd"
-    attr.activityId = "incActi2"
-    attr.geometry = areas_of_interest[0].geometry_dict
-    attr.valueStart = "2022-01-01T00:00:00+00:00"
-    attr.valueEnd = "2023-01-01T00:00:00+00:00"
-    attr.labels = []
-    return attr
 
 
 @pytest.fixture
