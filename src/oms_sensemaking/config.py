@@ -319,10 +319,6 @@ class Settings(BaseSettings):
     inference_incursion_class_iri: str = Field(
         CommonVars.intentional_act_iri, description="IRI for incursion class"
     )
-    inference_incursion_attribute_iri: str = Field(
-        CommonVars.has_coords_iri,
-        description="IRI for incursion attribute"
-    )
     inference_geo_attribute_iri: str = Field(
         CommonVars.has_coords_iri, description="IRI for geo attribute"
     )

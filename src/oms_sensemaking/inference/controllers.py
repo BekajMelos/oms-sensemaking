@@ -25,8 +25,10 @@ class InferenceSensemakerController(SensemakerController):
         # check to make sure its starting
         """Start the controller."""
         if SETTINGS.generate_inferences:
-            self.register("incursion", IncursionSensemaker(RealAOIDataExtractor(), self.oms_crud_tool))
-            self.register("garrison", InOrOutOfGarrison(self.oms_crud_tool))
+            if SETTINGS.toggle_incursion_rule:
+                self.register("incursion", IncursionSensemaker(RealAOIDataExtractor(), self.oms_crud_tool))
+            if SETTINGS.toggle_add_garrison_rule:
+                self.register("garrison", InOrOutOfGarrison(self.oms_crud_tool))
 
         super().start()
 
