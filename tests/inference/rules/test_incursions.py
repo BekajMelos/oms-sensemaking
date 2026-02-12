@@ -415,7 +415,6 @@ def test_existing_incursion_nonoverlapping_time(
     mock_aac_client,
     observational_node_region1,
     incurring_object,
-    attribute2,
     mock_get_observations,
     areas_of_interest,
     activity1,
