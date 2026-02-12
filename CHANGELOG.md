@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.24.0] - 2026-02-12
+
+### Added
 - Added Extended Kalman Filter to track weaver algorithms.
 
 ### Changed
