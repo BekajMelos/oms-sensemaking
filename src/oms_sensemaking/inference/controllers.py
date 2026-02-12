@@ -9,7 +9,7 @@ from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, EventFilter
 from oms_sensemaking.domain.area_of_interest.aoi_extractor import RealAOIDataExtractor
 from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
-from oms_sensemaking.inference.rules.incursions import Incursion
+from oms_sensemaking.inference.rules.incursions import IncursionSensemaker
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class InferenceSensemakerController(SensemakerController):
         # check to make sure its starting
         """Start the controller."""
         if SETTINGS.generate_inferences:
-            self.register("incursion", Incursion(RealAOIDataExtractor(), self.oms_crud_tool))
+            self.register("incursion", IncursionSensemaker(RealAOIDataExtractor(), self.oms_crud_tool))
             self.register("garrison", InOrOutOfGarrison(self.oms_crud_tool))
 
         super().start()
