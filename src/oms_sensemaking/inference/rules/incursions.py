@@ -233,10 +233,10 @@ class IncursionSensemaker(Sensemaker):
             response = self.oms_crud_tool.oms_client.incursion_data(
                 query=activity_query,
                 incursionAttributeValue=StringQuery(equals="Incursion"),
-                incursionAttributeIris=[SETTINGS.inference_incursion_attribute_iri],
+                incursionAttributeIris=[SETTINGS.incursion_settings.attribute_iri],
                 incursionAttributeType=AttributeTypeQuery(is_=AttributeType.GEOSPATIAL),
                 attributeGeometry=GeoQuery(queryGeoJson=feature_of_interest.geometry_dict),
-                incursionTags=SETTINGS.incursion_tags,
+                incursionTags=SETTINGS.incursion_settings.tags,
             )
             activities_layer = response.data or []
             incursion_activities.extend(activities_layer)
@@ -313,17 +313,17 @@ class IncursionSensemaker(Sensemaker):
         description = f"Incursion Activity by object: {observation.nodeId}"
         incursion_activity = CreateActivityInput(
             acm=observation.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,
                 SETTINGS.incursion_sm_label,
                 self.version_string,
             ],
-            classIri=SETTINGS.inference_incursion_class_iri,
+            classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=self._truncate_activity_description(description),
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             nodeId=observation.nodeId,
             observationIds=[observation.id],
             startTime=observation.startTime,
@@ -333,14 +333,14 @@ class IncursionSensemaker(Sensemaker):
 
         # Create new incursion attribute pointing to activity describing incurring object
         incursion_attribute = CreateAttributeInput(
-            attributeIri=SETTINGS.inference_incursion_attribute_iri,
+            attributeIri=SETTINGS.incursion_settings.attribute_iri,
             attributeValue="Incursion",
             attributeType=AttributeType.GEOSPATIAL,
             confidence=observation.confidence,
             sourceId=observation.sourceId,
             activityId=new_incursion_activity.id,
             acm=observation.acm,
-            tags=SETTINGS.incursion_tags,
+            tags=SETTINGS.incursion_settings.tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
                 SETTINGS.inference_sm_label,

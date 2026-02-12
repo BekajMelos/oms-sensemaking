@@ -135,7 +135,8 @@ class GeospatialSensemakerController(SensemakerController):
             return True
 
         # Ensure node has associated track ID
-        track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
+        with self.lock:
+            track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
 
         # Retrieve node version
         node = self.oms_crud_tool.get_node(oms_obs.nodeId)
@@ -168,7 +169,7 @@ class GeospatialSensemakerController(SensemakerController):
                             "node_version": int(node_version),
                             "observation_version": int(oms_obs.version),
                         },
-                        location=f'Point({point_data["coordinates"][0]} {point_data["coordinates"][1]})',
+                        location=f"Point({point_data['coordinates'][0]} {point_data['coordinates'][1]})",
                         node_id=self._ensure_uuid(oms_obs.nodeId),
                         observation_id=self._ensure_uuid(oms_obs.id),
                         observation_confidence=oms_obs.confidence,
@@ -260,7 +261,9 @@ class GeospatialSensemakerController(SensemakerController):
                 # Thread-safe cleanup of expired track data
                 self.track_times[track_uuid] = None
                 self.track_node_buffer.pop(track_uuid, None)
-                self.node_track_mapping = {k: v for k, v in self.node_track_mapping.items() if v != track_uuid}
+                keys_to_delete = [k for k, v in self.node_track_mapping.items() if v == track_uuid]
+                for k in keys_to_delete:
+                    del self.node_track_mapping[k]
 
         return True
 

@@ -3,7 +3,7 @@
 from typing import Any
 
 import sqlalchemy as sa
-from sqlalchemy import String, text
+from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
@@ -18,7 +18,7 @@ class SettingsMixin(MappedAsDataclass):
     )
 
     field_value: Mapped[Any] = mapped_column(
-        JSONB(astext_type=text("text")),
+        JSONB(astext_type=Text()),
         nullable=False,
         comment="The value of the field, stored as JSONB to preserve data type integrity.",
     )

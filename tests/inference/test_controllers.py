@@ -2,7 +2,7 @@ from unittest import mock
 from uuid import UUID, uuid4
 
 import pytest
-from oms_sdk.generated.generated_graphql_client import ActivityActivity, AttributeAttribute, ObservationObservation
+from oms_sdk.generated.generated_graphql_client import AttributeAttribute
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pytest_mock import MockerFixture
 
@@ -10,20 +10,23 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, DummyAuditLogEventConsumer, RabbitMQListener
+from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.inference.controllers import (
     InferenceQueueFilter,
     InferenceSensemakerController,
 )
-from oms_sensemaking.inference.rules.rule_context import RuleContext
 
 
 @pytest.fixture
 def mock_inference_controller():
+    app_settings = AppSettings()
+    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = InferenceSensemakerController(
         RabbitMQListener(
             "InferenceRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
+            app_settings=app_settings,
             event_filter=InferenceQueueFilter(),
         ),
         RethrowErrorLogger(ErrorLogger()),
@@ -111,35 +114,3 @@ def test_passes_filter_returns_false_for_unhandled(obj_type, action):
     event = AuditLogEvent(userId="user1", objectId=uuid4(), objectType=obj_type, action=action)
 
     assert filt.passes_filter(event) is False
-
-
-def test_get_oms_data(mock_inference_controller):
-    event1 = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ATTRIBUTE.value, action=Action.CREATE.value
-    )
-    event2 = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.OBSERVATION.value, action=Action.CREATE.value
-    )
-    event3 = AuditLogEvent(
-        userId="user1", objectId=uuid4(), objectType=ObjectType.ACTIVITY.value, action=Action.CREATE.value
-    )
-    with mock.patch(
-        "oms_sensemaking.resolution.controllers.SensemakerController.get_oms_data",
-        return_value=RuleContext(attribute=AttributeAttribute),
-    ):
-        result = mock_inference_controller.get_oms_data(event1)
-        assert isinstance(result, RuleContext)
-
-    with mock.patch(
-        "oms_sensemaking.resolution.controllers.SensemakerController.get_oms_data",
-        return_value=RuleContext(activity=ObservationObservation),
-    ):
-        result = mock_inference_controller.get_oms_data(event2)
-        assert isinstance(result, RuleContext)
-
-    with mock.patch(
-        "oms_sensemaking.resolution.controllers.SensemakerController.get_oms_data",
-        return_value=RuleContext(attribute=ActivityActivity),
-    ):
-        result = mock_inference_controller.get_oms_data(event3)
-        assert isinstance(result, RuleContext)

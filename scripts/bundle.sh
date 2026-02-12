@@ -17,9 +17,4 @@ fi
 git bundle create ../$REPO.bundle --all
 printf "Created bundle at ../$REPO.bundle\n\n"
 
-# If Git LFS is enabled
-git lfs fetch --all
-tar -czf ../$REPO-lfs.tar lfs
-echo Created lfs tar at ../$REPO-lfs.tar
-
 cd ../$REPO

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -112,10 +112,10 @@ def test_potential_match_post_init(
     "start_time1, start_time2, last_time1, last_time2, valid_cotravel_duration",
     [
         (
-            datetime.utcnow(),
-            datetime.utcnow(),
-            datetime.utcnow() + timedelta(seconds=15),
-            datetime.utcnow() + timedelta(seconds=15),
+            datetime.now(UTC),
+            datetime.now(UTC),
+            datetime.now(UTC) + timedelta(seconds=15),
+            datetime.now(UTC) + timedelta(seconds=15),
             True,
         ),
     ],

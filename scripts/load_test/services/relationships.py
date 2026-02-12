@@ -1,9 +1,11 @@
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import CreateRelationshipInput
 
-from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.config import OutOfGarrisonSettings
 
 from ..atoms_client import atoms_client
+
+garrison_settings = OutOfGarrisonSettings()
 
 
 def assign_garrisons(units, garrisons, sourcing):
@@ -19,7 +21,7 @@ def assign_garrisons(units, garrisons, sourcing):
                 endNodeId=g.facility.id,
                 sourceId=sourcing.source.id,
                 confidence="LOW",
-                objectPropertyIri=SETTINGS.inference_garrisoned_in_iri,
+                objectPropertyIri=garrison_settings.garrisoned_in_relationship_iri,
             )
         )
         rels.append(rel)

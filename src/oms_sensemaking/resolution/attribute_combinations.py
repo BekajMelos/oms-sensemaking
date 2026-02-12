@@ -42,7 +42,10 @@ class AttributeCombinations:
     """
 
     def __init__(
-        self, attribute: AttributeAttribute, oms_crud_tool: OmsCrudTool, duplicate_object_iris: dict[str, list[str]]
+        self,
+        attribute: AttributeAttribute,
+        oms_crud_tool: OmsCrudTool,
+        duplicate_object_iris: dict[str, list[list[str]]],
     ) -> None:
         """Create a new instance of AttributeCombinations creator class."""
         self.attribute = attribute
@@ -58,24 +61,39 @@ class AttributeCombinations:
         of attributes which may match to other nodes' attributes
         """
 
-        identifiers = self.duplicate_object_iris[node_iri]
-        criteria = Criteria(identifiers)
+        criteria_sets = self.duplicate_object_iris.get(node_iri, [])
+        if not criteria_sets:
+            return []
+
         current_iri = self.attribute.attributeIri
-        other_iris = criteria.without(current_iri)
+        node_id = self.attribute.nodeId
 
-        # default to current attribute
-        groups = [[self.attribute]]
+        all_groups: list[list[AttributeAttribute]] = []
 
-        if len(criteria) > 1:
-            other_attrs = self.oms_crud_tool.get_node_attribute_by_iri(self.attribute.nodeId, other_iris)
-            groups.extend(self.attribute_combinator(other_attrs))
+        for criteria in criteria_sets:
+            # Only consider criteria sets that include the triggering attribute
+            if current_iri not in criteria:
+                continue
 
-        return [g for g in groups if len(g) == len(criteria)]
+            required_other_iris = [iri for iri in criteria if iri != current_iri]
 
-    def attribute_combinator(self, other_attrs: list[AttributeAttribute]) -> list[list[AttributeAttribute]]:
+            # Single-attribute criteria (e.g. SK only)
+            if not required_other_iris:
+                if self.attribute.attributeValue != "":
+                    all_groups.append([self.attribute])
+                continue
+
+            other_attrs = self.oms_crud_tool.get_node_attribute_by_iri(node_id, required_other_iris)
+
+            all_groups.extend(self.attribute_combinator(criteria, other_attrs))
+
+        return all_groups
+
+    def attribute_combinator(
+        self, criteria: list[str], other_attrs: list[AttributeAttribute]
+    ) -> list[list[AttributeAttribute]]:
         """
-        A helper function used to create various combinations of attributes associated
-        with a node
+        Create valid attribute combinations that fully satisfy ONE criteria set.
 
         :param other_attrs: A list of attributes associated with a node that
         exclude the current attribute being examined
@@ -87,7 +105,11 @@ class AttributeCombinations:
         for attr in other_attrs:
             attr_dict.setdefault(attr.attributeIri, []).append(attr)
 
-        attr_groups = list(attr_dict.values())
+        # Exit if we're missing required attributes entirely
+        if any(iri not in attr_dict for iri in criteria if iri != self.attribute.attributeIri):
+            return []
+
+        attr_groups = [attr_dict[iri] for iri in criteria if iri != self.attribute.attributeIri]
         valid_combinations = []
 
         for combo in product(*attr_groups):

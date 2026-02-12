@@ -25,7 +25,7 @@ test: ## Run all tests
 	python -m pytest $(PYTEST_FLAGS) --cov-fail-under=80
 
 unit-test: ## Run unit tests
-	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=79.5
+	python -m pytest tests $(PYTEST_FLAGS) --cov-fail-under=80
 
 int-test: ## Run integration tests
 	python -m pytest tests_int $(PYTEST_FLAGS)
@@ -86,8 +86,8 @@ stop: ## Stop atoms-sensemaking docker environment
 down: ## Stop atoms-sensemaking docker environment and remove containers
 	docker compose down
 
-shell: ## Open a shell inside the atoms_sensemaking container
-	@docker compose exec atoms_sensemaking /bin/bash
+shell: ## Open a shell inside the atoms-sensemaking container
+	@docker compose exec atoms-sensemaking /bin/bash
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis

@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from oms_sdk.generated.generated_graphql_client import (
@@ -14,37 +14,21 @@ from oms_sensemaking.async_example.sensemakers.example import ExampleAsyncSensem
 
 @pytest.fixture
 def input_attribute() -> AttributeAttribute:
-    attr = AttributeAttribute(
-        id=MagicMock(),
-        version=MagicMock(),
-        attributeName="Name",
-        attributeIri="Name",
-        authoritySetBy="test_user",
-        authoritySetAtTime=MagicMock(),
-        authorityValue=AuthorityValue.DIAP,
-        attributeValue="John",
-        attributeType=AttributeType.STRING,
-        confidence=Confidence.HIGH,
-        sourceId="source_123",
-        nodeId="node_984",
-        acm=MagicMock(),
-        tags=[],
-        labels=[],
-        isMutable=True,
-        isReviewed=False,
-        isAuthoritative=False,
-        isUserEntered=True,
-        attributeDisplayValue=None,
-        attributeNormalizedValue=None,
-        geometry=None,
-        sourceType=None,
-        observationId=None,
-        activityId=None,
-        valueStart=None,
-        valueEnd=None,
-        reviewedBy=None,
-        reviewedAt=None,
-    )
+    attr = Mock(spec=AttributeAttribute)
+    attr.id = MagicMock()
+    attr.version = MagicMock()
+    attr.attributeName = "Name"
+    attr.attributeIri = "Name"
+    attr.authoritySetBy = "test_user"
+    attr.authoritySetAtTime = MagicMock()
+    attr.authorityValue = AuthorityValue.DIAP
+    attr.attributeValue = "John"
+    attr.attributeType = AttributeType.STRING
+    attr.confidence = Confidence.HIGH
+    attr.sourceId = "source_123"
+    attr.nodeId = "node_984"
+    attr.acm = MagicMock()
+    attr.tags = []
     return attr
 
 

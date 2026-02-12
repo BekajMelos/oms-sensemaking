@@ -17,7 +17,7 @@ from scripts.load_test.atoms_client import atoms_client
 
 def progress(label: str, i: int, total: int):
     """Single-line progress indicator."""
-    print(f"{label}: {i+1}/{total}", end="\r")
+    print(f"{label}: {i + 1}/{total}", end="\r")
     if i + 1 == total:
         print()  # newline at the end
 

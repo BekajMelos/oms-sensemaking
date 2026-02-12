@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from cachetools import TTLCache, cached
@@ -49,6 +49,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ProviderQuery,
     ProvidersProviders,
     RelationshipQuery,
+    RelationshipRelationship,
     RelationshipsRelationships,
     SourceQuery,
     SourceSource,
@@ -204,6 +205,11 @@ class OmsCrudTool(BaseClient):
         observation = self.oms_client.observation(IdQuery(id=id))
         return observation
 
+    def get_relationship(self, id: UUID) -> RelationshipRelationship:
+        """Get existing Relationship from ATOMS"""
+        relationship = self.oms_client.relationship(IdQuery(id=id))
+        return relationship
+
     def get_nodes(self, node_info: NodeQuery) -> NodesNodes:
         """Get existing Node from ATOMS"""
         nodes = self.oms_client.nodes(query=node_info)
@@ -334,11 +340,12 @@ class OmsCrudTool(BaseClient):
         :param object_id: Id of ATOMS object to retrieve
         :param object_type: ObjectType type of object to retrieve
         """
-        obj_getter_mapping = {
+        obj_getter_mapping: Dict[ObjectType, Any] = {
             ObjectType.ACTIVITY: self.get_activity,
             ObjectType.ATTRIBUTE: self.get_attribute,
             ObjectType.OBSERVATION: self.get_observation,
             ObjectType.NODE: self.get_node,
+            ObjectType.RELATIONSHIP: self.get_relationship,
         }
 
         return obj_getter_mapping[object_type](object_id)
