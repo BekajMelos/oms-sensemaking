@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
 
 ### Changed
 
