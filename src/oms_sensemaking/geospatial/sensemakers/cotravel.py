@@ -10,7 +10,7 @@ from uuid import UUID
 
 from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import (
-    CreateEventInput,
+    CreateActivityInput,
     CreateRelationshipInput,
 )
 from oms_sdk.generated.generated_graphql_client.enums import Confidence
@@ -37,9 +37,9 @@ class CotravelType(enum.Enum):
         if cotravel_type == cls.potential_duplicate:
             return SETTINGS.potential_duplicate_relationship_name
         if cotravel_type == cls.cotravel:
-            return SETTINGS.cotravel_event_name
+            return SETTINGS.cotravel_activity_name
         if cotravel_type == cls.lag_lead:
-            return SETTINGS.lag_lead_event_name
+            return SETTINGS.lag_lead_activity_name
 
         raise ValueError("Invalid CotravelType")
 
@@ -213,12 +213,10 @@ class CotravelSensemaker(Sensemaker):
         super().__init__()
         self.version = (1, 0, 0)
         self.config = {
-            "cotravel_event_attribute_iri": SETTINGS.cotravel_event_attribute_iri,
             "cotravel_relationship_iri": SETTINGS.cotravel_relationship_iri,
-            "cotravel_track_to_event_relation_name": SETTINGS.cotravel_track_to_event_relation_name,
-            "cotravel_event_iri": SETTINGS.cotravel_event_iri,
-            "cotravel_event_name": SETTINGS.cotravel_event_name,
-            "lag_lead_event_name": SETTINGS.lag_lead_event_name,
+            "cotravel_activity_iri": SETTINGS.cotravel_activity_iri,
+            "cotravel_activity_name": SETTINGS.cotravel_activity_name,
+            "lag_lead_activity_name": SETTINGS.lag_lead_activity_name,
             "geo_sensemaker_event_tag": SETTINGS.geo_sensemaker_event_tag,
         }
         self.oms_crud_tool = oms_crud_tool
@@ -516,19 +514,48 @@ class CotravelSensemaker(Sensemaker):
             self.version_string,
         ]
 
-        create_event_input = CreateEventInput(
+        create_activity_input1 = CreateActivityInput(
             acm=cotravel.get_acm(),
             tags=tags,
             labels=labels,
-            classIri=SETTINGS.cotravel_event_iri,
+            classIri=SETTINGS.cotravel_activity_iri,
             name=name,
-            nodeIds=[cotravel.track1.node_id, cotravel.track2.node_id],
-            geometry=cotravel.to_geojson(),
+            state=SETTINGS.cotravel_activity_state,
             sourceId=source_id,
+            nodeId=cotravel.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
         )
-        published_event = self.oms_crud_tool.create_event(event_input=create_event_input)
-        # Save the created event id and type
-        cotravel.atoms_id = published_event.id
-        cotravel.atoms_type = AtomsType.EVENTS
+        create_activity_input2 = CreateActivityInput(
+            acm=cotravel.get_acm(),
+            tags=tags,
+            labels=labels,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=source_id,
+            nodeId=cotravel.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
+        )
+
+        self.oms_crud_tool.publish_activities([create_activity_input1, create_activity_input2])
+
+        create_relationship_input = CreateRelationshipInput(
+            tags=tags,
+            labels=labels,
+            name=f"{name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
+            sourceId=source_id,
+            confidence=Confidence.UNKNOWN,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+        )
+
+        published_relationship = self.oms_crud_tool.create_relationship(create_relationship_input)
+
+        cotravel.atoms_id = published_relationship.id
+        cotravel.atoms_type = AtomsType.RELATIONSHIP
