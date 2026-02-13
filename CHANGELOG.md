@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.24.0] - 2026-02-12
+
+### Added
 - Added Extended Kalman Filter to track weaver algorithms.
 - Apply throttle settings updates at application start-ups and runtime, via call to `PATCH /settings`.
 
@@ -68,6 +76,17 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
+
+## [0.19.5] - 2026-02-10
+
+### Added
+- The In/Out of Garrison Sensemaker now creates a finding type upon processing data
+- The Incursion Sensemaker now creates a finding type upon processing data
+
+### Changed
+- Grimlock now uses SDK version 12.0.0
+- Bump opentelemetry packages to resolve missing dependency
+- Mil Symbol Sensemaker pulls ACM from the node as a default when no other ACM is available through enrichment
 
 ## [0.19.4] - 2026-02-03
 

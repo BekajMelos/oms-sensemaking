@@ -177,15 +177,13 @@ def test_all_at_once_returns_garrison_data_with_activities(mock_oms_tool, obs, m
 
 def test_all_at_once_calls_custom_query_with_expected_params(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo_deprecated.return_value = _make_result(
-        garrison_coords=[30.0, 40.0]
-    )
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(garrison_coords=[30.0, 40.0])
 
     _ = retriever.get_all_garrison_data(obs)
 
     # Assert the SDK method is called and includes key args
-    mock_oms_tool.oms_client.in_out_garrison_with_geo_deprecated.assert_called_once()
-    kwargs = mock_oms_tool.oms_client.in_out_garrison_with_geo_deprecated.call_args.kwargs
+    mock_oms_tool.oms_client.in_out_garrison_with_geo.assert_called_once()
+    kwargs = mock_oms_tool.oms_client.in_out_garrison_with_geo.call_args.kwargs
 
     assert kwargs["id"] == obs.nodeId
     assert "garrisonIris" in kwargs
