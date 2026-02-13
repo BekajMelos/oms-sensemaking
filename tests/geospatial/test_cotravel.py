@@ -418,7 +418,7 @@ def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sam
     assert relationship_input.sourceId == sample_track.points[0].source_id
 
 
-def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_track):
+def test_publish_cotravel_creates_event(sensemaker, sample_track):
     # Arrange
     cotravel = MagicMock()
     cotravel.cotravel_type = CotravelType.cotravel
@@ -444,22 +444,6 @@ def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_trac
     create_event_input = sensemaker.oms_crud_tool.create_event.call_args.kwargs["event_input"]
     assert create_event_input.name == "Cotravel"
     assert create_event_input.acm == {"acm": "fake"}
-
-    # # Assert: relationships published
-    # sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
-    # relationships = sensemaker.oms_crud_tool.publish_relationships.call_args[0][0]
-    # assert len(relationships) == 2
-    # assert relationships[0].startNodeId == "node-id"
-    # assert relationships[0].endNodeId == "track1-id"
-    # assert relationships[1].endNodeId == "track2-id"
-
-    # Assert: attribute published
-    sensemaker.oms_crud_tool.publish_attributes.assert_called_once()
-    [attribute_input] = sensemaker.oms_crud_tool.publish_attributes.call_args[0][0]
-    assert attribute_input.eventId == "event-id"
-    assert attribute_input.geometry == {"type": "LineString"}
-    assert attribute_input.valueStart == "start"
-    assert attribute_input.valueEnd == "end"
 
 
 def test_set_cotravel_type_updates_finding_type():

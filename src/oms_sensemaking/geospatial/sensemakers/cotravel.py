@@ -10,11 +10,10 @@ from uuid import UUID
 
 from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import (
-    CreateAttributeInput,
     CreateEventInput,
     CreateRelationshipInput,
 )
-from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence
+from oms_sdk.generated.generated_graphql_client.enums import Confidence
 from shapely import LineString, MultiLineString
 from sqlalchemy import func, join, select
 
@@ -533,21 +532,3 @@ class CotravelSensemaker(Sensemaker):
         # Save the created event id and type
         cotravel.atoms_id = published_event.id
         cotravel.atoms_type = AtomsType.EVENTS
-
-        # attribute for geometry
-        created_attribute_input = CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=labels,
-            sourceId=source_id,
-            geometry=cotravel.to_geojson(),
-            eventId=published_event.id,
-            acm=cotravel.get_acm(),
-            valueStart=cotravel.start_time,
-            valueEnd=cotravel.last_time,
-        )
-        self.oms_crud_tool.publish_attributes([created_attribute_input])
