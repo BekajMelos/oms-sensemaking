@@ -1,6 +1,7 @@
 import copy
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
 import pytest
 from oms_sdk import DEFAULT_ACM
@@ -21,7 +22,7 @@ from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison
+from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison, OutOfGarrison
 
 
 # Mocked nodes
@@ -303,7 +304,59 @@ def make_in_out_garrison_response(coords):
     return SimpleNamespace(relationships=relationships)
 
 
+@pytest.fixture
+def test_observation():
+    observation = ObservationObservation(
+        id=uuid4(),
+        version="version",
+        acm="acm",
+        tags=["tag"],
+        labels=["label"],
+        classIri="iri",
+        className="name",
+        displayValue="value",
+        confidence=Confidence.HIGH,
+        sourceId=uuid4(),
+        nodeId=uuid4(),
+        geometry={
+            "type": "Point",
+            "coordinates": [-2.765882, 54.887295, 0.0],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        startTime="2024-01-01T00:00:00+00:00",
+        endTime="2024-01-01T00:00:00+00:00",
+        altitude=None,
+        horizontalSpeed=None,
+        directionalHeading=None,
+        ellipseSemiMajor=None,
+        ellipseSemiMinor=None,
+        axisRotation=None,
+        properties=None,
+    )
+    return observation
+
+
+@pytest.fixture
+def test_garrison(test_observation):
+    test_garrison = OutOfGarrison(
+        in_or_out=SETTINGS.out_of_garrison_settings.in_garrison_activity_name,
+        vehicle_id=test_observation.nodeId,
+        garrison_observation=test_observation,
+        start_time=test_observation.startTime,
+        end_time=test_observation.endTime,
+        acm=test_observation.acm,
+    )
+    return test_garrison
+
+
 # Tests
+def test_garrison_methods(test_garrison):
+    assert test_garrison.get_acm() == test_garrison.acm
+    assert test_garrison.__str__() == str(test_garrison.to_dict())
+    assert test_garrison.__repr__() == test_garrison.__str__()
+    assert test_garrison.to_geojson() == {"type": "Point", "coordinates": [-2.765882, 54.887295, 0.0]}
+
+
 def test_evaluate_input_obs_no_start_time(mock_crud_tool, observation_with_missing_start_time):
     """Test to verify valid inputs are recognized as such"""
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
@@ -367,9 +420,11 @@ def test_new_in_garrison(
     )
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    garr_sm.process_data(obs=observational_node)
+    result = garr_sm.process_data(obs=observational_node)
 
     mock_crud_tool.create_activity.assert_called_once()
+    assert result[0].vehicle_id == observational_node.nodeId
+    assert result[0].garrison_observation == observational_node
 
 
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
@@ -392,7 +447,7 @@ def test_new_out_garrison(
     )
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    garr_sm.process_data(obs=observational_node2)
+    result = garr_sm.process_data(obs=observational_node2)
 
     # Assert: New Out of Garrison activity created
     mock_crud_tool.create_activity.assert_called_once_with(
@@ -413,6 +468,8 @@ def test_new_out_garrison(
             endTime=observational_node2.endTime,
         )
     )
+    assert result[0].vehicle_id == observational_node2.nodeId
+    assert result[0].garrison_observation == observational_node2
 
 
 @patch(
@@ -420,7 +477,9 @@ def test_new_out_garrison(
     return_value=False,
 )
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_update_in_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_object_between,
     mock_crud_tool,
@@ -438,13 +497,47 @@ def test_update_in_garrison(
             geo_attribute1.geometry["coordinates"][1],
             geo_attribute1.geometry["coordinates"][0],
         ],
-        activities=[in_garrison_activity1, in_garrison_activity2],
+        activities=[
+            SimpleNamespace(
+                id=in_garrison_activity1.id,
+                name=in_garrison_activity1.name,
+                state=in_garrison_activity1.state,
+                nodeId=in_garrison_activity1.nodeId,
+                observationIds=in_garrison_activity1.observationIds,
+                startTime=in_garrison_activity1.startTime,
+                endTime=in_garrison_activity1.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            ),
+            SimpleNamespace(
+                id=in_garrison_activity2.id,
+                name=in_garrison_activity2.name,
+                state=in_garrison_activity2.state,
+                nodeId=in_garrison_activity2.nodeId,
+                observationIds=in_garrison_activity2.observationIds,
+                startTime=in_garrison_activity2.startTime,
+                endTime=in_garrison_activity2.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            ),
+        ],
     )
 
-    garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    garr_sm.process_data(obs=observational_node)
+    mock_aac_client.get_acm_rollup.return_value = "acm"
 
-    mock_crud_tool.update_activity.assert_called_once()
+    garr_sm = InOrOutOfGarrison(mock_crud_tool)
+    result = garr_sm.process_data(obs=observational_node)
+
+    mock_crud_tool.update_activity.assert_called_once_with(
+        UpdateActivityInput(
+            id=in_garrison_activity2.id,
+            acm="acm",
+            startTime=observational_node.startTime,
+            endTime=in_garrison_activity2.endTime,
+            observationIds=UpdateUuidList(add=[observational_node.id]),
+            nodeId=observational_node.nodeId,
+        )
+    )
+    assert result[0].vehicle_id == observational_node.nodeId
+    assert result[0].garrison_observation == observational_node
 
 
 @patch(
@@ -452,7 +545,9 @@ def test_update_in_garrison(
     return_value=True,
 )
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_update_out_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_object_between,
     mock_crud_tool,
@@ -470,16 +565,29 @@ def test_update_out_garrison(
             geo_attribute1.geometry["coordinates"][1],
             geo_attribute1.geometry["coordinates"][0],
         ],
-        activities=[out_garrison_activity1],
+        activities=[
+            SimpleNamespace(
+                id=out_garrison_activity1.id,
+                name=out_garrison_activity1.name,
+                state=out_garrison_activity1.state,
+                nodeId=out_garrison_activity1.nodeId,
+                observationIds=out_garrison_activity1.observationIds,
+                startTime=out_garrison_activity1.startTime,
+                endTime=out_garrison_activity1.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            )
+        ],
     )
 
+    mock_aac_client.get_acm_rollup.return_value = "acm"
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
-    garr_sm.process_data(obs=observational_node2)
+    result = garr_sm.process_data(obs=observational_node2)
 
     # Assert: existing activity updated, not recreated
     mock_crud_tool.update_activity.assert_called_once_with(
         UpdateActivityInput(
             id=out_garrison_activity1.id,
+            acm="acm",
             startTime=observational_node2.startTime,
             endTime=out_garrison_activity1.endTime,
             observationIds=UpdateUuidList(add=[observational_node2.id]),
@@ -488,3 +596,5 @@ def test_update_out_garrison(
     )
 
     mock_crud_tool.create_activity.assert_not_called()
+    assert result[0].vehicle_id == observational_node2.nodeId
+    assert result[0].garrison_observation == observational_node2

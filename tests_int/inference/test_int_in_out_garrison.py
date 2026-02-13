@@ -14,6 +14,7 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
+    ObservationObservation,
     UpdateActivityInput,
     UpdateUuidList,
 )
@@ -33,10 +34,24 @@ def make_garrison_data(
     """
     Minimal stand-in for GetGarrisonDataAllAtOnce result.
     """
+    activities_to_be_returned = []
+    for activity in activities:
+        activities_to_be_returned.append(
+            SimpleNamespace(
+                id=activity.id,
+                name=activity.name,
+                state=activity.state,
+                nodeId=activity.nodeId,
+                observationIds=activity.observationIds,
+                startTime=activity.startTime,
+                endTime=activity.endTime,
+                observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
+            )
+        )
     return SimpleNamespace(
         object_lat_lon=object_lat_lon,
         garrison_lat_lon=garrison_lat_lon,
-        activities=activities or [],
+        activities=activities_to_be_returned,
     )
 
 

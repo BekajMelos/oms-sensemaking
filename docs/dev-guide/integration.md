@@ -8,7 +8,7 @@
     2. Update/confirm the `.env` file with the following values. _Please note the uncommented and commented settings_
         * `POSTGRES_PORT=5432`
         * `# RMQ_GEO_QUEUE_NAME=oms-bridge`
-        * `OMSB_VERSION=<OMSB_VERSION> (eg: 3.1.4)`
+        * `OMSB_VERSION=<OMSB_VERSION> (eg: 3.1.5)`
         * `# OMSB_URL="https://localhost:8020/graphql"`
         * `# AAC_URL="http://aac2:3000"`
         * `RABBITMQ_HOST=rabbitmq`
@@ -120,7 +120,7 @@
         ## Non Application Configuration                                                    ##
         ######################################################################################
         COMPOSE_PROFILES=
-        ATOMS_VERSION=3.1.4
+        ATOMS_VERSION=3.1.5
         DOCKER_REGISTRY=<Docker Registry>:5000
         COMPOSE_PROFILES=remote
         DOCKER_PREFIX=aio4/dev/services/oms
