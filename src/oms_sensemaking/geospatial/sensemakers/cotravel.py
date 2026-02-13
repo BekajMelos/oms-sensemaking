@@ -541,7 +541,8 @@ class CotravelSensemaker(Sensemaker):
             endTime=cotravel.last_time,
         )
 
-        self.oms_crud_tool.publish_activities([create_activity_input1, create_activity_input2])
+        for activity_input in [create_activity_input1, create_activity_input2]:
+            self.oms_crud_tool.create_activity(activity_input)
 
         create_relationship_input = CreateRelationshipInput(
             tags=tags,

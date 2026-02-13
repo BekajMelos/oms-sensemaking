@@ -418,7 +418,7 @@ def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sam
     assert relationship_input.sourceId == sample_track.points[0].source_id
 
 
-def test_publish_cotravel_creates_event(sensemaker, sample_track):
+def test_publish_cotravel_creates_activities(sensemaker, sample_track):
     # Arrange
     cotravel = MagicMock()
     cotravel.cotravel_type = CotravelType.cotravel
@@ -430,20 +430,16 @@ def test_publish_cotravel_creates_event(sensemaker, sample_track):
     cotravel.to_geojson.return_value = {"type": "LineString"}
 
     # Fake published node with an ID
-    published_event = MagicMock()
-    published_event.id = "event-id"
-    published_event.geometry = {"type": "LineString"}
+    published_activity = MagicMock()
+    published_activity.id = "activity-id"
 
-    sensemaker.oms_crud_tool.create_event.return_value = published_event
+    sensemaker.oms_crud_tool.create_activity.return_value = published_activity
 
     # Act
     sensemaker.publish_cotravel(sample_track, cotravel)
 
-    # Assert: event creation
-    sensemaker.oms_crud_tool.create_event.assert_called_once()
-    create_event_input = sensemaker.oms_crud_tool.create_event.call_args.kwargs["event_input"]
-    assert create_event_input.name == "Cotravel"
-    assert create_event_input.acm == {"acm": "fake"}
+    # Assert: activity creation
+    assert sensemaker.oms_crud_tool.create_activity.call_count == 2
 
 
 def test_set_cotravel_type_updates_finding_type():

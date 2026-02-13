@@ -273,12 +273,11 @@ def test_cotravel_success(
     )
 
     # Set up mocks
-    cotravel_activity_id = uuid4()
-    mock_oms_client.create_activity.side_effect = [
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-    ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
+    )
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -302,7 +301,7 @@ def test_cotravel_success(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track1.node_id,
+            nodeId=cotravel.track1.node_id,
             observationIds=cotravel.track1.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -317,7 +316,7 @@ def test_cotravel_success(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track2.node_id,
+            nodeId=cotravel.track2.node_id,
             observationIds=cotravel.track2.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -468,13 +467,12 @@ def test_potential_duplicate_with_known_node(
 
     # Test isNSO False should return cotravel
     # Set up mocks
-    cotravel_activity_id = uuid4()
-    mock_oms_client.create_activity.side_effect = [
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-    ]
+    mock_oms_client.create_activity.return_value = MagicMock()
     mock_oms_client.node.return_value = NodeNode.model_construct(id=uuid4(), acm=ROLLUP_DEFAULT_ACM, isNso=False)
-    mock_oms_client.create_relationship.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
+    )
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
@@ -509,12 +507,11 @@ def test_potential_duplicate_failure(
     )
 
     # Set up mocks
-    cotravel_activity_id = uuid4()
-    mock_oms_client.create_activity.side_effect = [
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-    ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
+    )
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
@@ -551,14 +548,12 @@ def test_multiple_cotravel_success(
     )
 
     # Set up mocks
-    cotravel_activity_id = uuid4()
-    mock_oms_client.create_activity.side_effect = [
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship.side_effect = [
+        CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM),
+        CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM),
     ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -621,7 +616,7 @@ def test_multiple_cotravel_success(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track1.node_id,
+            nodeId=cotravel.track1.node_id,
             observationIds=cotravel.track1.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -636,7 +631,7 @@ def test_multiple_cotravel_success(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track2.node_id,
+            nodeId=cotravel.track2.node_id,
             observationIds=cotravel.track2.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -705,12 +700,11 @@ def test_lag_lead_success(
     )
 
     # Set up mocks
-    cotravel_activity_id = uuid4()
-    mock_oms_client.create_activity.side_effect = [
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
-    ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
+    )
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -731,10 +725,10 @@ def test_lag_lead_success(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_activity_iri,
-            name=SETTINGS.cotravel_activity_name,
+            name=SETTINGS.lag_lead_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track1.node_id,
+            nodeId=cotravel.track1.node_id,
             observationIds=cotravel.track1.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -746,10 +740,10 @@ def test_lag_lead_success(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
             classIri=SETTINGS.cotravel_activity_iri,
-            name=SETTINGS.cotravel_activity_name,
+            name=SETTINGS.lag_lead_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track2.node_id,
+            nodeId=cotravel.track2.node_id,
             observationIds=cotravel.track2.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -839,7 +833,10 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
         CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
         CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
     ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
+    )
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -863,7 +860,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track1.node_id,
+            nodeId=cotravel.track1.node_id,
             observationIds=cotravel.track1.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
@@ -878,7 +875,7 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
             name=SETTINGS.cotravel_activity_name,
             state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
-            nodeIds=cotravel.track2.node_id,
+            nodeId=cotravel.track2.node_id,
             observationIds=cotravel.track2.observation_ids,
             startTime=cotravel.start_time,
             endTime=cotravel.last_time,
