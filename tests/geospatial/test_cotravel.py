@@ -433,13 +433,13 @@ def test_publish_cotravel_creates_activities(sensemaker, sample_track):
     published_activity = MagicMock()
     published_activity.id = "activity-id"
 
-    sensemaker.oms_crud_tool.create_activity.return_value = published_activity
+    sensemaker.oms_crud_tool.publish_activities.return_value = published_activity
 
     # Act
     sensemaker.publish_cotravel(sample_track, cotravel)
 
     # Assert: activity creation
-    assert sensemaker.oms_crud_tool.create_activity.call_count == 2
+    assert sensemaker.oms_crud_tool.publish_activities.call_count == 1
 
 
 def test_set_cotravel_type_updates_finding_type():
