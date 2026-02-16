@@ -405,7 +405,7 @@ class Settings(BaseSettings):
     loiter_event_node_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Loiter Event Node IRI")
     loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
-                                         description="OMSB Loiter Event Node to Track Relationship IRI")
+                                        description="OMSB Loiter Event Node to Track Relationship IRI")
     loiter_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
                                                  description="OMSB Loiter Event Node Geo Attribute IRI")
 
@@ -414,15 +414,15 @@ class Settings(BaseSettings):
 
     potential_duplicate_relationship_name: str = Field("Potential Duplicate",
                                                        description="Name for OMSB Potential Duplicate")
-    cotravel_event_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
-    lag_lead_event_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
-    cotravel_event_node_iri: str = Field(CommonVars.intentional_act_iri,
+    cotravel_activity_name: str = Field("Cotravel", description="Name prefix for OMSB Cotravel Event Nodes")
+    lag_lead_activity_name: str = Field("LagLead", description="Name prefix for OMSB LagLead Event Nodes")
+    cotravel_activity_iri: str = Field(CommonVars.intentional_act_iri,
                                    description="OMSB Cotravel Event Node IRI")
     cotravel_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
                                          description="OMSB Cotravel Event Node to Track Relationship IRI")
-    cotravel_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
-                                                 description="OMSB Cotravel Event Node Geo Attribute IRI")
-    cotravel_track_to_event_relation_name: str = Field("inheres in",
+    cotravel_activity_state: str = Field("COTRAVEL",
+                                         description="The activity state which describes a cotravel activity")
+    cotravel_relation_name: str = Field("inheres in",
                                                  description="OMSB Cotravel Event Node to Track Relationship Name")
 
     # Similar Track Settings
