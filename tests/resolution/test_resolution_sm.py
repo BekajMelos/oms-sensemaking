@@ -48,6 +48,7 @@ def test_node_b():
 @pytest.fixture
 def test_attribute(test_node):
     return AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
         attributeValue="ABCD1234",
         nodeId=test_node.id,
@@ -59,6 +60,7 @@ def test_attribute(test_node):
 @pytest.fixture
 def test_attribute_a(test_node_a):
     return AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
         attributeValue="ABCD1234",
         nodeId=test_node_a.id,
@@ -70,6 +72,7 @@ def test_attribute_a(test_node_a):
 @pytest.fixture
 def test_attribute_b(test_node_b):
     return AttributeAttribute.model_construct(
+        id=uuid4(),
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
         attributeValue="ABCD1234",
         nodeId=test_node_b.id,
@@ -126,6 +129,27 @@ def test_is_valid_false_cases(duplicate_object_iris, attr_kwargs):
     assert result == (False, None)
 
 
+def test_is_valid_false_when_attr_not_in_any_criteria_set(duplicate_object_iris, mock_crud_tool, test_node):
+    # Attribute belongs to the Facility node but is NOT part of any criteria set
+    bad_attr = AttributeAttribute.model_construct(
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasFacilityName",
+        attributeValue="Some Name",
+        nodeId=test_node.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+    # Needed so current_class_iri works
+    mock_crud_tool.get_node.return_value = test_node
+
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    valid, class_iri = sensemaker.is_valid(bad_attr)
+
+    assert valid is False
+    assert class_iri is None
+
+
 def test_is_valid_already_ran_false(duplicate_object_iris, test_attribute, mock_crud_tool):
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
     with mock.patch.object(ResolutionSensemaker, "has_already_ran", return_value=True):
@@ -173,6 +197,20 @@ def test_has_already_ran_false(duplicate_object_iris, mock_crud_tool):
     assert sensemaker.has_already_ran(uuid4()) is False
 
 
+def test_find_duplicates_returns_empty_when_no_group_matches(
+    duplicate_object_iris, mock_crud_tool, test_attribute_a, test_attribute_b
+):
+    # Always return empty for every call
+    mock_crud_tool.get_nodes.return_value = mock.MagicMock(data=[])
+
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    result = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
+
+    assert result == []
+    assert mock_crud_tool.get_nodes.call_count == 2  # tried both groups
+
+
 def test_find_duplicates_returns_first_nonempty_group(
     duplicate_object_iris, mock_crud_tool, test_node, test_node_a, test_node_b, test_attribute_a, test_attribute_b
 ):
@@ -183,3 +221,91 @@ def test_find_duplicates_returns_first_nonempty_group(
     duplicates = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
 
     assert duplicates == [test_node_a, test_node_b]
+
+
+def test_gather_criteria_returns_empty_when_invalid(duplicate_object_iris, mock_crud_tool, test_attribute):
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    # Force is_valid to fail
+    with mock.patch.object(ResolutionSensemaker, "is_valid", return_value=(False, None)):
+        result = sensemaker.gather_criteria(test_attribute)
+
+    assert result == []
+
+
+def test_process_data_returns_empty_when_no_criteria(duplicate_object_iris, mock_crud_tool, test_attribute):
+    """
+    Covers the path where gather_criteria() returns [].
+    """
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    # Force gather_criteria to return empty
+    with mock.patch.object(ResolutionSensemaker, "gather_criteria", return_value=[]):
+        findings = sensemaker.process_data(test_attribute)
+
+    assert findings == []
+    mock_crud_tool.create_relationship.assert_not_called()
+
+
+@pytest.fixture
+def facility_dual_criteria_config():
+    return {
+        "https://foundry.ai.mil/ontology/4901-001/Facility": [
+            [
+                "https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
+                "https://foundry.ai.mil/ontology/4901-001/hasOSuffix",
+            ],
+            ["https://foundry.ai.mil/ontology/4901-001/hasMIBDBFacilitySurrogateKey"],
+        ]
+    }
+
+
+def test_process_data_matches_using_alternate_criteria_set(
+    facility_dual_criteria_config, test_node_a, test_node_b, mock_crud_tool
+):
+    # Trigger on the alternate (SK) attribute
+    triggering_attr = AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasMIBDBFacilitySurrogateKey",
+        attributeValue="SK-999",
+        nodeId=test_node_a.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+    mock_crud_tool.get_node.return_value = test_node_a
+    mock_crud_tool.get_nodes.return_value = mock.MagicMock(data=[test_node_b])
+    mock_crud_tool.get_node_attribute_by_iri.return_value = []
+
+    sensemaker = ResolutionSensemaker(facility_dual_criteria_config, mock_crud_tool)
+    findings = sensemaker.process_data(triggering_attr)
+
+    assert len(findings) == 1
+    assert findings[0].start_node_id == test_node_a.id
+    assert findings[0].end_node_id == test_node_b.id
+    assert mock_crud_tool.create_relationship.call_count == 1
+
+
+def test_process_data_skips_criteria_without_triggering_attr(
+    facility_dual_criteria_config, test_node_a, test_node_b, mock_crud_tool
+):
+    # Trigger on BE_NUMBER (not SK)
+    triggering_attr = AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
+        attributeValue="ABCD1234",
+        nodeId=test_node_a.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+    mock_crud_tool.get_node.return_value = test_node_a
+    mock_crud_tool.get_nodes.return_value = mock.MagicMock(data=[test_node_b])
+    mock_crud_tool.get_node_attribute_by_iri.return_value = []
+
+    sensemaker = ResolutionSensemaker(facility_dual_criteria_config, mock_crud_tool)
+
+    findings = sensemaker.process_data(triggering_attr)
+
+    # We should NOT match using the SK-only set
+    assert findings == []

@@ -2,8 +2,7 @@
 
 import logging
 from dataclasses import dataclass, field
-from itertools import chain
-from typing import Tuple
+from typing import Tuple, Union
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -26,6 +25,8 @@ from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 from oms_sensemaking.resolution.attribute_combinations import AttributeCombinations
 
 LOGGER = logging.getLogger(__name__)
+
+DuplicateObjectIris = dict[str, Union[list[str], list[list[str]]]]
 
 
 @dataclass
@@ -61,14 +62,34 @@ class ResolutionSensemaker(Sensemaker):
 
     """
 
-    def __init__(self, duplicate_object_iris: dict[str, list[str]], oms_crud_tool: OmsCrudTool) -> None:
+    def __init__(self, duplicate_object_iris: DuplicateObjectIris, oms_crud_tool: OmsCrudTool) -> None:
         """Create a new instance of ResolutionSensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {}
         self.oms_crud_tool = oms_crud_tool
-        self.duplicate_object_iris = duplicate_object_iris
+        self.duplicate_object_iris = self._normalize_duplicate_object_iris(duplicate_object_iris)
+
+    @staticmethod
+    def _normalize_duplicate_object_iris(
+        raw: DuplicateObjectIris,
+    ) -> dict[str, list[list[str]]]:
+        normalized: dict[str, list[list[str]]] = {}
+
+        for class_iri, criteria in raw.items():
+            if not criteria:
+                normalized[class_iri] = []
+                continue
+
+            # If it's already list-of-lists
+            if isinstance(criteria[0], list):  # type: ignore[index]
+                normalized[class_iri] = criteria  # type: ignore[assignment]
+            else:
+                # Legacy: list[str] -> wrap once
+                normalized[class_iri] = [criteria]  # type: ignore[list-item]
+
+        return normalized
 
     def process_data(self, attribute: AttributeAttribute, config: dict | None = None) -> list[DupFinding]:
         """
@@ -188,7 +209,12 @@ class ResolutionSensemaker(Sensemaker):
             return (False, None)
 
         current_iri = current_attr.attributeIri
-        all_iris = set(chain.from_iterable(self.duplicate_object_iris.values()))
+        all_iris = {
+            iri
+            for criteria_sets in self.duplicate_object_iris.values()
+            for criteria_set in criteria_sets
+            for iri in criteria_set
+        }
         if current_iri not in all_iris:
             return (False, None)
 
@@ -199,7 +225,8 @@ class ResolutionSensemaker(Sensemaker):
         if class_iri not in self.duplicate_object_iris:
             return (False, None)
 
-        if current_iri not in self.duplicate_object_iris[class_iri]:
+        criteria_sets = self.duplicate_object_iris[class_iri]
+        if not any(current_iri in criteria_set for criteria_set in criteria_sets):
             return (False, None)
 
         if self.has_already_ran(current_node_id):
