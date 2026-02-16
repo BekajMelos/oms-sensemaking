@@ -208,24 +208,20 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
                 LOGGER.error("%s Error disconnecting from RabbitMQ: %s", self._name, ex)
 
     def update_prefetch(self, new_prefetch: int) -> None:
-        try:
-            new_prefetch = int(new_prefetch)
-            # Early exit if prefetch doesn't change
-            if new_prefetch == self._prefetch_count:
-                return
+        new_prefetch = int(new_prefetch)
+        if new_prefetch == self._prefetch_count:
+            return
 
-            LOGGER.info(
-                "%s scheduling prefetch update from %s → %s",
-                self._name,
-                self._prefetch_count,
-                new_prefetch,
-            )
+        LOGGER.info("%s scheduling prefetch update from %s → %s", self._name, self._prefetch_count, new_prefetch)
 
-            if self._connection and self._connection.is_open:
+        # Always update local value so next connect uses it
+        self._prefetch_count = new_prefetch
+
+        if self._connection and self._connection.is_open:
+            try:
                 self._connection.add_callback_threadsafe(lambda: self._apply_prefetch_update(new_prefetch))
-
-        except Exception:
-            LOGGER.exception("%s failed to schedule prefetch update", self._name)
+            except Exception:
+                LOGGER.warning("%s callback failed; will apply on reconnect", self._name)
 
     def _apply_prefetch_update(self, new_prefetch: int) -> None:
         try:
@@ -258,11 +254,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
 
             # Ask the RMQ thread to close the connection so the consumer reconnects
             if self._connection and self._connection.is_open:
-                LOGGER.info("%s drained — scheduling connection close for reconnect", self._name)
-                try:
-                    self._connection.add_callback_threadsafe(self._connection.close)
-                except Exception:
-                    LOGGER.exception("%s failed to schedule connection close", self._name)
+                LOGGER.info("%s drained — closing connection for reconnect", self._name)
+                self._disconnect()
 
         except Exception:
             LOGGER.exception("%s error during async drain/reconnect", self._name)

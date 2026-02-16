@@ -475,12 +475,13 @@ def test_drain_pool_and_reconnect_recreates_pool(mock_executor):
     listener.pool = mock_pool
 
     listener._connection = MagicMock(is_open=True)
+    listener._disconnect = MagicMock()
 
     listener._drain_pool_and_reconnect()
 
     mock_pool.shutdown.assert_called_once_with(wait=True)
     assert mock_executor.call_args_list[-1] == mock.call(max_workers=4)
-    listener._connection.add_callback_threadsafe.assert_called_once()
+    listener._disconnect.assert_called_once()
 
 
 def test_drain_pool_without_connection():
