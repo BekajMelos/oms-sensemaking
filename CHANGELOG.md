@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- The Incursion Sensemaker no longer outputs/updates an attribute (only an activity).
 
 ### Fixed
 

@@ -86,8 +86,8 @@ stop: ## Stop atoms-sensemaking docker environment
 down: ## Stop atoms-sensemaking docker environment and remove containers
 	docker compose down
 
-shell: ## Open a shell inside the atoms_sensemaking container
-	@docker compose exec atoms_sensemaking /bin/bash
+shell: ## Open a shell inside the atoms-sensemaking container
+	@docker compose exec atoms-sensemaking /bin/bash
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
