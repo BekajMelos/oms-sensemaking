@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- The Cotravel sensemaker now outputs two activities (for each "cotravelling" node) and one relationship (between the "cotravelling" nodes)
 
 ### Fixed
 
