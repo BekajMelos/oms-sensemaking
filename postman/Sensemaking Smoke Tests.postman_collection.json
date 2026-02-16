@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "ad005e61-51a7-4fc8-b9f9-14cfdb172bf7",
+    "_postman_id": "f7df5be5-cbe8-46b5-8fc0-7d71e99fdf9b",
     "name": "Sensemaking Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "41174150"
@@ -5176,123 +5176,6 @@
               "response": []
             },
             {
-              "name": "Confirm Incursion is made",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "eval(pm.globals.get(\"retryUntil\"));",
-                      "",
-                      "const response = pm.response.json();",
-                      "",
-                      "const success = retryUntil({",
-                      "    conditionFn: () =>",
-                      "        response?.data?.attributes?.data?.length > 0 &&",
-                      "        response?.data?.attributes?.totalSize > 0,",
-                      "    maxAttempts: 3,",
-                      "    delayMs: 15000",
-                      "});",
-                      "",
-                      "if (success) {",
-                      "    pm.test(\"Response contains valid data\", function () {",
-                      "        pm.expect(response.data.attributes.data.length).to.be.greaterThan(0);",
-                      "        pm.expect(response.data.attributes.totalSize).to.be.greaterThan(0);",
-                      "    });",
-                      "",
-                      "    // Store attribute ID for later requests",
-                      "    pm.collectionVariables.set(",
-                      "        \"incursionattrid\",",
-                      "        response.data.attributes.data[0].id",
-                      "    );",
-                      "}"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {},
-                    "requests": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "user_dn",
-                    "value": "{{TS_USER_DN}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "graphql",
-                  "graphql": {
-                    "query": "query (\n    $activityIds: [UUID!]\n){\n    attributes(\n        query: {\n            activityIds: $activityIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-                    "variables": "{\n    \"activitiyIds\": \"{{incursionactid}}\"\n}"
-                  }
-                },
-                "url": {
-                  "raw": "https://{{GRAPHQL_ENDPOINT}}",
-                  "protocol": "https",
-                  "host": [
-                    "{{GRAPHQL_ENDPOINT}}"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Update Incursion Attr Tag",
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Incursion Attr Tag Updated\", function () {",
-                      "    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.undefined;",
-                      "    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.null;",
-                      "});"
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "user_dn",
-                    "value": "{{TS_USER_DN}}"
-                  }
-                ],
-                "body": {
-                  "mode": "graphql",
-                  "graphql": {
-                    "query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
-                  }
-                },
-                "url": {
-                  "raw": "https://{{GRAPHQL_ENDPOINT}}",
-                  "protocol": "https",
-                  "host": [
-                    "{{GRAPHQL_ENDPOINT}}"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
               "name": "Cleanup Incursion Data",
               "event": [
                 {
@@ -9982,14 +9865,6 @@
     },
     {
       "key": "nonGarrisonActivityId",
-      "value": ""
-    },
-    {
-      "key": "cotravelactivityId2",
-      "value": ""
-    },
-    {
-      "key": "cotravelactivityId1",
       "value": ""
     }
   ]

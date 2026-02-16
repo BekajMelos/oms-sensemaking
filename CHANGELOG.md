@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - The Cotravel sensemaker now outputs two activities (for each "cotravelling" node) and one relationship (between the "cotravelling" nodes)
+- The Incursion Sensemaker no longer outputs/updates an attribute (only an activity).
 
 ### Fixed
 
