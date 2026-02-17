@@ -401,13 +401,12 @@ class Settings(BaseSettings):
 
     # Loiter Settings
     detect_loiters: bool = Field(True, description="Toggle on/off Loiter Detection")
-    loiter_event_name: str = Field("LoiterEvent", description="Name prefix for OMSB Loiter Event Nodes")
-    loiter_event_node_iri: str = Field(CommonVars.intentional_act_iri,
-                                   description="OMSB Loiter Event Node IRI")
-    loiter_relationship_iri: str = Field("http://purl.obolibrary.org/obo/BFO_0000197",
-                                        description="OMSB Loiter Event Node to Track Relationship IRI")
-    loiter_event_node_attribute_iri: str = Field(CommonVars.has_coords_iri,
-                                                 description="OMSB Loiter Event Node Geo Attribute IRI")
+    loiter_activity_name: str = Field("Loiter", description="Name for OMSB Loiter Activity")
+    loiter_activity_iri: str = Field(
+        CommonVars.intentional_act_iri,
+        description="OMSB Loiter Activity class IRI",
+    )
+    loiter_activity_state: str = Field("LOITER", description="OMSB Loiter Activity state")
 
     # Cotravel Settings
     detect_cotravels: bool = Field(True, description="Toggle on/off Cotravel Detection")

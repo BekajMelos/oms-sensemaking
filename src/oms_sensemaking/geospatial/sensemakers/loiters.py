@@ -5,12 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client.client import (
-    CreateAttributeInput,
-    CreateNodeInput,
-    CreateRelationshipInput,
-)
-from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
+from oms_sdk.generated.generated_graphql_client.client import CreateActivityInput
 from shapely import LineString
 
 from oms_sensemaking.clients.instances import aac_client
@@ -91,9 +86,9 @@ class LoiterSensemaker(Sensemaker):
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.config = {
-            "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-            "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-            "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+            "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+            "loiter_activity_name": SETTINGS.loiter_activity_name,
+            "loiter_activity_state": SETTINGS.loiter_activity_state,
         }
         self.oms_crud_tool = oms_crud_tool
 
@@ -204,18 +199,20 @@ class LoiterSensemaker(Sensemaker):
 
     def publish_loiter(self, track: Track, loiter: Loiter) -> None:
         """
-        Publish Loiter to ATOMS
+        Publish Loiter to ATOMS as a single Activity.
 
-        :param loiter: Loiter Event to publish
+        One Activity is created with nodeId (track), observationIds (points in
+        the loiter window), startTime, and endTime.
+        :param track: Track containing the loiter.
+        :param loiter: Loiter to publish
         :return: None
         """
         source_id = track.points[0].source_id  # TODO thinking this similarly should be multiple sources
         tags = [SETTINGS.geo_sensemaker_event_tag]
+        observation_ids = [p.observation_id for p in loiter.processed_points]
 
-        create_node_input = CreateNodeInput(
+        create_activity_input = CreateActivityInput(
             acm=loiter.get_acm(),
-            name=SETTINGS.loiter_event_name,
-            tier=ObjectTier.DERIVATIVE,
             tags=tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
@@ -223,51 +220,16 @@ class LoiterSensemaker(Sensemaker):
                 SETTINGS.loiter_sm_label,
                 self.version_string,
             ],
-            classIri=SETTINGS.loiter_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-        published_node = self.oms_crud_tool.create_node(node_input=create_node_input)
-
-        loiter.atoms_id = published_node.id
-        loiter.atoms_type = AtomsType.NODE
-
-        create_relationship_input = CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                self.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=published_node.id,
-            endNodeId=loiter.vehicle_id,
-            confidence=Confidence.HIGH,
-            acm=loiter.get_acm(),
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
+            classIri=SETTINGS.loiter_activity_iri,
+            name=SETTINGS.loiter_activity_name,
+            state=SETTINGS.loiter_activity_state,
             sourceId=source_id,
+            nodeId=loiter.vehicle_id,
+            observationIds=observation_ids,
+            startTime=loiter.start_time,
+            endTime=loiter.end_time,
         )
-        self.oms_crud_tool.publish_relationships([create_relationship_input])
+        created_activity = self.oms_crud_tool.create_activity(create_activity_input)
 
-        create_attribute_input = CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL.value,
-            confidence=Confidence.HIGH.value,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                self.version_string,
-            ],
-            sourceId=source_id,
-            geometry=loiter.to_geojson(),
-            nodeId=published_node.id,
-            acm=loiter.get_acm(),
-            valueStart=loiter.start_time,
-            valueEnd=loiter.end_time,
-        )
-        self.oms_crud_tool.publish_attributes([create_attribute_input])
+        loiter.atoms_id = created_activity.id
+        loiter.atoms_type = AtomsType.ACTIVITY
