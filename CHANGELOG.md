@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-
+- Loiters now return activities 
 ### Fixed
 
 ## [0.19.6] - 2026-02-16

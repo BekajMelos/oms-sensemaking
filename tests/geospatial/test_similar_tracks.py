@@ -152,9 +152,9 @@ def similar_points(test_node):
 @pytest.fixture
 def geo_config():
     config = {
-        "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-        "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-        "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+        "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+        "loiter_activity_name": SETTINGS.loiter_activity_name,
+        "loiter_activity_state": SETTINGS.loiter_activity_state,
         "valid_observed_threshold_seconds": 900,
         "loiter_geohash": 5,
         "cotravel_geohash": 5,

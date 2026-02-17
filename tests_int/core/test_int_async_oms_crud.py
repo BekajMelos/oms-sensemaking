@@ -38,7 +38,7 @@ def node_input():
         domain=None,
         tags=SETTINGS.sm_test_tags,
         labels=[SETTINGS.loiter_sm_label],
-        classIri=SETTINGS.loiter_event_node_iri,
+        classIri=SETTINGS.loiter_activity_iri,
         allegiance="USA",
     )
 
