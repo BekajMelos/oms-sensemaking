@@ -6,13 +6,7 @@ from uuid import uuid4
 
 import shapely
 from geoalchemy2.shape import to_shape
-from oms_sdk.generated.generated_graphql_client.client import (
-    CreateAttributeInput,
-    CreateNodeCreateNode,
-    CreateNodeInput,
-    CreateRelationshipInput,
-)
-from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
+from oms_sdk.generated.generated_graphql_client.client import CreateActivityCreateActivity
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,7 +14,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers.loiters import Loiter, LoiterSensemaker
 from oms_sensemaking.models.geo import Track
-from oms_sensemaking.models.sensemaking import Finding, FindingType
+from oms_sensemaking.models.sensemaking import AtomsType, Finding, FindingType
 from tests_int.conftest import rollup_unclass_acm_3_0
 from tests_int.geospatial.helper import TimeLocation
 
@@ -76,12 +70,10 @@ def test_loiter_success(
     )
 
     # Set up mocks
-    loiter_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm)
+    loiter_activity_id = uuid4()
+    mock_oms_client.create_activity = MagicMock(
+        return_value=CreateActivityCreateActivity.model_construct(id=loiter_activity_id, acm=p1.acm)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     sensemaker = LoiterSensemaker(mock_oms_crud_tool)
     loiters = sensemaker.execute(track, aircraft_geo_config)
 
@@ -99,68 +91,23 @@ def test_loiter_success(
     assert loiter.geometry.equals_exact(expected_linestring2, 1e-10)
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
+    assert loiter.atoms_id == loiter_activity_id
+    assert loiter.atoms_type == AtomsType.ACTIVITY
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
-
-    mock_oms_client.create_node.assert_called_with(
-        CreateNodeInput(
-            acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.loiter_event_name,
-            tier=ObjectTier.DERIVATIVE,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            classIri=SETTINGS.loiter_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-
-    mock_oms_client.create_relationship.assert_called_with(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-
-    mock_oms_client.create_attribute.assert_called_with(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL.value,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter.to_geojson(),
-            nodeId=loiter_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p2.detection_time,
-            valueEnd=p6.detection_time,
-        )
-    )
+    mock_oms_client.create_activity.assert_called_once()
+    call_args = mock_oms_client.create_activity.call_args[0][0]
+    assert call_args.classIri == SETTINGS.loiter_activity_iri
+    assert call_args.name == SETTINGS.loiter_activity_name
+    assert call_args.state == SETTINGS.loiter_activity_state
+    assert call_args.nodeId == node_id
+    assert call_args.sourceId == p1.source_id
+    expected_obs_ids = {p2.observation_id, p3.observation_id, p4.observation_id, p5.observation_id, p6.observation_id}
+    assert set(call_args.observationIds) == expected_obs_ids
+    assert call_args.startTime == p2.detection_time
+    assert call_args.endTime == p6.detection_time
+    assert call_args.tags == tags
+    assert call_args.acm == ROLLUP_DEFAULT_ACM
 
     # check that loiters exist in Findings table
     findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
@@ -263,11 +210,9 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
 
     # Set up mocks
     loiter_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=loiter_node_id, acm=p1.acm)
+    mock_oms_client.create_activity = MagicMock(
+        return_value=CreateActivityCreateActivity.model_construct(id=loiter_node_id, acm=p1.acm)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     sensemaker = LoiterSensemaker(mock_oms_crud_tool)
     loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 1
@@ -285,65 +230,12 @@ def test_loiter_fails_valid_observed_threshold_within_geohash(
     assert loiter.start_time == p2.detection_time
     assert loiter.end_time == p6.detection_time
 
-    tags = [SETTINGS.geo_sensemaker_event_tag]
-
-    mock_oms_client.create_node.assert_called_with(
-        CreateNodeInput(
-            acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.loiter_event_name,
-            tier=ObjectTier.DERIVATIVE,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            classIri=SETTINGS.loiter_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-    mock_oms_client.create_relationship.assert_called_with(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id,
-            endNodeId=track.node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_attribute.assert_called_with(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter.to_geojson(),
-            nodeId=loiter_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p2.detection_time,
-            valueEnd=p6.detection_time,
-        )
-    )
+    mock_oms_client.create_activity.assert_called_once()
+    call_args = mock_oms_client.create_activity.call_args[0][0]
+    assert call_args.classIri == SETTINGS.loiter_activity_iri
+    assert call_args.name == SETTINGS.loiter_activity_name
+    assert call_args.state == SETTINGS.loiter_activity_state
+    assert call_args.nodeId == track.node_id
 
     # check that loiters exist in Findings table
     findings = db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_LOITER.value)).scalars().all()
@@ -388,14 +280,12 @@ def test_loiter_success_multiple_in_same_geohash(
     )
 
     # Set up mocks
-    loiter_node_id1 = uuid4()
-    loiter_node_id2 = uuid4()
-    mock_oms_client.create_node.side_effect = [
-        CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
-        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm),
+    loiter_activity_id1 = uuid4()
+    loiter_activity_id2 = uuid4()
+    mock_oms_client.create_activity.side_effect = [
+        CreateActivityCreateActivity.model_construct(id=loiter_activity_id1, acm=p1.acm),
+        CreateActivityCreateActivity.model_construct(id=loiter_activity_id2, acm=p1.acm),
     ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     sensemaker = LoiterSensemaker(mock_oms_crud_tool)
     loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 2
@@ -426,108 +316,10 @@ def test_loiter_success_multiple_in_same_geohash(
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    tags = [SETTINGS.geo_sensemaker_event_tag]
-
-    assert mock_oms_client.create_node.call_count == 2
-    mock_oms_client.create_node.assert_any_call(
-        CreateNodeInput(
-            acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.loiter_event_name,
-            tier=ObjectTier.DERIVATIVE,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            classIri=SETTINGS.loiter_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-    assert mock_oms_client.create_relationship.call_count == 2
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id1,
-            endNodeId=track.node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id2,
-            endNodeId=track.node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    assert mock_oms_client.create_attribute.call_count == 2
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter1.to_geojson(),
-            nodeId=loiter_node_id1,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p2.detection_time,
-            valueEnd=p6.detection_time,
-        )
-    )
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            # TODO make sure these are right
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter2.to_geojson(),
-            nodeId=loiter_node_id2,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p8.detection_time,
-            valueEnd=p11.detection_time,
-        )
+    assert mock_oms_client.create_activity.call_count == 2
+    call_args_list = [c[0][0] for c in mock_oms_client.create_activity.call_args_list]
+    assert all(
+        c.classIri == SETTINGS.loiter_activity_iri and c.name == SETTINGS.loiter_activity_name for c in call_args_list
     )
 
     # check that loiters exist in Findings table
@@ -573,14 +365,12 @@ def test_loiter_success_multiple_in_different_geohash(
     )
 
     # Set up mocks
-    loiter_node_id1 = uuid4()
-    loiter_node_id2 = uuid4()
-    mock_oms_client.create_node.side_effect = [
-        CreateNodeCreateNode.model_construct(id=loiter_node_id1, acm=p1.acm),
-        CreateNodeCreateNode.model_construct(id=loiter_node_id2, acm=p1.acm),
+    loiter_activity_id1 = uuid4()
+    loiter_activity_id2 = uuid4()
+    mock_oms_client.create_activity.side_effect = [
+        CreateActivityCreateActivity.model_construct(id=loiter_activity_id1, acm=p1.acm),
+        CreateActivityCreateActivity.model_construct(id=loiter_activity_id2, acm=p1.acm),
     ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     sensemaker = LoiterSensemaker(mock_oms_crud_tool)
     loiters = sensemaker.execute(track, aircraft_geo_config)
     assert len(loiters) == 2
@@ -611,107 +401,10 @@ def test_loiter_success_multiple_in_different_geohash(
     assert loiter2.start_time == p8.detection_time
     assert loiter2.end_time == p11.detection_time
 
-    tags = [SETTINGS.geo_sensemaker_event_tag]
-
-    assert mock_oms_client.create_node.call_count == 2
-    mock_oms_client.create_node.assert_any_call(
-        CreateNodeInput(
-            acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.loiter_event_name,
-            tier=ObjectTier.DERIVATIVE,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            classIri=SETTINGS.loiter_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-    assert mock_oms_client.create_relationship.call_count == 2
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id1,
-            endNodeId=track.node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            name=SETTINGS.loiter_event_name,
-            startNodeId=loiter_node_id2,
-            endNodeId=track.node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.loiter_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    assert mock_oms_client.create_attribute.call_count == 2
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter1.to_geojson(),
-            nodeId=loiter_node_id1,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p2.detection_time,
-            valueEnd=p6.detection_time,
-        )
-    )
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.loiter_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=[
-                SETTINGS.sm_inferenced_label,
-                SETTINGS.geospatial_sm_label,
-                SETTINGS.loiter_sm_label,
-                sensemaker.version_string,
-            ],
-            sourceId=p1.source_id,
-            geometry=loiter2.to_geojson(),
-            nodeId=loiter_node_id2,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=p8.detection_time,
-            valueEnd=p11.detection_time,
-        )
+    assert mock_oms_client.create_activity.call_count == 2
+    call_args_list = [c[0][0] for c in mock_oms_client.create_activity.call_args_list]
+    assert all(
+        c.classIri == SETTINGS.loiter_activity_iri and c.name == SETTINGS.loiter_activity_name for c in call_args_list
     )
 
     # check that loiters exist in Findings table
