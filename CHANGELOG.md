@@ -14,11 +14,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added Extended Kalman Filter to track weaver algorithms.
+- Added compose files for using `atoms-local-dev`
 
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
 - Object Minimum rubric applies to the most specific class now.
+- Updated `aac2` container to latest
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.

@@ -1,0 +1,53 @@
+services:
+# this service is for atoms-dev environment
+  atoms-sensemaking:
+    build:
+      context: .
+      secrets:
+        - mynetrc
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX}
+        PIP_EXTRA_INDEX_URL: ${PIP_EXTRA_INDEX}
+    ports:
+      - 5001:${UVICORN_PORT:-8443}
+    environment:
+      # database config
+      DB_HOST: postgres
+      DB_USER: ${DB_USER:-${PGUSER:-appuser}}
+      DB_PASSWORD: ${DB_PASSWORD:-${PGPASSWORD}}
+      DB_SSL: ${DB_SSL:-true}
+      PGHOST: postgres
+      UVICORN_PORT: ${UVICORN_PORT:-8443}
+      UVICORN_SSL_KEYFILE: ${UVICORN_SSL_KEYFILE}
+      UVICORN_SSL_CERTFILE: ${UVICORN_SSL_CERTFILE}
+      UVICORN_SSL_CERT_REQS: ${UVICORN_SSL_CERT_REQS:-0}  # set this to 1 to request client certs
+      UVICORN_LOG_LEVEL: ${UVICORN_LOG_LEVEL:-info}
+
+      # misc.
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      RELOAD_APP: ${RELOAD_APP:-1}
+
+      # OpenTelemetry configuration
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_SERVICE_NAME: atoms-sensemaking
+      OTEL_TRACES_SAMPLER: always_on
+    volumes:
+      - .:/app
+      - ./etc/pki:/opt/common/pki
+    healthcheck:
+      test: ["CMD-SHELL", "/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+    networks:
+      - atoms-network
+
+secrets:
+  mynetrc:
+    file: ${HOME}/.netrc
+
+networks:
+  atoms-network:
+    name: atoms-local-dev_default
+    external: true

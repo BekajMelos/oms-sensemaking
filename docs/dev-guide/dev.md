@@ -38,6 +38,7 @@ applicaton's configuraton.
 | `ATOMS_CACERT_PATH` | `./etc/pki/trusted.crt`                          | Path to CA File used for your local dev containers |
 | `DOCKER_REGISTRY` | `hostname:5000`                                  | Socket address of the remote docker registry |
 | `PIP_INDEX` | `https://host:3000/api/packages/oms/pypi/simple` | URL for the private pip index |
+| `COMPOSE_FILE` | `docker-compose.yml`                         | Docker compose file to use in make commands |
 
 ## Common Workflows
 

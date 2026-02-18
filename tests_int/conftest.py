@@ -1,6 +1,7 @@
 """PyTest Configuration."""
 
 import json
+import os
 from collections.abc import Generator
 from logging.config import dictConfig
 from pathlib import Path
@@ -41,8 +42,12 @@ alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 # Update aac url to hit our test instance
 SETTINGS.aac_url = "http://localhost:5022"
 
+# Because of atoms dev on port 8010 vs 8020 set omsb_url appropriately
+omsb_url = os.getenv("OMSB_URL", SETTINGS.omsb_url)
+omsb_url = "https://localhost:8020/graphql" if "https" in omsb_url else "http://localhost:8010/graphql"
+
 # Update OMSB URL
-SETTINGS.omsb_url = "https://localhost:8020/graphql"
+SETTINGS.omsb_url = omsb_url
 
 # Source and provider creation for tests
 if not SETTINGS.create_source_if_none:
@@ -223,8 +228,8 @@ def rollup_unclass_acm_3_0() -> dict:
         "rel_to": [],
         "fgi_open": [],
         "fgi_protect": [],
-        "portion": "U//DISPLAY ONLY",
-        "banner": "UNCLASSIFIED//DISPLAY ONLY",
+        "portion": "U",
+        "banner": "UNCLASSIFIED",
         "dissem_countries": [],
         "accms": [],
         "macs": [],
