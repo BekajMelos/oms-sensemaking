@@ -22,7 +22,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from pydantic import BaseModel
 from shapely import LineString, MultiLineString, to_geojson
 from shapely.geometry.point import Point as ShapelyPoint
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table, func, select
+from sqlalchemy import Column, Float, ForeignKey, Index, Integer, String, Table, func, select
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
@@ -141,6 +141,15 @@ class Point(BaseORM, OmsObservationMixin, OmsGeoMixin, SecurityMarkingMixin, Aud
     """
 
     __tablename__: str = "points"
+    __table_args__ = (
+        Index(
+            "idx_points_lookup",
+            "source_id",
+            "node_id",
+            "observation_id",
+        ),
+    )
+
     point_id: Mapped[int] = mapped_column(
         Integer,
         autoincrement=True,

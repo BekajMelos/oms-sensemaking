@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Loiters now return activities 
+
 ### Fixed
+- Resolved index and comment discrepancies between alembic and SQLAlchemy models.
 
 ## [0.19.6] - 2026-02-16
 

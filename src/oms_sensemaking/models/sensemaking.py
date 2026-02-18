@@ -4,7 +4,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Enum, String
+from sqlalchemy import Enum, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
@@ -81,11 +81,11 @@ class FindingMixin(MappedAsDataclass):
     )
 
     atoms_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), unique=False, nullable=True, comment="The atom's ID correlating in the oms_db."
+        UUID(as_uuid=True), unique=False, nullable=True, comment="The atoms ID representing the data in atoms core."
     )
 
     atoms_type: Mapped[AtomsType] = mapped_column(
-        Enum(AtomsType), nullable=True, unique=False, comment="Atoms type the atoms_id references."
+        Enum(AtomsType), nullable=True, unique=False, comment="Type of the data the atoms ID represents."
     )
 
 
@@ -111,6 +111,15 @@ class Finding(BaseORM, FindingMixin, AlgorithmMixin, SecurityMarkingMixin, Audit
     """
 
     __tablename__: str = "findings"
+
+    __table_args__ = (
+        Index(
+            "ix_findings_lookup_composite",
+            "atoms_id",
+            "finding_type",
+            "atoms_type",
+        ),
+    )
 
     finding_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
