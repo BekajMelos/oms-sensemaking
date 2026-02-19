@@ -23,17 +23,12 @@
                 "key": "Content-Type",
                 "value": "application/json",
                 "type": "text"
-              },
-              {
-                "key": "base_url",
-                "value": "{{SENSEMAKING_ENDPOINT}}",
-                "type": "text"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/settings",
+              "raw": "{{SENSEMAKING_ENDPOINT}}/settings",
               "host": [
-                "{{base_url}}"
+                "{{SENSEMAKING_ENDPOINT}}"
               ],
               "path": [
                 "settings"
@@ -56,11 +51,6 @@
                 "key": "Content-Type",
                 "value": "application/json",
                 "type": "text"
-              },
-              {
-                "key": "base_url",
-                "value": "{{SENSEMAKING_ENDPOINT}}",
-                "type": "text"
               }
             ],
             "body": {
@@ -73,9 +63,9 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/settings",
+              "raw": "{{SENSEMAKING_ENDPOINT}}/settings",
               "host": [
-                "{{base_url}}"
+                "{{SENSEMAKING_ENDPOINT}}"
               ],
               "path": [
                 "settings"
