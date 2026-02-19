@@ -12,6 +12,7 @@ from oms_sdk.generated.generated_graphql_client import (
     Confidence,
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
+    CreateMilSymAttributes,
     CreateNodeCreateNode,
     NodeNode,
     RestoreAttributeRestoreAttribute,
@@ -56,6 +57,53 @@ class SymbolCodeUpdate(FindingBase):
 
     def get_acm(self) -> Dict:
         return self.acm
+
+
+class MilSymAttrsPublisher:
+    def __init__(
+        self,
+        oms_crud_tool: OmsCrudTool,
+        version: str,
+        oms_node: NodeNode,
+        symbol_code_updates: List[SymbolCodeUpdate],
+        source_id: uuid.UUID,
+    ) -> None:
+        self.oms_crud_tool = oms_crud_tool
+        self.version = version
+        self.oms_node = oms_node
+        self.symbol_code_updates = symbol_code_updates
+        self.source_id = source_id
+
+    def publish_mil_sym_attrs(self) -> CreateMilSymAttributes:
+        inputs: list[CreateAttributeInput] = self.create_attribute_inputs(
+            self.version, self.oms_node, self.symbol_code_updates, self.source_id
+        )
+        attributes = self.oms_crud_tool.oms_client.create_mil_sym_attributes(inputs[0], inputs[1], inputs[2])
+        return attributes
+
+    def create_attribute_inputs(
+        self, version: str, oms_node: NodeNode, symbol_code_updates: list[SymbolCodeUpdate], source_id: uuid.UUID
+    ) -> list[CreateAttributeInput]:
+        attribute_inputs: list[CreateAttributeInput] = []
+        for symbol_code_update in symbol_code_updates:
+            attribute_input: CreateAttributeInput = CreateAttributeInput(
+                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+                labels=[
+                    SETTINGS.sm_inferenced_label,
+                    SETTINGS.mil_sym_sm_label,
+                    version,
+                    symbol_code_update.id_type,
+                ],
+                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+                attributeType=AttributeType.STRING,
+                attributeValue=symbol_code_update.new_symbol_id_code,
+                confidence=Confidence.HIGH.value,
+                acm=symbol_code_update.get_acm(),
+                nodeId=oms_node.id,
+                sourceId=source_id,
+            )
+            attribute_inputs.append(attribute_input)
+        return attribute_inputs
 
 
 class MilSymbolSensemaker(Sensemaker):
@@ -177,7 +225,7 @@ class MilSymbolSensemaker(Sensemaker):
         symbol_code_update_b = SymbolCodeUpdate(
             old_symbol_id_code=oms_node.symbolIdCode,
             new_symbol_id_code=code_2525b.formatted_code,
-            acm=code_2525c.get_acm(),
+            acm=code_2525b.get_acm(),
             id_type=MilSymbol2525B.code_type_config,
         )
 
@@ -283,31 +331,20 @@ class MilSymbolSensemaker(Sensemaker):
                 LOGGER.exception("Unable to update Icon Attributes.")
                 raise
         else:
-            for symbol_code_update in symbol_code_updates:
-                attribute: CreateAttributeInput = CreateAttributeInput(
-                    tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                    labels=[
-                        SETTINGS.sm_inferenced_label,
-                        SETTINGS.mil_sym_sm_label,
-                        self.version_string,
-                        symbol_code_update.id_type,
-                    ],
-                    attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                    attributeType=AttributeType.STRING,
-                    attributeValue=symbol_code_update.new_symbol_id_code,
-                    confidence=Confidence.HIGH.value,
-                    acm=symbol_code_update.get_acm(),
-                    nodeId=oms_node.id,
-                    sourceId=source_id,
-                )
-                created_symbol_code_attr = self.oms_crud_tool.create_attribute(attribute)
-                LOGGER.info(f"created_symbol_code_attr.id: {created_symbol_code_attr.id}")
-                # Update the entire object
-                symbol_code_update.atoms_id = created_symbol_code_attr.id
-                symbol_code_update.atoms_type = AtomsType.ATTRIBUTE
-                # Save how to query on atoms_id and atoms_type
-                symbol_code_update.query_atoms_id = oms_node.id
-                symbol_code_update.query_atoms_type = AtomsType.NODE
+            publisher = MilSymAttrsPublisher(
+                self.oms_crud_tool, self.version_string, oms_node, symbol_code_updates, source_id
+            )
+            published_attributes = publisher.publish_mil_sym_attrs()
+            list_of_pub_attrs = [
+                published_attributes.milSymAttr1,
+                published_attributes.milSymAttr2,
+                published_attributes.milSymAttr3,
+            ]
+            for i in range(len(list_of_pub_attrs)):
+                symbol_code_updates[i].atoms_id = list_of_pub_attrs[i].id
+                symbol_code_updates[i].atoms_type = AtomsType.ATTRIBUTE
+                symbol_code_updates[i].query_atoms_id = oms_node.id
+                symbol_code_updates[i].query_atoms_type = AtomsType.NODE
 
         LOGGER.info("Mil Symbol Sensemaker updated symbol codes for %s", oms_node.id)
 
