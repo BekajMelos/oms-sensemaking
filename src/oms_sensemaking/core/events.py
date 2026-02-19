@@ -3,6 +3,7 @@
 import json
 import logging
 import socket
+import threading
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -24,7 +25,7 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.event_model import AuditLogHeaders, DefaultHeaders, HeaderParser
 from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
-from oms_sensemaking.core.settings import Settings as AppSettings
+from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -157,7 +158,6 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self,
         name: str,
         queue_name: str,
-        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
@@ -168,8 +168,10 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._event_filter = event_filter
         self._connection: BlockingConnection = None
         self._channel: BlockingChannel = None
-        settings_dict = app_settings.get_settings()
-        self._prefetch_count = settings_dict.get("rabbitmq_prefetch_count", SETTINGS.rabbitmq_prefetch_count)
+        self._prefetch_count = RUNTIME_SETTINGS.get("rabbitmq_prefetch_count")
+        self._consumer_tag: str | None = None
+        self.pool: ThreadPoolExecutor
+        self._max_workers: int
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
@@ -205,6 +207,59 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
             except Exception as ex:
                 LOGGER.error("%s Error disconnecting from RabbitMQ: %s", self._name, ex)
 
+    def update_prefetch(self, new_prefetch: int) -> None:
+        new_prefetch = int(new_prefetch)
+        if new_prefetch == self._prefetch_count:
+            return
+
+        LOGGER.info("%s scheduling prefetch update from %s → %s", self._name, self._prefetch_count, new_prefetch)
+
+        # Always update local value so next connect uses it
+        self._prefetch_count = new_prefetch
+
+        if self._connection and self._connection.is_open:
+            try:
+                self._connection.add_callback_threadsafe(lambda: self._apply_prefetch_update(new_prefetch))
+            except Exception:
+                LOGGER.warning("%s callback failed; will apply on reconnect", self._name)
+
+    def _apply_prefetch_update(self, new_prefetch: int) -> None:
+        try:
+            LOGGER.info("%s applying new prefetch %s", self._name, new_prefetch)
+
+            # Stop receiving new messages (RMQ thread)
+            if self._channel and self._channel.is_open and self._consumer_tag:
+                LOGGER.info("%s cancelling consumer to drain inflight messages", self._name)
+                try:
+                    self._channel.basic_cancel(self._consumer_tag)
+                finally:
+                    self._consumer_tag = None
+
+            # Update the value immediately so the next _connect() uses it
+            self._prefetch_count = int(new_prefetch)
+
+            # Drain & reconnect asynchronously
+            Thread(target=self._drain_pool_and_reconnect, daemon=True).start()
+
+        except Exception:
+            LOGGER.exception("%s error during prefetch update", self._name)
+
+    def _drain_pool_and_reconnect(self) -> None:
+        try:
+            LOGGER.info("%s waiting for worker pool to drain", self._name)
+            self.pool.shutdown(wait=True)
+
+            # Recreate pool so listener keeps working
+            self.pool = ThreadPoolExecutor(max_workers=self._max_workers)
+
+            # Ask the RMQ thread to close the connection so the consumer reconnects
+            if self._connection and self._connection.is_open:
+                LOGGER.info("%s drained — closing connection for reconnect", self._name)
+                self._disconnect()
+
+        except Exception:
+            LOGGER.exception("%s error during async drain/reconnect", self._name)
+
     @abstractmethod
     def process_audit_log_events(self) -> None:
         """
@@ -224,13 +279,16 @@ class RabbitMQListener(BaseRabbitMQListener):
         name: str,
         queue_name: str,
         workers: int,
-        app_settings: AppSettings,
         handle_event: EVENT_HANDLER | None = None,
         event_filter: EventFilter | None = None,
     ):
         """Create a new instance of RabbitMQListener."""
-        super().__init__(name, queue_name, app_settings, handle_event, event_filter)
-        self.pool = ThreadPoolExecutor(max_workers=workers)
+        super().__init__(name, queue_name, handle_event, event_filter)
+        self._max_workers = workers
+        self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=self._max_workers)
+        self._draining = False
+        self._inflight_lock = threading.Lock()
+        self._inflight = 0
 
     def callback(
         self, ch: Channel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes
@@ -252,6 +310,10 @@ class RabbitMQListener(BaseRabbitMQListener):
     def _process_message(self, ch, method, properties, body):
         object_id = None
         start_time = time()  # Record when we start processing
+
+        # track inflight work
+        with self._inflight_lock:
+            self._inflight += 1
 
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
@@ -299,6 +361,10 @@ class RabbitMQListener(BaseRabbitMQListener):
             # Record failed processing metrics
             record_processing_failure(self._queue_name, start_time)
 
+        finally:
+            with self._inflight_lock:
+                self._inflight -= 1
+
     def process_audit_log_events(self) -> None:
         """Process audit log events from RabbitMQ."""
         if not callable(self.handle_event):
@@ -317,7 +383,11 @@ class RabbitMQListener(BaseRabbitMQListener):
     def _consume_messages(self):
         try:
             # Start consuming messages
-            self._channel.basic_consume(queue=self._queue_name, on_message_callback=self.callback, auto_ack=False)  # type: ignore
+            self._consumer_tag = self._channel.basic_consume(
+                queue=self._queue_name,
+                on_message_callback=self.callback,
+                auto_ack=False,
+            )
 
             while not self.stopped.is_set():
                 try:
@@ -421,3 +491,11 @@ class NoOpEventConsumer(AuditLogEventConsumer):
     def process_audit_log_events(self) -> None:
         """No-Op."""
         pass
+
+
+# Registry of live RabbitMQ listeners (runtime infrastructure)
+LISTENERS: list["BaseRabbitMQListener"] = []
+
+
+def register_listener(listener: "BaseRabbitMQListener") -> None:
+    LISTENERS.append(listener)
