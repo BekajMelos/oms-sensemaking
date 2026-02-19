@@ -44,7 +44,7 @@ local: ## Start atoms-sensemaking locally
 	uvicorn oms_sensemaking.service:app --port 5000 --reload --log-level debug
 
 no-atoms: ## start atoms-sensemaking without supporting atoms env containers
-	docker compose up -d
+	docker compose -f ${COMPOSE_FILE} up -d
 
 fix:  ## Run linter and apply fixes
 	ruff check --fix
@@ -78,16 +78,16 @@ list-versions: ## Display the tagged versions
 	@git tag -n
 
 up: ## Start atoms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
-	docker compose up -d ${DOCKER_FLAGS}
+	docker compose -f ${COMPOSE_FILE} up -d ${DOCKER_FLAGS}
 
 stop: ## Stop atoms-sensemaking docker environment
-	docker compose stop
+	docker compose -f ${COMPOSE_FILE} stop
 
 down: ## Stop atoms-sensemaking docker environment and remove containers
-	docker compose down
+	docker compose -f ${COMPOSE_FILE} down
 
 shell: ## Open a shell inside the atoms-sensemaking container
-	@docker compose exec atoms-sensemaking /bin/bash
+	@docker compose -f ${COMPOSE_FILE} exec atoms-sensemaking /bin/bash
 
 psql: ## psql into main db
 	docker compose exec postgis psql -h postgis
@@ -107,11 +107,11 @@ distclean: clean  ## Purge all generated content
 
 nuke:
 	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
-	docker compose down -v
+	docker compose -f ${COMPOSE_FILE} down -v
 
 refresh: nuke  # Purge all generated content and restart
 	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
-	docker compose --profile local up --build -d
+	docker compose -f ${COMPOSE_FILE} --profile local up --build -d
 
 load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop) --loop-wait $(loop_wait)

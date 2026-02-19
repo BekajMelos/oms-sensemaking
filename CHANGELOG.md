@@ -14,12 +14,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added Extended Kalman Filter to track weaver algorithms.
+- Added compose files for using `atoms-local-dev`
 - Apply throttle settings updates at application start-ups and runtime, via call to `PATCH /settings`.
 
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
 - Object Minimum rubric applies to the most specific class now.
+- Updated `aac2` container to latest
 - Support two settings endpoints: `PATCH /settings` to update any settings at runtime and future start-ups, and `GET /settings` to get all settings stored for admin dashboard.
 
 ### Fixed

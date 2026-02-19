@@ -41,7 +41,7 @@ services:
     restart: on-failure
     depends_on:
       - postgis
-
+ 
   postgis:
     image: postgis/postgis:17-3.5-alpine
     platform: linux/amd64  # see https://github.com/postgis/docker-postgis/issues/216
@@ -147,7 +147,7 @@ services:
   aac2:
 #    hostname: aac2
 #    container_name: aac2
-    image: ${DOCKER_REGISTRY}/dpaas-internal/aac/ent-aac-service:2.1.15.3
+    image: ${DOCKER_REGISTRY}/dpaas-internal/aac/ent-aac-service:2.1.24
     command: sh -c "./entrypoint.sh"
     volumes:
       - ./etc/pki:/opt/common/pki
