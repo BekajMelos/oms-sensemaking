@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-
+- Updated pytest and other dependencies to latest version
 ### Fixed
 
 ## [0.24.0] - 2026-02-12
