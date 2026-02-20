@@ -13,6 +13,9 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeCreateAttribute,
     CreateAttributeInput,
     CreateMilSymAttributes,
+    CreateMilSymAttributesMilSymAttr1,
+    CreateMilSymAttributesMilSymAttr2,
+    CreateMilSymAttributesMilSymAttr3,
     CreateNodeCreateNode,
     NodeNode,
     RestoreAttributeRestoreAttribute,
@@ -74,12 +77,16 @@ class MilSymAttrsPublisher:
         self.symbol_code_updates = symbol_code_updates
         self.source_id = source_id
 
-    def publish_mil_sym_attrs(self) -> CreateMilSymAttributes:
+    def publish_mil_sym_attrs(
+        self,
+    ) -> list[CreateMilSymAttributesMilSymAttr1, CreateMilSymAttributesMilSymAttr2, CreateMilSymAttributesMilSymAttr3]:
         inputs: list[CreateAttributeInput] = self.create_attribute_inputs(
             self.version, self.oms_node, self.symbol_code_updates, self.source_id
         )
-        attributes = self.oms_crud_tool.oms_client.create_mil_sym_attributes(inputs[0], inputs[1], inputs[2])
-        return attributes
+        attributes: CreateMilSymAttributes = self.oms_crud_tool.oms_client.create_mil_sym_attributes(
+            inputs[0], inputs[1], inputs[2]
+        )
+        return [attributes.milSymAttr1, attributes.milSymAttr2, attributes.milSymAttr3]
 
     def create_attribute_inputs(
         self, version: str, oms_node: NodeNode, symbol_code_updates: list[SymbolCodeUpdate], source_id: uuid.UUID
@@ -335,13 +342,18 @@ class MilSymbolSensemaker(Sensemaker):
                 self.oms_crud_tool, self.version_string, oms_node, symbol_code_updates, source_id
             )
             published_attributes = publisher.publish_mil_sym_attrs()
-            list_of_pub_attrs = [
-                published_attributes.milSymAttr1,
-                published_attributes.milSymAttr2,
-                published_attributes.milSymAttr3,
-            ]
-            for i in range(len(list_of_pub_attrs)):
-                symbol_code_updates[i].atoms_id = list_of_pub_attrs[i].id
+            attrs_sorted_by_code_type = published_attributes
+            # sorting since there could be cases where it's not
+            # always going to come back in [D, C, B] order
+            for attr in published_attributes:
+                if MilSymbol2525D.code_type_config in attr.labels:
+                    attrs_sorted_by_code_type[0] = attr
+                elif MilSymbol2525C.code_type_config in attr.labels:
+                    attrs_sorted_by_code_type[1] = attr
+                else:
+                    attrs_sorted_by_code_type[2] = attr
+            for i in range(len(symbol_code_updates)):
+                symbol_code_updates[i].atoms_id = attrs_sorted_by_code_type[i].id
                 symbol_code_updates[i].atoms_type = AtomsType.ATTRIBUTE
                 symbol_code_updates[i].query_atoms_id = oms_node.id
                 symbol_code_updates[i].query_atoms_type = AtomsType.NODE
