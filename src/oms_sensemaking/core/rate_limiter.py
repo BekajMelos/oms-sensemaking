@@ -3,8 +3,6 @@ import threading
 import time
 from functools import wraps
 
-from ratelimit import RateLimitException, limits
-
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 _rate_limit_lock = threading.Lock()
@@ -43,42 +41,39 @@ def rate_decorator_factory(calls, period):
     :return: Return a rate decorator
     """
 
-    @sleep_and_retry_with_logs
-    @limits(calls=calls, period=period)
-    def token_bucket():
-        return True
+    state = {
+        "window_start": time.time(),
+        "count": 0,
+    }
 
     def rate_decorator(function):
         @wraps(function)
         def wrapper(*args, **kwargs):
             with _rate_limit_lock:
-                token_bucket()
+                max_calls = calls() if callable(calls) else calls
+                window = period() if callable(period) else period
+                now = time.time()
+
+                # reset window if expired
+                if now - state["window_start"] >= window:
+                    state["window_start"] = now
+                    state["count"] = 0
+
+                if state["count"] >= max_calls:
+                    sleep_time = window - (now - state["window_start"])
+                    if sleep_time > 0:
+                        LOGGER.info(
+                            "Rate limit hit. Sleeping for %.2f seconds and retrying",
+                            sleep_time,
+                        )
+                        time.sleep(sleep_time)
+                        state["window_start"] = time.time()
+                        state["count"] = 0
+
+                state["count"] += 1
+
             return function(*args, **kwargs)
 
         return wrapper
 
     return rate_decorator
-
-
-def sleep_and_retry_with_logs(func):
-    """
-    (A rewrite of the @sleep_and_retry decorator from the ratelimit library which adds logging)
-
-    Return a wrapped function that rescues rate limit exceptions, sleeping the
-    current thread until rate limit resets.
-
-    :param function func: The function to decorate.
-    :return: Decorated function.
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kargs):
-        while True:
-            try:
-                return func(*args, **kargs)
-            except RateLimitException as exception:
-                sleep_time = exception.period_remaining
-                LOGGER.info("Rate limit hit. Sleeping for %.2f seconds and retrying", sleep_time)
-                time.sleep(sleep_time)
-
-    return wrapper

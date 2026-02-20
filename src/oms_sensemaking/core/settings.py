@@ -1,30 +1,43 @@
-from typing import Any, Dict
-
-from sqlalchemy import select
+import logging
 
 from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.core.events import LISTENERS
+from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 from oms_sensemaking.models.settings import Setting
 
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
-class Settings:
-    def get_settings(self) -> Dict[str, Any]:
-        """
-        Fetches all settings records from the database and returns them
-        as a single dictionary mapping field_name to field_value.
 
-        Assumes field_value is stored as a JSON/JSONB type, which SQLAlchemy
-        automatically converts back to native Python types (dict, list, int, bool).
+def fetch_settings_from_db() -> dict[str, str]:
+    """Fetch all persisted settings from the database."""
+    with db_session() as db:
+        rows = db.query(Setting).all()
+        return {row.field_name: row.field_value for row in rows}
 
-        Returns:
-            A dictionary mapping setting name (str) to its value (Any).
-        """
-        with db_session() as db:
-            stmt = select(Setting)
 
-            # Execute the statement and fetch all results
-            settings_results = db.execute(stmt).scalars().all()
-            settings_map: Dict[str, Any] = {}
-            for setting in settings_results:
-                settings_map[setting.field_name] = setting.field_value
+def load_runtime_settings_from_db() -> None:
+    """Load settings from the database with the RuntimeSettings bulk_set() call"""
+    db_settings = fetch_settings_from_db()
+    if not db_settings:
+        LOGGER.info("No runtime settings found in DB")
+        return
 
-            return settings_map
+    LOGGER.info("Applying runtime settings from DB: %s", db_settings)
+    RUNTIME_SETTINGS.bulk_set(db_settings)
+
+
+def _handle_runtime_setting_change(key: str, value: int) -> None:
+    """Helper for /settings endpoint to apply runtime settings reactions"""
+    if key == "rabbitmq_prefetch_count":
+        for listener in LISTENERS:
+            try:
+                listener.update_prefetch(value)
+            except Exception:
+                LOGGER.exception("Failed to update prefetch on listener %s", listener)
+
+
+def apply_settings_updates(updates):
+    """Iterate through settings updates and apply to runtime settings"""
+    for key, value in updates.items():
+        RUNTIME_SETTINGS.set(key, value)  # state
+        _handle_runtime_setting_change(key, value)  # reaction
