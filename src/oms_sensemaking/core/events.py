@@ -173,6 +173,11 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self.pool: ThreadPoolExecutor
         self._max_workers: int
 
+    @property
+    def queue_name(self) -> str:
+        """Public accessor for queue name (used by metrics)."""
+        return self._queue_name
+
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
         LOGGER.info(
@@ -318,7 +323,9 @@ class RabbitMQListener(BaseRabbitMQListener):
         try:
             audit_log: AuditLogEvent = AuditLogEvent.from_json(body.decode("utf-8"))
             audit_log.headers = HeaderParser().parse(properties)
-            LOGGER.info("%s Received %s %s: %s", self._name, audit_log.action, audit_log.objectType, audit_log.objectId)
+            LOGGER.debug(
+                "%s Received %s %s: %s", self._name, audit_log.action, audit_log.objectType, audit_log.objectId
+            )
             object_id = audit_log.objectId
 
             if self._event_filter and not self._event_filter.passes_filter(audit_log):
@@ -333,7 +340,7 @@ class RabbitMQListener(BaseRabbitMQListener):
                 return
 
             if self.handle_event and self.handle_event(audit_log):
-                LOGGER.info("Acknowledging processed object %s from %s", audit_log.objectId, self._queue_name)
+                LOGGER.debug("Acknowledging processed object %s from %s", audit_log.objectId, self._queue_name)
                 self._connection.add_callback_threadsafe(lambda: ch.basic_ack(delivery_tag=method.delivery_tag))
 
                 # Record successful processing metrics
