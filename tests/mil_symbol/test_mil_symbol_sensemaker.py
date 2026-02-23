@@ -616,11 +616,8 @@ def test_affiliation_fallback_to_parent_is_triggered(
         ),
     ],
 )
-def test_has_mil_symbol_sensemaker_tags(
-    tags: list[str], expected_value, message: str, build_sensemaker: MilSymbolSensemaker
-):
-    sensemaker = build_sensemaker
-    actual = sensemaker.has_mil_symbol_sensemaker_tags(tags)
+def test_has_mil_symbol_sensemaker_tags(tags: list[str], expected_value, message: str):
+    actual = MilSymbolSensemaker.has_mil_symbol_sensemaker_tags(tags)
     assert actual == expected_value, message
 
 
