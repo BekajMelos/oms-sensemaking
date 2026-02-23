@@ -79,7 +79,9 @@ class MilSymAttrsPublisher:
 
     def publish_mil_sym_attrs(
         self,
-    ) -> list[CreateMilSymAttributesMilSymAttr1, CreateMilSymAttributesMilSymAttr2, CreateMilSymAttributesMilSymAttr3]:
+    ) -> list[
+        CreateMilSymAttributesMilSymAttr1 | CreateMilSymAttributesMilSymAttr2 | CreateMilSymAttributesMilSymAttr3
+    ]:
         inputs: list[CreateAttributeInput] = self.create_attribute_inputs(
             self.version, self.oms_node, self.symbol_code_updates, self.source_id
         )
