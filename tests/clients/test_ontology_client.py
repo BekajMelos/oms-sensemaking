@@ -84,7 +84,7 @@ def test_geospatial_get_node_ancestors_iris_circular_reference(mocker: MockerFix
 def test_mil_symbol_get_node_ancestors_iris_circular_reference(mocker: MockerFixture, mock_oms_crud_tool):
     """When ontology has circular class ref (A -> B -> A), return current list and stop."""
     client, mock_node, _, iri_b = _make_circular_ontology_setup(mocker, mock_oms_crud_tool)
-    actual_iris = client.mil_symbol_get_node_ancestors_iris(mock_node)
+    actual_iris = client.get_node_ancestors_iris(mock_node)
     assert actual_iris == [iri_b]
 
 

@@ -370,7 +370,7 @@ def test_new_incursion_region1(
             classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region1.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             sourceId=observational_node_region1.sourceId,
             nodeId=observational_node_region1.nodeId,
             observationIds=[observational_node_region1.id],
@@ -405,7 +405,7 @@ def test_new_incursion_region2(
             classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region2.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             sourceId=observational_node_region2.sourceId,
             nodeId=observational_node_region2.nodeId,
             observationIds=[observational_node_region2.id],
@@ -460,9 +460,9 @@ def test_existing_incursion_nonoverlapping_time(
     result = incur_sm.process_data(obs=observational_node_region1)
     mock_crud_tool.oms_client.incursion_data.assert_called_with(
         ActivityQuery(
-            classIris=[SETTINGS.inference_incursion_class_iri],
+            classIris=[SETTINGS.incursion_settings.class_iri],
             name=StringQuery(equals="Incursion"),
-            states=[SETTINGS.inference_incursion_activity_state],
+            states=StringQuery(equals=SETTINGS.incursion_settings.activity_state),
             nodeIds=UuidQueryByList(in_=[incurring_object.id]),
             pageParams=PageParams(page=1, pageSize=200),
         )
@@ -517,7 +517,7 @@ def test_new_incursion_region3(
             classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region3.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             sourceId=observational_node_region3.sourceId,
             nodeId=observational_node_region3.nodeId,
             observationIds=[observational_node_region3.id],
@@ -552,7 +552,7 @@ def test_new_incursion_region4(
             classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=f"Incursion Activity by object: {observational_node_region4.nodeId}",
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             sourceId=observational_node_region4.sourceId,
             nodeId=observational_node_region4.nodeId,
             observationIds=[observational_node_region4.id],

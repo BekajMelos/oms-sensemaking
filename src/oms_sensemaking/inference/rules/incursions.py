@@ -210,16 +210,13 @@ class IncursionSensemaker(Sensemaker):
 
         while has_more:
             activity_query = ActivityQuery(
-                classIris=[SETTINGS.inference_incursion_class_iri],
+                classIris=[SETTINGS.incursion_settings.class_iri],
                 name=StringQuery(equals="Incursion"),
-                states=[SETTINGS.inference_incursion_activity_state],
+                states=StringQuery(equals=SETTINGS.incursion_settings.activity_state),
                 nodeIds=UuidQueryByList(in_=[incurring_object_id]),
                 pageParams=PageParams(page=page, pageSize=pagesize),
             )
-            response = self.oms_crud_tool.oms_client.incursion_data(
-                query=activity_query,
-                incursionTags=SETTINGS.incursion_settings.tags,
-            )
+            response = self.oms_crud_tool.oms_client.incursion_data(activity_query)
             activities_layer = response.data or []
             incursion_activities.extend(activities_layer)
 
@@ -289,7 +286,7 @@ class IncursionSensemaker(Sensemaker):
             classIri=SETTINGS.incursion_settings.class_iri,
             name="Incursion",
             description=self._truncate_activity_description(description),
-            state=SETTINGS.inference_incursion_activity_state,
+            state=SETTINGS.incursion_settings.activity_state,
             sourceId=observation.sourceId,
             nodeId=observation.nodeId,
             observationIds=[observation.id],

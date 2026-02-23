@@ -273,10 +273,6 @@ class IncursionSettings(BaseModel):
         "./data/areas_of_interest",
         description="Path to areas of interest file"
     )
-    attribute_iri: str = Field(
-        CommonVars.has_coords_iri,
-        description="IRI for incursion attribute"
-    )
     class_iri: str = Field(
         CommonVars.intentional_act_iri,
         description="IRI for incursion class"
