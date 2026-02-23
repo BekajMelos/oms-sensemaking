@@ -7,7 +7,18 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+
+### Fixed
+
+## [0.25.0] - 2026-02-23
+
+### Added
+- Updates from `grimlock-support` through 0.19.7
+
+### Changed
 - Updated pytest and other dependencies to latest version
+- Bump sdk to Starscream 13.1.0
+
 ### Fixed
 
 ## [0.24.0] - 2026-02-12
