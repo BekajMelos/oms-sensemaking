@@ -72,7 +72,6 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 node_id=points[0].node_id,
                 algorithm="geo_test_track",
                 acm=DEFAULT_ACM,
-                provider_id=uuid4(),
             ),
             track_uuid=track_uuid,
         )
@@ -351,7 +350,6 @@ def test_geometry_crosses_antimeridian_same_lat(tester_db: Session):
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -412,7 +410,6 @@ def test_geometry_crosses_antimeridian_diff_lat(tester_db: Session):
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -473,7 +470,6 @@ def test_geometry_crosses_antimeridian_other_direction(tester_db: Session):
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -537,7 +533,6 @@ def test_geometry_not_crosses_antimeridian(tester_db: Session):
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"
@@ -634,7 +629,6 @@ def test_geometry_crosses_antimeridian_three_intersections(tester_db: Session):
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
     geometry = track.to_geometry()
     # assert geometry["type"] == "MultiLineString"

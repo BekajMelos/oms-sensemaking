@@ -7,8 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Loiters now return activities 
+- Loiters now return activities
+- Removed provider_id from database and splitting logic
+
 ### Fixed
+- Resolved index and comment discrepancies between alembic and SQLAlchemy models.
 
 ## [0.19.6] - 2026-02-16
 
