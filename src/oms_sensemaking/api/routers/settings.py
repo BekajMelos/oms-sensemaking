@@ -1,13 +1,14 @@
 """Rest Endpoints for Settings Management"""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
-from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate, SettingUpdate
+from oms_sensemaking.api.schemas.settings import SettingsBatchUpdate
 from oms_sensemaking.clients.instances import db_session
+from oms_sensemaking.core.settings import apply_settings_updates, fetch_settings_from_db
 from oms_sensemaking.models.settings import Setting
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -15,34 +16,14 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 router: APIRouter = APIRouter()
 
 
-@router.post("/settings", status_code=201)
-def create_or_update_setting(
-    setting: SettingUpdate, user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]
-) -> Response:
-    """Create or update a single setting."""
-    LOGGER.info("Updating setting %s", setting.field_name)
-    with db_session() as db:
-        existing_setting = db.query(Setting).filter(Setting.field_name == setting.field_name).first()
-        if existing_setting:
-            existing_setting.field_value = setting.field_value
-        else:
-            new_setting = Setting(field_name=setting.field_name, field_value=setting.field_value)
-            db.add(new_setting)
-        db.commit()
-
-    return Response(status_code=201)
-
-
-@router.post("/settings/batch", status_code=201)
-def create_or_update_settings(
-    settings_update: SettingsBatchUpdate, user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]
-) -> Response:
-    """Create or update multiple settings at once."""
-    LOGGER.info("Updating %d settings", len(settings_update.settings))
+@router.patch("/settings", status_code=204)
+def update_settings(settings_update: SettingsBatchUpdate, user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]):
+    """Update runtime settings in batch."""
+    LOGGER.info("Updating %d settings: %s", len(settings_update.settings), settings_update.settings)
 
     if not settings_update.settings:
-        LOGGER.info("No settings to update, skipping database operations")
-        return Response(status_code=201)
+        LOGGER.info("No values in Settings update request")
+        return
 
     with db_session() as db:
         for field_name, field_value in settings_update.settings.items():
@@ -54,4 +35,11 @@ def create_or_update_settings(
                 db.add(new_setting)
         db.commit()
 
-    return Response(status_code=201)
+    apply_settings_updates(settings_update.settings)
+
+    return
+
+
+@router.get("/settings", response_model=dict[str, Any])
+def get_settings(user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)]) -> dict[str, str]:
+    return fetch_settings_from_db()

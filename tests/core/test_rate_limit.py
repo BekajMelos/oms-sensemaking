@@ -1,31 +1,52 @@
-import time
-
-import pytest
+from unittest import mock
 
 from oms_sensemaking.core.rate_limiter import rate_limiter
 
 
-@rate_limiter(calls=5, period=5)
-class MyLimitedClass:
-    def foo(self):
-        return "foo"
+def test_rate_limiter_counts_across_methods():
+    @rate_limiter(calls=3, period=10)
+    class C:
+        def a(self):
+            return "a"
 
-    def bar(self):
-        return "bar"
+        def b(self):
+            return "b"
+
+    obj = C()
+
+    with mock.patch("time.sleep") as mock_sleep:
+        obj.a()
+        obj.b()
+        obj.a()  # 3rd call, limit reached
+        obj.b()  # 4th call, should trigger sleep
+
+        mock_sleep.assert_called_once()
 
 
-@pytest.mark.skip(reason="This test is flaky")
-def test_rate_limiting_works():
-    obj = MyLimitedClass()
-    for _ in range(4):
-        assert obj.foo() == "foo"
+def test_rate_limiter_resets_after_window():
+    @rate_limiter(calls=2, period=5)
+    class C:
+        def x(self):
+            return "x"
 
-    for _ in range(1):
-        assert obj.bar() == "bar"
+    obj = C()
 
-    start = time.time()
-    obj.bar()
-    end = time.time()
+    fake_time = [100.0]  # mutable so we can advance it
 
-    # sleep based off time remaining from last call. just checking if sleeping when it should
-    assert end - start >= 1
+    def time_side_effect():
+        return fake_time[0]
+
+    with mock.patch("time.time", side_effect=time_side_effect), mock.patch("time.sleep") as mock_sleep:
+        obj.x()  # call 1
+        obj.x()  # call 2
+
+        # Still in window, should sleep
+        obj.x()
+        mock_sleep.assert_called_once()
+
+        # Advance time past window
+        fake_time[0] += 6
+
+        # Should not sleep again — window reset
+        obj.x()
+        assert mock_sleep.call_count == 1

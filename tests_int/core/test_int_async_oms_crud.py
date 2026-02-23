@@ -134,41 +134,39 @@ async def test_create_node(cleanup_data, atoms_crud_tool, node_input):
 
 @pytest.mark.asyncio
 async def test_create_observation(atoms_crud_tool, starter_graph):
-    async for graph in starter_graph:
-        obs_input = CreateObservationInput(
-            acm=DEFAULT_ACM,
-            labels=None,
-            classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
-            tags=SETTINGS.sm_test_tags,
-            geometry={
-                "type": "Point",
-                "coordinates": [-77.04007, 38.85109],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            nodeId=graph.node.id,
-            sourceId=graph.source.id,
-        )
+    obs_input = CreateObservationInput(
+        acm=DEFAULT_ACM,
+        labels=None,
+        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/GeospatialLocation",
+        tags=SETTINGS.sm_test_tags,
+        geometry={
+            "type": "Point",
+            "coordinates": [-77.04007, 38.85109],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        nodeId=starter_graph.node.id,
+        sourceId=starter_graph.source.id,
+    )
 
-        obs = await atoms_crud_tool.create_observation(obs_input)
+    obs = await atoms_crud_tool.create_observation(obs_input)
 
-        assert obs.id
+    assert obs.id
 
 
 @pytest.mark.asyncio
 async def test_create_activity(atoms_crud_tool, starter_graph):
-    async for graph in starter_graph:
-        activity_input = CreateActivityInput(
-            name="test activity",
-            acm=DEFAULT_ACM,
-            sourceId=graph.source.id,
-            tags=SETTINGS.sm_test_tags,
-            startTime="2004-05-23T00:00:00-04:00",
-            endTime="2004-05-23T00:00:00-04:00",
-            classIri="https://foundry.ai.mil/ontology/4901-001/MilitaryExercise",
-            nodeId=graph.node.id,
-            state="UNKNOWN",
-        )
+    activity_input = CreateActivityInput(
+        name="test activity",
+        acm=DEFAULT_ACM,
+        sourceId=starter_graph.source.id,
+        tags=SETTINGS.sm_test_tags,
+        startTime="2004-05-23T00:00:00-04:00",
+        endTime="2004-05-23T00:00:00-04:00",
+        classIri="https://foundry.ai.mil/ontology/4901-001/MilitaryExercise",
+        nodeId=starter_graph.node.id,
+        state="UNKNOWN",
+    )
 
-        activity = await atoms_crud_tool.create_activity(activity_input)
+    activity = await atoms_crud_tool.create_activity(activity_input)
 
-        assert activity.id
+    assert activity.id
