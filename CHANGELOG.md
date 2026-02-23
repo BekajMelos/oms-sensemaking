@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.19.7] - 2026-02-23
+
+### Added
 - Detect circular ontology class structure when getting class ancestors
 
 ### Changed
