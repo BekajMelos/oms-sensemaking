@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Loiters now return activities
 - Removed provider_id from database and splitting logic
+- Mil Symbol Sensemaker utilizes new custom mutation to create attributes in one request instead of making individual API calls (performance improvement)
 
 ### Fixed
 - Resolved index and comment discrepancies between alembic and SQLAlchemy models.
