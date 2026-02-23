@@ -76,7 +76,8 @@ class OntologyClient(OntologyService):
 
         # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
 
-        ancestor_iris: set[str] = set()
+        ancestor_iris: list[str] = []
+        visited: set[str] = {oms_node.classIri}
         current_iri = oms_node.classIri
         while True:
             ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=current_iri)
@@ -87,11 +88,12 @@ class OntologyClient(OntologyService):
             # If multiple parent Iris, just get the first one
             parent_iri = ontology_class.parentOntologyClasses[0].iri
 
-            is_circular_ontology = parent_iri in ancestor_iris or parent_iri == oms_node.classIri
+            is_circular_ontology = parent_iri in visited
             if is_circular_ontology:
                 break
 
-            ancestor_iris.add(parent_iri)
+            visited.add(parent_iri)
+            ancestor_iris.append(parent_iri)
             current_iri = parent_iri
 
         return list(ancestor_iris)
