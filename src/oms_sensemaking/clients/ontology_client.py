@@ -98,6 +98,7 @@ class OntologyClient(OntologyService):
         """Given an iri, return the closest parent with a defaultSymbolIdCode
 
         :param iri: Iri to search for
+        :param _visited: Internal set of visited IRIs used to detect circular references; callers should omit.
         :return: Closest parent iri with a defaultSymbolIdCode
         """
         if _visited is None:
