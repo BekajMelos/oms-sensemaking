@@ -521,7 +521,7 @@ class ExtendedKalmanTrackWeaver(TrackWeaverBase):
             "weight": point.weight,
         }
 
-    def execute(self, points: list[Point], provider_id: uuid.UUID) -> Track:
+    def execute(self, points: list[Point]) -> Track:
         points.sort(key=lambda x: x.detection_time)
         self._init_ekf(points[0])
         smoothed_points: list[Point] = [points[0]]
@@ -545,7 +545,6 @@ class ExtendedKalmanTrackWeaver(TrackWeaverBase):
             algorithm=self.algorithm,
             observation_ids={p.observation_id for p in points},  # type: ignore
             acm=aac_client.get_acm_rollup([point.acm for point in smoothed_points]),
-            provider_id=provider_id,
         )
 
 
