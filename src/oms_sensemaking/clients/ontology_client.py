@@ -94,7 +94,15 @@ class OntologyClient(OntologyService):
 
         return iris
 
-    def get_default_symbol_id_code(self, iri: str, _visited: Optional[set[str]] = None) -> Optional[str]:
+    def get_default_symbol_id_code(self, iri: str) -> Optional[str]:
+        """Given an iri, return the closest parent with a defaultSymbolIdCode
+
+        :param iri: Iri to search for
+        :return: Closest parent iri with a defaultSymbolIdCode
+        """
+        return self._get_default_symbol_id_code(iri, None)
+
+    def _get_default_symbol_id_code(self, iri: str, _visited: Optional[set[str]]) -> Optional[str]:
         """Given an iri, return the closest parent with a defaultSymbolIdCode
 
         :param iri: Iri to search for
@@ -121,4 +129,4 @@ class OntologyClient(OntologyService):
         # If multiple parent Iris, just get the first one
         super_class_iri: str = ontology_class.parentOntologyClasses[0].iri
 
-        return self.get_default_symbol_id_code(super_class_iri, _visited)
+        return self._get_default_symbol_id_code(super_class_iri, _visited)
