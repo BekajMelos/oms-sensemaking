@@ -260,7 +260,7 @@ class MilSymbolSensemaker(Sensemaker):
         """
         Get the initial symbol id code, with the priority order Attribute -> Node.symbolIdCode -> derivedFrom(classIri)
 
-        :param oms_object: Attribute or Node with symbold id code
+        :param oms_object: Attribute or Node with symbol id code
         :param oms_node: Node with symbol id code to update
         :return: The starting symbol id code
         """
@@ -421,7 +421,8 @@ class MilSymbolSensemaker(Sensemaker):
             | UpdateAttributeUpdateAttribute,
         )
 
-    def has_mil_symbol_sensemaker_tags(self, tags: List[str]):
+    @staticmethod
+    def has_mil_symbol_sensemaker_tags(tags: List[str]):
         """
         Checks to see if an attribute has been tagged by this Sensemaker.
 
@@ -442,7 +443,7 @@ class MilSymbolSensemaker(Sensemaker):
         Attributes that have the same IRI as the one this Sensemaker publishes
         or have already been tagged by this Sensemaker should be ignored.
 
-        :param tags: List of strings representing the tags of the attribute
+        :param oms_object: The object to check for attribute properties and Mil Sym IRIs
         :return: boolean
         """
 

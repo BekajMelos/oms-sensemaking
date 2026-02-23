@@ -37,6 +37,10 @@ class TrackGenerator:
         Then runs the common sense filters and track weaver.
 
         :param track_uuid: UUID of the track
+        :param track_weaver: Algorithm used to determine track points
+        :param common_sense_filters: Common sense filters to apply
+        :param track_node_buffer: mapping of nodes to their points
+        :param oms_crud_tool: OMS crud tool
         :return: List of created Track objects
         """
 
@@ -101,7 +105,7 @@ class TrackGenerator:
         """
         Put points into bins that correspond to a timerange
         Start with the most recent point when creating bins so if there'd be a bin with only one point on the end,
-        the single point'd bin would be the oldest bin which would be the least important
+        the bin with a single point would be the oldest bin which would be the least important
         """
         points.reverse()
         time_bins = {
@@ -133,7 +137,7 @@ class GeoCSFTrackPointHelpers:
         self, ancestor_iris: set[str], binned_points: list[Point], sub_track_id: UUID
     ) -> list[Point]:
         """
-        Run commense sense filter on single point part of a track
+        Run common sense filter on single point part of a track
         """
         for csf in self.common_sense_filters:
             if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:
