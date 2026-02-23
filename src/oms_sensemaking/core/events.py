@@ -173,11 +173,6 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self.pool: ThreadPoolExecutor
         self._max_workers: int
 
-    @property
-    def queue_name(self) -> str:
-        """Public accessor for queue name (used by metrics)."""
-        return self._queue_name
-
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
         LOGGER.info(
