@@ -362,7 +362,6 @@ def sample_track():
         algorithm="test",
         observation_ids=[],
         acm=None,
-        provider_id=uuid4(),
     )
 
 
@@ -418,7 +417,7 @@ def test_publish_potential_duplicate_calls_publish_relationships(sensemaker, sam
     assert relationship_input.sourceId == sample_track.points[0].source_id
 
 
-def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_track):
+def test_publish_cotravel_creates_activities(sensemaker, sample_track):
     # Arrange
     cotravel = MagicMock()
     cotravel.cotravel_type = CotravelType.cotravel
@@ -430,35 +429,16 @@ def test_publish_cotravel_creates_node_and_relationships(sensemaker, sample_trac
     cotravel.to_geojson.return_value = {"type": "LineString"}
 
     # Fake published node with an ID
-    published_node = MagicMock()
-    published_node.id = "node-id"
+    published_activity = MagicMock()
+    published_activity.id = "activity-id"
 
-    sensemaker.oms_crud_tool.create_node.return_value = published_node
+    sensemaker.oms_crud_tool.publish_activities.return_value = published_activity
 
     # Act
     sensemaker.publish_cotravel(sample_track, cotravel)
 
-    # Assert: node creation
-    sensemaker.oms_crud_tool.create_node.assert_called_once()
-    create_node_input = sensemaker.oms_crud_tool.create_node.call_args.kwargs["node_input"]
-    assert create_node_input.name == "Cotravel"
-    assert create_node_input.acm == {"acm": "fake"}
-
-    # Assert: relationships published
-    sensemaker.oms_crud_tool.publish_relationships.assert_called_once()
-    relationships = sensemaker.oms_crud_tool.publish_relationships.call_args[0][0]
-    assert len(relationships) == 2
-    assert relationships[0].startNodeId == "node-id"
-    assert relationships[0].endNodeId == "track1-id"
-    assert relationships[1].endNodeId == "track2-id"
-
-    # Assert: attribute published
-    sensemaker.oms_crud_tool.publish_attributes.assert_called_once()
-    [attribute_input] = sensemaker.oms_crud_tool.publish_attributes.call_args[0][0]
-    assert attribute_input.nodeId == "node-id"
-    assert attribute_input.geometry == {"type": "LineString"}
-    assert attribute_input.valueStart == "start"
-    assert attribute_input.valueEnd == "end"
+    # Assert: activity creation
+    assert sensemaker.oms_crud_tool.publish_activities.call_count == 1
 
 
 def test_set_cotravel_type_updates_finding_type():

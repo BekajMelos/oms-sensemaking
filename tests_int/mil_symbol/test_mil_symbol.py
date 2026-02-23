@@ -170,9 +170,17 @@ def build_helper(mil_symbol_rules):
     ontology_service = OntologyClient(oms_crud_tool)
 
     # mock create_attribute
-    mock_attr_res = mock.MagicMock()
-    mock_attr_res.id = uuid4()
-    oms_crud_tool.create_attribute = mock.MagicMock(return_value=mock_attr_res)
+    # mock_attr_res = mock.MagicMock()
+    # mock_attr_res.id = uuid4()
+    # oms_crud_tool.create_attribute = mock.MagicMock(return_value=mock_attr_res)
+    mock_mil_sym_attrs_res = mock.MagicMock()
+    mock_mil_sym_attrs_res.milSymAttr1 = mock.MagicMock()
+    mock_mil_sym_attrs_res.milSymAttr1.id = uuid4()
+    mock_mil_sym_attrs_res.milSymAttr2 = mock.MagicMock()
+    mock_mil_sym_attrs_res.milSymAttr2.id = uuid4()
+    mock_mil_sym_attrs_res.milSymAttr3 = mock.MagicMock()
+    mock_mil_sym_attrs_res.milSymAttr3.id = uuid4()
+    oms_crud_tool.oms_client.create_mil_sym_attributes = mock.MagicMock(return_value=mock_mil_sym_attrs_res)
     oms_crud_tool.update_node = mock.MagicMock()
 
     return FixtureHelper(
@@ -217,26 +225,59 @@ def test_execute(mock_source, db, build_helper):
     new_id_codes_case1 = ["10-0-6-30-3-0-32-000000-00-00", "SHSD------*****", "SHSD------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case1)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
     # case 2
     oms_node = create_node(
@@ -276,26 +317,59 @@ def test_execute(mock_source, db, build_helper):
     new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case2)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
     # case 3
     oms_node = create_node(
@@ -331,26 +405,59 @@ def test_execute(mock_source, db, build_helper):
     new_id_codes_case3 = ["10-0-3-05-0-0-00-000000-00-00", "SFPP------*****", "SFPP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case3)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
     # case 4 (Attribute Update)
     oms_node = create_node(
@@ -390,26 +497,59 @@ def test_execute(mock_source, db, build_helper):
     new_id_codes_case4 = ["10-0-4-05-0-0-00-000000-00-00", "SNPP------*****", "SNPP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case4)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
     # case 5 (Ignore due to Tags from this Sensemaker)
     oms_node = create_node(
@@ -554,26 +694,59 @@ def test_receive_c_correctly_create_and_enrich_b_and_d(mock_source, db, build_he
     new_id_codes_case = ["10-0-1-30-3-0-00-000000-00-00", "SUSD------*****", "SOSP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
 
 def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_helper):
@@ -614,26 +787,59 @@ def test_receive_d_correctly_create_and_enrich_b_and_c(mock_source, db, build_he
     new_id_codes_case = ["10-0-1-30-3-0-32-000000-00-00", "SUSD------*****", "SOSP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
 
 def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_helper):
@@ -672,26 +878,59 @@ def test_receive_b_correctly_create_and_enrich_c_and_d(mock_source, db, build_he
     new_id_codes_case = ["10-0-1-10-4-0-00-000000-00-00", "SUGX------*****", "SOGP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )
 
 
 def test_echelon_enrichment(mock_source, db, build_helper):
@@ -730,23 +969,56 @@ def test_echelon_enrichment(mock_source, db, build_helper):
     new_id_codes_case = ["10-0-1-10-4-0-11-000000-00-00", "SUGX------*A***", "SOGP------*A***"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case)
 
-    for symbol in symbols:
-        oms_crud_tool.create_attribute.assert_any_call(
-            CreateAttributeInput(
-                tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
-                labels=[
-                    SETTINGS.sm_inferenced_label,
-                    SETTINGS.mil_sym_sm_label,
-                    sensemaker.version_string,
-                    symbol.id_type,
-                ],
-                attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
-                attributeType=AttributeType.STRING,
-                attributeValue=symbol.new_symbol_id_code,
-                attributeName="Icon",
-                confidence=Confidence.HIGH.value,
-                acm=symbol.acm,
-                nodeId=oms_node.id,
-                sourceId=mock_source.id,
-            )
-        )
+    oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_with(
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[0].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[0].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[0].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[1].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[1].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[1].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+        CreateAttributeInput(
+            tags=SETTINGS.mil_symbol_settings.mil_symbol_sensemaker_tags,
+            labels=[
+                SETTINGS.sm_inferenced_label,
+                SETTINGS.mil_sym_sm_label,
+                sensemaker.version_string,
+                symbols[2].id_type,
+            ],
+            attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
+            attributeType=AttributeType.STRING,
+            attributeValue=symbols[2].new_symbol_id_code,
+            attributeName="Icon",
+            confidence=Confidence.HIGH.value,
+            acm=symbols[2].acm,
+            nodeId=oms_node.id,
+            sourceId=mock_source.id,
+        ),
+    )

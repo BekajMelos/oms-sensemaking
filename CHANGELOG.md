@@ -79,6 +79,28 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
 
+## [0.19.7] - 2026-02-23
+
+### Added
+- Detect circular ontology class structure when getting class ancestors
+
+### Changed
+- Loiters now return activities
+- Removed provider_id from database and splitting logic
+- Mil Symbol Sensemaker utilizes new custom mutation to create attributes in one request instead of making individual API calls (performance improvement)
+
+### Fixed
+- Resolved index and comment discrepancies between alembic and SQLAlchemy models.
+
+## [0.19.6] - 2026-02-16
+
+### Added
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+
+### Changed
+- The Cotravel sensemaker now outputs two activities (for each "cotravelling" node) and one relationship (between the "cotravelling" nodes)
+- The Incursion Sensemaker no longer outputs/updates an attribute (only an activity).
+
 ## [0.19.5] - 2026-02-10
 
 ### Added

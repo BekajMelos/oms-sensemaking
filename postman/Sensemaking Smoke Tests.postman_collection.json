@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "3853397a-8224-4e6b-8b20-7b074dfc2d20",
+		"_postman_id": "f7df5be5-cbe8-46b5-8fc0-7d71e99fdf9b",
 		"name": "Sensemaking Smoke Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "41624740"
+		"_exporter_id": "41174150"
 	},
 	"item": [
 		{
@@ -796,13 +796,15 @@
 							"response": []
 						},
 						{
-							"name": "Get Loiter Node",
+							"name": "Get Loiter Activity",
 							"event": [
 								{
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											""
+											"// Add small delay to avoid read-before-write race condition",
+											"eval(pm.globals.get(\"waitFn\"));",
+											"wait(1500);"
 										],
 										"type": "text/javascript",
 										"packages": {},
@@ -819,14 +821,15 @@
 											"",
 											"const success = retryUntil({",
 											"  conditionFn: () =>",
-											"    response?.data?.nodes?.data?.length > 0,",
-											"  maxAttempts: 6,",
+											"    response?.data?.activities?.data?.length > 0,",
+											"  maxAttempts: 4,",
 											"  delayMs: 30000",
 											"});",
 											"",
 											"if (success) {",
-											"  pm.test(\"Loiter node exists\", () => {",
-											"    pm.expect(response.data.nodes.data.length).to.be.greaterThan(0);",
+											"  pm.test(\"Loiter activity exists\", () => {",
+											"    pm.expect(response.data.activities.data.length).to.be.greaterThan(0);",
+											"    pm.collectionVariables.set(\"loiteractivityId\", response.data.activities.data[0].id);",
 											"  });",
 											"}"
 										],
@@ -848,8 +851,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"LoiterEvent\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
-										"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\"\n}"
+										"query": "query(\n    $iri: String!\n    $filter: UuidQueryByList!\n) {\n    activities(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"Loiter\"\n            }\n            classIris: [$iri]\n            nodeIds: $filter\n        }\n    ) {\n        ... activityPageFragment\n    }\n}\n\n{{activityPageFragment}}",
+										"variables": "{\n    \"iri\": \"{{LOITER_IRI}}\",\n    \"filter\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
 									}
 								},
 								"url": {
@@ -863,83 +866,15 @@
 							"response": []
 						},
 						{
-							"name": "Get Loiter Node Id",
+							"name": "Update Loiter Activity Tag",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Get the JSON response",
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"loiterrelId\", response.data.relationships.data[0].id);",
-											"pm.collectionVariables.set(\"loiternodeId\", response.data.relationships.data[0].startNodeId);"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"// Add small delay to avoid read-before-write race condition",
-											"eval(pm.globals.get(\"waitFn\"));",
-											"wait(1500);"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $endNodeId: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
-										"variables": "{\n    \"endNodeId\": {{nodeId}}\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Loiter Node Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Loiter Node Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"loiternodeId\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"loiternodeId\")).to.not.be.null;",
+											"pm.test(\"Loiter Activity Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"loiteractivityId\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"loiteractivityId\")).to.not.be.null;",
 											"});"
 										],
 										"type": "text/javascript",
@@ -958,8 +893,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $nodeId: UUID!\n){\n\tupdateNode(\n        input: {\n            id: $nodeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"nodeId\": \"{{loiternodeId}}\"\n}"
+										"query": "mutation (\n    $testTag: String!\n    $activityId: UUID!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityId\": \"{{loiteractivityId}}\"\n}"
 									}
 								},
 								"url": {
@@ -1112,156 +1047,6 @@
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{loitertrackobsId2}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Loiter Rel Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Loiter Rel Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"loiterrelId\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"loiterrelId\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $relationshipId: UUID!\n){\n\tupdateRelationship(\n        input: {\n            id: $relationshipId\n            tags: [$testTag]\n        }\n  \t) {\n        ... relationshipFragment\n    }\n}\n\n{{relationshipFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"relationshipId\": \"{{loiterrelId}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Loiter Attribute",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.attributes && ",
-											"                      response.data.attributes.data && ",
-											"                      response.data.attributes.data.length > 0 && ",
-											"                      response.data.attributes.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"loiterattrId\", response.data.attributes.data[0].id);"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"// Add small delay to avoid read-before-write race condition",
-											"eval(pm.globals.get(\"waitFn\"));",
-											"wait(1500)"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": \"{{loiternodeId}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Loiter Attr Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Loiter Attr Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"loiterattrId\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"loiterattrId\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{loiterattrId}}\"\n}"
 									}
 								},
 								"url": {
@@ -2382,7 +2167,7 @@
 							"response": []
 						},
 						{
-							"name": "Get Cotravel Nodes",
+							"name": "Get Cotravel Activitiy 1",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -2406,16 +2191,17 @@
 											"// Retry until the response meets success criteria",
 											"const success = retryUntil({",
 											"    conditionFn: () =>",
-											"        response?.data?.nodes?.data?.length > 0 &&",
-											"        response?.data?.nodes?.totalSize > 0,",
-											"    maxAttempts: 6,",
+											"        response?.data?.activities?.data?.length > 0 &&",
+											"        response?.data?.activities?.totalSize > 0,",
+											"    maxAttempts: 4,",
 											"    delayMs: 30000",
 											"});",
 											"",
 											"if (success) {",
 											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(response.data.nodes.data.length).to.be.greaterThan(0);",
-											"        pm.expect(response.data.nodes.totalSize).to.be.greaterThan(0);",
+											"        pm.expect(response.data.activities.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.activities.totalSize).to.be.greaterThan(0);",
+											"        pm.collectionVariables.set(\"cotravelactivityId1\", response.data.activities.data[0].id);",
 											"    });",
 											"}"
 										],
@@ -2437,8 +2223,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query(\n    $iri: String!\n) {\n    nodes(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"Cotravel\"\n            }\n            classIris: [$iri]\n        }\n    ) {\n        ... nodePageFragment\n    }\n}\n\n{{nodePageFragment}}",
-										"variables": "{\n    \"iri\": \"{{COTRAVEL_IRI}}\"\n}"
+										"query": "query(\n    $iri: String!\n    $filter: UuidQueryByList!\n) {\n    activities(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"Cotravel\"\n            }\n            classIris: [$iri]\n            nodeIds: $filter\n        }\n    ) {\n        ... activityPageFragment\n    }\n}\n\n{{activityPageFragment}}",
+										"variables": "{\n    \"iri\": \"{{COTRAVEL_IRI}}\",\n    \"filter\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
 									}
 								},
 								"url": {
@@ -2452,87 +2238,47 @@
 							"response": []
 						},
 						{
-							"name": "Get Cotravel Node Id 1",
+							"name": "Get Cotravel Activitiy 2",
 							"event": [
 								{
-									"listen": "test",
+									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Get the JSON response",
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"cotravelrelId1\", response.data.relationships.data[0].id);",
-											"// pm.collectionVariables.set(\"cotravelrelId2\", response.data.relationships.data[1].id);",
-											"pm.collectionVariables.set(\"cotravelnode1\", response.data.relationships.data[0].startNodeId);",
-											"// pm.collectionVariables.set(\"cotravelnode2\", response.data.relationships.data[1].startNodeId);"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $endNodeId: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
-										"variables": "{\n    \"endNodeId\": {{nodeId}}\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Cotravel Node Id 2",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Get the JSON response",
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.relationships && ",
-											"                      response.data.relationships.data && ",
-											"                      response.data.relationships.data.length > 0 && ",
-											"                      response.data.relationships.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"cotravelrelId2\", response.data.relationships.data[0].id);",
-											"pm.collectionVariables.set(\"cotravelnodeId2\", response.data.relationships.data[0].startNodeId);",
 											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"eval(pm.globals.get(\"retryUntil\"));",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"// Retry until the response meets success criteria",
+											"const success = retryUntil({",
+											"    conditionFn: () =>",
+											"        response?.data?.activities?.data?.length > 0 &&",
+											"        response?.data?.activities?.totalSize > 0,",
+											"    maxAttempts: 4,",
+											"    delayMs: 30000",
+											"});",
+											"",
+											"if (success) {",
+											"    pm.test(\"Response contains valid data\", function () {",
+											"        pm.expect(response.data.activities.data.length).to.be.greaterThan(0);",
+											"        pm.expect(response.data.activities.totalSize).to.be.greaterThan(0);",
+											"        pm.collectionVariables.set(\"cotravelactivityId2\", response.data.activities.data[0].id);",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -2548,8 +2294,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $endNodeId: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
-										"variables": "{\n    \"endNodeId\": \"{{nodeId2}}\"\n}"
+										"query": "query(\n    $iri: String!\n    $filter: UuidQueryByList!\n) {\n    activities(\n        query: {\n            tags: [\"geosensemaker\"]\n            name: {\n                contains: \"Cotravel\"\n            }\n            classIris: [$iri]\n            nodeIds: $filter\n        }\n    ) {\n        ... activityPageFragment\n    }\n}\n\n{{activityPageFragment}}",
+										"variables": "{\n    \"iri\": \"{{COTRAVEL_IRI}}\",\n    \"filter\": {\n        \"in\": [\"{{nodeId2}}\"]\n    }\n}"
 									}
 								},
 								"url": {
@@ -2586,7 +2332,8 @@
 											""
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -2602,8 +2349,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query (\n    $endNodeId: UUID!\n){\n    relationships(\n        query: {\n            nodes: {\n                endNodeIds: [$endNodeId]\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
-										"variables": "{\n    \"endNodeId\": \"{{nodeId2}}\"\n}"
+										"query": "query (\n    $startNodeIds: [UUID!]\n    $endNodeIds: [UUID!]\n){\n    relationships(\n        query: {\n            nodes: {\n                startNodeIds: $startNodeIds\n                endNodeIds: $endNodeIds\n            }\n        }\n    ) {\n        ... relationshipFullPageFragment\n    }\n}\n\n{{relationshipFullPageFragment}}",
+										"variables": "{\n    \"startNodeIds\": [{{nodeId}}, \"{{nodeId2}}\"],\n    \"endNodeIds\": [{{nodeId}},\"{{nodeId2}}\"]\n}"
 									}
 								},
 								"url": {
@@ -2746,12 +2493,13 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Cotravel Node Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelnode1\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelnode1\")).to.not.be.null;",
+											"    pm.expect(pm.collectionVariables.get(\"cotravelactivityId1\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"cotravelactivityId1\")).to.not.be.null;",
 											"});"
 										],
 										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -2766,8 +2514,51 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation (\n    $testTag: String!\n    $nodeId: UUID!\n){\n\tupdateNode(\n        input: {\n            id: $nodeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"nodeId\": \"{{cotravelnode1}}\"\n}"
+										"query": "mutation (\n    $testTag: String!\n    $activityId: UUID!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityId\": \"{{cotravelactivityId1}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Cotravel Node Tag 1 Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Cotravel Node Tag Updated\", function () {",
+											"    pm.expect(pm.collectionVariables.get(\"cotravelactivityId2\")).to.not.be.undefined;",
+											"    pm.expect(pm.collectionVariables.get(\"cotravelactivityId2\")).to.not.be.null;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $activityId: UUID!\n){\n\tupdateActivity(\n        input: {\n            id: $activityId\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityId\": \"{{cotravelactivityId2}}\"\n}"
 									}
 								},
 								"url": {
@@ -2938,100 +2729,6 @@
 									"graphql": {
 										"query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cotraveltrackobsId2}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Cotravel Attribute 1",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"var response = pm.response.json();",
-											"let isValidResponse = response.data && ",
-											"                      response.data.attributes && ",
-											"                      response.data.attributes.data && ",
-											"                      response.data.attributes.data.length > 0 && ",
-											"                      response.data.attributes.totalSize > 0;",
-											"",
-											"if (isValidResponse) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(isValidResponse).to.be.true;",
-											"    });}",
-											"// Set the attribute ID",
-											"pm.collectionVariables.set(\"cotravelattrId1\", response.data.attributes.data[0].id);"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $nodeIds: [UUID!]\n){\n    attributes(\n        query: {\n            nodeIds: $nodeIds\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-										"variables": "{\n    \"nodeIds\": \"{{cotravelnode1}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Cotravel Attr 1",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Cotravel Attr Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelattrId1\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"cotravelattrId1\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{cotravelattrId1}}\"\n}"
 									}
 								},
 								"url": {
@@ -4536,7 +4233,7 @@
 						}
 					]
 				},
-								{
+				{
 					"name": "EKF",
 					"item": [
 						{
@@ -4685,48 +4382,48 @@
 						{
 							"name": "Create Source",
 							"event": [
-							{
-								"listen": "test",
-								"script": {
-									"exec": [
-										"// Get the JSON response",
-										"var json = pm.response.json();",
-										"pm.test(\"Source created\", function () {",
-										"    pm.expect(json.data.createSource.id).to.exist;",
-										"});",
-										"// Set the source ID",
-										"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
-									],
-									"type": "text/javascript",
-									"packages": {},
-									"requests": {}
-								}
-							}
-						],
-						"request": {
-							"method": "POST",
-							"header": [
 								{
-									"key": "user_dn",
-									"value": "{{TS_USER_DN}}"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Source created\", function () {",
+											"    pm.expect(json.data.createSource.id).to.exist;",
+											"});",
+											"// Set the source ID",
+											"pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
 								}
 							],
-							"body": {
-								"mode": "graphql",
-								"graphql": {
-									"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
-									"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
 								}
 							},
-							"url": {
-								"raw": "https://{{GRAPHQL_ENDPOINT}}",
-								"protocol": "https",
-								"host": [
-									"{{GRAPHQL_ENDPOINT}}"
-								]
-							}
-						},
-						"response": []
+							"response": []
 						},
 						{
 							"name": "Create Node",
@@ -4888,61 +4585,61 @@
 							"response": []
 						},
 						{
-						"name": "Create Observation 3",
-						"event": [
-							{
-								"listen": "test",
-								"script": {
-									"exec": [
-										"// Get the JSON response",
-										"var json = pm.response.json();",
-										"pm.test(\"Observation 3 Created\", function () {",
-										"    pm.expect(json.data.createObservation.id).to.exist;",
-										"});",
-										"// Set the attribute ID",
-										"pm.collectionVariables.set(\"TrackObservationId3\", json.data.createObservation.id);"
-									],
-									"type": "text/javascript",
-									"packages": {},
-									"requests": {}
-								}
-							},
-							{
-								"listen": "prerequest",
-								"script": {
-									"exec": [
-										""
-									],
-									"type": "text/javascript",
-									"packages": {},
-									"requests": {}
-								}
-							}
-						],
-						"request": {
-							"method": "POST",
-							"header": [
+							"name": "Create Observation 3",
+							"event": [
 								{
-									"key": "user_dn",
-									"value": "{{TS_USER_DN}}"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get the JSON response",
+											"var json = pm.response.json();",
+											"pm.test(\"Observation 3 Created\", function () {",
+											"    pm.expect(json.data.createObservation.id).to.exist;",
+											"});",
+											"// Set the attribute ID",
+											"pm.collectionVariables.set(\"TrackObservationId3\", json.data.createObservation.id);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
 								}
 							],
-							"body": {
-								"mode": "graphql",
-								"graphql": {
-									"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    19.4,\n                    37.5\n                ]\n            }\n            startTime: \"2024-03-16T16:22:32.000Z\"\n            endTime: \"2024-03-16T16:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-									"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "user_dn",
+										"value": "{{TS_USER_DN}}"
+									}
+								],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    19.4,\n                    37.5\n                ]\n            }\n            startTime: \"2024-03-16T16:22:32.000Z\"\n            endTime: \"2024-03-16T16:22:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+									}
+								},
+								"url": {
+									"raw": "https://{{GRAPHQL_ENDPOINT}}",
+									"protocol": "https",
+									"host": [
+										"{{GRAPHQL_ENDPOINT}}"
+									]
 								}
 							},
-							"url": {
-								"raw": "https://{{GRAPHQL_ENDPOINT}}",
-								"protocol": "https",
-								"host": [
-									"{{GRAPHQL_ENDPOINT}}"
-								]
-							}
-						},
-						"response": []
+							"response": []
 						},
 						{
 							"name": "Create Observation 4",
@@ -5943,123 +5640,6 @@
 									"graphql": {
 										"query": "mutation (\n    $activityid: UUID!\n    $testTag: String!\n){\n\tupdateActivity(\n        input: {\n            id: $activityid\n            tags: [$testTag]\n        }\n  \t) {\n        ... activityFragment\n    }\n}\n\n{{activityFragment}}",
 										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"activityid\": \"{{incursionactid}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Confirm Incursion is made",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"eval(pm.globals.get(\"retryUntil\"));",
-											"",
-											"const response = pm.response.json();",
-											"",
-											"const success = retryUntil({",
-											"    conditionFn: () =>",
-											"        response?.data?.attributes?.data?.length > 0 &&",
-											"        response?.data?.attributes?.totalSize > 0,",
-											"    maxAttempts: 6,",
-											"    delayMs: 15000",
-											"});",
-											"",
-											"if (success) {",
-											"    pm.test(\"Response contains valid data\", function () {",
-											"        pm.expect(response.data.attributes.data.length).to.be.greaterThan(0);",
-											"        pm.expect(response.data.attributes.totalSize).to.be.greaterThan(0);",
-											"    });",
-											"",
-											"    // Store attribute ID for later requests",
-											"    pm.collectionVariables.set(",
-											"        \"incursionattrid\",",
-											"        response.data.attributes.data[0].id",
-											"    );",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "query (\n    $activityIds: [UUID!]\n){\n    attributes(\n        query: {\n            activityIds: $activityIds\n            attributeValue: {\n                contains: \"Incursion\"\n            }\n        }\n    ) {\n        ... attributeFullPageFragment\n    }\n}\n\n{{attributeFullPageFragment}}",
-										"variables": "{\n    \"activitiyIds\": \"{{incursionactid}}\"\n}"
-									}
-								},
-								"url": {
-									"raw": "https://{{GRAPHQL_ENDPOINT}}",
-									"protocol": "https",
-									"host": [
-										"{{GRAPHQL_ENDPOINT}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Incursion Attr Tag",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Incursion Attr Tag Updated\", function () {",
-											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.undefined;",
-											"    pm.expect(pm.collectionVariables.get(\"incursionattrid\")).to.not.be.null;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "user_dn",
-										"value": "{{TS_USER_DN}}"
-									}
-								],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation (\n    $attributeId: UUID!\n    $testTag: String!\n){\n\tupdateAttribute(\n        input: {\n            id: $attributeId\n            tags: [$testTag]\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-										"variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"attributeId\": \"{{incursionattrid}}\"\n}"
 									}
 								},
 								"url": {
@@ -10917,6 +10497,10 @@
 			"value": ""
 		},
 		{
+			"key": "loiteractivityId",
+			"value": ""
+		},
+		{
 			"key": "cotravelAobsId1",
 			"value": ""
 		},
@@ -11058,10 +10642,6 @@
 		},
 		{
 			"key": "nonGarrisonActivityId",
-			"value": ""
-		},
-		{
-			"key": "nodeId1",
 			"value": ""
 		}
 	]
