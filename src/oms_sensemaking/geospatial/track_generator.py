@@ -3,7 +3,7 @@ from itertools import groupby
 from operator import attrgetter
 from uuid import UUID, uuid4
 
-from oms_sdk.generated.generated_graphql_client import NodeNode, ObservationQuery, ObservationsWithProviderObservations
+from oms_sdk.generated.generated_graphql_client import NodeNode
 
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
@@ -37,6 +37,10 @@ class TrackGenerator:
         Then runs the common sense filters and track weaver.
 
         :param track_uuid: UUID of the track
+        :param track_weaver: Algorithm used to determine track points
+        :param common_sense_filters: Common sense filters to apply
+        :param track_node_buffer: mapping of nodes to their points
+        :param oms_crud_tool: OMS crud tool
         :return: List of created Track objects
         """
 
@@ -51,70 +55,46 @@ class TrackGenerator:
         except IndexError as e:
             raise TrackLengthError(e) from e
 
-        provider_points_dict: dict[UUID, list[Point]] = {}  # mapping dict from provider ID to points
-
-        # Query the provider IDs from the observations
-        observation_ids = [point.observation_id for point in points]
-        observs: ObservationsWithProviderObservations = oms_crud_tool.get_observations_with_provider(
-            ObservationQuery(ids=observation_ids)
-        )
-        # create mapping from observation ID to corresponding point
-        id_to_point_map = {point.observation_id: point for point in points}
-
-        for observ in observs.data:
-            provider_id = observ.source.provider.id
-
-            if provider_id not in provider_points_dict:
-                provider_points_dict[provider_id] = []
-
-            # Retrieve the Point object using the observation ID
-            point = id_to_point_map[UUID(observ.id)]
-            if point:
-                provider_points_dict[provider_id].append(point)
-
         ancestor_iris = {oms_node.classIri}.union(self.get_node_ancestors_iris(oms_node))
 
-        for provider in provider_points_dict:
-            points = provider_points_dict[provider]
-            time_bins = self.bin_points_for_track(points)
-            csf_funcs = GeoCSFTrackPointHelpers(cs_filters=common_sense_filters)
-            for binned_points in time_bins.values():
-                # since we split the track points into bins, each bin needs an id
-                sub_track_id = uuid4()
-                LOGGER.debug("Split bin %s from %s", sub_track_id, track_uuid)
+        time_bins = self.bin_points_for_track(points)
+        csf_funcs = GeoCSFTrackPointHelpers(cs_filters=common_sense_filters)
+        for binned_points in time_bins.values():
+            # since we split the track points into bins, each bin needs an id
+            sub_track_id = uuid4()
+            LOGGER.debug("Split bin %s from %s", sub_track_id, track_uuid)
 
-                binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
-                # Execute a track weaver on the buffered Points
-                # and save the new Track with the chosen UUID
-                weaved_track = track_weaver.execute(binned_points, provider)
+            binned_points = csf_funcs.csf_single_track_points(ancestor_iris, binned_points, sub_track_id)
+            # Execute a track weaver on the buffered Points
+            # and save the new Track with the chosen UUID
+            weaved_track = track_weaver.execute(binned_points)
 
-                weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
-                # Abort and do not clear buffer if final track has less than 2 points
-                if len(weaved_track.points) < 2:
-                    continue
+            weaved_track = csf_funcs.csf_track_point_deltas(ancestor_iris, sub_track_id, weaved_track)
+            # Abort and do not clear buffer if final track has less than 2 points
+            if len(weaved_track.points) < 2:
+                continue
 
-                track_dict = {
-                    "points": weaved_track.points,
-                    "node_id": weaved_track.node_id,
-                    "algorithm": weaved_track.algorithm,
-                    "observation_ids": weaved_track.observation_ids,
-                    "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
-                    "provider_id": provider,
-                }
+            track_dict = {
+                "points": weaved_track.points,
+                "node_id": weaved_track.node_id,
+                "algorithm": weaved_track.algorithm,
+                "observation_ids": weaved_track.observation_ids,
+                "acm": aac_client.get_acm_rollup([{"ACM": point.acm} for point in weaved_track.points]),
+            }
 
-                with db_session() as db:
-                    db.expire_on_commit = False
-                    track, _ = Track.get_or_create(
-                        session=db,
-                        defaults=track_dict,
-                        track_uuid=sub_track_id,
-                    )
+            with db_session() as db:
+                db.expire_on_commit = False
+                track, _ = Track.get_or_create(
+                    session=db,
+                    defaults=track_dict,
+                    track_uuid=sub_track_id,
+                )
 
-                LOGGER.info("Track completed: %s", sub_track_id)
-                oms_track = APITrack(track).create_oms_track()
+            LOGGER.info("Track completed: %s", sub_track_id)
+            oms_track = APITrack(track).create_oms_track()
 
-                tracks.append(track)
-                LOGGER.info("ATOMS Track published: %s", oms_track.id)
+            tracks.append(track)
+            LOGGER.info("ATOMS Track published: %s", oms_track.id)
 
         if not tracks:
             raise TrackLengthError("Not enough points for track.") from None
@@ -125,7 +105,7 @@ class TrackGenerator:
         """
         Put points into bins that correspond to a timerange
         Start with the most recent point when creating bins so if there'd be a bin with only one point on the end,
-        the single point'd bin would be the oldest bin which would be the least important
+        the bin with a single point would be the oldest bin which would be the least important
         """
         points.reverse()
         time_bins = {
@@ -157,7 +137,7 @@ class GeoCSFTrackPointHelpers:
         self, ancestor_iris: set[str], binned_points: list[Point], sub_track_id: UUID
     ) -> list[Point]:
         """
-        Run commense sense filter on single point part of a track
+        Run common sense filter on single point part of a track
         """
         for csf in self.common_sense_filters:
             if SETTINGS.apply_common_sense_filters and csf.iri in ancestor_iris:

@@ -28,7 +28,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.exceptions import MilSymbolInvalidIdCharError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributeFactory, GetMilSymbolAttributes
-from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
+from oms_sensemaking.mil_symbol.sensemaker import MilSymAttrsPublisher, MilSymbolSensemaker, SymbolCodeUpdate
 
 
 @pytest.fixture
@@ -616,11 +616,8 @@ def test_affiliation_fallback_to_parent_is_triggered(
         ),
     ],
 )
-def test_has_mil_symbol_sensemaker_tags(
-    tags: list[str], expected_value, message: str, build_sensemaker: MilSymbolSensemaker
-):
-    sensemaker = build_sensemaker
-    actual = sensemaker.has_mil_symbol_sensemaker_tags(tags)
+def test_has_mil_symbol_sensemaker_tags(tags: list[str], expected_value, message: str):
+    actual = MilSymbolSensemaker.has_mil_symbol_sensemaker_tags(tags)
     assert actual == expected_value, message
 
 
@@ -652,3 +649,80 @@ def test_milsym_invalid_char_error(
     with pytest.raises(MilSymbolInvalidIdCharError) as exc_info:
         sensemaker.process_data(oms_node)
     assert "is invalid and cannot be processed" in str(exc_info.value)
+
+
+def test_mil_sym_attr_publisher_init(mock_oms_crud_tool, build_sensemaker, oms_node):
+    sensemaker = build_sensemaker
+    mock_symbol_code_updates = mock.MagicMock(spec=list[SymbolCodeUpdate])
+    mock_source = mock.MagicMock()
+    mock_source.id = uuid4()
+
+    publisher = MilSymAttrsPublisher(
+        mock_oms_crud_tool, sensemaker.version_string, oms_node, mock_symbol_code_updates, mock_source.id
+    )
+    assert isinstance(publisher.oms_crud_tool, OmsCrudTool)
+    assert publisher.version == "v1.0.0"
+    assert publisher.oms_node == oms_node
+    assert publisher.source_id == mock_source.id
+
+
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+def test_mil_sym_attr_publisher_create_attr_inputs(mock_get_acm, mock_oms_crud_tool, build_sensemaker, oms_node):
+    mock_get_acm.return_value = DEFAULT_ACM
+
+    sensemaker = build_sensemaker
+    symcodeupdate1 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate2 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate3 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate1.id_type = "D"
+    symcodeupdate2.id_type = "C"
+    symcodeupdate3.id_type = "B"
+    symcodeupdate1.new_symbol_id_code = "new D"
+    symcodeupdate2.new_symbol_id_code = "new C"
+    symcodeupdate3.new_symbol_id_code = "new B"
+    mock_symbol_code_updates = [symcodeupdate1, symcodeupdate2, symcodeupdate3]
+
+    mock_source = mock.MagicMock()
+    mock_source.id = uuid4()
+
+    publisher = MilSymAttrsPublisher(
+        mock_oms_crud_tool, sensemaker.version_string, oms_node, mock_symbol_code_updates, mock_source.id
+    )
+    res = publisher.create_attribute_inputs(
+        sensemaker.version_string, oms_node, mock_symbol_code_updates, mock_source.id
+    )
+    assert len(res) == 3
+    assert res[0].attributeValue == "new D"
+    assert res[1].attributeValue == "new C"
+    assert res[2].attributeValue == "new B"
+
+
+@mock.patch("oms_sensemaking.mil_symbol.mil_symbol_std.MilSymbol.get_acm")
+def test_mil_sym_attr_publisher_publish(mock_get_acm, mock_oms_crud_tool, build_sensemaker, oms_node):
+    mock_get_acm.return_value = DEFAULT_ACM
+
+    sensemaker = build_sensemaker
+    symcodeupdate1 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate2 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate3 = mock.MagicMock(spec=SymbolCodeUpdate)
+    symcodeupdate1.id_type = "D"
+    symcodeupdate2.id_type = "C"
+    symcodeupdate3.id_type = "B"
+    symcodeupdate1.new_symbol_id_code = "new D"
+    symcodeupdate2.new_symbol_id_code = "new C"
+    symcodeupdate3.new_symbol_id_code = "new B"
+    mock_symbol_code_updates = [symcodeupdate1, symcodeupdate2, symcodeupdate3]
+
+    mock_source = mock.MagicMock()
+    mock_source.id = uuid4()
+
+    publisher = MilSymAttrsPublisher(
+        mock_oms_crud_tool, sensemaker.version_string, oms_node, mock_symbol_code_updates, mock_source.id
+    )
+    res = publisher.create_attribute_inputs(
+        sensemaker.version_string, oms_node, mock_symbol_code_updates, mock_source.id
+    )
+    attrs = publisher.publish_mil_sym_attrs()
+
+    mock_oms_crud_tool.oms_client.create_mil_sym_attributes.assert_called_once_with(res[0], res[1], res[2])
+    assert len(attrs) == 3

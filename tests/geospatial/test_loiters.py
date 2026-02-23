@@ -13,6 +13,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers.loiters import Loiter, LoiterSensemaker, PotentialLoiter
 from oms_sensemaking.models.geo import Point, Track
+from oms_sensemaking.models.sensemaking import AtomsType
 
 DEFAULT_ACM = {
     "version": "2.1.0",
@@ -236,9 +237,9 @@ def loiter_sm(mock_crud_tool):
 def test_loiter(test_track, test_potential_loiter, mock_crud_tool):
     loiter_sm = LoiterSensemaker(mock_crud_tool)
     loiter_sm.config = {
-        "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-        "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-        "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+        "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+        "loiter_activity_name": SETTINGS.loiter_activity_name,
+        "loiter_activity_state": SETTINGS.loiter_activity_state,
         "valid_observed_threshold_seconds": 900,
         "loiter_geohash": 5,
         "cotravel_geohash": 5,
@@ -301,9 +302,9 @@ def test_points_in_time_window(loiter_sm, test_track, test_potential_loiter):
 
 def test_find_prospective_loiters(loiter_sm, processed_points):
     loiter_sm.config = {
-        "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-        "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-        "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+        "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+        "loiter_activity_name": SETTINGS.loiter_activity_name,
+        "loiter_activity_state": SETTINGS.loiter_activity_state,
         "valid_observed_threshold_seconds": 900,
         "loiter_geohash": 5,
         "cotravel_geohash": 5,
@@ -323,11 +324,11 @@ def test_find_prospective_loiters(loiter_sm, processed_points):
         assert all(isinstance(v, PotentialLoiter) for v in value)
 
 
-def test_process_data_creates_loiters(loiter_sm, test_track, mock_oms_client):
+def test_process_data_creates_loiters(loiter_sm, test_track, mock_crud_tool):
     config = {
-        "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-        "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-        "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+        "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+        "loiter_activity_name": SETTINGS.loiter_activity_name,
+        "loiter_activity_state": SETTINGS.loiter_activity_state,
         "valid_observed_threshold_seconds": 900,
         "loiter_geohash": 5,
         "cotravel_geohash": 5,
@@ -341,6 +342,7 @@ def test_process_data_creates_loiters(loiter_sm, test_track, mock_oms_client):
     }
     with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_get_acm:
         mock_get_acm.return_value = [DEFAULT_ACM] * 7
+        mock_crud_tool.create_activity.return_value = type("Activity", (), {"id": uuid4()})()
         loiters = loiter_sm.process_data(test_track, config)
         assert isinstance(loiters, list)
         if loiters:
@@ -354,20 +356,21 @@ def test_process_data_creates_loiters(loiter_sm, test_track, mock_oms_client):
 def test_publish_loiter_calls_oms_crud(loiter_sm, test_track, test_loiter, mock_crud_tool):
     with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_get_acm:
         mock_get_acm.return_value = [DEFAULT_ACM] * 7
+        fake_activity_id = uuid4()
+        mock_crud_tool.create_activity.return_value = type("Activity", (), {"id": fake_activity_id})()
         loiter_sm.publish_loiter(test_track, test_loiter)
-        # Verify that create_node, publish_relationships, and publish_attributes were called
-        assert mock_crud_tool.create_node.called
-        assert mock_crud_tool.publish_relationships.called
-        assert mock_crud_tool.publish_attributes.called
+        assert mock_crud_tool.create_activity.called
+        assert test_loiter.atoms_type == AtomsType.ACTIVITY
+        assert test_loiter.atoms_id == fake_activity_id
 
 
 def test_process_data_calls_publish_loiter(loiter_sm, test_track, mocker):
     # Patch publish_loiter to check it's called
     mock_publish = mocker.patch.object(loiter_sm, "publish_loiter", return_value=None)
     config = {
-        "loiter_event_node_iri": SETTINGS.loiter_event_node_iri,
-        "loiter_relationship_iri": SETTINGS.loiter_relationship_iri,
-        "loiter_event_node_attribute_iri": SETTINGS.loiter_event_node_attribute_iri,
+        "loiter_activity_iri": SETTINGS.loiter_activity_iri,
+        "loiter_activity_name": SETTINGS.loiter_activity_name,
+        "loiter_activity_state": SETTINGS.loiter_activity_state,
         "valid_observed_threshold_seconds": 900,
         "loiter_geohash": 5,
         "cotravel_geohash": 5,
