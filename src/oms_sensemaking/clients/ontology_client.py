@@ -45,8 +45,7 @@ class OntologyClient(OntologyService):
         :return: The Node's ancestor's iri list
         """
 
-        iris: set[str] = set()
-        visited: set[str] = {oms_node.classIri}  # include start so we detect cycle back to it
+        ancestor_iris: set[str] = set()
         iris_to_check: SimpleQueue = SimpleQueue()
         iris_to_check.put_nowait(oms_node.classIri)
         while not iris_to_check.empty():
@@ -58,13 +57,15 @@ class OntologyClient(OntologyService):
 
             for parent_ontology_class in ontology_class.parentOntologyClasses:
                 parent_iri = parent_ontology_class.iri
-                if parent_iri in visited:
+
+                is_circular_ontology = parent_iri in ancestor_iris or parent_iri == oms_node.classIri
+                if is_circular_ontology:
                     continue
-                visited.add(parent_iri)
-                iris.add(parent_iri)
+
+                ancestor_iris.add(parent_iri)
                 iris_to_check.put_nowait(parent_iri)
 
-        return iris
+        return ancestor_iris
 
     def mil_symbol_get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
         """Get ancestor's iris.
@@ -75,8 +76,7 @@ class OntologyClient(OntologyService):
 
         # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
 
-        iris: list[str] = []
-        visited: set[str] = {oms_node.classIri}
+        ancestor_iris: set[str] = set()
         current_iri = oms_node.classIri
         while True:
             ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=current_iri)
@@ -86,13 +86,15 @@ class OntologyClient(OntologyService):
 
             # If multiple parent Iris, just get the first one
             parent_iri = ontology_class.parentOntologyClasses[0].iri
-            if parent_iri in visited:
+
+            is_circular_ontology = parent_iri in ancestor_iris or parent_iri == oms_node.classIri
+            if is_circular_ontology:
                 break
-            visited.add(parent_iri)
-            iris.append(parent_iri)
+
+            ancestor_iris.add(parent_iri)
             current_iri = parent_iri
 
-        return iris
+        return list(ancestor_iris)
 
     def get_default_symbol_id_code(self, iri: str) -> Optional[str]:
         """Given an iri, return the closest parent with a defaultSymbolIdCode
