@@ -39,7 +39,7 @@ class MilSymbol2525D(MilSymbol):
 
     @property
     def formatted_code(self) -> str:
-        "Return the code formatted into dash separated sections"
+        """Return the code formatted into dash separated sections"""
 
         return (
             f"{self.code[0:2]}-{self.code[2]}-{self.code[3]}-{self.code[4:6]}-{self.code[6]}-"
@@ -59,9 +59,10 @@ class MilSymbol2525D(MilSymbol):
 
         :param context_attr: Optional Attribute for the context
         :param affiliation_attr: Optional Attribute for the affiliation
-        :param iri: Node's class iri
+        :param oms_node: the node we enrich with a Mil Symbol
         :param ancestor_iris: Node's ancestor iri list
         :param status_attr: Optional Attribute for the status
+        :param echelon_attr: Optional Attribute for the echelon
         """
 
         self.enrich_context(context_attr)
@@ -113,7 +114,7 @@ class MilSymbol2525D(MilSymbol):
         Use node's IRIs to update list. If not found and is Unknown, use ancestor IRIs
 
         :param oms_node: Node being processed
-        :param iri: Node's class iri
+        :param ancestor_iris: hierarchical ancestors of the node's class
         :return: None
         """
 
