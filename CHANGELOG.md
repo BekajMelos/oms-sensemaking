@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Detect circular ontology class structure when getting class ancestors
 
 ### Changed
 - Loiters now return activities
