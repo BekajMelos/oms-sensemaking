@@ -11,7 +11,7 @@ def test_get_ontology_class():
     and that the request/response is cached
     """
     ontology_client = OntologyClient(oms_crud_tool)
-    class_iri = SETTINGS.loiter_event_node_iri
+    class_iri = SETTINGS.loiter_activity_iri
 
     start_time = time.perf_counter()
     res = ontology_client.get_ontology_class(class_iri)
