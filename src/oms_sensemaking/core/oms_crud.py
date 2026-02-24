@@ -126,6 +126,13 @@ class OmsCrudTool(BaseClient):
         # 1. for each attribute, publish it to ATOMS
         return [self.oms_client.create_attribute(attribute) for attribute in attributes]
 
+    def publish_activities(self, activities: list[CreateActivityInput]) -> list[CreateActivityCreateActivity]:
+        """
+        Publish activities to ATOMS
+        :param activities: a list of CreateActivityInput objects
+        """
+        return [self.oms_client.create_activity(activity) for activity in activities]
+
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """
         Publish the Nodes to ATOMS

@@ -165,7 +165,6 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 node_id=points[0].node_id,
                 algorithm="similar_tracks_test_track",
                 acm=DEFAULT_ACM,
-                provider_id=uuid4(),
             ),
             track_uuid=track_uuid,
         )
@@ -190,7 +189,6 @@ def test_most_similar_tracks_success_exact_same_path(tester_db: Session, aircraf
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
@@ -219,7 +217,6 @@ def test_most_similar_tracks_success_start(tester_db: Session, aircraft_geo_conf
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
@@ -245,7 +242,6 @@ def test_most_similar_tracks_success_end(tester_db: Session, aircraft_geo_config
         track_uuid=track_uuid,
         algorithm="test_track",
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     similar_tracks = SimilarTracksSensemaker().execute(track, aircraft_geo_config)
