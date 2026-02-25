@@ -11,14 +11,11 @@ for local development.
     compose file in `local.dev.env`
     - In `local.dev.env` change the `COMPOSE_PROFILES` environment variable to include/exclude certain containers. Do
     not include `sensemaking`.
-    - Run `make up` to bring up containers.
 2. Clone the `oms-sensemaking` repository and follow steps in that repo to get started.
     - In `.env` change `POSTGRES_PASSWORD` to match the password in the `atoms-local-dev` repo.
     - In `.env` change `OMSB_VERSION` to the version of `Grimlock` or `Starscream` building against.
-    - In `.env` change `COMPOSE_FILE` to point to `docker-compose-atoms-dev.yml`
     - Run `make install refresh`
 
 To bring down containers:
 
-1. In oms-sensmaking `make down` or `make nuke`.
-2. In atoms-local-dev `make down-v`.
+- In oms-sensmaking `make down` or `make nuke`.
