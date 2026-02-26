@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
-- Removed ingoreCase param in StringQuery
+- Removed ignoreCase param in StringQuery
 - Removed .value reference on confidence value enums
 
 ## [0.19.7] - 2026-02-23
