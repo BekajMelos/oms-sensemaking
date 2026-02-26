@@ -4,7 +4,6 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
-from functools import wraps
 from typing import Optional
 
 from fastapi import Request, Response
@@ -84,7 +83,7 @@ class TelemetryManager(BaseTelemetryManager):
     def initialize(self):
         """Initialize OpenTelemetry tracing and Prometheus metrics."""
         if self._initialized:
-            logging.info("Observability already initialized")
+            LOGGER.info("Observability already initialized")
             return
 
         self._initialized = True
@@ -109,18 +108,18 @@ class TelemetryManager(BaseTelemetryManager):
             # Get tracer
             self._tracer = trace.get_tracer(__name__)
 
-            logging.info("OpenTelemetry tracing initialized successfully")
+            LOGGER.info("OpenTelemetry tracing initialized successfully")
 
         except Exception as e:
-            logging.error(f"Failed to initialize OpenTelemetry: {e}")
+            LOGGER.error(f"Failed to initialize OpenTelemetry: {e}")
 
     def instrument_fastapi(self, app):
         """Instrument FastAPI application with OpenTelemetry."""
         try:
             FastAPIInstrumentor.instrument_app(app)
-            logging.info("FastAPI instrumented with OpenTelemetry")
+            LOGGER.info("FastAPI instrumented with OpenTelemetry")
         except Exception as e:
-            logging.error(f"Failed to instrument FastAPI: {e}")
+            LOGGER.error(f"Failed to instrument FastAPI: {e}")
 
     def get_tracer(self):
         """Get the current tracer instance."""
@@ -133,7 +132,7 @@ class TelemetryManager(BaseTelemetryManager):
             if span and span.get_span_context().is_valid:
                 return trace.format_trace_id(span.get_span_context().trace_id)
         except Exception as e:
-            logging.warning(f"Failed to get current trace ID: {e}")
+            LOGGER.warning(f"Failed to get current trace ID: {e}")
         return None
 
 
@@ -207,7 +206,7 @@ def record_request_metrics(method: str, path: str, status_code: int, duration: f
         ).inc()
 
     except Exception as e:
-        logging.error(f"Failed to record request metrics: {e}")
+        LOGGER.error(f"Failed to record request metrics: {e}")
 
 
 def record_queue_processing_time(queue_name: str, processing_time_seconds: float):
@@ -219,33 +218,30 @@ def record_queue_processing_time(queue_name: str, processing_time_seconds: float
         QUEUE_PROCESSING_TIME.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).observe(
             processing_time_seconds, exemplar=exemplar
         )
-
-        logging.info(f"Queue processing time recorded: {queue_name} = {processing_time_seconds:.4f}s")
+        LOGGER.debug(f"Queue processing time recorded: {queue_name} = {processing_time_seconds:.4f}s")
 
     except Exception as e:
-        logging.error(f"Failed to record queue processing time: {e}")
+        LOGGER.error(f"Failed to record queue processing time: {e}")
 
 
 def record_event_processed(queue_name: str):
     """Record event processed counter."""
     try:
         EVENTS_PROCESSED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
-
-        logging.debug(f"Event processed counter incremented for queue: {queue_name}")
+        LOGGER.debug(f"Event processed counter incremented for queue: {queue_name}")
 
     except Exception as e:
-        logging.error(f"Failed to record event processed: {e}")
+        LOGGER.error(f"Failed to record event processed: {e}")
 
 
 def record_event_failed(queue_name: str):
     """Record event failed counter."""
     try:
         EVENTS_FAILED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
-
-        logging.debug(f"Event failed counter incremented for queue: {queue_name}")
+        LOGGER.debug(f"Event failed counter incremented for queue: {queue_name}")
 
     except Exception as e:
-        logging.error(f"Failed to record event failed: {e}")
+        LOGGER.error(f"Failed to record event failed: {e}")
 
 
 def record_processing_completion(queue_name: str, start_time: float, success: bool = True):
@@ -263,7 +259,7 @@ def record_processing_completion(queue_name: str, start_time: float, success: bo
             record_event_failed(queue_name)
 
     except Exception as e:
-        logging.error(f"Failed to record processing completion: {e}")
+        LOGGER.error(f"Failed to record processing completion: {e}")
 
 
 def record_processing_success(queue_name: str, start_time: float):
@@ -274,27 +270,6 @@ def record_processing_success(queue_name: str, start_time: float):
 def record_processing_failure(queue_name: str, start_time: float):
     """Record failed processing completion."""
     record_processing_completion(queue_name, start_time, success=False)
-
-
-def with_metrics_collection(func):
-    """Decorator to add metrics collection to handle_event methods."""
-
-    @wraps(func)
-    def wrapper(self, event, *args, **kwargs):
-        start_time = time.time()
-        queue_name = getattr(self.event_consumer, "_queue_name", "unknown")
-
-        try:
-            result = func(self, event, *args, **kwargs)
-            # Record successful processing
-            record_processing_success(queue_name, start_time)
-            return result
-        except Exception as e:
-            # Record failed processing
-            record_processing_failure(queue_name, start_time)
-            raise e
-
-    return wrapper
 
 
 def metrics_endpoint(request: Request) -> Response:
@@ -314,5 +289,5 @@ async def trace_span(name: str, attributes: Optional[dict] = None):
         with tracer.start_as_current_span(name, attributes=attributes or {}) as span:
             yield span
     except Exception as e:
-        logging.error(f"Failed to create trace span: {e}")
+        LOGGER.error(f"Failed to create trace span: {e}")
         yield None
