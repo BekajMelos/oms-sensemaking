@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- removed unnecessary boolean variable and its corresponding conditional
 
 ## [0.19.7] - 2026-02-23
 
