@@ -106,7 +106,7 @@ class MilSymAttrsPublisher:
                 attributeIri=SETTINGS.mil_symbol_settings.symbol_attribute_iri,
                 attributeType=AttributeType.STRING,
                 attributeValue=symbol_code_update.new_symbol_id_code,
-                confidence=Confidence.HIGH.value,
+                confidence=Confidence.HIGH,
                 acm=symbol_code_update.get_acm(),
                 nodeId=oms_node.id,
                 sourceId=source_id,
