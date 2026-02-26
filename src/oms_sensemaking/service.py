@@ -31,10 +31,10 @@ from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSen
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
-from oms_sensemaking.object_minimums.controllers import (
-    ObjectMinimumsQueueFilter,
-    ObjectMinimumsSensemakerController,
-    ObjMinDataProvider,
+from oms_sensemaking.object_standards.controllers import (
+    ObjectStandardsQueueFilter,
+    ObjectStandardsSensemakerController,
+    ObjStandardsDataProvider,
 )
 from oms_sensemaking.resolution.controllers import (
     ResolutionIriProvider,
@@ -93,21 +93,21 @@ def get_controllers() -> list[SensemakerController]:
     register_listener(mil_symbol_listener)
     mil_symbol_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
-    obj_min_listener = RabbitMQListener(
-        "ObjectMinimumsRMQListener",
-        SETTINGS.object_minimum_settings.rmq_object_minimums_queue_name,
+    obj_standards_listener = RabbitMQListener(
+        "ObjectStandardsRMQListener",
+        SETTINGS.object_standards_settings.rmq_object_standards_queue_name,
         workers=SETTINGS.queue_worker_threads,
-        event_filter=ObjectMinimumsQueueFilter(ObjMinDataProvider()),
+        event_filter=ObjectStandardsQueueFilter(ObjStandardsDataProvider()),
     )
-    register_listener(obj_min_listener)
-    obj_min_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
+    register_listener(obj_standards_listener)
+    obj_standards_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     controllers: list[SensemakerController] = [
         GeospatialSensemakerController(geo_listener, err_logger, ontology_service),
         InferenceSensemakerController(inference_listener, err_logger),
         ResolutionSensemakerController(resolution_listener, err_logger),
         MilSymbolSensemakerController(mil_symbol_listener, err_logger),
-        ObjectMinimumsSensemakerController(obj_min_listener, err_logger),
+        ObjectStandardsSensemakerController(obj_standards_listener, err_logger),
         ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 
@@ -235,11 +235,11 @@ def check_aoi_file_path() -> None:
         sys.exit("The areas of interest directory is incorrect or does not exist.")
 
 
-def check_obj_min_rubric_file_path() -> None:
-    """Check for valid object minimums rubric directory"""
-    if not os.path.exists(SETTINGS.object_minimum_settings.rubrics_file_path):
-        LOGGER.error("%s is not a valid directory", SETTINGS.object_minimum_settings.rubrics_file_path)
-        sys.exit("The object minimums rubric file path is incorrect or does not exist.")
+def check_obj_standards_rubric_file_path() -> None:
+    """Check for valid object standards rubric directory"""
+    if not os.path.exists(SETTINGS.object_standards_settings.rubrics_file_path):
+        LOGGER.error("%s is not a valid directory", SETTINGS.object_standards_settings.rubrics_file_path)
+        sys.exit("The object standards rubric file path is incorrect or does not exist.")
 
 
 def initialize_settings() -> None:
@@ -248,7 +248,7 @@ def initialize_settings() -> None:
         SETTINGS.load_audit_log_event_error_acm()
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
-        check_obj_min_rubric_file_path()
+        check_obj_standards_rubric_file_path()
     except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
         LOGGER.error("Unable to initialize settings: %s", e)
         sys.exit("An error occurred during initialization.")

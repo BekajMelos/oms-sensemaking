@@ -14,7 +14,7 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 LOGGER = logging.getLogger(__name__)
 
 
-class ObjectMinimumDataRetriever:
+class ObjectStandardsDataRetriever:
     def retrieve_data_for_grading(
         self,
         oms_crud_tool: OmsCrudTool,
