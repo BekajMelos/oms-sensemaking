@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Removed ignoreCase param in StringQuery
 - Removed .value reference on confidence value enums
+- removed unnecessary boolean variable and its corresponding conditional
 
 ## [0.19.7] - 2026-02-23
 
