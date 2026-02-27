@@ -1,4 +1,4 @@
-"""Module for Object Minimum Sensemaker models"""
+"""Module for Object Standards Sensemaker models"""
 
 import json
 from typing import Any
@@ -17,7 +17,7 @@ class RequiredIris(BaseModel):
     relationship_iris: list[str] = Field(default_factory=list)
 
 
-class ObjectMinimumGrade:
+class ObjectStandardsGrade:
     def __init__(
         self, float_score: float, violations: list[Any], current_characteristics: int, total_characteristcs: int
     ):
@@ -29,7 +29,7 @@ class ObjectMinimumGrade:
         return json.dumps(self.__dict__)
 
 
-class ObjectMinimumRubric:
+class ObjectStandardsRubric:
     def __init__(self):
         self.required_attrs: list[str] = []
         self.required_rels: list[str] = []
@@ -46,7 +46,7 @@ class ObjectMinimumRubric:
         self,
         attributes: list[AttributesAttributesData] | None,
         relationships: list[RelationshipsRelationshipsData] | None,
-    ) -> ObjectMinimumGrade:
+    ) -> ObjectStandardsGrade:
         """
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has
         """
@@ -69,7 +69,7 @@ class ObjectMinimumRubric:
         float_score = self.get_float_score(current_characteristics_count)
         violations = self.get_missing_characteristics(current_attrs, current_rels)
         # TODO apply what was said in in the comments of the .get_missing_characteristics(...) function definition
-        grade = ObjectMinimumGrade(
+        grade = ObjectStandardsGrade(
             float_score, violations, current_characteristics_count, self.total_required_characteristics_count
         )
 

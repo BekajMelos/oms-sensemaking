@@ -14,8 +14,8 @@ from oms_sdk.generated.generated_graphql_client.client import Client
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from src.oms_sensemaking.object_minimums.sensemaker import (
-    ObjectMinimumDataRetriever,
+from src.oms_sensemaking.object_standards.sensemaker import (
+    ObjectStandardsDataRetriever,
 )
 
 
@@ -69,14 +69,14 @@ def mock_crud_tool(mock_oms_client):
 
 
 def test_data_retriever_no_data(mock_crud_tool, person_obj):
-    data_retriever = ObjectMinimumDataRetriever()
+    data_retriever = ObjectStandardsDataRetriever()
     result = data_retriever.retrieve_data_for_grading(mock_crud_tool, person_obj, [], [])
     assert result["attributes"] is None
     assert result["relationships"] is None
 
 
 def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
-    data_retriever = ObjectMinimumDataRetriever()
+    data_retriever = ObjectStandardsDataRetriever()
     test_attr_iri_list = ["some_iri"]
     mock_crud_tool.get_attributes.return_value = SimpleNamespace(data=[person_name_attr])
 
@@ -89,7 +89,7 @@ def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
 
 
 def test_data_retriever_rel_only(mock_crud_tool, person_obj, person_to_base_rel):
-    data_retriever = ObjectMinimumDataRetriever()
+    data_retriever = ObjectStandardsDataRetriever()
     test_rel_iri_list = ["some_iri"]
     mock_crud_tool.get_relationships.return_value = SimpleNamespace(data=[person_to_base_rel])
 
@@ -102,7 +102,7 @@ def test_data_retriever_rel_only(mock_crud_tool, person_obj, person_to_base_rel)
 
 
 def test_data_retriever_attr_rel(mock_crud_tool, person_obj, person_name_attr, person_to_base_rel):
-    data_retriever = ObjectMinimumDataRetriever()
+    data_retriever = ObjectStandardsDataRetriever()
     test_attr_iri_list = ["some_iri"]
     test_rel_iri_list = ["some_iri"]
     mock_crud_tool.get_attributes.return_value = SimpleNamespace(data=[person_name_attr])

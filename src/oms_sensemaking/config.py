@@ -247,17 +247,17 @@ class MilSymbolSettings(BaseModel):
         description="Path to the rules config file"
     )
 
-class ObjectMinimumsSettings(BaseModel):
-    enable_object_minimums_sensemaker: bool = Field(
+class ObjectStandardsSettings(BaseModel):
+    enable_object_standards_sensemaker: bool = Field(
         True,
-        description="Toggle the object minimums sensemaker on/off"
+        description="Toggle the object standards sensemaker on/off"
     )
-    rmq_object_minimums_queue_name:str = Field(
-        "object-minimums-trigger",
-        description="the RMQ Object Minimums Queue name",
-        examples=["object-minimums-trigger"]
+    rmq_object_standards_queue_name:str = Field(
+        "object-standards-trigger",
+        description="the RMQ Object Standards Queue name",
+        examples=["object-standards-trigger"]
     )
-    rubrics_file_path: str = Field("./data/object_minimums.json", description="Path to the rubrics config file")
+    rubrics_file_path: str = Field("./data/object_standards.json", description="Path to the rubrics config file")
     max_rubric_hierarchy_levels: int = Field(
         5,
         description="Max number of class hierarchy levels to check when looking for a rubric (class + ancestors)",
@@ -522,7 +522,7 @@ class Settings(BaseSettings):
     )
 
     mil_symbol_settings: MilSymbolSettings = MilSymbolSettings()
-    object_minimum_settings: ObjectMinimumsSettings = ObjectMinimumsSettings()
+    object_standards_settings: ObjectStandardsSettings = ObjectStandardsSettings()
     incursion_settings: IncursionSettings = IncursionSettings()
     out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
 

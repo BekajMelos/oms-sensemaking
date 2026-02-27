@@ -1,4 +1,4 @@
-"""Object Minimums Sensemakers."""
+"""Object Standards Sensemakers."""
 
 import logging
 
@@ -15,13 +15,13 @@ from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
-from oms_sensemaking.object_minimums.object_minimum_data_retriever import ObjectMinimumDataRetriever
-from oms_sensemaking.object_minimums.object_minimum_models import ObjectMinimumRubric, RequiredIris
+from oms_sensemaking.object_standards.object_standards_data_retriever import ObjectStandardsDataRetriever
+from oms_sensemaking.object_standards.object_standards_models import ObjectStandardsRubric, RequiredIris
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ObjectMinimums(Sensemaker):
+class ObjectStandards(Sensemaker):
     """
     A sensemaker for grading object completeness.
 
@@ -30,7 +30,7 @@ class ObjectMinimums(Sensemaker):
 
     [1.0.0]
 
-    - Initial object minimums sensemaker
+    - Initial object standards sensemaker
 
     """
 
@@ -38,19 +38,19 @@ class ObjectMinimums(Sensemaker):
         self,
         oms_crud_tool: OmsCrudTool,
         ontology_service: OntologyService,
-        obj_min_retriever: ObjectMinimumDataRetriever,
-        obj_min_rubric: ObjectMinimumRubric,
+        obj_standards_retriever: ObjectStandardsDataRetriever,
+        obj_standards_rubric: ObjectStandardsRubric,
         rubric_criteria: dict,
     ) -> None:
-        """Create a new instance of ObjectMinimums sensemaker."""
+        """Create a new instance of ObjectStandards sensemaker."""
         super().__init__()
         self.version = (1, 0, 0)
         self.name = self.__class__.__name__
         self.rubric_criteria = rubric_criteria
         self.oms_crud_tool = oms_crud_tool
         self.ontology_service = ontology_service
-        self.obj_min_rubric = obj_min_rubric
-        self.obj_min_retriever = obj_min_retriever
+        self.obj_standards_rubric = obj_standards_rubric
+        self.obj_standards_retriever = obj_standards_retriever
 
     def process_data(
         self,
@@ -86,7 +86,7 @@ class ObjectMinimums(Sensemaker):
                 node_ids = [node_characteristic.startNodeId, node_characteristic.endNodeId]
             else:
                 LOGGER.warning(
-                    "Unexpected characteristic type %s in ObjectMinimums",
+                    "Unexpected characteristic type %s in ObjectStandards",
                     type(node_characteristic),
                 )
                 return []
@@ -106,20 +106,20 @@ class ObjectMinimums(Sensemaker):
                     continue
                 else:
                     # set the required IRIs for the rubric
-                    self.obj_min_rubric.required_attrs = required_iris.attribute_iris
-                    self.obj_min_rubric.required_rels = required_iris.relationship_iris
+                    self.obj_standards_rubric.required_attrs = required_iris.attribute_iris
+                    self.obj_standards_rubric.required_rels = required_iris.relationship_iris
 
                 # retrieve the 'available' data connected to the node of interest
-                retrieved_node_data = self.obj_min_retriever.retrieve_data_for_grading(
+                retrieved_node_data = self.obj_standards_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
                 grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
-                LOGGER.info("Object Minimum float grade for object %s: %s", node.id, grade.float_score)
-                LOGGER.info("Object Minimum ratio grade for object %s: %s", node.id, grade.ratio)
-                LOGGER.info("Object Minimums violations for object %s: %s", node.id, grade.violations)
+                LOGGER.info("Object Standards float grade for object %s: %s", node.id, grade.float_score)
+                LOGGER.info("Object Standards ratio grade for object %s: %s", node.id, grade.ratio)
+                LOGGER.info("Object Standards violations for object %s: %s", node.id, grade.violations)
         except Exception as e:
-            LOGGER.error("Error processing object minimum data for object(s) %s: %s", node_ids, str(e))
+            LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))
 
         return []
 
@@ -148,7 +148,7 @@ class ObjectMinimums(Sensemaker):
             return reqs
 
         ancestor_iris = self.ontology_service.get_node_ancestors_iris(node)
-        max_ancestors_to_check = SETTINGS.object_minimum_settings.max_rubric_hierarchy_levels - 1
+        max_ancestors_to_check = SETTINGS.object_standards_settings.max_rubric_hierarchy_levels - 1
         for ancestor_iri in ancestor_iris[:max_ancestors_to_check]:
             reqs = self._get_rubric_requirements(ancestor_iri)
             if reqs is not None:
@@ -162,7 +162,7 @@ class ObjectMinimums(Sensemaker):
         LOGGER.info(
             "No rubric found for class %s after checking %d levels in the hierarchy",
             class_iri,
-            SETTINGS.object_minimum_settings.max_rubric_hierarchy_levels,
+            SETTINGS.object_standards_settings.max_rubric_hierarchy_levels,
         )
         return RequiredIris()
 
@@ -172,7 +172,7 @@ class ObjectMinimums(Sensemaker):
         relationships: list[RelationshipsRelationshipsData] | None,
     ):
         try:
-            return self.obj_min_rubric.grade(attributes=attributes, relationships=relationships)
+            return self.obj_standards_rubric.grade(attributes=attributes, relationships=relationships)
         except Exception as e:
             LOGGER.error("Error calculating grade: %s", str(e))
             raise

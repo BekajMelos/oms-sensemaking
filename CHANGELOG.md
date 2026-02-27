@@ -7,8 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-
 - Migrate to using atoms-local-dev enviroment.
+- Updated all old references to 'Object Minimums' to the new name 'Object Standards'
 
 ### Fixed
 
