@@ -115,3 +115,6 @@ refresh: nuke  # Purge all generated content and restart
 
 load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop) --loop-wait $(loop_wait)
+
+generate-test-tracks:
+	python -m scripts.gen_test_tracks
