@@ -75,7 +75,7 @@ def test_process_data_with_attributes_and_relationships(sensemaker):
     }
 
     mock_grade = MagicMock()
-    sensemaker._calculate_grade = MagicMock(return_value=mock_grade)
+    sensemaker.obj_standards_rubric.grade = MagicMock(return_value=mock_grade)
 
     result = sensemaker.process_data(attribute_of_node)
 
@@ -111,19 +111,6 @@ def test_get_required_iris(mock_get_node):
     assert required_iris.relationship_iris == ["relIri1"]
 
 
-@patch("oms_sensemaking.core.oms_crud.OmsCrudTool.get_node")
-def test_calculate_grade(mock_get_node, sensemaker):
-    attributes = [{"attribute": "value"}]
-    relationships = [{"relationship": "value"}]
-
-    mock_rubric = MagicMock()
-    sensemaker.obj_standards_rubric = mock_rubric
-
-    sensemaker._calculate_grade(attributes, relationships)
-
-    mock_rubric.grade.assert_called_once_with(attributes=attributes, relationships=relationships)
-
-
 def test_process_data_attribute_passed_in(sensemaker):
     attribute_of_node = MagicMock(spec=AttributeAttribute)
     attribute_of_node.nodeId = str(uuid4())
@@ -150,7 +137,7 @@ def test_process_data_attribute_passed_in(sensemaker):
     }
 
     mock_grade = MagicMock()
-    sensemaker._calculate_grade = MagicMock(return_value=mock_grade)
+    sensemaker.obj_standards_rubric.grade = MagicMock(return_value=mock_grade)
 
     result = sensemaker.process_data(attribute_of_node)
 
@@ -158,7 +145,7 @@ def test_process_data_attribute_passed_in(sensemaker):
         sensemaker.oms_crud_tool, mock_node, required_attributes, required_relationships
     )
 
-    sensemaker._calculate_grade.assert_called_once_with(mock_attributes, mock_relationships)
+    sensemaker.obj_standards_rubric.grade.assert_called_once_with(mock_attributes, mock_relationships)
     assert result == []
 
 
@@ -191,7 +178,7 @@ def test_process_data_rel_passed_in(sensemaker):
     }
 
     mock_grade = MagicMock()
-    sensemaker._calculate_grade = MagicMock(return_value=mock_grade)
+    sensemaker.obj_standards_rubric.grade = MagicMock(return_value=mock_grade)
 
     result = sensemaker.process_data(rel_of_node)
 

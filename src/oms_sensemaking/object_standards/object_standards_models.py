@@ -5,9 +5,20 @@ from typing import Any
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
+    ObjectType,
     RelationshipsRelationshipsData,
 )
 from pydantic import BaseModel, Field
+
+
+class CompliantField:
+    def __init__(self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData):
+        self.atoms_type = (
+            ObjectType.ATTRIBUTE.value
+            if isinstance(characteristic, AttributesAttributesData)
+            else ObjectType.RELATIONSHIP.value
+        )
+        self.atoms_id = characteristic.id
 
 
 class RequiredIris(BaseModel):
@@ -19,11 +30,17 @@ class RequiredIris(BaseModel):
 
 class ObjectStandardsGrade:
     def __init__(
-        self, float_score: float, violations: list[Any], current_characteristics: int, total_characteristcs: int
+        self,
+        float_score: float,
+        violations: list[Any],
+        current_characteristics: int,
+        total_characteristcs: int,
+        compliant_fields: list[CompliantField],
     ):
         self.float_score = float_score
         self.violations = violations
         self.ratio = f"{current_characteristics}/{total_characteristcs}"
+        self.compliant_fields = compliant_fields
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__)
@@ -68,9 +85,14 @@ class ObjectStandardsRubric:
         current_characteristics_count = self.get_current_count(current_characteristics_list)
         float_score = self.get_float_score(current_characteristics_count)
         violations = self.get_missing_characteristics(current_attrs, current_rels)
+        compliant_fields = self.get_compliant_fields(attributes, relationships)
         # TODO apply what was said in in the comments of the .get_missing_characteristics(...) function definition
         grade = ObjectStandardsGrade(
-            float_score, violations, current_characteristics_count, self.total_required_characteristics_count
+            float_score,
+            violations,
+            current_characteristics_count,
+            self.total_required_characteristics_count,
+            compliant_fields,
         )
 
         return grade
@@ -95,3 +117,17 @@ class ObjectStandardsRubric:
                     violations.append(iri)
 
         return violations
+
+    def get_compliant_fields(
+        self,
+        atoms_attributes: list[AttributesAttributesData] | None,
+        atoms_relationships: list[RelationshipsRelationshipsData] | None,
+    ) -> list[CompliantField]:
+        compliant_fields: list[CompliantField] = []
+        if atoms_attributes:
+            for attribute in atoms_attributes:
+                compliant_fields.append(CompliantField(attribute))
+        if atoms_relationships:
+            for relationship in atoms_relationships:
+                compliant_fields.append(CompliantField(relationship))
+        return compliant_fields
