@@ -1,4 +1,6 @@
 {
   "https://foundry.ai.mil/ontology/4901-001/Facility": ["https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber", "https://foundry.ai.mil/ontology/4901-001/hasOSuffix"],
-  "https://foundry.ai.mil/ontology/4901-001/EquipmentItem": ["https://foundry.ai.mil/ontology/meks/p-0000000050"]
+  "https://foundry.ai.mil/ontology/4901-001/EquipmentItem": ["https://foundry.ai.mil/ontology/meks/p-0000000050"],
+  "http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft": [["https://foundry.ai.mil/ontology/4901-001/hasTailNumber", "https://foundry.ai.mil/ontology/4901-001/hasCategoryCode"], ["https://foundry.ai.mil/ontology/4901-001/hasCategoryCode"]],
+  "https://foundry.ai.mil/ontology/meks/c-0000009953": ["https://oms.dodiis.ic.gov/ontology/p-0000000096"]
 }

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
 
 ### Changed
 - All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
