@@ -2,12 +2,8 @@
 
 import json
 import logging
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta, timezone
-from threading import Event, Lock, Timer
-from typing import Callable
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
@@ -15,6 +11,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.core.buffer import Buffer
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
@@ -32,92 +29,6 @@ from oms_sensemaking.models.geo import (
 from oms_sensemaking.models.track_weavers import TrackWeaverBase
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-class Buffer:
-    def __init__(self, flush_timer_seconds: float, callback_func: Callable) -> None:
-        print("Calling buffer.__init__()")
-
-        self.flush_timer_seconds = flush_timer_seconds
-        self.callback_func = callback_func
-
-        self.lock = Lock()
-        self.expiration_times: dict[UUID, datetime | None] = {}
-        self.id_mapping: dict[UUID, UUID] = defaultdict(uuid4)
-        self.object_list_buffer: dict[UUID, list[Point]] = defaultdict(list)
-        self.autoflush_enabled: Event = Event()
-        self.buffer_autoflush: Timer = Timer(flush_timer_seconds, self.flush_buffer)
-
-    def add(self, obj_id: UUID, obj_to_add: Point) -> None:
-        with self.lock:
-            self.expiration_times[obj_id] = datetime.now(tz=timezone.utc)
-            self.object_list_buffer[obj_id].append(obj_to_add)
-
-    def get_list_id(self, initial_id: UUID):
-        with self.lock:
-            return self.id_mapping.setdefault(initial_id, uuid4())
-
-    def start(self) -> None:
-        print("Calling buffer.start()")
-        self.autoflush_enabled.set()
-        self.buffer_autoflush.start()
-
-    def stop(self) -> None:
-
-        self.autoflush_enabled.clear()
-
-        if self.buffer_autoflush.is_alive():
-            self.buffer_autoflush.cancel()
-            self.buffer_autoflush.join()
-
-    def flush_buffer(self) -> None:
-        """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.debug("Checking for expired objects in the buffer cache.")
-        now: datetime = datetime.now(tz=timezone.utc)
-        expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
-        # TODO rename
-        expired_tracks = []
-
-        with self.lock:
-            # Identify expired tracks in thread-safe snapshot
-            self.expiration_times = {key: val for key, val in self.expiration_times.items() if val is not None}
-            expired_tracks = [
-                list_id
-                for list_id, last_updated_at in self.expiration_times.items()
-                if last_updated_at is not None and last_updated_at + expire_threshold < now
-            ]
-
-        if expired_tracks:
-            LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
-
-        for list_id in expired_tracks:
-            # Process expired tracks
-            # this may need a finally block after it
-            self.execute_callback_func(list_id, self.object_list_buffer[list_id])
-
-        if self.autoflush_enabled:
-            self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-            self.buffer_autoflush.start()
-
-    def execute_callback_func(self, list_id: UUID, object_list: list) -> None:
-        try:
-            self.callback_func(list_id, object_list)
-            # self.restart_buffer()
-        except Exception:
-            LOGGER.exception("Unexpected error processing buffer %s", list_id)
-        finally:
-            with self.lock:
-                self.expiration_times[list_id] = None
-                # Thread-safe cleanup of expired track data
-                self.object_list_buffer.pop(list_id, None)
-                keys_to_delete = [k for k, v in self.id_mapping.items() if v == list_id]
-                for k in keys_to_delete:
-                    del self.id_mapping[k]
-
-    # def restart_buffer(self) -> None:
-    #     if self.autoflush_enabled:
-    #         self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-    #         self.buffer_autoflush.start()
 
 
 # class BufferedSensemakerController():
@@ -270,11 +181,11 @@ class GeospatialSensemakerController(SensemakerController):
                 if not is_new:
                     LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
 
-                with self.lock:
-                    self.buffer.add(list_id, point)
-                    # self.expiration_times[track_uuid] = datetime.now(tz=timezone.utc)
-                    # self.object_list_buffer[track_uuid].append(point)
-                    success = True
+                # with self.lock:
+                self.buffer.add(list_id, point)
+                # self.expiration_times[track_uuid] = datetime.now(tz=timezone.utc)
+                # self.object_list_buffer[track_uuid].append(point)
+                success = True
         return success
 
     # def flush_buffer(self) -> None:
@@ -314,9 +225,6 @@ class GeospatialSensemakerController(SensemakerController):
         :param track_points: list of points that make up the track
         """
         LOGGER.debug("Processing track %s", track_uuid)
-
-        # TODO should we pass in the track_uuid or the list of points or both
-        # generate_track doesn't need the entire object_list_buffer, just the points
 
         try:
             try:
