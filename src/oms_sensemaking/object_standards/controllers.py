@@ -1,4 +1,4 @@
-"""Object minimums sensemaker controller."""
+"""Object standards sensemaker controller."""
 
 import json
 import logging
@@ -14,13 +14,17 @@ from oms_sensemaking.core.events import (
     EventFilter,
     ObjectType,
 )
-from oms_sensemaking.object_minimums.sensemaker import ObjectMinimumDataRetriever, ObjectMinimumRubric, ObjectMinimums
+from oms_sensemaking.object_standards.sensemaker import (
+    ObjectStandards,
+    ObjectStandardsDataRetriever,
+    ObjectStandardsRubric,
+)
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class ObjMinDataProvider:
-    def __init__(self, file_path=SETTINGS.object_minimum_settings.rubrics_file_path) -> None:
+class ObjStandardsDataProvider:
+    def __init__(self, file_path=SETTINGS.object_standards_settings.rubrics_file_path) -> None:
         self.file_path = file_path
         self.entries = self._load_from_json()
         self.criteria = list(
@@ -35,7 +39,7 @@ class ObjMinDataProvider:
         return data
 
 
-class ObjectMinimumsSensemakerController(SensemakerController):
+class ObjectStandardsSensemakerController(SensemakerController):
     """
     Resolution sensemaker controller.
 
@@ -44,32 +48,32 @@ class ObjectMinimumsSensemakerController(SensemakerController):
 
     def start(self) -> None:
         """Start the controller."""
-        if SETTINGS.object_minimum_settings.enable_object_minimums_sensemaker:
-            with open(SETTINGS.object_minimum_settings.rubrics_file_path) as fd:
+        if SETTINGS.object_standards_settings.enable_object_standards_sensemaker:
+            with open(SETTINGS.object_standards_settings.rubrics_file_path) as fd:
                 rubric_criteria = json.load(fd)
 
             self.register(
-                "object minimums",
-                ObjectMinimums(
+                "object standards",
+                ObjectStandards(
                     self.oms_crud_tool,
                     ontology_service,
-                    ObjectMinimumDataRetriever(),
-                    ObjectMinimumRubric(),
+                    ObjectStandardsDataRetriever(),
+                    ObjectStandardsRubric(),
                     rubric_criteria,
                 ),
             )
         super().start()
 
 
-class ObjectMinimumsQueueFilter(EventFilter):
+class ObjectStandardsQueueFilter(EventFilter):
     # Should we also do node creation as an event we care about to assign it a score of 0?
-    def __init__(self, data_provider: ObjMinDataProvider) -> None:
-        self.obj_min_data = data_provider
+    def __init__(self, data_provider: ObjStandardsDataProvider) -> None:
+        self.obj_standards_data = data_provider
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value, ObjectType.RELATIONSHIP.value]
         handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]
-        criteria = self.obj_min_data.criteria
+        criteria = self.obj_standards_data.criteria
         return (
             audit_log_event.objectType in handled_object_types
             and audit_log_event.action in handled_event_types

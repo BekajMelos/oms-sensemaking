@@ -2,7 +2,7 @@ from oms_sdk import get_generated_graphql_client
 
 from oms_sensemaking.config import SETTINGS
 
-omsb_url = "https://localhost:8020/graphql"
+omsb_url = "http://localhost:8010/graphql"
 
 
 class AtomsClient:
