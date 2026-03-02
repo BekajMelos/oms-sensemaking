@@ -150,7 +150,7 @@ class ResolutionSensemaker(Sensemaker):
                 labels=[SETTINGS.sm_inferenced_label, SETTINGS.res_sm_label, self.version_string],
                 startNodeId=current_node_id,
                 endNodeId=node.id,
-                confidence=Confidence.HIGH,
+                confidence=Confidence.UNKNOWN,
                 sourceId=attribute.sourceId,
                 acm=attribute.acm,
                 objectPropertyIri=SETTINGS.resolution_relationship_iri,

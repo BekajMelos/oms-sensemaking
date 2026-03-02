@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
 
 ### Fixed
 - Removed ignoreCase param in StringQuery

@@ -405,7 +405,7 @@ def test_potential_duplicate_success(
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=node_id,
             endNodeId=NODE_UUID1,
-            confidence=Confidence.HIGH,
+            confidence=Confidence.UNKNOWN,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.resolution_relationship_iri,
             sourceId=p1.source_id,
