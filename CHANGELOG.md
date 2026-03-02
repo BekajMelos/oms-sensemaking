@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.19.8] - 2026-03-02
+
+### Added
 - Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
 
 ### Changed
