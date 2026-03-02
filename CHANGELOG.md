@@ -10,6 +10,19 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.19.8] - 2026-03-02
+
+### Added
+- Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
+
+### Changed
+- All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
+
+### Fixed
+- Removed ignoreCase param in StringQuery
+- Removed .value reference on confidence value enums
+- removed unnecessary boolean variable and its corresponding conditional
+
 ## [0.25.0] - 2026-02-23
 
 ### Added
