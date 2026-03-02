@@ -485,7 +485,7 @@ class CotravelSensemaker(Sensemaker):
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
-            confidence=Confidence.HIGH,
+            confidence=Confidence.UNKNOWN,
             acm=cotravel.get_acm(),
             objectPropertyIri=SETTINGS.resolution_relationship_iri,
             sourceId=source_id,
