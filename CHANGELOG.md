@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Migrate to using atoms-local-dev enviroment.
 - Updated all old references to 'Object Minimums' to the new name 'Object Standards'
+- Updated ATOMS dependency to Starscream 3.1.6 and sdk to 14.0.0
 
 ### Fixed
 
