@@ -76,7 +76,11 @@ from oms_sensemaking.core.rate_limiter import rate_limiter
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-@rate_limiter(calls=SETTINGS.maximum_oms_api_calls, period=SETTINGS.oms_api_call_period_seconds)
+@rate_limiter(
+    # NOTE: lambdas are required so rate limits hot-reload at runtime
+    calls=lambda: SETTINGS.maximum_oms_api_calls,
+    period=lambda: SETTINGS.oms_api_call_period_seconds,
+)
 class OmsCrudTool(BaseClient):
     """Tool for using OMS_SDK CRUD operations"""
 
@@ -121,6 +125,13 @@ class OmsCrudTool(BaseClient):
         """
         # 1. for each attribute, publish it to ATOMS
         return [self.oms_client.create_attribute(attribute) for attribute in attributes]
+
+    def publish_activities(self, activities: list[CreateActivityInput]) -> list[CreateActivityCreateActivity]:
+        """
+        Publish activities to ATOMS
+        :param activities: a list of CreateActivityInput objects
+        """
+        return [self.oms_client.create_activity(activity) for activity in activities]
 
     def create_node(self, node_input: CreateNodeInput) -> CreateNodeCreateNode:
         """

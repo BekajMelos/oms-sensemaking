@@ -10,14 +10,14 @@ import pytest
 from geoalchemy2.shape import to_shape
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client.client import (
-    CreateAttributeInput,
+    CreateActivityCreateActivity,
+    CreateActivityInput,
     CreateNodeCreateNode,
-    CreateNodeInput,
     CreateRelationshipCreateRelationship,
     CreateRelationshipInput,
     NodeNode,
 )
-from oms_sdk.generated.generated_graphql_client.enums import AttributeType, Confidence, ObjectTier
+from oms_sdk.generated.generated_graphql_client.enums import Confidence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -234,7 +234,6 @@ def tester_db(db: Session) -> Generator[Session, Any, None]:
                 node_id=points[0].node_id,
                 algorithm="cotravel_test_track",
                 acm=DEFAULT_ACM,
-                provider_id=PROVIDER_ID,
             ),
             track_uuid=track_uuid,
         )
@@ -269,17 +268,14 @@ def test_cotravel_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False)
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -291,63 +287,51 @@ def test_cotravel_success(
     assert cotravel.last_time == p3.detection_time
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
+    name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
 
-    mock_oms_client.create_node.assert_called_with(
-        CreateNodeInput(
+    assert mock_oms_client.create_activity.call_count == 2
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.cotravel_event_name,
-            tier=ObjectTier.DERIVATIVE,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            classIri=SETTINGS.cotravel_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
+        )
+    )
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
+            tags=tags,
+            labels=get_geospatial_labels(sensemaker),
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
         )
     )
 
-    assert mock_oms_client.create_relationship.call_count == 2
-    mock_oms_client.create_relationship.assert_any_call(
+    mock_oms_client.create_relationship.assert_called_with(
         CreateRelationshipInput(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
+            name=f"{name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
+            sourceId=p1.source_id,
+            confidence=Confidence.UNKNOWN,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=NODE_UUID1,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-
-    mock_oms_client.create_attribute.assert_called_with(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            sourceId=p1.source_id,
-            geometry=cotravel.to_geojson(),
-            nodeId=cotravel_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=cotravel.start_time,
-            valueEnd=cotravel.last_time,
         )
     )
 
@@ -379,7 +363,6 @@ def make_potential_duplicate_track() -> Track:
         algorithm="test_algorithm",
         track_uuid=track_id,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     return track
@@ -403,7 +386,6 @@ def test_potential_duplicate_success(
         return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True)
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     mock_oms_client.create_relationship.return_value = CreateRelationshipCreateRelationship.model_construct(id=uuid4())
 
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
@@ -423,7 +405,7 @@ def test_potential_duplicate_success(
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=node_id,
             endNodeId=NODE_UUID1,
-            confidence=Confidence.HIGH,
+            confidence=Confidence.UNKNOWN,
             acm=ROLLUP_DEFAULT_ACM,
             objectPropertyIri=SETTINGS.resolution_relationship_iri,
             sourceId=p1.source_id,
@@ -462,7 +444,6 @@ def test_potential_duplicate_with_nso(
         id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True
     )
     mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
     mock_oms_client.create_relationship.return_value = CreateRelationshipCreateRelationship.model_construct(id=uuid4())
 
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
@@ -483,16 +464,12 @@ def test_potential_duplicate_with_known_node(
 
     # Test isNSO False should return cotravel
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM)
+    mock_oms_client.create_activity.return_value = MagicMock()
+    mock_oms_client.node.return_value = NodeNode.model_construct(id=uuid4(), acm=ROLLUP_DEFAULT_ACM, isNso=False)
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
     )
-    mock_oms_client.node.return_value = NodeNode.model_construct(
-        id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False
-    )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
@@ -523,17 +500,14 @@ def test_potential_duplicate_failure(
         algorithm="test_algorithm",
         track_uuid=track_id,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=True)
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
 
     assert len(cotravels) == 1
@@ -566,18 +540,15 @@ def test_multiple_cotravel_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node.side_effect = [
-        CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM),
-        CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM),
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship.side_effect = [
+        CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM),
+        CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM),
     ]
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -597,120 +568,96 @@ def test_multiple_cotravel_success(
     assert lag_lead.last_time == p3.detection_time
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
+    cotravel_name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
+    lag_lead_name = f"{CotravelType.get_name(lag_lead.cotravel_type)}"
 
-    assert mock_oms_client.create_node.call_count == 2
-    mock_oms_client.create_node.assert_any_call(
-        CreateNodeInput(
+    assert mock_oms_client.create_activity.call_count == 4
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.lag_lead_event_name,
-            tier=ObjectTier.DERIVATIVE,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            classIri=SETTINGS.cotravel_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-    mock_oms_client.create_node.assert_any_call(
-        CreateNodeInput(
-            acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.cotravel_event_name,
-            tier=ObjectTier.DERIVATIVE,
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            classIri=SETTINGS.cotravel_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
-        )
-    )
-
-    assert mock_oms_client.create_relationship.call_count == 4
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.lag_lead_activity_name,
+            state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
+            nodeId=lag_lead.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
+            startTime=lag_lead.start_time,
+            endTime=lag_lead.last_time,
         )
     )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=NODE_UUID2,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.lag_lead_activity_name,
+            state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
+            nodeId=lag_lead.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=lag_lead.start_time,
+            endTime=lag_lead.last_time,
         )
     )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
+            nodeId=cotravel.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
         )
     )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=NODE_UUID3,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
             sourceId=p1.source_id,
+            nodeId=cotravel.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
         )
     )
 
-    assert mock_oms_client.create_attribute.call_count == 2
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
+    assert mock_oms_client.create_relationship.call_count == 2
+    mock_oms_client.create_relationship.assert_any_call(
+        CreateRelationshipInput(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
+            name=f"{cotravel_name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
             sourceId=p1.source_id,
-            geometry=lag_lead.to_geojson(),
-            nodeId=cotravel_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=lag_lead.start_time,
-            valueEnd=lag_lead.last_time,
+            confidence=Confidence.UNKNOWN,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
         )
     )
-    mock_oms_client.create_attribute.assert_any_call(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
+    mock_oms_client.create_relationship.assert_any_call(
+        CreateRelationshipInput(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
+            name=f"{lag_lead_name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=lag_lead.track1.node_id,
+            endNodeId=lag_lead.track2.node_id,
             sourceId=p1.source_id,
-            geometry=cotravel.to_geojson(),
-            nodeId=cotravel_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=cotravel.start_time,
-            valueEnd=cotravel.last_time,
+            confidence=Confidence.UNKNOWN,
+            acm=cotravel.get_acm(),
+            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
         )
     )
 
@@ -744,17 +691,14 @@ def test_lag_lead_success(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node.return_value = CreateNodeCreateNode.model_construct(
-        id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM
+    mock_oms_client.create_activity.return_value = MagicMock()
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -766,63 +710,51 @@ def test_lag_lead_success(
     assert cotravel.last_time == p3.detection_time
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
+    name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
 
-    mock_oms_client.create_node.assert_called_with(
-        CreateNodeInput(
+    assert mock_oms_client.create_activity.call_count == 2
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.lag_lead_event_name,
-            tier=ObjectTier.DERIVATIVE,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            classIri=SETTINGS.cotravel_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.lag_lead_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
+        )
+    )
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
+            tags=tags,
+            labels=get_geospatial_labels(sensemaker),
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.lag_lead_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
         )
     )
 
-    assert mock_oms_client.create_relationship.call_count == 2
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
+            name=f"{name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
+            sourceId=p1.source_id,
+            confidence=Confidence.UNKNOWN,
+            acm=cotravel.get_acm(),
             objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.lag_lead_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=NODE_UUID1,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-
-    mock_oms_client.create_attribute.assert_called_with(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            sourceId=p1.source_id,
-            geometry=cotravel.to_geojson(),
-            nodeId=cotravel_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=cotravel.start_time,
-            valueEnd=cotravel.last_time,
         )
     )
 
@@ -854,7 +786,6 @@ def test_cotravel_too_far_behind(tester_db: Session, mock_oms_crud_tool: OmsCrud
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     cotravels: list[Cotravel] = CotravelSensemaker(mock_oms_crud_tool).execute(track, aircraft_geo_config)
@@ -886,17 +817,18 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
         algorithm="test_algorithm",
         track_uuid=track_uuid,
         acm=ROLLUP_DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     # Set up mocks
-    cotravel_node_id = uuid4()
-    mock_oms_client.create_node = MagicMock(
-        return_value=CreateNodeCreateNode.model_construct(id=cotravel_node_id, acm=ROLLUP_DEFAULT_ACM, isNso=False)
+    cotravel_activity_id = uuid4()
+    mock_oms_client.create_activity.side_effect = [
+        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
+        CreateActivityCreateActivity.model_construct(id=cotravel_activity_id, acm=ROLLUP_DEFAULT_ACM),
+    ]
+    cotravel_rel_id = uuid4()
+    mock_oms_client.create_relationship = MagicMock(
+        return_value=CreateRelationshipCreateRelationship.model_construct(id=cotravel_rel_id, acm=ROLLUP_DEFAULT_ACM)
     )
-    mock_oms_client.create_relationship.return_value = MagicMock()
-    mock_oms_client.create_attribute.return_value = MagicMock()
-
     sensemaker = CotravelSensemaker(mock_oms_crud_tool)
     cotravels: list[Cotravel] = sensemaker.execute(track, aircraft_geo_config)
 
@@ -908,63 +840,51 @@ def test_cotravel_valid_before_observation_threshold_exceeded(
     assert cotravel.last_time == p3.detection_time
 
     tags = [SETTINGS.geo_sensemaker_event_tag]
+    name = f"{CotravelType.get_name(cotravel.cotravel_type)}"
 
-    mock_oms_client.create_node.assert_called_with(
-        CreateNodeInput(
+    assert mock_oms_client.create_activity.call_count == 2
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
             acm=ROLLUP_DEFAULT_ACM,
-            name=SETTINGS.cotravel_event_name,
-            tier=ObjectTier.DERIVATIVE,
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            classIri=SETTINGS.cotravel_event_node_iri,
-            ifcCodes=set(),
-            isNso=True,
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track1.node_id,
+            observationIds=cotravel.track1.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
+        )
+    )
+    mock_oms_client.create_activity.assert_any_call(
+        CreateActivityInput(
+            acm=ROLLUP_DEFAULT_ACM,
+            tags=tags,
+            labels=get_geospatial_labels(sensemaker),
+            classIri=SETTINGS.cotravel_activity_iri,
+            name=SETTINGS.cotravel_activity_name,
+            state=SETTINGS.cotravel_activity_state,
+            sourceId=p1.source_id,
+            nodeId=cotravel.track2.node_id,
+            observationIds=cotravel.track2.observation_ids,
+            startTime=cotravel.start_time,
+            endTime=cotravel.last_time,
         )
     )
 
-    assert mock_oms_client.create_relationship.call_count == 2
     mock_oms_client.create_relationship.assert_any_call(
         CreateRelationshipInput(
             tags=tags,
             labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=node_id,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
+            name=f"{name} {SETTINGS.cotravel_relation_name}",
+            startNodeId=cotravel.track1.node_id,
+            endNodeId=cotravel.track2.node_id,
+            sourceId=p1.source_id,
+            confidence=Confidence.UNKNOWN,
+            acm=cotravel.get_acm(),
             objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-    mock_oms_client.create_relationship.assert_any_call(
-        CreateRelationshipInput(
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            name=f"{SETTINGS.cotravel_event_name} {SETTINGS.cotravel_track_to_event_relation_name}",
-            startNodeId=cotravel_node_id,
-            endNodeId=NODE_UUID2,
-            confidence=Confidence.HIGH,
-            acm=ROLLUP_DEFAULT_ACM,
-            objectPropertyIri=SETTINGS.cotravel_relationship_iri,
-            sourceId=p1.source_id,
-        )
-    )
-
-    mock_oms_client.create_attribute.assert_called_with(
-        CreateAttributeInput(
-            attributeIri=SETTINGS.cotravel_event_node_attribute_iri,
-            attributeValue="geo",
-            attributeDisplayValue="",
-            attributeType=AttributeType.GEOSPATIAL,
-            confidence=Confidence.HIGH,
-            tags=tags,
-            labels=get_geospatial_labels(sensemaker),
-            sourceId=p1.source_id,
-            geometry=cotravel.to_geojson(),
-            nodeId=cotravel_node_id,
-            acm=ROLLUP_DEFAULT_ACM,
-            valueStart=cotravel.start_time,
-            valueEnd=cotravel.last_time,
         )
     )
 

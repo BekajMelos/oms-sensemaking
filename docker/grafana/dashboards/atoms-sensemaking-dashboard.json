@@ -47,7 +47,7 @@
 
     {
       "type": "timeseries",
-      "title": "Request Rate & p95 Response Time",
+      "title": "Request Rate (req/sec) & Response Time (p95, seconds)",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" },
@@ -81,7 +81,7 @@
 
     {
       "type": "timeseries",
-      "title": "Events Processed per Second",
+      "title": "Throughput (events/sec)",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
       "targets": [
         {
@@ -94,7 +94,7 @@
 
     {
       "type": "timeseries",
-      "title": "Queue Processing Latency (p95)",
+      "title": "Latency (p95, seconds)",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
       "targets": [
         {

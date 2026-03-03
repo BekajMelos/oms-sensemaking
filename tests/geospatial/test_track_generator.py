@@ -170,7 +170,6 @@ def test_csf_track_point_deltas_applies_filter(track_points):
         algorithm="algo",
         observation_ids=[p.observation_id for p in track_points],
         acm=DEFAULT_ACM,
-        provider_id=uuid4(),
     )
 
     f = DummyFilterDelta(name="delta", iri="iri://match")

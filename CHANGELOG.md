@@ -10,15 +10,53 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## [0.26.0] - 2026-03-02
+
+### Added
+- Updates from `grimlock-support` through 0.19.8
+
+### Changed
+- Migrate to using atoms-local-dev enviroment.
+- Updated all old references to 'Object Minimums' to the new name 'Object Standards'
+- Updated ATOMS dependency to Starscream 3.1.6 and sdk to 14.0.0
+
+## [0.19.8] - 2026-03-02
+
+### Added
+- Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
+
+### Changed
+- All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
+
+### Fixed
+- Removed ignoreCase param in StringQuery
+- Removed .value reference on confidence value enums
+- removed unnecessary boolean variable and its corresponding conditional
+
+## [0.25.0] - 2026-02-23
+
+### Added
+- Updates from `grimlock-support` through 0.19.7
+
+### Changed
+- Updated pytest and other dependencies to latest version
+- Bump sdk to Starscream 13.1.0
+
+### Fixed
+
 ## [0.24.0] - 2026-02-12
 
 ### Added
 - Added Extended Kalman Filter to track weaver algorithms.
+- Added compose files for using `atoms-local-dev`
+- Apply throttle settings updates at application start-ups and runtime, via call to `PATCH /settings`.
 
 ### Changed
 - Silenced noisy warnings and resolved async warning in Python tests.
 - Updated dependencies and resolved compatibility warnings introduced by newer package versions.
 - Object Minimum rubric applies to the most specific class now.
+- Updated `aac2` container to latest
+- Support two settings endpoints: `PATCH /settings` to update any settings at runtime and future start-ups, and `GET /settings` to get all settings stored for admin dashboard.
 
 ### Fixed
 - Added 'get relationship' function to crud tool for event handling purposes. Relationship objects are now a type that can be handled.
@@ -74,6 +112,28 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
+
+## [0.19.7] - 2026-02-23
+
+### Added
+- Detect circular ontology class structure when getting class ancestors
+
+### Changed
+- Loiters now return activities
+- Removed provider_id from database and splitting logic
+- Mil Symbol Sensemaker utilizes new custom mutation to create attributes in one request instead of making individual API calls (performance improvement)
+
+### Fixed
+- Resolved index and comment discrepancies between alembic and SQLAlchemy models.
+
+## [0.19.6] - 2026-02-16
+
+### Added
+- Resolution Sensemaker now supports matching on any one of multiple criteria sets (e.g., `[BENUMBER+OSUFFX]` OR `[SK]`).
+
+### Changed
+- The Cotravel sensemaker now outputs two activities (for each "cotravelling" node) and one relationship (between the "cotravelling" nodes)
+- The Incursion Sensemaker no longer outputs/updates an attribute (only an activity).
 
 ## [0.19.5] - 2026-02-10
 

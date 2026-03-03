@@ -251,7 +251,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.ATTRIBUTE.CREATE",
           "source": "oms.audits.exchange",
@@ -259,7 +259,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.ATTRIBUTE.RESTORE",
           "source": "oms.audits.exchange",
@@ -267,7 +267,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.ATTRIBUTE.UPDATE",
           "source": "oms.audits.exchange",
@@ -275,7 +275,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.ATTRIBUTE.DELETE",
           "source": "oms.audits.exchange",
@@ -283,7 +283,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.RELATIONSHIP.CREATE",
           "source": "oms.audits.exchange",
@@ -291,7 +291,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.RELATIONSHIP.RESTORE",
           "source": "oms.audits.exchange",
@@ -299,7 +299,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.RELATIONSHIP.UPDATE",
           "source": "oms.audits.exchange",
@@ -307,7 +307,7 @@
         },
         {
           "arguments": {},
-          "destination": "object-minimums-trigger",
+          "destination": "object-standards-trigger",
           "destination_type": "queue",
           "routing_key": "audit.RELATIONSHIP.DELETE",
           "source": "oms.audits.exchange",
@@ -410,7 +410,7 @@
         },
         "auto_delete": false,
         "durable": true,
-        "name": "object-minimums-trigger",
+        "name": "object-standards-trigger",
         "type": "quorum",
         "vhost": "/"
       }

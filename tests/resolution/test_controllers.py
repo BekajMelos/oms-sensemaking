@@ -14,7 +14,6 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, RabbitMQListener
-from oms_sensemaking.core.settings import Settings as AppSettings
 from oms_sensemaking.resolution.controllers import (
     ResolutionQueueFilter,
     ResolutionSensemaker,
@@ -25,14 +24,11 @@ from src.oms_sensemaking.core.event_model import AuditLogHeaders
 
 @pytest.fixture
 def mock_res_controller():
-    app_settings = AppSettings()
-    app_settings.get_settings = lambda: {}  # Mock to return empty dict to avoid DB query
     controller = ResolutionSensemakerController(
         RabbitMQListener(
             "ResolutionRMQListener",
             SETTINGS.rmq_res_queue_name,
             SETTINGS.queue_worker_threads,
-            app_settings=app_settings,
             event_filter=ResolutionQueueFilter(MockIriProvider()),
         ),
         RethrowErrorLogger(ErrorLogger()),

@@ -13,16 +13,12 @@ consumers pick them up for processing.
 
 ## Setup
 
-Activate the Python environment:
+In Atoms Local Dev
+
+Enable the metric services by enabling the `tools` profile in `local.dev.env`:
 
 ```
-source .venv/bin/activate
-```
-
-Enable the metrics profile in `.env`:
-
-```
-COMPOSE_PROFILES=local,metrics
+COMPOSE_PROFILES=<other profiles>,tools
 ```
 
 Start the stack with metrics services:
