@@ -5,12 +5,34 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Compliant fields are recorded and are now part of the Object Standards grade output
+
+### Changed
+
+### Fixed
+
+## [0.26.0] - 2026-03-02
+
+### Added
+- Updates from `grimlock-support` through 0.19.8
 
 ### Changed
 - Migrate to using atoms-local-dev enviroment.
 - Updated all old references to 'Object Minimums' to the new name 'Object Standards'
+- Updated ATOMS dependency to Starscream 3.1.6 and sdk to 14.0.0
+
+## [0.19.8] - 2026-03-02
+
+### Added
+- Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
+
+### Changed
+- All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
 
 ### Fixed
+- Removed ignoreCase param in StringQuery
+- Removed .value reference on confidence value enums
+- removed unnecessary boolean variable and its corresponding conditional
 
 ## [0.25.0] - 2026-02-23
 

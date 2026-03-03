@@ -147,8 +147,6 @@ class InOrOutOfGarrison(Sensemaker):
             activity_state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
             geo_query = GeoQuery(queryGeoJson=garrison_buffer_geojson, queryType=GeoQueryType.INTERSECTS)
 
-        matching_activity_found = False
-
         enhanced_obs = Timeframe(obs)
         for existing_activity in existing_activities:
             # Query returns both in- and out-of-garrison activities; filter client-side
@@ -172,8 +170,7 @@ class InOrOutOfGarrison(Sensemaker):
                 )
 
         # Observation not found as part of any existing garrison activity
-        if not matching_activity_found:
-            return self._handle_new_activity(obs, activity_name, activity_state)
+        return self._handle_new_activity(obs, activity_name, activity_state)
 
     def _update_existing_activity(
         self,

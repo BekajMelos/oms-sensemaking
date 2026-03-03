@@ -539,7 +539,7 @@ class Settings(BaseSettings):
     oms_crud_ttl_cache_size: int = Field(1024, description="Max items in ATOMS CRUD Tool's given TTL Cache")
     oms_crud_ttl_cache_seconds: int = Field(3600, description="Max time to live in ATOMS CRUD Tool's given TTL Cache")
     omsb_url: str = Field("https://graphql:8443/graphql", description="URL for OMSB")
-    omsb_version: str = Field("3.1.5", description="OMSB Version")
+    omsb_version: str = Field("3.1.6", description="OMSB Version")
     aac_url: str = Field("http://aac2:3000", description="URL for AAC")
     user_dn: str = Field(description="User DN")
     aac_cacert_path: str | None = Field(
