@@ -12,7 +12,9 @@
             "https://oms.dodiis.ic.gov/ontology/p-0000000008",
             "https://oms.dodiis.ic.gov/ontology/p-0000000022"
         ],
-        "RELATIONSHIPS": [],
+        "RELATIONSHIPS": [
+            "https://oms.dodiis.ic.gov/ontology/p-0000000014"
+        ],
         "TAGS": []
     },
     "https://oms.dodiis.ic.gov/ontology/c-0000000003": {

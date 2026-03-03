@@ -4,7 +4,12 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
+from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
+    NodeNode,
+    ObservationObservation,
+    RelationshipRelationship,
+)
 
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
@@ -115,7 +120,9 @@ class SensemakerController:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
-    def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
+    def get_oms_data(
+        self, event: AuditLogEvent
+    ) -> None | AttributeAttribute | NodeNode | ObservationObservation | RelationshipRelationship:
         """
         Given an ATOMS data object's ID, get the object we'll pass to the sensemaker
 

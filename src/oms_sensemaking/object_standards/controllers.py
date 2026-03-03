@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from itertools import chain
 from uuid import UUID
 
-from oms_sdk.generated.generated_graphql_client.enums import Action
+from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, RelationshipRelationship
 
 from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
@@ -112,9 +112,15 @@ class ObjectStandardsSensemakerController(SensemakerController):
             LOGGER.warning("Could not find %s with id: %s", event.objectType, event.objectId)
             return False
 
-        # TODO does the oms_obj always have a nodeId?
-        list_id = self.buffer.get_list_id(oms_obj.nodeId)
-        self.buffer.add(list_id, oms_obj)
+        if isinstance(oms_obj, AttributeAttribute):
+            list_id = self.buffer.get_list_id(oms_obj.nodeId)
+            self.buffer.add(list_id, oms_obj)
+        elif isinstance(oms_obj, RelationshipRelationship):
+            list_id = self.buffer.get_list_id(oms_obj.startNodeId)
+            self.buffer.add(list_id, oms_obj)
+        else:
+            message = f"Invalid object type {event.objectType} for object {event.objectId}"
+            LOGGER.error(message)
 
         return True
 
@@ -128,22 +134,23 @@ class ObjectStandardsSensemakerController(SensemakerController):
         """
         last_obj = object_list[-1]
 
-        # try:
-        with ThreadPoolExecutor() as sync_executor:
-            futures = []
-            for sensemaker in self._registry.values():
-                future = sync_executor.submit(sensemaker.execute, last_obj)
-                futures.append(future)
+        try:
+            with ThreadPoolExecutor() as sync_executor:
+                futures = []
+                for sensemaker in self._registry.values():
+                    future = sync_executor.submit(sensemaker.execute, last_obj)
+                    futures.append(future)
 
-            # make sure errors are caught
-            for future in as_completed(futures):
-                _ = future.result()
+                # make sure errors are caught
+                for future in as_completed(futures):
+                    _ = future.result()
 
-            sync_executor.shutdown(wait=True)
+                sync_executor.shutdown(wait=True)
+
+        except Exception as e:
+            LOGGER.exception(f"Error encountered while processing object {last_obj}: {e}")
 
         # TODO Should we pass the event into the buffer so that we can track these things for exceptions?
-
-        # except Exception as e:
         #     message = f"Error encountered while processing object {last_obj}: {str(e)}"
         #     self.err_logger.log_error(
         #         event,
