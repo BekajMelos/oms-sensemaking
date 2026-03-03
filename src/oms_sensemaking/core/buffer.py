@@ -13,7 +13,7 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class Buffer:
     """Buffer objects into a list and periodically expire them to execute a callback"""
 
-    def __init__(self, flush_timer_seconds: float, callback_func: Callable) -> None:
+    def __init__(self, name: str, flush_timer_seconds: float, callback_func: Callable) -> None:
         """
         Create a Buffer
 
@@ -22,6 +22,7 @@ class Buffer:
         :return: None
         """
 
+        self.name = name
         self.flush_timer_seconds = flush_timer_seconds
         self.callback_func = callback_func
 
@@ -40,6 +41,10 @@ class Buffer:
         :param obj_to_add: The object itself
         :return: None
         """
+
+        # TODO we could make this more generic and make obj_to_add be a tuple so there can be multiple objects
+
+        print(f"adding: {obj_id} {obj_to_add}")
         with self.lock:
             self.expiration_times[obj_id] = datetime.now(tz=timezone.utc)
             self.object_list_buffer[obj_id].append(obj_to_add)
@@ -76,7 +81,7 @@ class Buffer:
 
     def flush_buffer(self) -> None:
         """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.debug("Checking for expired objects in the buffer cache.")
+        LOGGER.info(f"Checking for expired objects in the {self.name}")
         now: datetime = datetime.now(tz=timezone.utc)
         expire_threshold = timedelta(seconds=self.flush_timer_seconds)
         # TODO rename
@@ -92,7 +97,7 @@ class Buffer:
             ]
 
         if expired_tracks:
-            LOGGER.info("Flushing %d expired lists.", len(expired_tracks))
+            LOGGER.info("%s Flushing %d expired lists.", self.name, len(expired_tracks))
 
         for list_id in expired_tracks:
             # Process expired lists

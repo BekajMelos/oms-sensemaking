@@ -32,6 +32,8 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 # class BufferedSensemakerController():
+# @abstractmethod
+# def proces_buffer(self, list_id, object_list):
 #     pass
 
 
@@ -48,8 +50,7 @@ class GeospatialSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
-        # initialize buffer
-        self.buffer = Buffer(SETTINGS.cache_entry_expire_sec, self.process_buffer)
+        self.buffer = Buffer("Geospatial Buffer", SETTINGS.cache_entry_expire_sec, self.process_buffer)
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -127,7 +128,7 @@ class GeospatialSensemakerController(SensemakerController):
             return True
 
         # Ensure node has associated track ID
-        # move with self.lock to function
+        # TODO move with self.lock to function
         # Why does this need a new uuid instead of the nodeid?
         list_id = self.buffer.get_list_id(oms_obs.nodeId)
 
