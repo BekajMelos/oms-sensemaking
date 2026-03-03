@@ -67,7 +67,7 @@ class AircraftPathGenerator:
         # Assign times directly to the smoothed coordinates
         path["coordinates"] = [
             (lon, lat, dt.isoformat())
-            for (lon, lat), dt in zip(smoothed_coords, self.generate_detection_times(num_points * 5), strict=True)
+            for (lon, lat), dt in zip(smoothed_coords, self.generate_detection_times(num_points * 5), strict=False)
         ]
 
         return path
@@ -92,9 +92,9 @@ class AircraftPathGenerator:
         initial_time = self.initial_detection_time + timedelta(seconds=int(0 * 30))
         return [initial_time + timedelta(seconds=i * 30) for i in range(num_points)]
 
-    def create_aircraft_paths(self, num_sets):
+    def create_aircraft_paths(self, num_paths):
         # Create multiple sets of aircraft paths
-        return [self.generate_realistic_path() for _ in range(num_sets)]
+        return [self.generate_realistic_path() for _ in range(num_paths)]
 
     @staticmethod
     def write_to_geojson_file(file_name, aircraft_paths):
@@ -113,28 +113,41 @@ class AircraftPathGenerator:
         with open(file_name, "w") as f:
             json.dump(geojson_data, f, indent=2)
 
-    def generate_and_save_paths(self, num_sets):
+    def generate_and_save_paths(self, num_paths):
         # Generate and save specified number of aircraft path sets
-        aircraft_paths = self.create_aircraft_paths(num_sets)
+        aircraft_paths = self.create_aircraft_paths(num_paths)
         self.write_to_geojson_file("aircraft_paths.geojson", aircraft_paths)
-        print(f"Generated {num_sets} aircraft path point sets in 'aircraft_paths.geojson'.")
+        print(f"Generated {num_paths} aircraft path point sets in 'aircraft_paths.geojson'.")
 
 
 def parse_arguments():
     # Parse command line arguments to determine number of path sets
-    parser = argparse.ArgumentParser(description="Generate realistic aircraft paths.")
+    parser = argparse.ArgumentParser(description="Generate aircraft paths.")
     parser.add_argument(
-        "--num_sets",
+        "--num_paths",
         type=int,
         default=1,
-        help="Number of sets of points to generate.",
+        help="Number of paths to generate",
+    )
+    parser.add_argument(
+        "--min_points",
+        type=int,
+        default=10,
+        help="Minimum number of points in paths",
+    )
+    parser.add_argument(
+        "--max_points",
+        type=int,
+        default=100,
+        help="Maximum number of points in paths",
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    # Instantiate the generator with a specific range for path points
-    generator = AircraftPathGenerator(min_points=10, max_points=50)
-    num_sets = args.num_sets
-    generator.generate_and_save_paths(num_sets)
+    num_paths = args.num_paths
+    min_points = args.min_points
+    max_points = args.max_points
+    generator = AircraftPathGenerator(min_points=min_points, max_points=max_points)
+    generator.generate_and_save_paths(num_paths)

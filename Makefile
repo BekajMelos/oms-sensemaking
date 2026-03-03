@@ -117,4 +117,4 @@ load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop) --loop-wait $(loop_wait)
 
 generate-test-tracks:
-	python -m scripts.gen_test_tracks --num_sets $(num_sets)
+	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points $(min_points) --max_points $(max_points)
