@@ -7,7 +7,31 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Loiters now return activities 
+
+### Fixed
+
+## [0.19.8] - 2026-03-02
+
+### Added
+- Added aircraft and vessel configurations into 'duplicate_object_iris.json' for the Object Resolution Sensemaker
+
+### Changed
+- All Sensemaking inferred data is generated with an 'UNKNOWN' confidence value.
+
+### Fixed
+- Removed ignoreCase param in StringQuery
+- Removed .value reference on confidence value enums
+- removed unnecessary boolean variable and its corresponding conditional
+
+## [0.19.7] - 2026-02-23
+
+### Added
+- Detect circular ontology class structure when getting class ancestors
+
+### Changed
+- Loiters now return activities
+- Removed provider_id from database and splitting logic
+- Mil Symbol Sensemaker utilizes new custom mutation to create attributes in one request instead of making individual API calls (performance improvement)
 
 ### Fixed
 - Resolved index and comment discrepancies between alembic and SQLAlchemy models.

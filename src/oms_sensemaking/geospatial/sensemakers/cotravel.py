@@ -371,7 +371,6 @@ class CotravelSensemaker(Sensemaker):
                     observation_ids=track.observation_ids,
                     track_uuid=track.track_uuid,  # type: ignore
                     acm=track.acm,
-                    provider_id=track.provider_id,
                 ),
                 track2=Track(
                     points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
@@ -380,7 +379,6 @@ class CotravelSensemaker(Sensemaker):
                     observation_ids=track2.observation_ids,
                     track_uuid=track2.track_uuid,  # type: ignore
                     acm=track2.acm,
-                    provider_id=track2.provider_id,
                 ),
                 start_time=start_time,
                 last_time=last_time,
@@ -487,7 +485,7 @@ class CotravelSensemaker(Sensemaker):
             name=SETTINGS.potential_duplicate_relationship_name,
             startNodeId=cotravel.track1.node_id,
             endNodeId=cotravel.track2.node_id,
-            confidence=Confidence.HIGH,
+            confidence=Confidence.UNKNOWN,
             acm=cotravel.get_acm(),
             objectPropertyIri=SETTINGS.resolution_relationship_iri,
             sourceId=source_id,

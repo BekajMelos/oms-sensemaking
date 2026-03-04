@@ -45,7 +45,7 @@ class OntologyClient(OntologyService):
         :return: The Node's ancestor's iri list
         """
 
-        iris = set()
+        ancestor_iris: set[str] = set()
         iris_to_check: SimpleQueue = SimpleQueue()
         iris_to_check.put_nowait(oms_node.classIri)
         while not iris_to_check.empty():
@@ -56,10 +56,16 @@ class OntologyClient(OntologyService):
                 continue
 
             for parent_ontology_class in ontology_class.parentOntologyClasses:
-                iris.add(parent_ontology_class.iri)
-                iris_to_check.put_nowait(parent_ontology_class.iri)
+                parent_iri = parent_ontology_class.iri
 
-        return iris
+                is_circular_ontology = parent_iri in ancestor_iris or parent_iri == oms_node.classIri
+                if is_circular_ontology:
+                    continue
+
+                ancestor_iris.add(parent_iri)
+                iris_to_check.put_nowait(parent_iri)
+
+        return ancestor_iris
 
     def mil_symbol_get_node_ancestors_iris(self, oms_node: NodeNode) -> list[str]:
         """Get ancestor's iris.
@@ -70,10 +76,10 @@ class OntologyClient(OntologyService):
 
         # OMSB currently does not return the ancestorOntologyClasses in order so we have to query manually for now
 
-        iris = []
-        has_parent = True
+        ancestor_iris: list[str] = []
+        visited: set[str] = {oms_node.classIri}
         current_iri = oms_node.classIri
-        while has_parent:
+        while True:
             ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=current_iri)
 
             if not ontology_class or not ontology_class.parentOntologyClasses:
@@ -81,10 +87,16 @@ class OntologyClient(OntologyService):
 
             # If multiple parent Iris, just get the first one
             parent_iri = ontology_class.parentOntologyClasses[0].iri
-            iris.append(parent_iri)
+
+            is_circular_ontology = parent_iri in visited
+            if is_circular_ontology:
+                break
+
+            visited.add(parent_iri)
+            ancestor_iris.append(parent_iri)
             current_iri = parent_iri
 
-        return iris
+        return list(ancestor_iris)
 
     def get_default_symbol_id_code(self, iri: str) -> Optional[str]:
         """Given an iri, return the closest parent with a defaultSymbolIdCode
@@ -92,6 +104,20 @@ class OntologyClient(OntologyService):
         :param iri: Iri to search for
         :return: Closest parent iri with a defaultSymbolIdCode
         """
+        return self._get_default_symbol_id_code(iri, None)
+
+    def _get_default_symbol_id_code(self, iri: str, _visited: Optional[set[str]]) -> Optional[str]:
+        """Given an iri, return the closest parent with a defaultSymbolIdCode
+
+        :param iri: Iri to search for
+        :param _visited: Internal set of visited IRIs used to detect circular references; callers should omit.
+        :return: Closest parent iri with a defaultSymbolIdCode
+        """
+        if _visited is None:
+            _visited = set()
+        if iri in _visited:
+            return None
+        _visited.add(iri)
 
         ontology_class: Optional[OntologyClassOntologyClass] = self.get_ontology_class(iri=iri)
         if not ontology_class:
@@ -107,4 +133,4 @@ class OntologyClient(OntologyService):
         # If multiple parent Iris, just get the first one
         super_class_iri: str = ontology_class.parentOntologyClasses[0].iri
 
-        return self.get_default_symbol_id_code(super_class_iri)
+        return self._get_default_symbol_id_code(super_class_iri, _visited)
