@@ -181,12 +181,14 @@ class AacClient(BaseClient):
         response = self.client.post(f"{SETTINGS.aac_url}/users/{user_dn}/accesses", json=acms)
         return response.json()
 
-    def _dedup_acms(self, acms: List[dict]):
+    @staticmethod
+    def _dedup_acms(acms: List[dict]):
         json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
         deduped = set(json_acms)
         return [json.loads(dedup) for dedup in deduped]
 
-    def _custom_key_generator(self, request: httpcore.Request, body: bytes):
+    @staticmethod
+    def _custom_key_generator(request: httpcore.Request, body: bytes):
         """
         Create a cache key based on the request body, for our case, it is a list of acms
         """
