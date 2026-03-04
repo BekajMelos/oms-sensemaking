@@ -55,8 +55,7 @@ class ObjectStandardsSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
-        # TODO config var
-        self.buffer = Buffer("Object Standards Buffer", 30, self.process_buffer)
+        self.buffer = Buffer("Object Standards Buffer", SETTINGS.obj_std_buffer_expire_sec, self.process_buffer)
 
     def start(self) -> None:
         """Start the controller."""
@@ -113,11 +112,9 @@ class ObjectStandardsSensemakerController(SensemakerController):
             return False
 
         if isinstance(oms_obj, AttributeAttribute):
-            list_id = self.buffer.get_list_id(oms_obj.nodeId)
-            self.buffer.add(list_id, oms_obj)
+            self.buffer.add(oms_obj.nodeId, oms_obj)
         elif isinstance(oms_obj, RelationshipRelationship):
-            list_id = self.buffer.get_list_id(oms_obj.startNodeId)
-            self.buffer.add(list_id, oms_obj)
+            self.buffer.add(oms_obj.startNodeId, oms_obj)
         else:
             message = f"Invalid object type {event.objectType} for object {event.objectId}"
             LOGGER.error(message)

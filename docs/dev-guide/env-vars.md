@@ -88,7 +88,7 @@
 | `DEFAULT_ATOMS_PORT`                                              | `5346`                                                                                            | The default connection port for the Atoms client                         | No             |
 | `SRID`                                              | `4326`                                                                                            | Spatial Reference Identifier for storing Points                                   | No             |
 | `VALID_OBSERVED_THRESHOLD_SECONDS`                  | `900`                                                                                             | Threshold for amount of between Track Point Observations                          | No             |
-| `CACHE_ENTRY_EXPIRE_SEC`                            | `30 `                                                                                             | How long to wait for new points before creating a new Track                       | No             |
+| `GEO_BUFFER_EXPIRE_SEC`                            | `30 `                                                                                             | How long to wait for new points before creating a new Track                       | No             |
 | `GEOHASH_LOW`                                       | `5`                                                                                               | Low geohash                                                                       | No             |
 | `GEOHASH_HIGH`                                      | `7`                                                                                               | High geohash                                                                      | No             |
 | `POLL_PERIOD_SECONDS`                               | `10`                                                                                              | How often to poll for new incoming Attributes                                     | No             |
@@ -176,6 +176,7 @@
 | `AUDIT_LOG_ERROR_MAX_TB_CHARS`                      | `200`                                                                                             | Number of characters allowed in the audit log traceback                           | No             |
 | `AUDIT_LOG_ERROR_JSON_FILE_PATH`                | `./data/audit_log_error.json`                                                                     | Classification to set as default for Audit Log Errors                             | No             |
 | `USER_DN_WHITELIST_PATH`                            | `./data/whitelist.txt`                                                                            | File path to the user whitelist for privileged requests                           | No             |
+| `OBJ_STD_GEO_BUFFER_EXPIRE_SEC`                            | `30 `                                                                                             | Delay in seconds to wait before processing Atoms Objects for Object Standards checks                       | No             |
 
 #### Sensemaker Labels
 | Variable Name            | Example                                            | Description               | Docker Compose |

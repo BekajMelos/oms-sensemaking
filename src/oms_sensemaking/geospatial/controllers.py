@@ -50,7 +50,7 @@ class GeospatialSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
-        self.buffer = Buffer("Geospatial Buffer", SETTINGS.cache_entry_expire_sec, self.process_buffer)
+        self.buffer = Buffer("Geospatial Buffer", SETTINGS.geo_buffer_expire_sec, self.process_buffer)
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -106,9 +106,6 @@ class GeospatialSensemakerController(SensemakerController):
         else:
             return UUID(id)
 
-    # TODO do we need a buffered_handle_event?
-    # 1. move buffer logic out
-    # 2. Then use in other sensemakers with bufferedcontroller or something
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
         Handle inbound ATOMS event.
@@ -126,11 +123,6 @@ class GeospatialSensemakerController(SensemakerController):
         # Skip generated tracks
         if self.is_generated_track(oms_obs):
             return True
-
-        # Ensure node has associated track ID
-        # TODO move with self.lock to function
-        # Why does this need a new uuid instead of the nodeid?
-        list_id = self.buffer.get_list_id(oms_obs.nodeId)
 
         # Retrieve node version
         node = self.oms_crud_tool.get_node(oms_obs.nodeId)
@@ -154,8 +146,6 @@ class GeospatialSensemakerController(SensemakerController):
                 # NOTE: Altitude intentionally disabled: Shapely fails with mixed 2D/3D coordinate arrays.
                 #   Enable once geometry normalization supports consistent altitude data.
                 try:
-                    print("\n\nnode_id: ", oms_obs.nodeId)
-                    print("list_id: ", list_id)
                     point, is_new = Point.get_or_create(
                         db,
                         defaults={
@@ -182,40 +172,13 @@ class GeospatialSensemakerController(SensemakerController):
                 if not is_new:
                     LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
 
-                # with self.lock:
-                self.buffer.add(list_id, point)
-                # self.expiration_times[track_uuid] = datetime.now(tz=timezone.utc)
-                # self.object_list_buffer[track_uuid].append(point)
+                print("\n\nadding: ", oms_obs.nodeId, point)
+                self.buffer.add(oms_obs.nodeId, point)
+
+                # TODO maybe only return success if all points were processed properly
                 success = True
+
         return success
-
-    # def flush_buffer(self) -> None:
-    #     """Check the buffer cache for data that can be flushed from it."""
-    #     LOGGER.debug("Checking for expired tracks in the buffer cache.")
-    #     now: datetime = datetime.now(tz=timezone.utc)
-    #     expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
-    #     expired_tracks = []
-
-    #     with self.lock:
-    #         # Identify expired tracks in thread-safe snapshot
-    #         self.expiration_times = {key: val for key, val in self.expiration_times.items() if val is not None}
-    #         expired_tracks = [
-    #             track_uuid
-    #             for track_uuid, last_updated_at in self.expiration_times.items()
-    #             if last_updated_at is not None and last_updated_at + expire_threshold < now
-    #         ]
-
-    #     if expired_tracks:
-    #         LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
-
-    #     for track_uuid in expired_tracks:
-    #         # Process expired tracks
-    #         # this may need a finally block after it
-    #         self._process_buffer(track_uuid, self.object_list_buffer[track_uuid])
-
-    #     if self.autoflush_enabled:
-    #         self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-    #         self.buffer_autoflush.start()
 
     def process_buffer(self, track_uuid: UUID, track_points: list[Point]) -> bool:
         """
@@ -239,8 +202,6 @@ class GeospatialSensemakerController(SensemakerController):
                 )
             except TrackLengthError:
                 LOGGER.warning("Track %s doesn't have enough points; removing from buffer.", track_uuid)
-                # with self.lock:
-                #     self.expiration_times[track_uuid] = None
                 return False
 
             futures = []
@@ -255,14 +216,6 @@ class GeospatialSensemakerController(SensemakerController):
                     _ = future.result()
         except Exception:
             LOGGER.exception("Unexpected error processing track %s", track_uuid)
-        # finally:
-        #     with self.lock:
-        #         # Thread-safe cleanup of expired track data
-        #         self.expiration_times[track_uuid] = None
-        #         self.object_list_buffer.pop(track_uuid, None)
-        #         keys_to_delete = [k for k, v in self.id_mapping.items() if v == track_uuid]
-        #         for k in keys_to_delete:
-        #             del self.id_mapping[k]
 
         return True
 
