@@ -3,16 +3,43 @@
 import enum
 import json
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
+    ObjectType,
     RelationshipsRelationshipsData,
 )
 from pydantic import BaseModel, Field
 
 from oms_sensemaking.models.sensemaking import AtomsType
+
+
+class ObjectStandardsCharacteristic:
+    def __init__(
+        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None, object_type: ObjectType
+    ):
+        self.atoms_id = characteristic.id if characteristic else None
+        self.atoms_type = object_type
+
+
+class CompliantField(ObjectStandardsCharacteristic):
+    def __init__(
+        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData, object_type: ObjectType
+    ):
+        super().__init__(characteristic, object_type)
+
+
+class Violation(ObjectStandardsCharacteristic):
+    def __init__(
+        self,
+        object_type: ObjectType,
+        characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None = None,
+    ):
+        super().__init__(characteristic, object_type)
+        # TODO put in the other other fields here specified in the violation ticket
+        # violation type, IRI, violation description, etc.
 
 
 class RequiredIris(BaseModel):
@@ -77,13 +104,15 @@ class ObjectStandardsGrade:
     def __init__(
         self,
         float_score: float,
-        violations: list[FieldViolationBase],
+        violations: list[Any],
         current_characteristics: int,
         total_characteristcs: int,
+        compliant_fields: list[CompliantField],
     ):
         self.float_score = float_score
         self.violations = violations
         self.ratio = f"{current_characteristics}/{total_characteristcs}"
+        self.compliant_fields = compliant_fields
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__, default=str)
@@ -128,8 +157,14 @@ class ObjectStandardsRubric:
         current_characteristics_count = self.get_current_count(current_characteristics_list)
         float_score = self.get_float_score(current_characteristics_count)
         violations = self.get_missing_characteristics(current_attrs, current_rels)
+        compliant_fields = self.get_compliant_fields(attributes, relationships)
+        # TODO apply what was said in in the comments of the .get_missing_characteristics(...) function definition
         grade = ObjectStandardsGrade(
-            float_score, violations, current_characteristics_count, self.total_required_characteristics_count
+            float_score,
+            violations,
+            current_characteristics_count,
+            self.total_required_characteristics_count,
+            compliant_fields,
         )
 
         return grade
@@ -169,3 +204,17 @@ class ObjectStandardsRubric:
                     )
 
         return violations
+
+    def get_compliant_fields(
+        self,
+        atoms_attributes: list[AttributesAttributesData] | None,
+        atoms_relationships: list[RelationshipsRelationshipsData] | None,
+    ) -> list[CompliantField]:
+        compliant_fields: list[CompliantField] = []
+        if atoms_attributes:
+            for attribute in atoms_attributes:
+                compliant_fields.append(CompliantField(attribute, ObjectType.ATTRIBUTE.value))
+        if atoms_relationships:
+            for relationship in atoms_relationships:
+                compliant_fields.append(CompliantField(relationship, ObjectType.RELATIONSHIP.value))
+        return compliant_fields

@@ -46,6 +46,28 @@ def test_node_b():
 
 
 @pytest.fixture
+def test_node_aircraft_a():
+    return NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="test_nodeC",
+        tier=ObjectTier.PRIMARY,
+        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+    )
+
+
+@pytest.fixture
+def test_node_aircraft_b():
+    return NodeNode.model_construct(
+        id=uuid4(),
+        acm=DEFAULT_ACM,
+        name="test_nodeD",
+        tier=ObjectTier.PRIMARY,
+        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+    )
+
+
+@pytest.fixture
 def test_attribute(test_node):
     return AttributeAttribute.model_construct(
         id=uuid4(),
@@ -76,6 +98,54 @@ def test_attribute_b(test_node_b):
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
         attributeValue="ABCD1234",
         nodeId=test_node_b.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_aircraft_a(test_node_aircraft_a):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasCategoryCode",
+        attributeValue="ABC123",
+        nodeId=test_node_aircraft_a.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_aircraft_b(test_node_aircraft_b):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasCategoryCode",
+        attributeValue="ABC123",
+        nodeId=test_node_aircraft_b.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_aircraft_c(test_node_aircraft_a):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasTailNumber",
+        attributeValue="T001",
+        nodeId=test_node_aircraft_a.id,
+        sourceId=uuid4(),
+        acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_aircraft_d(test_node_aircraft_b):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasTailNumber",
+        attributeValue="T001",
+        nodeId=test_node_aircraft_b.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM,
     )
@@ -309,3 +379,39 @@ def test_process_data_skips_criteria_without_triggering_attr(
 
     # We should NOT match using the SK-only set
     assert findings == []
+
+
+def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
+    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a, test_node_aircraft_b, test_attribute_aircraft_a
+):
+    # Setup
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    # Call method
+    dups = sensemaker.create_duplicate_findings(test_attribute_aircraft_a, [test_node_aircraft_a, test_node_aircraft_b])
+
+    # Assertions
+    assert len(dups) == 1
+    assert all(isinstance(d, DupFinding) for d in dups)
+    assert dups[0].end_node_id == test_node_aircraft_b.id
+
+    # Check if relationships were created
+    assert mock_crud_tool.create_relationship.call_count == 1
+
+
+def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_attr(
+    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a, test_node_aircraft_b, test_attribute_aircraft_d
+):
+    # Setup
+    sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
+
+    # Call method
+    dups = sensemaker.create_duplicate_findings(test_attribute_aircraft_d, [test_node_aircraft_a, test_node_aircraft_b])
+
+    # Assertions
+    assert len(dups) == 1
+    assert all(isinstance(d, DupFinding) for d in dups)
+    assert dups[0].end_node_id == test_node_aircraft_a.id
+
+    # Check if relationships were created
+    assert mock_crud_tool.create_relationship.call_count == 1
