@@ -2,9 +2,6 @@
 
 import enum
 import json
-from dataclasses import dataclass
-from typing import Any, Optional
-from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
@@ -12,8 +9,6 @@ from oms_sdk.generated.generated_graphql_client import (
     RelationshipsRelationshipsData,
 )
 from pydantic import BaseModel, Field
-
-from oms_sensemaking.models.sensemaking import AtomsType
 
 
 class ObjectStandardsCharacteristic:
@@ -31,15 +26,33 @@ class CompliantField(ObjectStandardsCharacteristic):
         super().__init__(characteristic, object_type)
 
 
+class ViolationType(str, enum.Enum):
+    """Type of Object Standards field violation."""
+
+    MISSING = "MISSING"
+    INVALID = "INVALID"
+
+
 class Violation(ObjectStandardsCharacteristic):
+    """
+    Object Standards field violation (missing or invalid).
+
+    Id (atoms_id) is the ATOMS identifier for the field when it exists;
+    for missing fields this is None.
+    """
+
     def __init__(
         self,
         object_type: ObjectType,
+        iri: str,
+        violation_type: ViolationType,
+        description: str,
         characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None = None,
     ):
         super().__init__(characteristic, object_type)
-        # TODO put in the other other fields here specified in the violation ticket
-        # violation type, IRI, violation description, etc.
+        self.iri = iri
+        self.violation_type = violation_type
+        self.description = description
 
 
 class RequiredIris(BaseModel):
@@ -49,62 +62,11 @@ class RequiredIris(BaseModel):
     relationship_iris: list[str] = Field(default_factory=list)
 
 
-class ViolationType(str, enum.Enum):
-    """Type of Object Standards field violation."""
-
-    MISSING = "MISSING"
-    INVALID = "INVALID"
-
-
-@dataclass
-class FieldViolationBase:
-    """
-    Base class for Object Standards field violations.
-
-    Id represents the ATOMS identifier for the field, if one exists.
-    For missing fields, this will be None.
-    """
-
-    iri: str
-    atoms_type: AtomsType
-    violation_type: ViolationType
-    description: str
-    id: Optional[UUID] = None
-
-
-@dataclass
-class MissingFieldViolation(FieldViolationBase):
-    """Represents a required field that is missing."""
-
-    def __init__(self, iri: str, atoms_type: AtomsType, description: str):
-        super().__init__(
-            iri=iri,
-            atoms_type=atoms_type,
-            violation_type=ViolationType.MISSING,
-            description=description,
-            id=None,
-        )
-
-
-@dataclass
-class InvalidFieldViolation(FieldViolationBase):
-    """Represents a field that exists but is invalid."""
-
-    def __init__(self, iri: str, atoms_type: AtomsType, description: str, id: Optional[UUID] = None):
-        super().__init__(
-            iri=iri,
-            atoms_type=atoms_type,
-            violation_type=ViolationType.INVALID,
-            description=description,
-            id=id,
-        )
-
-
 class ObjectStandardsGrade:
     def __init__(
         self,
         float_score: float,
-        violations: list[Any],
+        violations: list[Violation],
         current_characteristics: int,
         total_characteristcs: int,
         compliant_fields: list[CompliantField],
@@ -175,20 +137,21 @@ class ObjectStandardsRubric:
     def get_float_score(self, current_characteristics_count: int) -> float:
         return current_characteristics_count / self.total_required_characteristics_count
 
-    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]) -> list[FieldViolationBase]:
+    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]) -> list[Violation]:
         """
-        Return a list of missing required characteristics as field violation objects.
+        Return a list of missing required characteristics as Violation objects.
 
-        For missing fields, the Id will always be None as there is no ATOMS record to reference.
+        For missing fields, atoms_id (id) is None as there is no ATOMS record to reference.
         """
-        violations: list[FieldViolationBase] = []
+        violations: list[Violation] = []
         if self.required_attrs:
             for iri in self.required_attrs:
                 if iri not in curr_attrs:
                     violations.append(
-                        MissingFieldViolation(
+                        Violation(
+                            object_type=ObjectType.ATTRIBUTE,
                             iri=iri,
-                            atoms_type=AtomsType.ATTRIBUTE,
+                            violation_type=ViolationType.MISSING,
                             description="Required attribute is missing.",
                         )
                     )
@@ -196,9 +159,10 @@ class ObjectStandardsRubric:
             for iri in self.required_rels:
                 if iri not in curr_rels:
                     violations.append(
-                        MissingFieldViolation(
+                        Violation(
+                            object_type=ObjectType.RELATIONSHIP,
                             iri=iri,
-                            atoms_type=AtomsType.RELATIONSHIP,
+                            violation_type=ViolationType.MISSING,
                             description="Required relationship is missing.",
                         )
                     )
