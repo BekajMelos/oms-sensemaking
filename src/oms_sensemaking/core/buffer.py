@@ -108,7 +108,7 @@ class Buffer:
         :return: None
         """
         try:
-            self.callback_func(list_id, object_list)
+            _ = self.callback_func(list_id, object_list)
         except Exception:
             LOGGER.exception("Unexpected error processing buffer %s", list_id)
         finally:
