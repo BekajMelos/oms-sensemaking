@@ -50,7 +50,7 @@ class GeospatialSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
-        self.buffer = Buffer("Geospatial Buffer", SETTINGS.geo_buffer_expire_sec, self.process_buffer)
+        self.buffer = Buffer(f"{self.__class__.__name__} Buffer", SETTINGS.geo_buffer_expire_sec, self.process_buffer)
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -172,7 +172,6 @@ class GeospatialSensemakerController(SensemakerController):
                 if not is_new:
                     LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
 
-                print("\n\nadding: ", oms_obs.nodeId, point)
                 self.buffer.add(oms_obs.nodeId, point)
 
                 # TODO maybe only return success if all points were processed properly

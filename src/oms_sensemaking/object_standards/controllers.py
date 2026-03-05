@@ -55,7 +55,9 @@ class ObjectStandardsSensemakerController(SensemakerController):
         """Create a new instance of GeospatialSensemakerController."""
         super().__init__(event_consumer, err_logger)
 
-        self.buffer = Buffer("Object Standards Buffer", SETTINGS.obj_std_buffer_expire_sec, self.process_buffer)
+        self.buffer = Buffer(
+            f"{self.__class__.__name__} Buffer", SETTINGS.obj_std_buffer_expire_sec, self.process_buffer
+        )
 
     def start(self) -> None:
         """Start the controller."""
