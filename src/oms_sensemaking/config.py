@@ -277,9 +277,9 @@ class Settings(BaseSettings):
     track_iri: str = Field("https://foundry.ai.mil/ontology/4901-001/ObjectTrack", description="IRI for Tracks")
 
     # Request Rate Settings
-    maximum_oms_api_calls: int = Field(5000,
+    maximum_oms_api_calls: int = Field(1000000,
         description="Maximum amount of requests made to the ATOMS API per time period")
-    oms_api_call_period_seconds: int = Field(30,
+    oms_api_call_period_seconds: int = Field(5,
         description="Alloted amount of time for maximum ATOMS API calls to be made")
 
     # Labels
