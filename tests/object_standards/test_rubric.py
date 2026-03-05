@@ -25,6 +25,7 @@ def test_grade_with_all_required_elements_present(object_standards_rubric):
     assert abs(grade_result.float_score - expected_score) < 1e-9
     assert grade_result.ratio == "3/3"
     assert len(grade_result.violations) == 0
+    assert len(grade_result.compliant_fields) == 3
 
 
 def test_grade_with_some_required_elements_missing(object_standards_rubric):
@@ -37,6 +38,7 @@ def test_grade_with_some_required_elements_missing(object_standards_rubric):
     assert abs(grade_result.float_score - expected_score) < 1e-9
     assert grade_result.ratio == "1/3"
     assert len(grade_result.violations) == 2
+    assert len(grade_result.compliant_fields) == 1
 
 
 def test_grade_with_no_required_elements_present(object_standards_rubric):
@@ -49,6 +51,7 @@ def test_grade_with_no_required_elements_present(object_standards_rubric):
     assert abs(grade_result.float_score - expected_score) < 1e-9
     assert grade_result.ratio == "0/3"
     assert len(grade_result.violations) == 3
+    assert len(grade_result.compliant_fields) == 0
 
 
 def test_get_current_count(object_standards_rubric):

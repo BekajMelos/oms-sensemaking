@@ -4,11 +4,9 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
-    AttributesAttributesData,
     NodeNode,
     NodeQuery,
     RelationshipRelationship,
-    RelationshipsRelationshipsData,
 )
 
 from oms_sensemaking.clients.ontology_client import OntologyService
@@ -113,11 +111,18 @@ class ObjectStandards(Sensemaker):
                 retrieved_node_data = self.obj_standards_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
-                grade = self._calculate_grade(retrieved_node_data["attributes"], retrieved_node_data["relationships"])
+                grade = self.obj_standards_rubric.grade(
+                    retrieved_node_data["attributes"], retrieved_node_data["relationships"]
+                )
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
                 LOGGER.info("Object Standards float grade for object %s: %s", node.id, grade.float_score)
                 LOGGER.info("Object Standards ratio grade for object %s: %s", node.id, grade.ratio)
                 LOGGER.info("Object Standards violations for object %s: %s", node.id, grade.violations)
+                LOGGER.info(
+                    "Object Standards compliant fields for object %s: %s",
+                    node.id,
+                    [field.atoms_id for field in grade.compliant_fields],
+                )
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))
 
@@ -165,14 +170,3 @@ class ObjectStandards(Sensemaker):
             SETTINGS.object_standards_settings.max_rubric_hierarchy_levels,
         )
         return RequiredIris()
-
-    def _calculate_grade(
-        self,
-        attributes: list[AttributesAttributesData] | None,
-        relationships: list[RelationshipsRelationshipsData] | None,
-    ):
-        try:
-            return self.obj_standards_rubric.grade(attributes=attributes, relationships=relationships)
-        except Exception as e:
-            LOGGER.error("Error calculating grade: %s", str(e))
-            raise
