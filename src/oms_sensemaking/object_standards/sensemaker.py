@@ -121,7 +121,7 @@ class ObjectStandards(Sensemaker):
                 LOGGER.info(
                     "Object Standards compliant fields for object %s: %s",
                     node.id,
-                    [field.atoms_type for field in grade.compliant_fields],
+                    [field.atoms_id for field in grade.compliant_fields],
                 )
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))

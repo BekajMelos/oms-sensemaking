@@ -11,14 +11,30 @@ from oms_sdk.generated.generated_graphql_client import (
 from pydantic import BaseModel, Field
 
 
-class CompliantField:
-    def __init__(self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData):
-        self.atoms_type = (
-            ObjectType.ATTRIBUTE.value
-            if isinstance(characteristic, AttributesAttributesData)
-            else ObjectType.RELATIONSHIP.value
-        )
-        self.atoms_id = characteristic.id
+class ObjectStandardsCharacteristic:
+    def __init__(
+        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None, object_type: ObjectType
+    ):
+        self.atoms_id = characteristic.id if characteristic else None
+        self.atoms_type = object_type
+
+
+class CompliantField(ObjectStandardsCharacteristic):
+    def __init__(
+        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData, object_type: ObjectType
+    ):
+        super().__init__(characteristic, object_type)
+
+
+class Violation(ObjectStandardsCharacteristic):
+    def __init__(
+        self,
+        object_type: ObjectType,
+        characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None = None,
+    ):
+        super().__init__(characteristic, object_type)
+        # TODO put in the other other fields here specified in the violation ticket
+        # violation type, IRI, violation description, etc.
 
 
 class RequiredIris(BaseModel):
@@ -126,8 +142,8 @@ class ObjectStandardsRubric:
         compliant_fields: list[CompliantField] = []
         if atoms_attributes:
             for attribute in atoms_attributes:
-                compliant_fields.append(CompliantField(attribute))
+                compliant_fields.append(CompliantField(attribute, ObjectType.ATTRIBUTE.value))
         if atoms_relationships:
             for relationship in atoms_relationships:
-                compliant_fields.append(CompliantField(relationship))
+                compliant_fields.append(CompliantField(relationship, ObjectType.RELATIONSHIP.value))
         return compliant_fields
