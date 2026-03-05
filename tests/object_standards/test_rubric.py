@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.oms_sensemaking.object_standards.object_standards_models import ViolationType
 from src.oms_sensemaking.object_standards.sensemaker import ObjectStandardsRubric
 
 
@@ -37,6 +38,7 @@ def test_grade_with_some_required_elements_missing(object_standards_rubric):
     assert abs(grade_result.float_score - expected_score) < 1e-9
     assert grade_result.ratio == "1/3"
     assert len(grade_result.violations) == 2
+    assert all(v.violation_type == ViolationType.MISSING for v in grade_result.violations)
 
 
 def test_grade_with_no_required_elements_present(object_standards_rubric):
@@ -49,6 +51,7 @@ def test_grade_with_no_required_elements_present(object_standards_rubric):
     assert abs(grade_result.float_score - expected_score) < 1e-9
     assert grade_result.ratio == "0/3"
     assert len(grade_result.violations) == 3
+    assert all(v.violation_type == ViolationType.MISSING for v in grade_result.violations)
 
 
 def test_get_current_count(object_standards_rubric):
@@ -60,7 +63,8 @@ def test_get_float_score(object_standards_rubric):
 
 
 def test_get_missing_characteristics(object_standards_rubric):
-    # this test is due to change with coming schema changes
     missing_stuff = object_standards_rubric.get_missing_characteristics(["iri2"], [])
-    assert "iri1" in missing_stuff
-    assert "relIri1" in missing_stuff
+    iris = {v.iri for v in missing_stuff}
+    assert "iri1" in iris
+    assert "relIri1" in iris
+    assert all(v.violation_type == ViolationType.MISSING for v in missing_stuff)
