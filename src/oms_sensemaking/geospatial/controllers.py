@@ -3,6 +3,7 @@
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
@@ -32,6 +33,11 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 # class BufferedSensemakerController():
+
+# def __init__(
+#     self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
+# ) -> None:
+#     super().__init__(event_consumer, err_logger)
 # @abstractmethod
 # def proces_buffer(self, list_id, object_list):
 #     pass
@@ -96,15 +102,16 @@ class GeospatialSensemakerController(SensemakerController):
         self.buffer.stop()
         super().stop()
 
-    def _ensure_uuid(self, id) -> UUID:
+    def _ensure_uuid(self, id_: Any) -> UUID:
         """
         Function used to ensure that ids used
         in operations are of type UUID
+
+        :param id_: Input to cast to UUID
         """
-        if type(id) is UUID:
-            return id
-        else:
-            return UUID(id)
+        if isinstance(id_, UUID):
+            return id_
+        return UUID(id_)
 
     def handle_event(self, event: AuditLogEvent) -> bool:
         """

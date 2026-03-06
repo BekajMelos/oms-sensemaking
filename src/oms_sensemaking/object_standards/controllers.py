@@ -46,9 +46,9 @@ class ObjStandardsDataProvider:
 
 class ObjectStandardsSensemakerController(SensemakerController):
     """
-    Resolution sensemaker controller.
+    Object Standards sensemaker controller.
 
-    This class manages a collection of resolution sensemakers.
+    This class manages a collection of object standards sensemakers.
     """
 
     def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
