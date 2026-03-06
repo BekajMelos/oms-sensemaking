@@ -1,8 +1,12 @@
 from unittest.mock import MagicMock
 
 import pytest
+from oms_sdk.generated.generated_graphql_client import ObjectType
 
-from src.oms_sensemaking.object_standards.object_standards_models import ViolationType
+from src.oms_sensemaking.object_standards.object_standards_models import (
+    Violation,
+    ViolationType,
+)
 from src.oms_sensemaking.object_standards.sensemaker import ObjectStandardsRubric
 
 
@@ -71,3 +75,69 @@ def test_get_missing_characteristics(object_standards_rubric):
     assert "iri1" in iris
     assert "relIri1" in iris
     assert all(v.violation_type == ViolationType.MISSING for v in missing_stuff)
+
+
+# --- Violation init tests ---
+
+
+def test_violation_init_missing_attribute():
+    """Violation with no characteristic (missing field): atoms_id is None."""
+    v = Violation(
+        object_type=ObjectType.ATTRIBUTE,
+        iri="https://example.org/attr",
+        violation_type=ViolationType.MISSING,
+        description="Required attribute is missing.",
+    )
+    assert v.atoms_id is None
+    assert v.atoms_type == ObjectType.ATTRIBUTE
+    assert v.iri == "https://example.org/attr"
+    assert v.violation_type == ViolationType.MISSING
+    assert v.description == "Required attribute is missing."
+
+
+def test_violation_init_missing_relationship():
+    """Violation with no characteristic for missing relationship."""
+    v = Violation(
+        object_type=ObjectType.RELATIONSHIP,
+        iri="https://example.org/rel",
+        violation_type=ViolationType.MISSING,
+        description="Required relationship is missing.",
+    )
+    assert v.atoms_id is None
+    assert v.atoms_type == ObjectType.RELATIONSHIP
+    assert v.iri == "https://example.org/rel"
+    assert v.violation_type == ViolationType.MISSING
+    assert v.description == "Required relationship is missing."
+
+
+def test_violation_init_invalid_with_characteristic():
+    """Violation with characteristic (invalid field): atoms_id comes from characteristic."""
+    characteristic = MagicMock(id="attr-uuid-123")
+    v = Violation(
+        object_type=ObjectType.ATTRIBUTE,
+        iri="https://example.org/attr",
+        violation_type=ViolationType.INVALID,
+        description="Attribute value is invalid.",
+        characteristic=characteristic,
+    )
+    assert v.atoms_id == "attr-uuid-123"
+    assert v.atoms_type == ObjectType.ATTRIBUTE
+    assert v.iri == "https://example.org/attr"
+    assert v.violation_type == ViolationType.INVALID
+    assert v.description == "Attribute value is invalid."
+
+
+def test_violation_init_invalid_relationship_with_characteristic():
+    """Violation with relationship characteristic for invalid case."""
+    characteristic = MagicMock(id="rel-uuid-456")
+    v = Violation(
+        object_type=ObjectType.RELATIONSHIP,
+        iri="https://example.org/rel",
+        violation_type=ViolationType.INVALID,
+        description="Relationship target is invalid.",
+        characteristic=characteristic,
+    )
+    assert v.atoms_id == "rel-uuid-456"
+    assert v.atoms_type == ObjectType.RELATIONSHIP
+    assert v.violation_type == ViolationType.INVALID
+    assert v.description == "Relationship target is invalid."

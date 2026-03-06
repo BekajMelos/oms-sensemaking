@@ -117,10 +117,15 @@ class ObjectStandards(Sensemaker):
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
                 LOGGER.info("Object Standards float grade for object %s: %s", node.id, grade.float_score)
                 LOGGER.info("Object Standards ratio grade for object %s: %s", node.id, grade.ratio)
+                violation_summary = (
+                    "; ".join(f"{v.violation_type.value} {v.atoms_type.value}: {v.iri}" for v in grade.violations)
+                    if grade.violations
+                    else "none"
+                )
                 LOGGER.info(
                     "Object Standards violations for object %s: %s",
                     node.id,
-                    [(violation.atoms_type, violation.violation_type) for violation in grade.violations],
+                    violation_summary,
                 )
                 LOGGER.info(
                     "Object Standards compliant fields for object %s: %s",
