@@ -44,25 +44,16 @@ def _make_result(
         activities_data = []
     result.activities = Mock(data=activities_data)
 
-    # node
-    if not include_node:
-        result.node = None
-        return result
-
-    node = Mock()
-    result.node = node
-
     # relationships
-    relationships = Mock()
-    relationships.data = []
-    node.relationships = relationships
+    result.relationships = Mock()
+    result.relationships.data = []
 
     if not include_relationships:
         return result
 
     # relationship -> endNode
     rel_item = Mock()
-    relationships.data.append(rel_item)
+    result.relationships.data.append(rel_item)
 
     if not include_end_node:
         rel_item.endNode = None
@@ -180,4 +171,5 @@ def test_all_at_once_calls_custom_query_with_expected_params(mock_oms_tool, obs)
     assert kwargs["id"] == obs.nodeId
     assert "garrisonIris" in kwargs
     assert "geoIris" in kwargs
-    assert "activityQuery" in kwargs
+    assert "activityName" in kwargs
+    assert "activityStates" in kwargs
