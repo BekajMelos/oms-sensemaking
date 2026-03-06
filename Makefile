@@ -13,6 +13,10 @@ limit ?= 100
 loop ?= 1
 loop_wait ?= 0
 
+num_paths ?= 1
+min_points_pre_smooth ?= 5
+max_points_pre_smooth ?= 50
+
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -131,4 +135,4 @@ load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop) --loop-wait $(loop_wait)
 
 generate-test-tracks:
-	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points $(min_points) --max_points $(max_points)
+	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)

@@ -30,7 +30,6 @@ class AircraftPathGenerator:
         current_lon, current_lat = start_lon, start_lat
         # Random initial heading for the aircraft in radians
         current_heading = random.uniform(0, 2 * math.pi)
-        change_direction_probability = 0.1
 
         # Lists to store longitude and latitude values
         lons, lats = [current_lon], [current_lat]
@@ -130,24 +129,21 @@ def parse_arguments():
         help="Number of paths to generate",
     )
     parser.add_argument(
-        "--min_points",
+        "--min_points_pre_smooth",
         type=int,
         default=10,
-        help="Minimum number of points in paths",
+        help="Minimum number of points in paths before smoothing",
     )
     parser.add_argument(
-        "--max_points",
+        "--max_points_pre_smooth",
         type=int,
         default=100,
-        help="Maximum number of points in paths",
+        help="Maximum number of points in paths before smoothing",
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    num_paths = args.num_paths
-    min_points = args.min_points
-    max_points = args.max_points
-    generator = AircraftPathGenerator(min_points=min_points, max_points=max_points)
-    generator.generate_and_save_paths(num_paths)
+    generator = AircraftPathGenerator(min_points=args.min_points_pre_smooth, max_points=args.max_points_pre_smooth)
+    generator.generate_and_save_paths(args.num_paths)
