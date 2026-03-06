@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New script to generate sample tracks for EKF tuning
+- Compliant fields are recorded and are now part of the Object Standards grade output
 
 ### Changed
 
