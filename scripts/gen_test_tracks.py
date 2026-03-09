@@ -115,7 +115,7 @@ class AircraftPathGenerator:
     def generate_and_save_paths(self, num_paths):
         # Generate and save specified number of aircraft path sets
         aircraft_paths = self.create_aircraft_paths(num_paths)
-        self.write_to_geojson_file("aircraft_paths.geojson", aircraft_paths)
+        self.write_to_geojson_file("data/aircraft_paths.geojson", aircraft_paths)
         print(f"Generated {num_paths} aircraft path point sets in 'aircraft_paths.geojson'.")
 
 
