@@ -54,6 +54,9 @@ class Violation(ObjectStandardsCharacteristic):
         self.violation_type = violation_type
         self.description = description
 
+    def __str__(self) -> str:
+        return f"{self.violation_type.value} {self.atoms_type.value}: {self.iri}"
+
 
 class RequiredIris(BaseModel):
     """Required attribute and relationship IRIs for a rubric."""
