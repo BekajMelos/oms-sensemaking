@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
-    InOutGarrisonWithGeoNodeActivitiesData,
+    InOutGarrisonAllDataNodeActivitiesData,
     ObservationObservation,
     StringQuery,
 )
@@ -21,7 +21,7 @@ class GarrisonData:
 
     object_lat_lon: list[float]
     garrison_lat_lon: list[float]
-    activities: List[InOutGarrisonWithGeoNodeActivitiesData]
+    activities: List[InOutGarrisonAllDataNodeActivitiesData]
 
 
 class GetGarrisonData(ABC):
@@ -57,7 +57,7 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
         )
 
     def _execute_query(self, obs: ObservationObservation):
-        return self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
+        return self.oms_crud_tool.oms_client.in_out_garrison_all_data(
             id=obs.nodeId,
             garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
             geoIris=[SETTINGS.inference_geo_attribute_iri],
