@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
-    InOutGarrisonAllDataNodeActivities,
+    InOutGarrisonAllDataNodeActivitiesData,
     ObservationObservation,
     StringQuery,
 )
@@ -21,7 +21,7 @@ class GarrisonData:
 
     object_lat_lon: list[float]
     garrison_lat_lon: list[float]
-    activities: List[InOutGarrisonAllDataNodeActivities]
+    activities: List[InOutGarrisonAllDataNodeActivitiesData]
 
 
 class GetGarrisonData(ABC):
