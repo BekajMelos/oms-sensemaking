@@ -12,8 +12,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.buffer import Buffer
-from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.controllers import BufferedSensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.core.exceptions import TrackLengthError
@@ -32,18 +31,7 @@ from oms_sensemaking.models.track_weavers import TrackWeaverBase
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-# class BufferedSensemakerController():
-
-# def __init__(
-#     self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
-# ) -> None:
-#     super().__init__(event_consumer, err_logger)
-# @abstractmethod
-# def proces_buffer(self, list_id, object_list):
-#     pass
-
-
-class GeospatialSensemakerController(SensemakerController):
+class GeospatialSensemakerController(BufferedSensemakerController):
     """
     Geospatial sensemaker controller.
 
@@ -51,12 +39,16 @@ class GeospatialSensemakerController(SensemakerController):
     """
 
     def __init__(
-        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
+        self,
+        event_consumer: AuditLogEventConsumer,
+        err_logger: BaseErrorLogger,
+        ontology_service: OntologyService,
+        flush_timer_seconds: int,
     ) -> None:
         """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer, err_logger)
-
-        self.buffer = Buffer(f"{self.__class__.__name__} Buffer", SETTINGS.geo_buffer_expire_sec, self.process_buffer)
+        super().__init__(event_consumer, err_logger, flush_timer_seconds)
+        if self.buffer.callback_func is None:
+            self.buffer.callback_func = self.process_buffer
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -88,19 +80,7 @@ class GeospatialSensemakerController(SensemakerController):
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
 
-        self.buffer.start()
         super().start()
-
-    def stop(self):
-        """
-        Stop the controller.
-
-        This method handles stopping the buffer autoflush in addition to
-        stopping the controller itself.
-        """
-        LOGGER.debug("Stopping track buffer autoflush.")
-        self.buffer.stop()
-        super().stop()
 
     def _ensure_uuid(self, id_: Any) -> UUID:
         """

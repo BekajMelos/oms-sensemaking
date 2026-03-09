@@ -22,7 +22,8 @@ class TestBuffer:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup the buffer"""
-        self.buffer = Buffer("test buffer", 10, test_callback_func)
+        self.buffer = Buffer("test buffer", 10)
+        self.buffer.callback_func = test_callback_func
 
         # set this to false so that the tests don't try to run this multiple times
         self.buffer.autoflush_enabled = False

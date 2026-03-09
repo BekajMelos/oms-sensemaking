@@ -35,6 +35,7 @@ def mock_geo_controller(mock_oms_client):
         ),
         RethrowErrorLogger(ErrorLogger()),
         OntologyClient(mock_oms_client),
+        SETTINGS.geo_buffer_expire_sec,
     )
     controller.oms_crud_tool.oms_client = mock_oms_client
 

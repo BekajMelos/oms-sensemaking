@@ -10,8 +10,6 @@ from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribut
 
 from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.buffer import Buffer
-from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import (
     AuditLogEvent,
@@ -19,6 +17,7 @@ from oms_sensemaking.core.events import (
     EventFilter,
     ObjectType,
 )
+from oms_sensemaking.geospatial.controllers import BufferedSensemakerController
 from oms_sensemaking.object_standards.sensemaker import (
     ObjectStandards,
     ObjectStandardsDataRetriever,
@@ -44,20 +43,20 @@ class ObjStandardsDataProvider:
         return data
 
 
-class ObjectStandardsSensemakerController(SensemakerController):
+class ObjectStandardsSensemakerController(BufferedSensemakerController):
     """
     Object Standards sensemaker controller.
 
     This class manages a collection of object standards sensemakers.
     """
 
-    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
-        """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer, err_logger)
-
-        self.buffer = Buffer(
-            f"{self.__class__.__name__} Buffer", SETTINGS.obj_std_buffer_expire_sec, self.process_buffer
-        )
+    def __init__(
+        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, flush_timer_seconds: int
+    ) -> None:
+        """Create a new instance of ObjectStandardsSensemakerController."""
+        super().__init__(event_consumer, err_logger, flush_timer_seconds)
+        if self.buffer.callback_func is None:
+            self.buffer.callback_func = self.process_buffer
 
     def start(self) -> None:
         """Start the controller."""
@@ -75,19 +74,7 @@ class ObjectStandardsSensemakerController(SensemakerController):
                     rubric_criteria,
                 ),
             )
-        self.buffer.start()
         super().start()
-
-    def stop(self):
-        """
-        Stop the controller.
-
-        This method handles stopping the buffer in addition to
-        stopping the controller itself.
-        """
-        LOGGER.debug("Stopping buffer autoflush.")
-        self.buffer.stop()
-        super().stop()
 
     def handle_event(self, event: AuditLogEvent) -> bool:
         """

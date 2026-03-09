@@ -13,18 +13,18 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 class Buffer:
     """Buffer objects into a list and periodically expire them to execute a callback"""
 
-    def __init__(self, name: str, flush_timer_seconds: float, callback_func: Callable) -> None:
+    def __init__(self, name: str, flush_timer_seconds: float) -> None:
         """
         Create a Buffer
 
+        :param name: Name of this buffer for logging
         :param flush_timer_seconds: How often to flush the buffer in seconds
-        :param callback_func: Function to call upon expiring objects from the buffer
         :return: None
         """
 
         self.name = name
         self.flush_timer_seconds = flush_timer_seconds
-        self.callback_func = callback_func
+        self.callback_func: Callable | None = None  # needs to be set later
 
         self.lock = Lock()
         self.expiration_times: dict[UUID, datetime | None] = {}
@@ -108,6 +108,8 @@ class Buffer:
         :return: None
         """
         try:
+            if not callable(self.callback_func):
+                raise ValueError("BufferedSensemakerController callback_func must be callable")
             _ = self.callback_func(list_id, object_list)
         except Exception:
             LOGGER.exception("Unexpected error processing buffer %s", list_id)

@@ -103,11 +103,11 @@ def get_controllers() -> list[SensemakerController]:
     obj_standards_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
     controllers: list[SensemakerController] = [
-        GeospatialSensemakerController(geo_listener, err_logger, ontology_service),
+        GeospatialSensemakerController(geo_listener, err_logger, ontology_service, SETTINGS.geo_buffer_expire_sec),
         InferenceSensemakerController(inference_listener, err_logger),
         ResolutionSensemakerController(resolution_listener, err_logger),
         MilSymbolSensemakerController(mil_symbol_listener, err_logger),
-        ObjectStandardsSensemakerController(obj_standards_listener, err_logger),
+        ObjectStandardsSensemakerController(obj_standards_listener, err_logger, SETTINGS.obj_std_buffer_expire_sec),
         ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 
