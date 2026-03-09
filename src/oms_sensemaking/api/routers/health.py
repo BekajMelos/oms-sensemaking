@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter
 
-from oms_sensemaking.clients.instances import aac_client, health_checker, oms_crud_tool, ping_db
+from oms_sensemaking.clients.instances import aac_client, db_metrics, health_checker, oms_crud_tool, ping_db
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -19,4 +19,6 @@ def get_healthcheck():
     system_health["aac"] = health_checker.get_aac_health(aac_client)
 
     system_health["db"] = health_checker.get_db_health(ping_db)
+
+    system_health["db_metrics"] = health_checker.get_db_metrics(db_metrics)
     return system_health

@@ -1,10 +1,27 @@
 """Tests for the healthcheck API"""
 
+import pytest
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.aac_client import AacClient
-from oms_sensemaking.clients.instances import health_checker
+from oms_sensemaking.clients.instances import health_checker, parse_pool_status
 from oms_sensemaking.core.oms_crud import OmsCrudTool
+
+
+@pytest.fixture
+def db_metrics():
+    metrics = {
+        "db_metrics": {
+            "current_overflow": -9,
+            "pool_status": {
+                "Pool size": 10,
+                "Connections in pool": 1,
+                "Current Overflow": -9,
+                "Current Checked out connections": 0,
+            },
+        }
+    }
+    return metrics
 
 
 def test_services_healthy(mocker: MockerFixture):
@@ -75,3 +92,24 @@ def test_db_health(mocker: MockerFixture):
     result = health_checker.get_db_health(error_ping)
     assert result == "Unable to communicate with DB Service"
     error_ping.assert_called_once()
+
+
+def test_get_db_metrics(mocker: MockerFixture):
+    # DB Metrics
+    metrics = mocker.Mock(return_value=db_metrics)
+    result = health_checker.get_db_metrics(metrics)
+    assert result == db_metrics
+    metrics.assert_called_once()
+
+    # DB throws an exception
+    error_metrics = mocker.Mock(side_effect=Exception("error on metrics"))
+    result = health_checker.get_db_metrics(error_metrics)
+    assert result == "Unable to communicate with DB Metrics"
+    error_metrics.assert_called_once()
+
+
+def test_parse_pool_status():
+    input_status = "Pool: 4 Checked out: 5 Overflow: 1"
+    expected_result = {"Pool": 4, "Checked out": 5, "Overflow": 1}
+    result = parse_pool_status(input_status)
+    assert result == expected_result
