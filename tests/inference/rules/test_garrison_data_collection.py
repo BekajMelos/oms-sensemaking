@@ -45,25 +45,16 @@ def _make_result(
         activities_data = []
     result.activities = Mock(data=activities_data)
 
-    # node
-    if not include_node:
-        result.node = None
-        return result
-
-    node = Mock()
-    result.node = node
-
     # relationships
-    relationships = Mock()
-    relationships.data = []
-    node.relationships = relationships
+    result.relationships = Mock()
+    result.relationships.data = []
 
     if not include_relationships:
         return result
 
     # relationship -> endNode
     rel_item = Mock()
-    relationships.data.append(rel_item)
+    result.relationships.data.append(rel_item)
 
     if not include_end_node:
         rel_item.endNode = None
@@ -177,15 +168,16 @@ def test_all_at_once_returns_garrison_data_with_activities(mock_oms_tool, obs, m
 
 def test_all_at_once_calls_custom_query_with_expected_params(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(garrison_coords=[30.0, 40.0])
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(garrison_coords=[30.0, 40.0])
 
     _ = retriever.get_all_garrison_data(obs)
 
     # Assert the SDK method is called and includes key args
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.assert_called_once()
-    kwargs = mock_oms_tool.oms_client.in_out_garrison_with_geo.call_args.kwargs
+    mock_oms_tool.oms_client.in_out_garrison_all_data.assert_called_once()
+    kwargs = mock_oms_tool.oms_client.in_out_garrison_all_data.call_args.kwargs
 
     assert kwargs["id"] == obs.nodeId
     assert "garrisonIris" in kwargs
     assert "geoIris" in kwargs
-    assert "activityQuery" in kwargs
+    assert "activityName" in kwargs
+    assert "activityStates" in kwargs
