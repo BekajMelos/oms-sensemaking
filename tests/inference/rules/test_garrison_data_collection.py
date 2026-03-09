@@ -44,25 +44,16 @@ def _make_result(
         activities_data = []
     result.activities = Mock(data=activities_data)
 
-    # node
-    if not include_node:
-        result.node = None
-        return result
-
-    node = Mock()
-    result.node = node
-
     # relationships
-    relationships = Mock()
-    relationships.data = []
-    node.relationships = relationships
+    result.relationships = Mock()
+    result.relationships.data = []
 
     if not include_relationships:
         return result
 
     # relationship -> endNode
     rel_item = Mock()
-    relationships.data.append(rel_item)
+    result.relationships.data.append(rel_item)
 
     if not include_end_node:
         rel_item.endNode = None
@@ -103,42 +94,42 @@ def _make_result(
 
 def test_all_at_once_returns_none_when_node_missing(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(include_node=False)
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(include_node=False)
 
     assert retriever.get_all_garrison_data(obs) is None
 
 
 def test_all_at_once_returns_none_when_relationships_missing(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(include_relationships=False)
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(include_relationships=False)
 
     assert retriever.get_all_garrison_data(obs) is None
 
 
 def test_all_at_once_returns_none_when_attributes_missing(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(include_attributes=False)
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(include_attributes=False)
 
     assert retriever.get_all_garrison_data(obs) is None
 
 
 def test_all_at_once_returns_none_when_attribute_data_empty(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(include_attribute_data=False)
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(include_attribute_data=False)
 
     assert retriever.get_all_garrison_data(obs) is None
 
 
 def test_all_at_once_returns_none_when_geometry_missing_coordinates(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(garrison_coords=None)
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(garrison_coords=None)
 
     assert retriever.get_all_garrison_data(obs) is None
 
 
 def test_all_at_once_returns_none_when_geometry_not_a_dict(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(geometry_value="not_a_dict")
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(geometry_value="not_a_dict")
 
     result = retriever.get_all_garrison_data(obs)
     assert result is None
@@ -150,7 +141,7 @@ def test_all_at_once_returns_garrison_data_with_activities(mock_oms_tool, obs):
     activities = [Mock(id="a1", name="In Garrison"), Mock(id="a2", name="Out of Garrison")]
 
     # garrison coords are [lon, lat]
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(
         garrison_coords=[30.0, 40.0],
         activities_data=activities,
     )
@@ -169,15 +160,16 @@ def test_all_at_once_returns_garrison_data_with_activities(mock_oms_tool, obs):
 
 def test_all_at_once_calls_custom_query_with_expected_params(mock_oms_tool, obs):
     retriever = GetGarrisonDataAllAtOnce(mock_oms_tool)
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.return_value = _make_result(garrison_coords=[30.0, 40.0])
+    mock_oms_tool.oms_client.in_out_garrison_all_data.return_value = _make_result(garrison_coords=[30.0, 40.0])
 
     _ = retriever.get_all_garrison_data(obs)
 
     # Assert the SDK method is called and includes key args
-    mock_oms_tool.oms_client.in_out_garrison_with_geo.assert_called_once()
-    kwargs = mock_oms_tool.oms_client.in_out_garrison_with_geo.call_args.kwargs
+    mock_oms_tool.oms_client.in_out_garrison_all_data.assert_called_once()
+    kwargs = mock_oms_tool.oms_client.in_out_garrison_all_data.call_args.kwargs
 
     assert kwargs["id"] == obs.nodeId
     assert "garrisonIris" in kwargs
     assert "geoIris" in kwargs
-    assert "activityQuery" in kwargs
+    assert "activityName" in kwargs
+    assert "activityStates" in kwargs
