@@ -67,17 +67,11 @@ def session_local():
     # clear old connections in centralized engine
     from oms_sensemaking.clients import instances
 
-    # instances.db_engine.dispose()
-
     # run database migrations on test DB
     command.upgrade(alembic_cfg, "head")
 
     # reuse centralized SessionLocal
-    yield sessionmaker(autocommit=False, autoflush=True, bind=instances.db_engine)
-
-    # dispose after schema teardown
-    # instances.db_engine.dispose()
-    # command.downgrade(alembic_cfg, "base")
+    yield sessionmaker(autocommit=False, autoflush=False, bind=instances.db_engine)
 
 
 @pytest.fixture(scope="function")
@@ -89,10 +83,10 @@ def db(session_local) -> Generator[Session, Any, None]:
     try:
         yield db
     finally:
+        db.rollback()
         for table in reversed(orm.metadata.sorted_tables):
             db.execute(table.delete())
-            db.commit()
-            # db.flush()
+        db.commit()
         db.close()
 
 
