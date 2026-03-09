@@ -160,8 +160,6 @@ class GeospatialSensemakerController(BufferedSensemakerController):
                     LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
 
                 self.buffer.add(oms_obs.nodeId, point)
-
-                # TODO maybe only return success if all points were processed properly
                 success = True
 
         return success

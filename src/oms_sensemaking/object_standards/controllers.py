@@ -136,16 +136,6 @@ class ObjectStandardsSensemakerController(BufferedSensemakerController):
         except Exception as e:
             LOGGER.exception(f"Error encountered while processing object {last_obj}: {e}")
 
-        # TODO Should we pass the event into the buffer so that we can track these things for exceptions?
-        #     message = f"Error encountered while processing object {last_obj}: {str(e)}"
-        #     self.err_logger.log_error(
-        #         event,
-        #         message,
-        #         __name__,
-        #         e,
-        #         oms_obj.acm,
-        #     )
-
         return True
 
 
