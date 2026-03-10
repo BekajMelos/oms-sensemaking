@@ -22,7 +22,7 @@ from pytest_mock import MockerFixture
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison, OutOfGarrison
+from oms_sensemaking.inference.rules.in_out_garrison import InOrOutOfGarrison, InOutGarrison
 
 
 # Mocked nodes
@@ -331,7 +331,7 @@ def test_observation():
 
 @pytest.fixture
 def test_garrison(test_observation):
-    test_garrison = OutOfGarrison(
+    test_garrison = InOutGarrison(
         in_or_out=SETTINGS.inference_in_garrison_activity_name,
         vehicle_id=test_observation.nodeId,
         garrison_observation=test_observation,
