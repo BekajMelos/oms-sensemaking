@@ -115,7 +115,7 @@ class IncursionSensemaker(Sensemaker):
         """
         Valid inputs must contain observations that have geometry and point to a node
 
-        :param rule_context: Rule context object containing the observation to evaluate
+        :param obs: observation to evaluate for suitability for Incursion processing
         """
         if not obs or obs.startTime is None or obs.endTime is None:
             return False
@@ -126,7 +126,7 @@ class IncursionSensemaker(Sensemaker):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
-        :param rule_context: Rule context object containing the observation to evaluate
+        :param obs: observation to determine if node is performing an Incursion
         """
         incursion_finding: list[Incursion] = []
         if not self.evaluate(obs):

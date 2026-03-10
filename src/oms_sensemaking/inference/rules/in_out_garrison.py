@@ -34,7 +34,7 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class OutOfGarrison(FindingBase):
-    """Represents a loiter event."""
+    """Represents an In or Out of Garrison activity"""
 
     FINDING_TYPE: FindingType = field(init=False, default=FindingType.INF_OUT_OF_GARRISON)
     in_or_out: str
@@ -98,7 +98,7 @@ class InOrOutOfGarrison(Sensemaker):
         """
         Valid inputs must contain observations that have geometry and point to a node
 
-        :param rule_context: Rule context object containing the observation to evaluate
+        :param obs: observation to evaluate for suitability for In/Out Garrison processing
         """
 
         if not obs or obs.startTime is None or obs.endTime is None:
@@ -110,7 +110,7 @@ class InOrOutOfGarrison(Sensemaker):
         """
         Determine if an observation indicates that a node is in or out of garrison
 
-        :param rule_context: Rule context object containing the observation in question
+        :param obs: observation to determine if node is In/Out of Garrison
         """
         if not self.evaluate(obs):
             return []

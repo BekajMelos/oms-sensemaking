@@ -441,7 +441,7 @@ class CotravelSensemaker(Sensemaker):
         Return points within provided time bounds.
 
         :param track: Track to extract points from
-        :param start_time: earliest point timestamp
+        :param start_time: the earliest point timestamp
         :param end_time: latest point timestamp
         :return: List of valid points
         """
@@ -511,9 +511,10 @@ class CotravelSensemaker(Sensemaker):
             SETTINGS.cotravel_sm_label,
             self.version_string,
         ]
+        cotravel_acm = cotravel.get_acm()
 
         create_activity_input1 = CreateActivityInput(
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             tags=tags,
             labels=labels,
             classIri=SETTINGS.cotravel_activity_iri,
@@ -526,7 +527,7 @@ class CotravelSensemaker(Sensemaker):
             endTime=cotravel.last_time,
         )
         create_activity_input2 = CreateActivityInput(
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             tags=tags,
             labels=labels,
             classIri=SETTINGS.cotravel_activity_iri,
@@ -549,7 +550,7 @@ class CotravelSensemaker(Sensemaker):
             endNodeId=cotravel.track2.node_id,
             sourceId=source_id,
             confidence=Confidence.UNKNOWN,
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             objectPropertyIri=SETTINGS.cotravel_relationship_iri,
         )
 
