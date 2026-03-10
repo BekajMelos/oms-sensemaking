@@ -371,7 +371,7 @@ def test_no_relationship_no_op(mocker, observational_node, mock_crud_tool):
     payload = MagicMock()
     payload.relationships.data = []
     mocker.patch(
-        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
+        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_all_data",
         new=MagicMock(return_value=payload),
     )
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
@@ -384,7 +384,7 @@ def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_cru
     payload = MagicMock()
     payload.node.relationships.data.endNode = {"id": garrison_object.id}
     mocker.patch(
-        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_with_geo",
+        "oms_sensemaking.clients.instances.oms_crud_tool.oms_client.in_out_garrison_all_data",
         new=MagicMock(return_value=payload),
     )
     garr_sm = InOrOutOfGarrison(mock_crud_tool)

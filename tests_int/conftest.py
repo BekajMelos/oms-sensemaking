@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.schemas import GeospatialSensemakerConfig
+from oms_sensemaking.models.base import BaseORM
 
 load_dotenv()
 dictConfig(LogConfig().model_dump())  # initialize logging
@@ -51,7 +52,7 @@ if not SETTINGS.create_provider_if_none:
     SETTINGS.create_provider_if_none = True
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def session_local():
     """
     Get a database session generator.
@@ -66,26 +67,25 @@ def session_local():
     # clear old connections in centralized engine
     from oms_sensemaking.clients import instances
 
-    instances.db_engine.dispose()
-
     # run database migrations on test DB
     command.upgrade(alembic_cfg, "head")
 
     # reuse centralized SessionLocal
-    yield instances.SessionLocal
-
-    # dispose after schema teardown
-    instances.db_engine.dispose()
-    command.downgrade(alembic_cfg, "base")
+    yield instances.session_maker
 
 
 @pytest.fixture(scope="function")
 def db(session_local) -> Generator[Session, Any, None]:
     db: Session = session_local()
+    orm = BaseORM()
 
     try:
         yield db
     finally:
+        db.rollback()
+        for table in reversed(orm.metadata.sorted_tables):
+            db.execute(table.delete())
+        db.commit()
         db.close()
 
 

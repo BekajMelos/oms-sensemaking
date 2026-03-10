@@ -153,8 +153,10 @@ class Cotravel(FindingBase):
         self.cotravel_type = cotravel_type
         if cotravel_type == CotravelType.potential_duplicate:
             self.FINDING_TYPE = FindingType.COTRAVEL_POTENTIAL_DUPLICATE
-        else:
+        elif cotravel_type == CotravelType.cotravel:
             self.FINDING_TYPE = FindingType.GEO_COTRAVEL
+        else:
+            self.FINDING_TYPE = FindingType.GEO_COTRAVEL_LAG_LEAD
 
     def __str__(self):
         return str(self.to_dict())
@@ -289,6 +291,7 @@ class CotravelSensemaker(Sensemaker):
 
         for cotravel in cotravels:
             # Coerce potential duplicate into cotravel if it's not an NSO Node
+            # If something is a lag lead, it will remain a lag lead; unaffected by this conditional
             if cotravel.cotravel_type == CotravelType.potential_duplicate and not node.isNso:
                 # Potential Duplicate only valid on NSO nodes
                 cotravel._set_cotravel_type(CotravelType.cotravel)

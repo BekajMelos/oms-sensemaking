@@ -28,7 +28,9 @@ db_engine = create_engine(
     connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
 )
 
-SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
+session_maker = sessionmaker(autocommit=False, autoflush=True, bind=db_engine)
+
+SessionLocal = scoped_session(session_maker)  # noqa: N806
 
 
 @contextmanager

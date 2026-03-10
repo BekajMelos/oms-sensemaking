@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Lag/Lead finding type for cotravel outputs that get saved to the Sensemaking findings table
 
 ### Changed
 
