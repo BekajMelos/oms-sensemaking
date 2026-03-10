@@ -19,7 +19,7 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateSourceInput,
 )
 from oms_sdk.generated.generated_graphql_client.client import Client
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from oms_sensemaking.config import PROJECT_PATH, SETTINGS, LogConfig
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -71,14 +71,13 @@ def session_local():
     command.upgrade(alembic_cfg, "head")
 
     # reuse centralized SessionLocal
-    yield sessionmaker(autocommit=False, autoflush=False, bind=instances.db_engine)
+    yield instances.session_maker
 
 
 @pytest.fixture(scope="function")
 def db(session_local) -> Generator[Session, Any, None]:
     db: Session = session_local()
     orm = BaseORM()
-    print(db.bind.url)
 
     try:
         yield db

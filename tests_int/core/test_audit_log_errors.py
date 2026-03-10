@@ -39,7 +39,7 @@ def mock_controller() -> SensemakerController:
     return SensemakerController(DummyAuditLogEventConsumer(), RethrowErrorLogger(ErrorLogger()))
 
 
-def test_db_logging(mock_controller: SensemakerController, db: Session, session_local: Session):
+def test_db_logging(mock_controller: SensemakerController, db: Session):
     """Test that errors are logged to DB"""
 
     mock_controller.oms_crud_tool.rehydrate_oms_obj = mock.MagicMock(side_effect=GraphQLClientError)
@@ -69,9 +69,7 @@ def test_db_logging(mock_controller: SensemakerController, db: Session, session_
     assert log.version == __version__
 
 
-def test_db_logging_within_sensemaker(
-    mock_controller: SensemakerController, db: Session, session_local, mock_oms_crud_tool, ts_acm
-):
+def test_db_logging_within_sensemaker(mock_controller: SensemakerController, db: Session, mock_oms_crud_tool, ts_acm):
     """Test that errors are logged to DB"""
 
     sensemaker = DummySensemaker(mock_oms_crud_tool)

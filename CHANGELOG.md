@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Pool status for the health check endpoint
+- Added Lag/Lead finding type for cotravel outputs into the Sensemaking findings table
 
 ### Changed
 
