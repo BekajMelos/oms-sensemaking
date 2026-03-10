@@ -34,9 +34,6 @@ class AircraftPathGenerator:
         # Lists to store longitude and latitude values
         lons, lats = [current_lon], [current_lat]
 
-        # Start detection time from initial_detection_time
-        detection_time = self.initial_detection_time
-
         for i in range(num_points):
             # Calculate progress ratio to adjust change direction probability over the path
             progress_ratio = i / num_points
@@ -56,9 +53,6 @@ class AircraftPathGenerator:
 
             # Append coordinates with altitude to the path
             path["coordinates"].append([current_lon, current_lat, self.cruise_altitude])
-
-            # Increment detection_time by 30 seconds for each point
-            detection_time += timedelta(seconds=30)
 
         # Smooth the generated path using cubic spline interpolation
         smoothed_coords = self.smooth_path(lons, lats)
@@ -88,8 +82,8 @@ class AircraftPathGenerator:
 
     def generate_detection_times(self, num_points):
         # Generate a series of detection times starting from initial time
-        initial_time = self.initial_detection_time + timedelta(seconds=int(0 * 30))
-        return [initial_time + timedelta(seconds=i * 30) for i in range(num_points)]
+        # initial_time = self.initial_detection_time + timedelta(seconds=int(0 * 30))
+        return [self.initial_detection_time + timedelta(seconds=i * 30) for i in range(num_points)]
 
     def create_aircraft_paths(self, num_paths):
         # Create multiple sets of aircraft paths
