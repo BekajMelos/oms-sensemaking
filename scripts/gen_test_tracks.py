@@ -82,7 +82,6 @@ class AircraftPathGenerator:
 
     def generate_detection_times(self, num_points):
         # Generate a series of detection times starting from initial time
-        # initial_time = self.initial_detection_time + timedelta(seconds=int(0 * 30))
         return [self.initial_detection_time + timedelta(seconds=i * 30) for i in range(num_points)]
 
     def create_aircraft_paths(self, num_paths):
