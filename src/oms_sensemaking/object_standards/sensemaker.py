@@ -115,13 +115,20 @@ class ObjectStandards(Sensemaker):
                     retrieved_node_data["attributes"], retrieved_node_data["relationships"]
                 )
                 # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
-                LOGGER.info("Object Standards float grade for object %s: %s", node.id, grade.float_score)
-                LOGGER.info("Object Standards ratio grade for object %s: %s", node.id, grade.ratio)
-                LOGGER.info("Object Standards violations for object %s: %s", node.id, grade.violations)
+                LOGGER.info("Object Standards grade for object %s: %s", node.id, grade)
+                violation_summary = "; ".join(str(v) for v in grade.violations) if grade.violations else "none"
+                LOGGER.info(
+                    "Object Standards violations for object %s: %s",
+                    node.id,
+                    violation_summary,
+                )
+                compliant_summary = (
+                    ", ".join(str(f) for f in grade.compliant_fields) if grade.compliant_fields else "none"
+                )
                 LOGGER.info(
                     "Object Standards compliant fields for object %s: %s",
                     node.id,
-                    [field.atoms_id for field in grade.compliant_fields],
+                    compliant_summary,
                 )
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))

@@ -1,7 +1,7 @@
 """Module for Object Standards Sensemaker models"""
 
+import enum
 import json
-from typing import Any
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
@@ -25,16 +25,41 @@ class CompliantField(ObjectStandardsCharacteristic):
     ):
         super().__init__(characteristic, object_type)
 
+    def __str__(self) -> str:
+        type_str = getattr(self.atoms_type, "value", self.atoms_type)
+        return f'"{type_str}": "{self.atoms_id}"'
+
+
+class ViolationType(str, enum.Enum):
+    """Type of Object Standards field violation."""
+
+    MISSING = "MISSING"
+    INVALID = "INVALID"
+
 
 class Violation(ObjectStandardsCharacteristic):
+    """
+    Object Standards field violation (missing or invalid).
+
+    Id (atoms_id) is the ATOMS identifier for the field when it exists;
+    for missing fields this is None.
+    """
+
     def __init__(
         self,
         object_type: ObjectType,
+        iri: str,
+        violation_type: ViolationType,
+        description: str,
         characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None = None,
     ):
         super().__init__(characteristic, object_type)
-        # TODO put in the other other fields here specified in the violation ticket
-        # violation type, IRI, violation description, etc.
+        self.iri = iri
+        self.violation_type = violation_type
+        self.description = description
+
+    def __str__(self) -> str:
+        return f"{self.violation_type.value} {self.atoms_type.value}: {self.iri}"
 
 
 class RequiredIris(BaseModel):
@@ -48,7 +73,7 @@ class ObjectStandardsGrade:
     def __init__(
         self,
         float_score: float,
-        violations: list[Any],
+        violations: list[Violation],
         current_characteristics: int,
         total_characteristcs: int,
         compliant_fields: list[CompliantField],
@@ -59,7 +84,10 @@ class ObjectStandardsGrade:
         self.compliant_fields = compliant_fields
 
     def to_json(self) -> str:
-        return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__, default=str)
+
+    def __str__(self) -> str:
+        return f"float_score={self.float_score}, ratio={self.ratio}"
 
 
 class ObjectStandardsRubric:
@@ -84,8 +112,8 @@ class ObjectStandardsRubric:
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has
         """
         # Of the 'current' data on the node, get their IRIs to compare against the totatal required
-        current_attrs = []
-        current_rels = []
+        current_attrs: list[str] = []
+        current_rels: list[str] = []
         if attributes:
             for attr in attributes:
                 current_attrs.append(attr.attributeIri)
@@ -119,18 +147,35 @@ class ObjectStandardsRubric:
     def get_float_score(self, current_characteristics_count: int) -> float:
         return current_characteristics_count / self.total_required_characteristics_count
 
-    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]):
-        # TODO this function will craft violation objects and return them in a list
-        # when the schema is ready
-        violations = []
+    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]) -> list[Violation]:
+        """
+        Return a list of missing required characteristics as Violation objects.
+
+        For missing fields, atoms_id (id) is None as there is no ATOMS record to reference.
+        """
+        violations: list[Violation] = []
         if self.required_attrs:
             for iri in self.required_attrs:
                 if iri not in curr_attrs:
-                    violations.append(iri)
+                    violations.append(
+                        Violation(
+                            object_type=ObjectType.ATTRIBUTE,
+                            iri=iri,
+                            violation_type=ViolationType.MISSING,
+                            description="Required attribute is missing.",
+                        )
+                    )
         if self.required_rels:
             for iri in self.required_rels:
                 if iri not in curr_rels:
-                    violations.append(iri)
+                    violations.append(
+                        Violation(
+                            object_type=ObjectType.RELATIONSHIP,
+                            iri=iri,
+                            violation_type=ViolationType.MISSING,
+                            description="Required relationship is missing.",
+                        )
+                    )
 
         return violations
 
