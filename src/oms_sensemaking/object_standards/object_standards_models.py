@@ -26,7 +26,8 @@ class CompliantField(ObjectStandardsCharacteristic):
         super().__init__(characteristic, object_type)
 
     def __str__(self) -> str:
-        return str(self.atoms_id)
+        type_str = getattr(self.atoms_type, "value", self.atoms_type)
+        return f'"{type_str}": "{self.atoms_id}"'
 
 
 class ViolationType(str, enum.Enum):
