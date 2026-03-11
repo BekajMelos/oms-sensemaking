@@ -27,6 +27,7 @@ pytest.xml
 *.gz
 !*ser.gz
 .scannerwork
+aircraft_paths.geojson
 
 # --------------------
 # IDE Cruft
