@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- AAC Client can retrieve an access control model for classification strings
 
 ### Changed
 
