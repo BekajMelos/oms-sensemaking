@@ -25,6 +25,9 @@ class CompliantField(ObjectStandardsCharacteristic):
     ):
         super().__init__(characteristic, object_type)
 
+    def __str__(self) -> str:
+        return str(self.atoms_id)
+
 
 class ViolationType(str, enum.Enum):
     """Type of Object Standards field violation."""
@@ -81,6 +84,9 @@ class ObjectStandardsGrade:
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__, default=str)
+
+    def __str__(self) -> str:
+        return f"float_score={self.float_score}, ratio={self.ratio}"
 
 
 class ObjectStandardsRubric:
