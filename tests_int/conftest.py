@@ -43,7 +43,7 @@ alembic_cfg.set_main_option("sqlalchemy.url", escaped_uri)
 SETTINGS.aac_url = "http://localhost:5022"
 
 # Update OMSB URL
-SETTINGS.omsb_url = "https://localhost:8020/graphql"
+SETTINGS.omsb_url = "http://localhost:8010/graphql"
 
 # Source and provider creation for tests
 if not SETTINGS.create_source_if_none:
@@ -223,8 +223,8 @@ def rollup_unclass_acm_3_0() -> dict:
         "rel_to": [],
         "fgi_open": [],
         "fgi_protect": [],
-        "portion": "U//DISPLAY ONLY",
-        "banner": "UNCLASSIFIED//DISPLAY ONLY",
+        "portion": "U",
+        "banner": "UNCLASSIFIED",
         "dissem_countries": [],
         "accms": [],
         "macs": [],

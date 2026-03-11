@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Migrate to using atoms-local-dev enviroment.
+
 ### Fixed
 
 ## [0.19.9] - 2026-03-09
