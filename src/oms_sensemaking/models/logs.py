@@ -35,7 +35,9 @@ class AuditLogError(BaseORM, SecurityMarkingMixin):
     function_name: Mapped[str] = mapped_column(String, nullable=False, comment="Function name where the error occurred")
     code: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Code where the error occurred")
     exception_name: Mapped[str | None] = mapped_column(
-        String, nullable=False, comment="Name of the exception that occurred.", index=True
+        String,
+        nullable=False,
+        comment="Name of the exception that occurred.",
     )
     version: Mapped[str] = mapped_column(String, nullable=False, comment="Version of sensemaking")
     message: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Log message")
