@@ -8,7 +8,6 @@ from uuid import UUID
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    CreateActivityCreateActivity,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
@@ -19,7 +18,6 @@ from oms_sdk.generated.generated_graphql_client import (
     PageParams,
     StringQuery,
     UpdateActivityInput,
-    UpdateActivityUpdateActivity,
     UpdateUuidList,
     UuidQueryByList,
 )
@@ -63,39 +61,6 @@ class Incursion(FindingBase):
         """Geojson representation of the last location of the Incurring object"""
 
         return {"type": "Point", "coordinates": self.incursion_observation.geometry["coordinates"]}
-
-    @classmethod
-    def from_update(
-        cls,
-        obs: ObservationObservation,
-        updated_activity: UpdateActivityUpdateActivity,
-        aoi: dict,
-        rolled_up_acm: dict,
-    ):
-        return cls(
-            incurring_obj_id=obs.nodeId,
-            incursion_observation=obs,
-            start_time=updated_activity.startTime,
-            end_time=updated_activity.endTime,
-            area_of_interest_dict=aoi,
-            acm=rolled_up_acm,
-        )
-
-    @classmethod
-    def from_create(
-        cls,
-        obs: ObservationObservation,
-        new_activity: CreateActivityCreateActivity,
-        aoi: dict,
-    ):
-        return cls(
-            incurring_obj_id=new_activity.nodeId,
-            incursion_observation=obs,
-            start_time=new_activity.startTime,
-            end_time=new_activity.endTime,
-            area_of_interest_dict=aoi,
-            acm=new_activity.acm,
-        )
 
 
 class IncursionSensemaker(Sensemaker):

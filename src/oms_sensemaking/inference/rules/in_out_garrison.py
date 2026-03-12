@@ -7,7 +7,6 @@ from typing import List
 from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client import (
-    CreateActivityCreateActivity,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
@@ -15,7 +14,6 @@ from oms_sdk.generated.generated_graphql_client import (
     InOutGarrisonAllDataNodeActivitiesDataObservationsData,
     ObservationObservation,
     UpdateActivityInput,
-    UpdateActivityUpdateActivity,
     UpdateUuidList,
 )
 
@@ -56,30 +54,6 @@ class InOutGarrison(FindingBase):
     def to_geojson(self) -> dict:
         """Geojson representation of the current location of the garrisoned object"""
         return {"type": "Point", "coordinates": self.garrison_observation.geometry["coordinates"]}
-
-    @classmethod
-    def from_update(
-        cls, updated_activity: UpdateActivityUpdateActivity, obs: ObservationObservation, rolled_up_acm: dict
-    ):
-        return cls(
-            in_or_out=updated_activity.name,
-            vehicle_id=obs.nodeId,
-            garrison_observation=obs,
-            start_time=updated_activity.startTime,
-            end_time=updated_activity.endTime,
-            acm=rolled_up_acm,
-        )
-
-    @classmethod
-    def from_create(cls, new_activity: CreateActivityCreateActivity, obs: ObservationObservation):
-        return cls(
-            in_or_out=new_activity.name,
-            vehicle_id=obs.nodeId,
-            garrison_observation=obs,
-            start_time=new_activity.startTime,
-            end_time=new_activity.endTime,
-            acm=new_activity.acm,
-        )
 
 
 class InOrOutOfGarrison(Sensemaker):
