@@ -77,27 +77,41 @@ version:  ## Display the project version
 list-versions: ## Display the tagged versions
 	@git tag -n
 
-up: ## Start atoms-sensemaking in docker. Force build with: DOCKER_FLAGS=--build make up
+up: ## Start atoms-sensemaking/atoms-local-dev in docker. Force build with: DOCKER_FLAGS=--build make up
+	$(MAKE) -C $(ATOMS_LOCAL_DEV) up
 	docker compose up -d ${DOCKER_FLAGS}
 
-stop: ## Stop atoms-sensemaking docker environment
+stop: ## Stop atoms-sensemaking/atoms-local-dev docker environment
 	docker compose stop
+	@docker compose \
+		--env-file $(ATOMS_LOCAL_DEV)/local.dev.env \
+		-f $(ATOMS_LOCAL_DEV)/$$(grep -E '^DOCKER_FILE=' $(ATOMS_LOCAL_DEV)/local.dev.env | cut -d= -f2) \
+		--project-directory $(ATOMS_LOCAL_DEV) \
+		stop
 
-down: ## Stop atoms-sensemaking docker environment and remove containers
+down: ## Stop atoms-sensemaking/atoms-local-dev docker environment and remove containers
 	docker compose down
+	$(MAKE) -C $(ATOMS_LOCAL_DEV) down
 
 shell: ## Open a shell inside the atoms-sensemaking container
 	@docker compose exec atoms-sensemaking /bin/bash
 
 psql: ## psql into main db
-	docker compose exec postgis psql -h postgis
+	$(MAKE) -C $(ATOMS_LOCAL_DEV) psql
 
-pgadmin: ## start pgadmin (kill it with: docker-compose --profile dev down)
-	@docker compose up pgadmin -d
+pgadmin:
+	@docker compose \
+		--env-file $(ATOMS_LOCAL_DEV)/local.dev.env \
+		-f $(ATOMS_LOCAL_DEV)/$$(grep -E '^DOCKER_FILE=' $(ATOMS_LOCAL_DEV)/local.dev.env | cut -d= -f2) \
+		--project-directory $(ATOMS_LOCAL_DEV) \
+		up pgadmin -d
 
-tools: ## start dev tools (kill it with: docker-compose --profile dev down)
-	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
-	docker compose --profile dev --profile tools up -d
+tools: ## start dev tools in atoms-local-dev
+	@docker compose \
+		--env-file $(ATOMS_LOCAL_DEV)/local.dev.env \
+		-f $(ATOMS_LOCAL_DEV)/$$(grep -E '^DOCKER_FILE=' $(ATOMS_LOCAL_DEV)/local.dev.env | cut -d= -f2) \
+		--project-directory $(ATOMS_LOCAL_DEV) \
+		--profile tools up -d
 
 clean: ## Purge build artifacts
 	@rm -rf dist/*.whl dist/*.tar.gz dist/*.zip
@@ -106,12 +120,12 @@ distclean: clean  ## Purge all generated content
 	@rm -rf src/oms_sensemaking*.egg-info
 
 nuke:
-	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
 	docker compose down -v
+	$(MAKE) -C $(ATOMS_LOCAL_DEV) down-v
 
 refresh: nuke  # Purge all generated content and restart
-	@COMPOSE_PROFILES="$${COMPOSE_PROFILES},dev,tools"; \
-	docker compose --profile local up --build -d
+	$(MAKE) -C $(ATOMS_LOCAL_DEV) up
+	docker compose up --build -d
 
 load-out-of-garrison:
 	python -m scripts.load_test.main --limit $(limit) --loop $(loop) --loop-wait $(loop_wait)

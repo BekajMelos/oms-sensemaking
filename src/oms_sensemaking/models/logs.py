@@ -1,19 +1,16 @@
 """Module for custom logging database objects"""
 
 import uuid
+from datetime import datetime
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from sqlalchemy import UUID, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from oms_sensemaking.models.base import (
-    BaseORM,
-    CreatedAuditMixin,
-    SecurityMarkingMixin,
-)
+from oms_sensemaking.models.base import BaseORM, SecurityMarkingMixin, UtcDateTime, utcnow_with_timezone
 
 
-class AuditLogError(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
+class AuditLogError(BaseORM, SecurityMarkingMixin):
     """Model for Storing Audit Log Error data"""
 
     id: Mapped[int] = mapped_column(
@@ -38,10 +35,22 @@ class AuditLogError(BaseORM, SecurityMarkingMixin, CreatedAuditMixin):
     function_name: Mapped[str] = mapped_column(String, nullable=False, comment="Function name where the error occurred")
     code: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Code where the error occurred")
     exception_name: Mapped[str | None] = mapped_column(
-        String, nullable=False, comment="Name of the exception that occurred."
+        String,
+        nullable=False,
+        comment="Name of the exception that occurred.",
     )
     version: Mapped[str] = mapped_column(String, nullable=False, comment="Version of sensemaking")
     message: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Log message")
     exc_text: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Exception text")
+
+    created_at: Mapped[datetime] = mapped_column(
+        UtcDateTime,
+        unique=False,
+        nullable=False,
+        insert_default=utcnow_with_timezone,
+        comment="The time the record was created in the database.",
+        init=False,
+        index=True,
+    )
 
     __tablename__: str = "audit_log_error"

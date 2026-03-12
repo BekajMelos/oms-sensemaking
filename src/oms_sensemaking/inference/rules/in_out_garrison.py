@@ -11,8 +11,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
-    InOutGarrisonWithGeoActivitiesData,
-    InOutGarrisonWithGeoActivitiesDataObservationsData,
+    InOutGarrisonAllDataNodeActivitiesData,
+    InOutGarrisonAllDataNodeActivitiesDataObservationsData,
     ObservationObservation,
     UpdateActivityInput,
     UpdateActivityUpdateActivity,
@@ -135,7 +135,7 @@ class InOrOutOfGarrison(Sensemaker):
         obs: ObservationObservation,
         is_in_garrison: bool,
         garrison_buffer_geojson: dict,
-        existing_activities: List[InOutGarrisonWithGeoActivitiesData],
+        existing_activities: List[InOutGarrisonAllDataNodeActivitiesData],
     ):
         if is_in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -175,8 +175,8 @@ class InOrOutOfGarrison(Sensemaker):
     def _update_existing_activity(
         self,
         observation: ObservationObservation,
-        existing_activity: InOutGarrisonWithGeoActivitiesData,
-        existing_garrison_observations: list[InOutGarrisonWithGeoActivitiesDataObservationsData],
+        existing_activity: InOutGarrisonAllDataNodeActivitiesData,
+        existing_garrison_observations: list[InOutGarrisonAllDataNodeActivitiesDataObservationsData],
         enhanced_activity: GeoTimeframe,
     ):
         """

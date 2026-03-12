@@ -278,12 +278,12 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     )
 
     assert len(findings) == 2
-    assert findings[0].acm == tester_db[1].acm
-    assert findings[0].finding_data["start_node_id"] == str(new_facility_node.id)
-    assert findings[0].finding_data["end_node_id"] == str(tester_db[0].id)
-    assert findings[1].acm == tester_db[4].acm
-    assert findings[1].finding_data["start_node_id"] == str(new_equipment_node.id)
-    assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
+    assert findings[0].acm == tester_db[4].acm
+    assert findings[0].finding_data["start_node_id"] == str(new_equipment_node.id)
+    assert findings[0].finding_data["end_node_id"] == str(tester_db[3].id)
+    assert findings[1].acm == tester_db[1].acm
+    assert findings[1].finding_data["start_node_id"] == str(new_facility_node.id)
+    assert findings[1].finding_data["end_node_id"] == str(tester_db[0].id)
 
 
 def test_resolution_matches_using_alternate_criteria_set(db, mock_source, tester_db, facility_dual_criteria_config):

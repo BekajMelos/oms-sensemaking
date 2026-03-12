@@ -4,11 +4,9 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
-    ActivityQuery,
-    InOutGarrisonWithGeoActivitiesData,
+    InOutGarrisonAllDataNodeActivitiesData,
     ObservationObservation,
     StringQuery,
-    UuidQueryByList,
 )
 
 from oms_sensemaking.config import SETTINGS
@@ -23,7 +21,7 @@ class GarrisonData:
 
     object_lat_lon: list[float]
     garrison_lat_lon: list[float]
-    activities: List[InOutGarrisonWithGeoActivitiesData]
+    activities: List[InOutGarrisonAllDataNodeActivitiesData]
 
 
 class GetGarrisonData(ABC):
@@ -39,7 +37,7 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
         result = self._execute_query(obs)
 
-        end_node = result.node.relationships.data[0].endNode if result.node and result.node.relationships.data else None
+        end_node = result.relationships.data[0].endNode if result and result.relationships.data else None
         attribute_data = (
             end_node.attributes.data[0]
             if end_node and hasattr(end_node, "attributes") and end_node.attributes.data
@@ -59,21 +57,18 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
         )
 
     def _execute_query(self, obs: ObservationObservation):
-        return self.oms_crud_tool.oms_client.in_out_garrison_with_geo(
+        return self.oms_crud_tool.oms_client.in_out_garrison_all_data(
             id=obs.nodeId,
             garrisonIris=[SETTINGS.inference_garrisoned_in_iri],
             geoIris=[SETTINGS.inference_geo_attribute_iri],
-            activityQuery=ActivityQuery(
-                nodeIds=UuidQueryByList(in_=[obs.nodeId]),
-                name=StringQuery(
-                    or_=[
-                        StringQuery(equals=SETTINGS.inference_in_garrison_activity_name),
-                        StringQuery(equals=SETTINGS.inference_out_of_garrison_activity_name),
-                    ]
-                ),
-                states=[
-                    SETTINGS.inference_in_garrison_activity_state,
-                    SETTINGS.inference_out_of_garrison_activity_state,
-                ],
+            activityName=StringQuery(
+                or_=[
+                    StringQuery(equals=SETTINGS.inference_in_garrison_activity_name),
+                    StringQuery(equals=SETTINGS.inference_out_of_garrison_activity_name),
+                ]
             ),
+            activityStates=[
+                SETTINGS.inference_in_garrison_activity_state,
+                SETTINGS.inference_out_of_garrison_activity_state,
+            ],
         )

@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "f7df5be5-cbe8-46b5-8fc0-7d71e99fdf9b",
+    "_postman_id": "b5b8ad96-196c-4e7b-bbdb-19985e7ac121",
     "name": "Sensemaking Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "41174150"
+    "_exporter_id": "49651990",
+    "_collection_link": "https://go.postman.co/collection/49651990-b5b8ad96-196c-4e7b-bbdb-19985e7ac121?source=collection_link"
   },
   "item": [
     {
@@ -8980,6 +8981,22 @@
         "packages": {},
         "requests": {},
         "exec": [
+          "// Javascript code to use atoms local dev http",
+          "let resolvedUrl = pm.variables.replaceIn(pm.request.url.toString());",
+          "",
+          "if (resolvedUrl.includes('https://') || pm.request.url.protocol === 'https') {",
+          "    ",
+          "    // 2. Perform a hard string replacement on the resolved URL",
+          "    let newUrl = resolvedUrl",
+          "        .replace('https://', 'http://')",
+          "        .replace(':8020', ':8010');",
+          "    ",
+          "    // 3. Force the request to use this completely new string",
+          "    pm.request.url.update(newUrl);",
+          "    ",
+          "    console.log(\"🔥 Successfully Hijacked to: \" + newUrl);",
+          "}",
+          "",
           "// GLOBAL synchronous wait function to avoid race conditions",
           "// Store the function as raw text",
           "pm.globals.set(\"waitFn\", `",
@@ -9654,6 +9671,14 @@
     },
     {
       "key": "nonGarrisonActivityId",
+      "value": ""
+    },
+    {
+      "key": "cotravelactivityId1",
+      "value": ""
+    },
+    {
+      "key": "cotravelactivityId2",
       "value": ""
     }
   ]

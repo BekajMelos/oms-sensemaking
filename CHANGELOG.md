@@ -5,11 +5,23 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added Lag/Lead finding type for cotravel outputs that get saved to the Sensemaking findings table
+- Added indices for AuditLogErrors created_at for query performance
 - AAC Client can retrieve an access control model for classification strings
 
 ### Changed
 
+- Migrate to using atoms-local-dev environment.
+
 ### Fixed
+
+## [0.19.9] - 2026-03-09
+
+### Added
+- Pool status for the health check endpoint
+
+### Fixed
+- Although the custom garrison query was working, it was slightly configured incorrectly in how it retrieved activities. The query now heavily filters based off the current node.
 
 ## [0.19.8] - 2026-03-02
 
