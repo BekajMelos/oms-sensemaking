@@ -1,7 +1,6 @@
 """Audit Log Error Client"""
 
 import logging
-from typing import Optional
 
 from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.models.logs import AuditLogError
@@ -10,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AuditLogErrorClient:
-    def get_audit_log_errors(self, user_dn, exception_name: Optional[str], page: int, pagesize: int):
+    def get_audit_log_errors(self, user_dn, exception_name: str | None, page: int, pagesize: int):
         display: list[dict] = []
         with db_session() as db:
             query = db.query(AuditLogError).order_by(AuditLogError.created_at.desc())
