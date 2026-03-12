@@ -162,7 +162,7 @@ class CreatedAuditMixin(MappedAsDataclass):
         nullable=False,
         insert_default=utcnow_with_timezone,
         comment="The time the record was created in the database.",
-        init=False,
+        init=True,  # TODO remove
     )
 
 
