@@ -4,7 +4,8 @@ from uuid import uuid4
 import pytest
 from oms_sdk import DEFAULT_ACM
 
-from oms_sensemaking.models.geo import ExtendedKalmanTrackWeaver, Point
+from oms_sensemaking.models.geo import Point
+from oms_sensemaking.models.track_weavers import ExtendedKalmanTrackWeaver
 
 
 @pytest.fixture
