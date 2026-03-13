@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from geoalchemy2.shape import to_shape
 from oms_sdk.generated.generated_graphql_client.client import (
     CreateActivityInput,
     CreateRelationshipInput,
@@ -21,6 +20,7 @@ from oms_sensemaking.clients.instances import aac_client, db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
+from oms_sensemaking.geospatial.sensemakers.utils import Colocation, extract_coordinate_track
 from oms_sensemaking.models.geo import Point, Track, get_track, track_points_table
 from oms_sensemaking.models.sensemaking import AtomsType, FindingType
 
@@ -175,23 +175,6 @@ class Cotravel(FindingBase):
                 [point.coordinates for point in self.track2.points],
             ],
         }
-
-
-@dataclass
-class Colocation:
-    """For CotravelService use, a Colocation stores the data for two tracks' intersection."""
-
-    track1_node_id: UUID
-    track2_node_id: UUID
-    track1_id: UUID
-    track2_id: UUID
-    point: Point
-    db_point: Point
-
-    def __str__(self):
-        loc1 = to_shape(self.point.location)
-        loc2 = to_shape(self.db_point.location)
-        return f"Colocation: {loc1} at {self.point.detection_time} and {loc2} at {self.db_point.detection_time}"
 
 
 class CotravelSensemaker(Sensemaker):
@@ -365,7 +348,7 @@ class CotravelSensemaker(Sensemaker):
             # Preserve original tracks' metadata for possible use in Finding
             return Cotravel(
                 track1=Track(
-                    points=CotravelSensemaker.extract_coordinate_track(track, start_time, last_time),
+                    points=extract_coordinate_track(track, start_time, last_time),
                     node_id=track.node_id,
                     algorithm=track.algorithm,
                     observation_ids=track.observation_ids,
@@ -373,7 +356,7 @@ class CotravelSensemaker(Sensemaker):
                     acm=track.acm,
                 ),
                 track2=Track(
-                    points=CotravelSensemaker.extract_coordinate_track(track2, start_time, last_time),
+                    points=extract_coordinate_track(track2, start_time, last_time),
                     node_id=track2.node_id,
                     algorithm=track2.algorithm,
                     observation_ids=track2.observation_ids,
@@ -433,23 +416,6 @@ class CotravelSensemaker(Sensemaker):
             completed.append(cotravel)
 
         return completed
-
-    # TODO maybe move to utility
-    @staticmethod
-    def extract_coordinate_track(track: Track, start_time: datetime, end_time: datetime) -> list[Point]:
-        """
-        Return points within provided time bounds.
-
-        :param track: Track to extract points from
-        :param start_time: earliest point timestamp
-        :param end_time: latest point timestamp
-        :return: List of valid points
-        """
-        points = []
-        for point in track.points:
-            if point.detection_time >= start_time and point.detection_time <= end_time:
-                points.append(point)
-        return points
 
     def publish(self, track: Track, cotravel: Cotravel) -> None:
         """Publish Potential Duplicate to ATOMS

@@ -7,12 +7,12 @@ from oms_sdk.generated.generated_graphql_client import Confidence
 
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.sensemakers.cotravel import (
-    Colocation,
     Cotravel,
     CotravelSensemaker,
     CotravelType,
     PotentialMatch,
 )
+from oms_sensemaking.geospatial.sensemakers.utils import Colocation, extract_coordinate_track
 from oms_sensemaking.models.geo import Point, Track
 from oms_sensemaking.models.sensemaking import FindingType
 
@@ -380,7 +380,7 @@ def test_process_data_no_matches(mock_get_points, sensemaker, sample_track):
 def test_extract_coordinate_track(sensemaker, sample_track):
     start_time = sample_track.points[0].detection_time
     end_time = start_time + timedelta(seconds=5)
-    points = sensemaker.extract_coordinate_track(sample_track, start_time, end_time)
+    points = extract_coordinate_track(sample_track, start_time, end_time)
     assert all(start_time <= p.detection_time <= end_time for p in points)
 
 
