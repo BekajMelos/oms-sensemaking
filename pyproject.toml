@@ -47,7 +47,7 @@ dependencies = [
     'rdflib~=7.0.0',
     'shapely==2.0.6',
     'sqlalchemy==2.0.32',
-    'urllib3==2.5.0',
+    'urllib3==2.6.3',
     'xmltodict==0.13.0'
 ]
 
