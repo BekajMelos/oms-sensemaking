@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 
@@ -14,37 +14,45 @@ LOGGER: logging.Logger = logging.getLogger(__name__)
 router: APIRouter = APIRouter()
 
 
-# def get_audit_error_log_client(user_dn: Annotated[str, Depends(require_user_dn)]) -> str:
-#     """Read the User DN Header from the request and ensure this user is in the whitelist
 
-#     :param user_dn: User DN
-#     :return: User DN
-#     """
-
-#     if user_dn.lower() not in SETTINGS.user_dn_whitelist:
-#         raise HTTPException(401, detail="Unauthorized")
-
-#     return user_dn
+def get_audit_log_error_client() -> AuditLogErrorClient:
+    """Return an AuditLogErrorClient"""
+    return AuditLogErrorClient()
 
 
 @router.get("/audit")
 def get_audit_log_errors(
     user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)],
-    exception_name: Optional[str] = None,
+    audit_log_error_client: Annotated[AuditLogErrorClient, Depends(get_audit_log_error_client)],
+    exception_name: str | None = Query(None, description="Optional Exception name to query for"),
+    created_at_start: datetime | None = Query(
+        None, description="Optional ISO formatted datetime " "string. Filter by earliest " "created_at."
+    ),
+    created_at_end: datetime | None = Query(
+        None, description="Optional ISO formatted datetime " "string. Filter by latest " "created_at."
+    ),
     page: int = Query(1, ge=1),
     pagesize: int = Query(500, ge=1, le=1000),
 ):
     """View Audit Error Logs"""
     LOGGER.info("Displaying Audit Error Logs to Whitelisted user. User %s", user_dn)
-    audit_log_error_client = AuditLogErrorClient()
-    errors = audit_log_error_client.get_audit_log_errors(user_dn, exception_name, page, pagesize)
+
+    errors = audit_log_error_client.get_audit_log_errors(
+        user_dn,
+        exception_name,
+        created_at_start,
+        created_at_end,
+        page,
+        pagesize
+    )
     if not errors:
-        return {"detail": "Unable to display Audit Log Errors. No data to display or incorrect query fields were used."}
+        return {"detail": "No Audit Log Errors found"}
     return errors
 
 
 @router.delete("/audit", status_code=status.HTTP_204_NO_CONTENT)
 def delete_audit_log_errors(
+    audit_log_error_client: Annotated[AuditLogErrorClient, Depends(get_audit_log_error_client)],
     exception_name: str | None = Query(None, description="Optional Exception name to query for"),
     created_at_start: datetime | None = Query(
         None, description="Optional ISO formatted datetime " "string. Filter by earliest " "created_at."
@@ -54,6 +62,4 @@ def delete_audit_log_errors(
     ),
 ) -> None:
     """Delete Audit Error Logs"""
-
-    audit_log_error_client = AuditLogErrorClient()
     audit_log_error_client.delete_audit_log_errors(exception_name, created_at_start, created_at_end)
