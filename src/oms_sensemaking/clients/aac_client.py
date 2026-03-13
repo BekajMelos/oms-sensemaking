@@ -177,7 +177,11 @@ class AacClient(BaseClient):
         else:
             LOGGER.info("Cache not enabled. Unable to clear cache.")
 
-    def check_access_for_acms(self, user_dn, acms: list[dict]):
+    def check_access_for_acms(self, user_dn, acms: list[dict]) -> list[dict]:
+        """
+        Determine if the given user_dn has has access to the acms.
+        Returns a matching list of acms with errors if they exist
+        """
         response = self.client.post(f"{SETTINGS.aac_url}/users/{user_dn}/accesses", json=acms)
         return response.json()
 

@@ -54,10 +54,10 @@ class AuditLogErrorClient:
             LOGGER.info("No Audit Error Logs to display")
             return display
 
-        response = aac_client.check_access_for_acms(user_dn, [{"ACM": error.acm} for error in errors])
+        acms = aac_client.check_access_for_acms(user_dn, [{"ACM": error.acm} for error in errors])
 
-        for i, error_obj in enumerate(response):
-            access_errors_from_aac_response = error_obj.get("Errors")
+        for i, acm in enumerate(acms):
+            access_errors_from_aac_response = acm.get("Errors")
             if access_errors_from_aac_response:
                 # Skip this index, do not include in final display list
                 continue
