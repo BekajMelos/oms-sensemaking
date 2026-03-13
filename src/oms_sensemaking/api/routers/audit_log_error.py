@@ -20,16 +20,6 @@ def get_audit_log_error_client() -> AuditLogErrorClient:
     return AuditLogErrorClient()
 
 
-# class FilterParams(BaseModel):
-#     model_config = {"extra": "forbid"}
-
-#     exception_name: str | None = Field(None, description="Optional Exception name to query for")
-#     created_at_start: datetime | None = Field(None, description="Optional ISO formatted datetime string. "
-#                                                    "Filter by earliest created_at.")
-#     created_at_end: datetime | None = Field(None, description="Optional ISO formatted datetime string. "
-#                                                    "Filter by latest created_at.")
-
-
 class PaginationParams(BaseModel):
     model_config = {"extra": "forbid"}
 
@@ -50,13 +40,6 @@ def get_audit_log_errors(
     ] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     pagesize: Annotated[int, Query(ge=1, le=1000)] = 500,
-    # created_at_start: datetime | None = Query(
-    #     None, description="Optional ISO formatted datetime " "string. Filter by earliest " "created_at."
-    # ),
-    # created_at_end: datetime | None = Query(
-    #     None, description="Optional ISO formatted datetime " "string. Filter by latest " "created_at."
-    # ),
-    # page_params: Annotated[PaginationParams, Query()],
 ):
     """View Audit Error Logs"""
     LOGGER.info("Displaying Audit Error Logs to Whitelisted user. User %s", user_dn)
