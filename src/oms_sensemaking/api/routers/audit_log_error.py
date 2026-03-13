@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
-from pydantic import BaseModel, Field
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.clients.audit_log_error_client import AuditLogErrorClient
@@ -18,13 +17,6 @@ router: APIRouter = APIRouter()
 def get_audit_log_error_client() -> AuditLogErrorClient:
     """Return an AuditLogErrorClient"""
     return AuditLogErrorClient()
-
-
-class PaginationParams(BaseModel):
-    model_config = {"extra": "forbid"}
-
-    page: int = Field(1, ge=1, description="Page to query")
-    pagesize: int = Field(500, ge=1, le=1000, description="Number of responses per page")
 
 
 @router.get("/audit")
