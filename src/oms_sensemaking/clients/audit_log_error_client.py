@@ -15,13 +15,14 @@ class AuditLogErrorClient:
     """Class for retrieving Audit Error Logs from the database"""
 
     def get_audit_log_errors(
-            self,
-            user_dn,
-            exception_name: str | None,
-            created_at_start: datetime | None,
-            created_at_end: datetime | None,
-            page: int,
-            pagesize: int):
+        self,
+        user_dn,
+        exception_name: str | None,
+        created_at_start: datetime | None,
+        created_at_end: datetime | None,
+        page: int,
+        pagesize: int,
+    ):
         """
         Get Audit Error Logs from the database
 
@@ -94,7 +95,7 @@ class AuditLogErrorClient:
         """
 
         if not any((exception_name, created_at_start, created_at_end)):
-            LOGGER.info("No filter criteria to delete")
+            LOGGER.warning("No filter criteria to delete")
             return
 
         query = delete(AuditLogError)

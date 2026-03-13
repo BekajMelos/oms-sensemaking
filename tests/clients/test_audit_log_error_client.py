@@ -90,10 +90,8 @@ class TestAuditLogErrorClass:
             patch("oms_sensemaking.clients.audit_log_error_client.db_session") as mock_db_session,
             patch("oms_sensemaking.clients.audit_log_error_client.aac_client") as mock_aac,
         ):
-            # DB returns one error record
-            mock_db = MagicMock()
-
             # mock query building
+            mock_db = MagicMock()
             mock_query = mock_db.query.return_value
             mock_query.order_by.return_value = mock_query
             mock_query.where.return_value = mock_query
@@ -120,7 +118,6 @@ class TestAuditLogErrorClass:
             assert (AuditLogError.created_at >= created_at_start).compare(where_calls[1][0][0])
             assert (AuditLogError.created_at <= created_at_end).compare(where_calls[2][0][0])
 
-    # TODO parameterize?
     def test_delete_audit_log_errors_success(self):
         """Should delete errors"""
 
