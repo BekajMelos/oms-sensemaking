@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -28,8 +28,6 @@ def make_mock_error(id=1):
 
 
 class TestAuditLogErrorClass:
-
-
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup the buffer"""
@@ -49,7 +47,6 @@ class TestAuditLogErrorClass:
 
             result = self.client.get_audit_log_errors("user_dn", None, None, None, 1, 500)
             assert result == []
-
 
     def test_get_audit_log_errors_success(self):
         """Should return formatted errors when AAC access allows all entries."""
@@ -77,8 +74,6 @@ class TestAuditLogErrorClass:
             assert entry["message"] == "Something went wrong"
 
             mock_aac.check_access_for_acms.assert_called_once()
-
-
 
     def test_get_audit_log_errors_with_filters(self):
         """Should return formatted errors when AAC access allows all entries."""
@@ -112,12 +107,7 @@ class TestAuditLogErrorClass:
             mock_aac.check_access_for_acms.return_value = [{"Errors": None}, {"Errors": None}]
 
             result = self.client.get_audit_log_errors(
-                "user_dn",
-                exception_name,
-                created_at_start,
-                created_at_end,
-                1,
-                500
+                "user_dn", exception_name, created_at_start, created_at_end, 1, 500
             )
 
             assert len(result) == 2
@@ -130,14 +120,11 @@ class TestAuditLogErrorClass:
             assert (AuditLogError.created_at >= created_at_start).compare(where_calls[1][0][0])
             assert (AuditLogError.created_at <= created_at_end).compare(where_calls[2][0][0])
 
-
     # TODO parameterize?
     def test_delete_audit_log_errors_success(self):
         """Should delete errors"""
 
-        with (
-            patch("oms_sensemaking.clients.audit_log_error_client.db_session") as mock_db_session
-        ):
+        with patch("oms_sensemaking.clients.audit_log_error_client.db_session") as mock_db_session:
             # DB returns one error record
             mock_db = MagicMock()
             mock_db_session.return_value.__enter__.return_value = mock_db
