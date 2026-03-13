@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from threading import Event, Thread
 from time import sleep, time
-from typing import Optional, Protocol
+from typing import Protocol
 from uuid import UUID, uuid4
 
 import pika
@@ -164,8 +164,8 @@ class BaseRabbitMQListener(AuditLogEventConsumer):
         self._name = name
         self._queue_name = queue_name
         self._event_filter = event_filter
-        self._connection: Optional[BlockingConnection] = None
-        self._channel: Optional[BlockingChannel] = None
+        self._connection: BlockingConnection = None
+        self._channel: BlockingChannel = None
 
     def _connect(self) -> bool:
         """Establish connection to RabbitMQ server."""
