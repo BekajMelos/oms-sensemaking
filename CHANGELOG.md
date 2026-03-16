@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Migrate to using atoms-local-dev environment.
 
 ### Fixed
+- Addressed 'Blocking' and 'Critical' Sonarqube vulnerabilities. Minimized 'Major' vulnerabilites
 
 ## [0.19.9] - 2026-03-09
 

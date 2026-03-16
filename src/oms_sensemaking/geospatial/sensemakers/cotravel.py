@@ -279,7 +279,7 @@ class CotravelSensemaker(Sensemaker):
             groups[entry.track2_node_id].append(entry)
 
         # determine cotravels on each list
-        for _, colocations in groups.items():
+        for colocations in groups.values():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.db_point.detection_time)
             cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
