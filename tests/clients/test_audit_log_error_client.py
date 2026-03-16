@@ -116,7 +116,7 @@ class TestAuditLogErrorClass:
 
             assert (AuditLogError.exception_name == exception_name).compare(where_calls[0][0][0])
             assert (AuditLogError.created_at >= created_at_start).compare(where_calls[1][0][0])
-            assert (AuditLogError.created_at <= created_at_end).compare(where_calls[2][0][0])
+            assert (AuditLogError.created_at < created_at_end).compare(where_calls[2][0][0])
 
     def test_delete_audit_log_errors_success(self):
         """Should delete errors"""

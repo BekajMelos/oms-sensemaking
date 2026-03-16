@@ -46,7 +46,7 @@ class AuditLogErrorClient:
                 query = query.where(AuditLogError.created_at >= created_at_start)
 
             if created_at_end:
-                query = query.where(AuditLogError.created_at <= created_at_end)
+                query = query.where(AuditLogError.created_at < created_at_end)
 
             errors = query.limit(int(pagesize)).offset((int(page) - 1) * int(pagesize)).all()
 
@@ -84,19 +84,19 @@ class AuditLogErrorClient:
 
     def delete_audit_log_errors(
         self, exception_name: str | None, created_at_start: datetime | None, created_at_end: datetime | None
-    ):
+    ) -> int:
         """
         Delete Audit Error Logs from the database
 
         :param exception_name: Optional filter for exception_name
         :param created_at_start: Optional filter for exception_name
         :param created_at_end: Optional filter for exception_name
-        :return: List of matching Audit Log Errors
+        :return: The count of deleted rows
         """
 
         if not any((exception_name, created_at_start, created_at_end)):
             LOGGER.warning("No filter criteria to delete")
-            return
+            return 0
 
         query = delete(AuditLogError)
 
@@ -107,9 +107,14 @@ class AuditLogErrorClient:
             query = query.where(AuditLogError.created_at >= created_at_start)
 
         if created_at_end:
-            query = query.where(AuditLogError.created_at <= created_at_end)
+            query = query.where(AuditLogError.created_at < created_at_end)
 
         with db_session() as db:
             LOGGER.debug(f"Deleting with query: {query}")
-            db.execute(query)
+            results = db.execute(query)
+            deleted_count = results.rowcount
             db.commit()
+
+        LOGGER.info(f"Deleted {deleted_count}")
+
+        return deleted_count
