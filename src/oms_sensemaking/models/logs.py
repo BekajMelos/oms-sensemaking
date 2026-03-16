@@ -42,7 +42,6 @@ class AuditLogError(BaseORM, SecurityMarkingMixin):
     version: Mapped[str] = mapped_column(String, nullable=False, comment="Version of sensemaking")
     message: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Log message")
     exc_text: Mapped[str | None] = mapped_column(Text, nullable=True, comment="Exception text")
-
     created_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
         unique=False,
