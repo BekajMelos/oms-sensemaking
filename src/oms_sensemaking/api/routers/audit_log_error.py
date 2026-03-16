@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 
 from oms_sensemaking.api.routers.utils import check_user_dn_in_whitelist
 from oms_sensemaking.clients.audit_log_error_client import AuditLogErrorClient
@@ -44,7 +44,7 @@ def get_audit_log_errors(
     return errors
 
 
-@router.delete("/audit", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/audit")
 def delete_audit_log_errors(
     user_dn: Annotated[str, Depends(check_user_dn_in_whitelist)],
     audit_log_error_client: Annotated[AuditLogErrorClient, Depends(get_audit_log_error_client)],
@@ -55,6 +55,7 @@ def delete_audit_log_errors(
     created_at_end: Annotated[
         datetime | None, Query(description="Optional ISO formatted datetime string. Filter by latest created_at.")
     ] = None,
-) -> None:
+) -> dict:
     """Delete Audit Error Logs"""
-    audit_log_error_client.delete_audit_log_errors(exception_name, created_at_start, created_at_end)
+    deleted_count = audit_log_error_client.delete_audit_log_errors(exception_name, created_at_start, created_at_end)
+    return {"deleted_count": deleted_count}
