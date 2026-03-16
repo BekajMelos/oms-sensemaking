@@ -107,7 +107,9 @@ def get_controllers() -> list[SensemakerController]:
         InferenceSensemakerController(inference_listener, err_logger),
         ResolutionSensemakerController(resolution_listener, err_logger),
         MilSymbolSensemakerController(mil_symbol_listener, err_logger),
-        ObjectStandardsSensemakerController(obj_standards_listener, err_logger, SETTINGS.obj_std_buffer_expire_sec),
+        ObjectStandardsSensemakerController(
+            obj_standards_listener, err_logger, SETTINGS.object_standards_settings.buffer_expire_sec
+        ),
         ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 

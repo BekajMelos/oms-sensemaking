@@ -171,12 +171,12 @@
 | `MIL_SYMBOL_SETTINGS__B_C_PLACEHOLDERS`             | `'["-", "*"]'`                                                                                    | Possible placeholder values for 2525B and 2525C codes                             | No             |
 | `AAC_CACHE_ENABLED`                                 | `True`                                                                                            | Boolean to enable Local AAC Caching                                               | No             |
 | `AAC_CACHE_STORAGE_TTL_SECONDS`                     | `300`                                                                                             | How long for responses to persist in Local AAC Cache before expiring              | No             |
-| `SM_TEST_TAGS`                                      | `["SM_TEST"]                                                                                      | Tag to apply to data created during tests                                         | No             |
+| `SM_TEST_TAGS`                                      | `["SM_TEST"]`                                                | Tag to apply to data created during tests                                         | No             |
 | `ENABLE_AUDIT_LOG_ERROR_LOGGING`                    | `True`                                                                                            | Enable audit log error logging                                                    | No             |
 | `AUDIT_LOG_ERROR_MAX_TB_CHARS`                      | `200`                                                                                             | Number of characters allowed in the audit log traceback                           | No             |
 | `AUDIT_LOG_ERROR_JSON_FILE_PATH`                | `./data/audit_log_error.json`                                                                     | Classification to set as default for Audit Log Errors                             | No             |
 | `USER_DN_WHITELIST_PATH`                            | `./data/whitelist.txt`                                                                            | File path to the user whitelist for privileged requests                           | No             |
-| `OBJ_STD_GEO_BUFFER_EXPIRE_SEC`                            | `30 `                                                                                             | Delay in seconds to wait before processing Atoms Objects for Object Standards checks                       | No             |
+| `OBJECT_STANDARDS_SETTINGS__BUFFER_EXPIRE_SEC`             | `30`                                            | Delay in seconds to wait before processing Atoms Objects for Object Standards checks                       | No             |
 
 #### Sensemaker Labels
 | Variable Name            | Example                                            | Description               | Docker Compose |
