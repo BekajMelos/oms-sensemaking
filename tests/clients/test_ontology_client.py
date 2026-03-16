@@ -1,4 +1,8 @@
-from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
+from oms_sdk.generated.generated_graphql_client import (
+    NodeNode,
+    OntologyClassOntologyClass,
+    OntologyRelationshipOntologyRelationship,
+)
 from pytest_mock import MockerFixture
 
 from oms_sensemaking.clients.ontology_client import OntologyClient, OntologyService
@@ -20,6 +24,7 @@ def test_ontology_service(mocker: MockerFixture):
     svc.geospatial_get_node_ancestors_iris(node)
     svc.mil_symbol_get_node_ancestors_iris(node)
     svc.get_default_symbol_id_code("https://some/iri")
+    svc.get_ontology_relationship("https://some/relationship/iri")
 
 
 def test_geospatial_get_node_ancestors_iris_no_parent(mocker: MockerFixture, mock_oms_crud_tool):
@@ -93,3 +98,16 @@ def test_get_default_symbol_id_code_circular_reference(mocker: MockerFixture, mo
     client, _, iri_a, _ = _make_circular_ontology_setup(mocker, mock_oms_crud_tool)
     result = client.get_default_symbol_id_code(iri_a)
     assert result is None
+
+
+def test_get_ontology_relationship(mocker: MockerFixture, mock_oms_crud_tool):
+    mock_ontology_relationship = mocker.Mock(spec=OntologyRelationshipOntologyRelationship)
+    mock_ontology_relationship.iri = "https://relationship/iri"
+    mock_oms_crud_tool.get_ontology_relationship.return_value = mock_ontology_relationship
+
+    svc = OntologyClient(mock_oms_crud_tool)
+
+    actual = svc.get_ontology_relationship("https://relationship/iri")
+
+    assert actual == mock_ontology_relationship, "Expected ontology relationship but got {}".format(actual)
+    mock_oms_crud_tool.get_ontology_relationship.assert_called_once_with("https://relationship/iri")

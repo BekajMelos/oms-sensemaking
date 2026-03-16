@@ -1,9 +1,10 @@
 """AAC Client"""
 
+import dataclasses
 import json
 import logging
 import ssl
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import hishel
 import httpcore
@@ -16,6 +17,60 @@ from oms_sensemaking.config import SETTINGS
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 HTTPX_TIMEOUT = 30
+
+
+@dataclasses.dataclass(frozen=True)
+class TextMarking:
+    marking: str
+    path: str
+
+    def __init__(self, marking: str, path: str) -> None:
+        """
+        :param marking: text marking such as "U" or "UNCLASSIFIED"
+        :param path: unique identifier for the marking
+        """
+        object.__setattr__(self, "marking", marking)
+        object.__setattr__(self, "path", path)
+
+    def to_json(self) -> str:
+        """Return a JSON representation of the marking"""
+        return json.dumps(
+            {
+                "Marking": self.marking,
+                "Path": self.path,
+            }
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class ParsedMarking:
+    """
+    POJO output from converting a text marking to an acm marking
+    """
+
+    errors: list[str]
+    warnings: list[str]
+    acm: object
+    path: str
+
+    def __init__(self, output: dict[str, Any]) -> None:
+        object.__setattr__(self, "errors", output["Errors"])
+        object.__setattr__(self, "warnings", output["Warnings"])
+        object.__setattr__(self, "acm", output["ACM"])
+        object.__setattr__(self, "path", output["Path"])
+
+
+class MarkingParser:
+    """
+    Converts a text marking list response to an acm marking list
+    """
+
+    @staticmethod
+    def parse(json_body: Any) -> list[ParsedMarking]:
+        """
+        :param json_body: response from AAC Service when creating a
+        """
+        return [ParsedMarking(marking) for marking in json_body.json()]
 
 
 class AacClient(BaseClient):
@@ -31,7 +86,7 @@ class AacClient(BaseClient):
         """
         Construct the client for communicating to an AAC Service v2.x
 
-        For https connections with two way ssl, the client can be configured in one of two ways
+        For https connections with two-way ssl, the client can be configured in one of two ways
         * set the cert_path with a .pem file,
         * set the cert_path with a .crt file and the key_path with a .key file
 
@@ -43,7 +98,7 @@ class AacClient(BaseClient):
 
         :param ca_cert_path: Optional path to a CA's .pem file
 
-        :param aac_verification_mode: Optional, set whether the host is verified through a CA Bundle or not
+        :param verification_mode: Optional, set whether the host is verified through a CA Bundle or not
         """
 
         super().__init__(host=SETTINGS.aac_host, port=SETTINGS.aac_port, service_name="AAC")
@@ -102,6 +157,18 @@ class AacClient(BaseClient):
         response = self.client.post(f"{SETTINGS.aac_url}/acms/rollup", json={"AccessTuples": self._dedup_acms(acms)})
         return response.json()["RollupACM"]
 
+    def get_acms_from_markings(self, markings: list[TextMarking]):
+        """
+        Use AAC to generate acms from classif markings
+
+        :param markings: list of identifiers and classification marking (e.g. "foo" -> "UNCLASSIFIED" or "U")
+        """
+        LOGGER.debug("Getting acms from text markings")
+
+        response = self.client.post(f"{SETTINGS.aac_url}/icmss/markings/acms", json=markings)
+
+        return MarkingParser.parse(response)
+
     def clear_cache(self) -> None:
         """Admin endpoint to clear the local aac_cache."""
         if SETTINGS.aac_cache_enabled:
@@ -114,12 +181,14 @@ class AacClient(BaseClient):
         response = self.client.post(f"{SETTINGS.aac_url}/users/{user_dn}/accesses", json=acms)
         return response.json()
 
-    def _dedup_acms(self, acms: List[dict]):
+    @staticmethod
+    def _dedup_acms(acms: List[dict]):
         json_acms = [json.dumps(acm, sort_keys=True) for acm in acms]
         deduped = set(json_acms)
         return [json.loads(dedup) for dedup in deduped]
 
-    def _custom_key_generator(self, request: httpcore.Request, body: bytes):
+    @staticmethod
+    def _custom_key_generator(request: httpcore.Request, body: bytes):
         """
         Create a cache key based on the request body, for our case, it is a list of acms
         """

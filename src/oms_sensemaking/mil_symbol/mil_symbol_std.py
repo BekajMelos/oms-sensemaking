@@ -30,9 +30,8 @@ class MilSymbol(ABC):
     def update_code(self, index: int, value: str) -> str:
         """Update string "in place"
 
-        :param symbol_code: code to update
         :param index: index of code character to update
-        :param value: vaue to update at index
+        :param value: value to update at index
         :return: the new code
         """
         symbol_code = list(self.code)
