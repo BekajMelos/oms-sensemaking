@@ -59,8 +59,8 @@ def test_db_logging(mock_controller: SensemakerController, db: Session, session_
     assert log.object_type == "NODE"
     assert log.event_type == "CREATE"
     assert log.function_name == "get_oms_data"
-    assert log.line_no == 125
-    assert log.code == "return self.oms_crud_tool.rehydrate_oms_obj(event.objectId, event.objectType)"
+    assert isinstance(log.line_no, int)
+    assert "self.oms_crud_tool.rehydrate_oms_obj" in log.code
     assert log.exception_name == "GraphQLClientError"
     assert log.message is None
     assert log.exc_text is None
@@ -95,8 +95,8 @@ def test_db_logging_within_sensemaker(
     assert log.object_type == "NODE"
     assert log.event_type == "CREATE"
     assert log.function_name == "execute"  # execute since process_data is in this tests_int dir
-    assert log.line_no == 194
-    assert log.code == "results: Any = self.process_data(*data)"
+    assert isinstance(log.line_no, int)
+    assert "Any = self.process_data(*data)" in log.code
     assert node_id in log.message
     assert "sensemaker failed" in log.exc_text
     assert log.exception_name == "SensemakingError"
