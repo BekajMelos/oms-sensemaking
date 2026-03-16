@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Addressed 'Blocking' and 'Critical' Sonarqube vulnerabilities. Minimized 'Major' vulnerabilites
+- Addressed 'Critical' and 'High' Prisma vulnerabilities as best as posisble. Resolved issues that currently have existing solutions and mitigations
 
 ## [0.19.9] - 2026-03-09
 
