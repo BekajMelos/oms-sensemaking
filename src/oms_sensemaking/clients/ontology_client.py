@@ -2,7 +2,11 @@ from queue import SimpleQueue
 from typing import Optional, Protocol
 
 from cachetools import TTLCache, cached
-from oms_sdk.generated.generated_graphql_client import NodeNode, OntologyClassOntologyClass
+from oms_sdk.generated.generated_graphql_client import (
+    NodeNode,
+    OntologyClassOntologyClass,
+    OntologyRelationshipOntologyRelationship,
+)
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -10,7 +14,11 @@ from oms_sensemaking.core.oms_crud import OmsCrudTool
 
 class OntologyService(Protocol):
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
-        """Return an OntologyClass for the given IRI"""
+        """Return an OntologyClassOntologyClass for the given IRI"""
+        pass
+
+    def get_ontology_relationship(self, iri: str) -> OntologyRelationshipOntologyRelationship:
+        """Return an OntologyRelationshipOntologyRelationship for the given IRI"""
         pass
 
     def geospatial_get_node_ancestors_iris(self, oms_node: NodeNode) -> set[str]:
@@ -37,6 +45,10 @@ class OntologyClient(OntologyService):
     @cached(TTLCache(SETTINGS.ttl_cache_size, SETTINGS.ttl_cache_seconds))
     def get_ontology_class(self, iri: str) -> Optional[OntologyClassOntologyClass]:
         return self._oms_client.get_ontology_class(iri)
+
+    @cached(TTLCache(SETTINGS.ttl_cache_size, SETTINGS.ttl_cache_seconds))
+    def get_ontology_relationship(self, iri: str) -> Optional[OntologyRelationshipOntologyRelationship]:
+        return self._oms_client.get_ontology_relationship(iri)
 
     def geospatial_get_node_ancestors_iris(self, oms_node: NodeNode) -> set[str]:
         """Get ancestor's iris.

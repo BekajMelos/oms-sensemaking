@@ -43,7 +43,7 @@ class SensemakerController:
 
         This function will create a new instance of the controller in the
         "stopped" state. To start the controller, call
-        ``SensemakerContorller.start()``, which will ensure that appropriate
+        ``SensemakerController.start()``, which will ensure that appropriate
         conditions have been met to run the controller and will also clear the
         ``SensemakerController.stopped`` Event.
         """

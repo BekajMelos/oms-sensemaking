@@ -431,7 +431,7 @@ class TimeBinTrackWeaver(TrackWeaverBase):
                 }
                 lon = weighted_average((p.coordinates[0] for p in bin_points), (p.weight for p in bin_points))
                 lat = weighted_average((p.coordinates[1] for p in bin_points), (p.weight for p in bin_points))
-                point_dict["location"] = f"Point({round(lon, 5)} " f"{round(lat, 5)})"
+                point_dict["location"] = f"Point({round(lon, 5)} {round(lat, 5)})"
                 # Find the Confidence enum member mapped to the lowest weight among parent Point confidences
                 confidence_level = Confidence.UNKNOWN
                 confidence_val = min(confidence_map[p.observation_confidence] for p in bin_points)

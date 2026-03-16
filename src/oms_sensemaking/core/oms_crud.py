@@ -43,6 +43,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObservationsWithProviderObservations,
     ObservationWithProviderObservation,
     OntologyClassOntologyClass,
+    OntologyRelationshipOntologyRelationship,
     OriginatorQuery,
     OriginatorsOriginators,
     PageParams,
@@ -354,10 +355,19 @@ class OmsCrudTool(BaseClient):
         """Get the Ontology Class for a given iri
 
         :param iri: Iri to get ontology data for
-        :return: Optional OntologyClass object
+        :return: Optional OntologyClassOntologyClass object
         """
         warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
         return self.oms_client.ontology_class(query=IriQuery(iri=iri))
+
+    def get_ontology_relationship(self, iri: str) -> Optional[OntologyRelationshipOntologyRelationship]:
+        """Get the Ontology Relationship for a given iri
+
+        :param iri: Iri to get ontology data for
+        :return: Optional OntologyRelationshipOntologyRelationship object
+        """
+        warnings.warn("This method is deprecated, use the Ontology Client instead", stacklevel=2)
+        return self.oms_client.ontology_relationship(query=IriQuery(iri=iri))
 
     def get_mil_symbol_attr(
         self,
@@ -454,7 +464,7 @@ class OmsCrudTool(BaseClient):
                 break
 
     def delete_observations_by_node_tags(self, tags: list[str]):
-        """Delete all observations whose nodes can be found with the specifed tags"""
+        """Delete all observations whose nodes can be found with the specified tags"""
         page = 1
         while True:
             page_param = PageParams(page=page)

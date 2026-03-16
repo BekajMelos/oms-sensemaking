@@ -170,7 +170,8 @@ pipeline {
                         -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
-                        -Dsonar.python.coverage.reportPaths=coverage.xml
+                        -Dsonar.python.coverage.reportPaths=coverage.xml \
+                        -Dsonar.python.version=3.12
                 '''
             }
             post {
