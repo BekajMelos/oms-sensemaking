@@ -7,10 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added Lag/Lead finding type for cotravel outputs that get saved to the Sensemaking findings table
 - Added indices for AuditLogErrors created_at for query performance
+- AAC Client can retrieve an access control model for classification strings
 
 ### Changed
 
-- Migrate to using atoms-local-dev enviroment.
+- Migrate to using atoms-local-dev environment.
 
 ### Fixed
 - Addressed 'Blocking' and 'Critical' Sonarqube vulnerabilities. Minimized 'Major' vulnerabilites

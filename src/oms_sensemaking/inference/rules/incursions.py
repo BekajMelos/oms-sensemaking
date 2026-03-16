@@ -8,7 +8,6 @@ from uuid import UUID
 from oms_sdk.generated.generated_graphql_client import (
     ActivitiesActivitiesData,
     ActivityQuery,
-    CreateActivityCreateActivity,
     CreateActivityInput,
     GeoQuery,
     GeoQueryType,
@@ -19,7 +18,6 @@ from oms_sdk.generated.generated_graphql_client import (
     PageParams,
     StringQuery,
     UpdateActivityInput,
-    UpdateActivityUpdateActivity,
     UpdateUuidList,
     UuidQueryByList,
 )
@@ -64,39 +62,6 @@ class Incursion(FindingBase):
 
         return {"type": "Point", "coordinates": self.incursion_observation.geometry["coordinates"]}
 
-    @classmethod
-    def from_update(
-        cls,
-        obs: ObservationObservation,
-        updated_activity: UpdateActivityUpdateActivity,
-        aoi: dict,
-        rolled_up_acm: dict,
-    ):
-        return cls(
-            incurring_obj_id=obs.nodeId,
-            incursion_observation=obs,
-            start_time=updated_activity.startTime,
-            end_time=updated_activity.endTime,
-            area_of_interest_dict=aoi,
-            acm=rolled_up_acm,
-        )
-
-    @classmethod
-    def from_create(
-        cls,
-        obs: ObservationObservation,
-        new_activity: CreateActivityCreateActivity,
-        aoi: dict,
-    ):
-        return cls(
-            incurring_obj_id=new_activity.nodeId,
-            incursion_observation=obs,
-            start_time=new_activity.startTime,
-            end_time=new_activity.endTime,
-            area_of_interest_dict=aoi,
-            acm=new_activity.acm,
-        )
-
 
 class IncursionSensemaker(Sensemaker):
     """
@@ -115,7 +80,7 @@ class IncursionSensemaker(Sensemaker):
         """
         Valid inputs must contain observations that have geometry and point to a node
 
-        :param rule_context: Rule context object containing the observation to evaluate
+        :param obs: observation to evaluate for suitability for Incursion processing
         """
         if not obs or obs.startTime is None or obs.endTime is None:
             return False
@@ -126,7 +91,7 @@ class IncursionSensemaker(Sensemaker):
         """
         Create or update relevant incursion attribute/activity if observation indicates an incursion
 
-        :param rule_context: Rule context object containing the observation to evaluate
+        :param obs: observation to determine if node is performing an Incursion
         """
         incursion_finding: list[Incursion] = []
         if not self.evaluate(obs):
@@ -187,7 +152,7 @@ class IncursionSensemaker(Sensemaker):
         # Update existing incursion if times overlap or if object stayed in area of
         # interest in the time between the observation and incursion
         time_overlap = inc_act_geo_timeframe.does_observation_overlap(obs_timeframe)
-        geo_query = GeoQuery(queryGeoJson=(feat_of_int.geometry_dict), queryType=GeoQueryType.DISJOINT)
+        geo_query = GeoQuery(queryGeoJson=feat_of_int.geometry_dict, queryType=GeoQueryType.DISJOINT)
         if time_overlap or inc_act_geo_timeframe.object_observed_between_generic_node_and_observation_times(
             observation.nodeId, observation, geo_query
         ):
@@ -243,23 +208,30 @@ class IncursionSensemaker(Sensemaker):
             [{"ACM": observation.acm} for observation in existing_incursion_observations]
         )
 
+        incursion_finding = Incursion(
+            incurring_obj_id=observation.nodeId,
+            incursion_observation=observation,
+            start_time=inc_attr_geo_timeframe.start_time.isoformat(),
+            end_time=inc_attr_geo_timeframe.end_time.isoformat(),
+            acm=rolled_up_acm,
+            area_of_interest_dict=feat_of_int.geometry_dict,
+        )
+
         activity_labels = existing_incursion_activity.labels
         if activity_labels is None:
             activity_labels = []
         activity_labels.append(SETTINGS.sm_enriched_label)
         updated_activity_input = UpdateActivityInput(
             id=existing_incursion_activity.id,
-            acm=rolled_up_acm,
-            startTime=inc_attr_geo_timeframe.start_time.isoformat(),
-            endTime=inc_attr_geo_timeframe.end_time.isoformat(),
-            observationIds=UpdateUuidList(add=[observation.id]),
+            acm=incursion_finding.acm,
+            startTime=incursion_finding.start_time,
+            endTime=incursion_finding.end_time,
+            observationIds=UpdateUuidList(add=[incursion_finding.incursion_observation.id]),
             labels=activity_labels,
         )
 
-        updated_incursion = self.oms_crud_tool.update_activity(updated_activity_input)
-        incursion_finding = Incursion.from_update(
-            observation, updated_incursion, feat_of_int.geometry_dict, rolled_up_acm
-        )
+        self.oms_crud_tool.update_activity(updated_activity_input)
+
         incursion_finding.atoms_id = existing_incursion_activity.id
         incursion_finding.atoms_type = AtomsType.ACTIVITY
         incursion_finding.query_atoms_id = existing_incursion_activity.id
@@ -274,8 +246,18 @@ class IncursionSensemaker(Sensemaker):
 
         # Create new incursion activity pointing to observation
         description = f"Incursion Activity by object: {observation.nodeId}"
-        incursion_activity = CreateActivityInput(
+
+        incursion_finding = Incursion(
+            incurring_obj_id=observation.nodeId,
+            incursion_observation=observation,
+            start_time=observation.startTime,
+            end_time=observation.endTime,
             acm=observation.acm,
+            area_of_interest_dict=feature_of_interest.geometry_dict,
+        )
+
+        incursion_activity = CreateActivityInput(
+            acm=incursion_finding.acm,
             tags=SETTINGS.incursion_tags,
             labels=[
                 SETTINGS.sm_inferenced_label,
@@ -288,16 +270,13 @@ class IncursionSensemaker(Sensemaker):
             description=self._truncate_activity_description(description),
             state=SETTINGS.inference_incursion_activity_state,
             sourceId=observation.sourceId,
-            nodeId=observation.nodeId,
+            nodeId=incursion_finding.incurring_obj_id,
             observationIds=[observation.id],
-            startTime=observation.startTime,
-            endTime=observation.endTime,
+            startTime=incursion_finding.start_time,
+            endTime=incursion_finding.end_time,
         )
         new_incursion_activity = self.oms_crud_tool.create_activity(incursion_activity)
 
-        incursion_finding = Incursion.from_create(
-            observation, new_incursion_activity, feature_of_interest.geometry_dict
-        )
         incursion_finding.atoms_id = new_incursion_activity.id
         incursion_finding.atoms_type = AtomsType.ACTIVITY
 

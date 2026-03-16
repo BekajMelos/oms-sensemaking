@@ -4,7 +4,7 @@ import hishel
 import httpx
 import pytest
 
-from oms_sensemaking.clients.aac_client import AacClient
+from oms_sensemaking.clients.aac_client import AacClient, TextMarking
 from oms_sensemaking.config import SETTINGS
 
 
@@ -74,3 +74,25 @@ def test_clear_cache_disabled(monkeypatch, client, caplog):
 
     assert "Cache not enabled" in caplog.text
     assert client.client is old_client
+
+
+def test_get_acms_from_markings(client):
+    acm = {
+        "version": "3.0",
+        "classif_type": "US",
+        "classif": "TS",
+    }
+    mock_response = MagicMock()
+    mock_response.json.return_value = [{"Errors": [], "Warnings": [], "ACM": acm, "Path": "foo"}]
+
+    client.client = MagicMock()
+    client.client.post.return_value = mock_response
+
+    text_marking = TextMarking("UNCLASSIFIED", "bar")
+    actual = client.get_acms_from_markings([text_marking])
+
+    client.client.post.assert_called_with(f"{SETTINGS.aac_url}/icmss/markings/acms", json=[text_marking])
+    assert actual[0].acm == acm
+    assert actual[0].path == "foo"
+    assert actual[0].warnings == []
+    assert actual[0].errors == []

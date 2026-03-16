@@ -206,7 +206,7 @@ class ResolutionSensemaker(Sensemaker):
         """
         current_node_id = current_attr.nodeId
         if not current_node_id:
-            return (False, None)
+            return False, None
 
         current_iri = current_attr.attributeIri
         all_iris = {
@@ -216,23 +216,23 @@ class ResolutionSensemaker(Sensemaker):
             for iri in criteria_set
         }
         if current_iri not in all_iris:
-            return (False, None)
+            return False, None
 
         if current_attr.attributeValue == "":
-            return (False, None)
+            return False, None
 
         class_iri = self.current_class_iri(current_attr)
         if class_iri not in self.duplicate_object_iris:
-            return (False, None)
+            return False, None
 
         criteria_sets = self.duplicate_object_iris[class_iri]
         if not any(current_iri in criteria_set for criteria_set in criteria_sets):
-            return (False, None)
+            return False, None
 
         if self.has_already_ran(current_node_id):
-            return (False, None)
+            return False, None
 
-        return (True, class_iri)
+        return True, class_iri
 
     def find_duplicates(self, combinations: list[list[AttributeAttribute]]) -> list[NodeNode]:
         """
