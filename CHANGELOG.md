@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.19.10] - 2026-03-16
+
+### Added
 - Added Lag/Lead finding type for cotravel outputs that get saved to the Sensemaking findings table
 - Added indices for AuditLogErrors created_at for query performance
 - AAC Client can retrieve an access control model for classification strings
