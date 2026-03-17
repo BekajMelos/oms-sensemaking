@@ -22,6 +22,7 @@ class GarrisonData:
     object_lat_lon: list[float]
     garrison_lat_lon: list[float]
     activities: List[InOutGarrisonAllDataNodeActivitiesData]
+    garrison_data_acms: list[dict]
 
 
 class GetGarrisonData(ABC):
@@ -37,7 +38,8 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
         result = self._execute_query(obs)
 
-        end_node = result.relationships.data[0].endNode if result and result.relationships.data else None
+        relationship_data = result.relationships.data[0] if result and result.relationships.data else None
+        end_node = relationship_data.endNode if relationship_data else None
         attribute_data = (
             end_node.attributes.data[0]
             if end_node and hasattr(end_node, "attributes") and end_node.attributes.data
@@ -54,6 +56,7 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
             object_lat_lon=[object_lon_lat[1], object_lon_lat[0]],
             garrison_lat_lon=[garrison_lon_lat[1], garrison_lon_lat[0]],
             activities=result.activities.data,
+            garrison_data_acms=[obs.nodeId, relationship_data.acm, end_node.acm, attribute_data.acm],
         )
 
     def _execute_query(self, obs: ObservationObservation):
