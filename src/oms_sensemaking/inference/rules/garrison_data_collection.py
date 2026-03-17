@@ -36,27 +36,34 @@ class GetGarrisonData(ABC):
 
 class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
-        result = self._execute_query(obs)
+        observed_node = self._execute_query(obs)
 
-        relationship_data = result.relationships.data[0] if result and result.relationships.data else None
-        end_node = relationship_data.endNode if relationship_data else None
-        attribute_data = (
-            end_node.attributes.data[0]
-            if end_node and hasattr(end_node, "attributes") and end_node.attributes.data
+        relationship_data = (
+            observed_node.relationships.data[0] if observed_node and observed_node.relationships.data else None
+        )
+        facility_node = relationship_data.endNode if relationship_data else None
+        facility_location_attribute_data = (
+            facility_node.attributes.data[0]
+            if facility_node and hasattr(facility_node, "attributes") and facility_node.attributes.data
             else None
         )
 
-        if not attribute_data or "coordinates" not in attribute_data.geometry:
+        if not facility_location_attribute_data or "coordinates" not in facility_location_attribute_data.geometry:
             return None
 
-        garrison_lon_lat = attribute_data.geometry["coordinates"]
+        garrison_lon_lat = facility_location_attribute_data.geometry["coordinates"]
         object_lon_lat = obs.geometry["coordinates"]
 
         return GarrisonData(
             object_lat_lon=[object_lon_lat[1], object_lon_lat[0]],
             garrison_lat_lon=[garrison_lon_lat[1], garrison_lon_lat[0]],
-            activities=result.activities.data,
-            garrison_data_acms=[result.acm, relationship_data.acm, end_node.acm, attribute_data.acm],
+            activities=observed_node.activities.data,
+            garrison_data_acms=[
+                observed_node.acm,
+                relationship_data.acm,
+                facility_node.acm,
+                facility_location_attribute_data.acm,
+            ],
         )
 
     def _execute_query(self, obs: ObservationObservation):

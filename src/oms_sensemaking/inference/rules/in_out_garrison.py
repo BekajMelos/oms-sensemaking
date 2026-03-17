@@ -67,7 +67,6 @@ class InOrOutOfGarrison(Sensemaker):
         self.name = self.__class__.__name__
         self.version = (1, 0, 0)
         self._data_retriever = GetGarrisonDataAllAtOnce(self.oms_crud_tool)
-        self.garrison_acms = []
 
     def evaluate(self, obs: ObservationObservation) -> bool:
         """
@@ -87,6 +86,7 @@ class InOrOutOfGarrison(Sensemaker):
 
         :param obs: observation to determine if node is In/Out of Garrison
         """
+        garrison_acms: list[dict] = []
         if not self.evaluate(obs):
             return []
 
@@ -97,14 +97,16 @@ class InOrOutOfGarrison(Sensemaker):
         object_lat_lon = garrison_data.object_lat_lon
         garrison_lat_lon = garrison_data.garrison_lat_lon
         activities = garrison_data.activities
-        self.garrison_acms.extend(garrison_data.garrison_data_acms)
+        garrison_acms.extend(garrison_data.garrison_data_acms)
 
         in_garrison_check = in_garrison(object_lat_lon, garrison_lat_lon)
         garrison_buffer_points = generate_circle_points_geographical(
             garrison_lat_lon[0], garrison_lat_lon[1], SETTINGS.garrison_distance_kilometers
         )
         garrison_buffer_geojson = {"type": "Polygon", "coordinates": [garrison_buffer_points]}
-        return self._create_or_update_garrison_activity(obs, in_garrison_check, garrison_buffer_geojson, activities)
+        return self._create_or_update_garrison_activity(
+            obs, in_garrison_check, garrison_buffer_geojson, activities, garrison_acms
+        )
 
     def _create_or_update_garrison_activity(
         self,
@@ -112,6 +114,7 @@ class InOrOutOfGarrison(Sensemaker):
         is_in_garrison: bool,
         garrison_buffer_geojson: dict,
         existing_activities: List[InOutGarrisonAllDataNodeActivitiesData],
+        garrison_acms: list[dict],
     ):
         if is_in_garrison:
             activity_name = SETTINGS.inference_in_garrison_activity_name
@@ -141,15 +144,15 @@ class InOrOutOfGarrison(Sensemaker):
                 # Update existing activity with union of observation and activity time intervals
                 enhanced_activity.update_generic_node_times_with_observation(enhanced_obs)
                 # Previous activity exists, it should be part of ACM rollup in the updated activity
-                self.garrison_acms.append(existing_activity.acm)
+                garrison_acms.append(existing_activity.acm)
                 # Retrieve the observations attached to the existing activity
                 existing_garrison_observations = existing_activity.observations.data
                 return self._update_existing_activity(
-                    obs, existing_activity, existing_garrison_observations, enhanced_activity
+                    obs, existing_activity, existing_garrison_observations, enhanced_activity, garrison_acms
                 )
 
         # Observation not found as part of any existing garrison activity
-        return self._handle_new_activity(obs, activity_name, activity_state)
+        return self._handle_new_activity(obs, activity_name, activity_state, garrison_acms)
 
     def _update_existing_activity(
         self,
@@ -157,6 +160,7 @@ class InOrOutOfGarrison(Sensemaker):
         existing_activity: InOutGarrisonAllDataNodeActivitiesData,
         existing_garrison_observations: list[InOutGarrisonAllDataNodeActivitiesDataObservationsData],
         enhanced_activity: GeoTimeframe,
+        garrison_acms: list[dict],
     ):
         """
         Update an existing activity with updated start/end times
@@ -164,8 +168,8 @@ class InOrOutOfGarrison(Sensemaker):
         # Append the current observation to the existing list of observations
         existing_garrison_observations.append(observation)
         observation_acms = [obs.acm for obs in existing_garrison_observations]
-        self.garrison_acms.extend(observation_acms)
-        rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in self.garrison_acms])
+        garrison_acms.extend(observation_acms)
+        rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in garrison_acms])
 
         garrison_finding = InOutGarrison(
             in_or_out=existing_activity.name,
@@ -195,7 +199,9 @@ class InOrOutOfGarrison(Sensemaker):
 
         return [garrison_finding]
 
-    def _handle_new_activity(self, observation: ObservationObservation, activity_name: str, activity_state: str):
+    def _handle_new_activity(
+        self, observation: ObservationObservation, activity_name: str, activity_state: str, garrison_acms: list[dict]
+    ):
         """
         Create new activity pointing to observation
         """
@@ -203,8 +209,8 @@ class InOrOutOfGarrison(Sensemaker):
         # Create in/out of garrison activity pointing to observation
         # we create the model after we send an update to Core here
 
-        self.garrison_acms.append(observation.acm)
-        rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in self.garrison_acms])
+        garrison_acms.append(observation.acm)
+        rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in garrison_acms])
 
         garrison_finding = InOutGarrison(
             in_or_out=activity_name,
