@@ -56,7 +56,7 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
             object_lat_lon=[object_lon_lat[1], object_lon_lat[0]],
             garrison_lat_lon=[garrison_lon_lat[1], garrison_lon_lat[0]],
             activities=result.activities.data,
-            garrison_data_acms=[obs.nodeId, relationship_data.acm, end_node.acm, attribute_data.acm],
+            garrison_data_acms=[result.acm, relationship_data.acm, end_node.acm, attribute_data.acm],
         )
 
     def _execute_query(self, obs: ObservationObservation):
