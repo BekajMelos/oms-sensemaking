@@ -431,6 +431,7 @@ def test_existing_incursion_nonoverlapping_time(
                 labels=activity1.labels,
                 startTime=activity1.startTime,
                 endTime=activity1.endTime,
+                acm=activity1.acm,
                 observations=SimpleNamespace(
                     data=[
                         SimpleNamespace(
@@ -469,7 +470,15 @@ def test_existing_incursion_nonoverlapping_time(
         )
     )
     mock_aac_client.get_acm_rollup.assert_has_calls(
-        [call([{"ACM": observational_node_region1.acm}, {"ACM": observational_node_region1.acm}])]
+        [
+            call(
+                [
+                    {"ACM": observational_node_region1.acm},
+                    {"ACM": observational_node_region1.acm},
+                    {"ACM": activity1.acm},
+                ]
+            )
+        ]
     )
 
     mock_crud_tool.update_activity.assert_called_with(
