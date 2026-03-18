@@ -292,8 +292,8 @@ def test_create_duplicate_findings_creates_dups_and_relationships(
         dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
         mock_acm_rollup.assert_has_calls(
             [
-                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_a_dup.all_acms]),
-                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_b_dup.all_acms]),
+                mock.call([{"ACM": acm} for acm in test_node_a_dup.all_acms]),
+                mock.call([{"ACM": acm} for acm in test_node_b_dup.all_acms]),
             ]
         )
 
@@ -477,9 +477,7 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
         dups = sensemaker.create_duplicate_findings(
             test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
         )
-        mock_acm_rollup.assert_called_with(
-            [{"ACM": acm} for acm in [test_node_aircraft_a.acm] + test_node_aircraft_b_dup.all_acms]
-        )
+        mock_acm_rollup.assert_called_with([{"ACM": acm} for acm in test_node_aircraft_b_dup.all_acms])
 
     # Assertions
     assert len(dups) == 1
@@ -506,9 +504,7 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_att
         dups = sensemaker.create_duplicate_findings(
             test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
         )
-        mock_acm_rollup.assert_called_with(
-            [{"ACM": acm} for acm in [test_node_aircraft_b.acm] + test_node_aircraft_a_dup.all_acms]
-        )
+        mock_acm_rollup.assert_called_with([{"ACM": acm} for acm in test_node_aircraft_a_dup.all_acms])
 
     # Assertions
     assert len(dups) == 1

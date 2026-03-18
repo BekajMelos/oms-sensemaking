@@ -158,8 +158,7 @@ class ResolutionSensemaker(Sensemaker):
             if duplicate.duplicate_node.id == current_node_id:
                 continue
 
-            all_acms = [duplicate.duplicate_node.acm] + duplicate.all_acms
-            rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in all_acms])
+            rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in duplicate.all_acms])
 
             dup = DupFinding(start_node_id=current_node_id, end_node_id=duplicate.duplicate_node.id, acm=rolled_up_acm)
 
