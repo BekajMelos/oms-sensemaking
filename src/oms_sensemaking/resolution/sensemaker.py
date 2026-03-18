@@ -148,23 +148,13 @@ class ResolutionSensemaker(Sensemaker):
         current_node_id = attribute.nodeId
         dups: list[DupFinding] = []
 
-        print("\n\n\n")
-        print(len(duplicates))
-
         for duplicate in duplicates:
-            print(duplicate.node.id)
-
             # Ignore the node we're currently looking at
             if duplicate.node.id == current_node_id:
-                print("ignoring")
                 continue
 
-            print("duplicate.attribute_acms: ", len(duplicate.attribute_acms), duplicate.attribute_acms)
-
             all_acms = [duplicate.node.acm] + duplicate.attribute_acms
-            print("all_acms: ", len(all_acms), all_acms)
             rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in all_acms])
-            print("rolled_up_acm: ", rolled_up_acm)
 
             dup = DupFinding(start_node_id=current_node_id, end_node_id=duplicate.node.id, acm=rolled_up_acm)
 
@@ -299,14 +289,10 @@ class ResolutionSensemaker(Sensemaker):
                     attributes = self.oms_crud_tool.get_node_attribute_by_iri(
                         node.id, [check[0] for check in duplicate_attribute_checks]
                     )
-                    print(attributes)
+                    # We only want the acms for the relevant attributes
                     for attribute in attributes:
                         attribute_check = (attribute.attributeIri, attribute.attributeValue)
                         if attribute_check in duplicate_attribute_checks:
-                            print("node: ", node.id)
-                            print("attribute_check: ", attribute_check)
-                            print("attribute.id: ", attribute.id)
-                            print("attribute.acm: ", attribute.acm)
                             attribute_acms.append(attribute.acm)
 
                     duplicates.append(DupNodeAndAttributeAcms(node, attribute_acms + current_node_attribute_acms))

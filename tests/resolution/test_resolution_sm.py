@@ -266,7 +266,8 @@ def test_create_duplicate_findings_creates_dups_and_relationships(
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+        dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
 
     # Assertions
     assert len(dups) == 2
@@ -381,7 +382,8 @@ def test_process_data_matches_using_alternate_criteria_set(
     mock_crud_tool.get_node_attribute_by_iri.return_value = []
 
     sensemaker = ResolutionSensemaker(facility_dual_criteria_config, mock_crud_tool)
-    findings = sensemaker.process_data(triggering_attr)
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+        findings = sensemaker.process_data(triggering_attr)
 
     assert len(findings) == 1
     assert findings[0].start_node_id == test_node_a.id
@@ -421,9 +423,10 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(
-        test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
-    )
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+        dups = sensemaker.create_duplicate_findings(
+            test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
 
     # Assertions
     assert len(dups) == 1
@@ -441,9 +444,10 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_att
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(
-        test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
-    )
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+        dups = sensemaker.create_duplicate_findings(
+            test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
 
     # Assertions
     assert len(dups) == 1
