@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
-- Using all attributes to determine the acm of a resolution relationship
 
 ### Changed
 
 ### Fixed
 - In/Out Garrison Sensemaker now does classification rollup correctly
 - Fix Existing Incursions excluding their current classification when doing classification rollup
+- Using all attributes to determine the acm of a resolution relationship
 
 ## [0.19.10] - 2026-03-16
 
