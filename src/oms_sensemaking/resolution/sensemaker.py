@@ -53,8 +53,13 @@ class DupFinding(FindingBase):
 class DupNodeAndAttributeAcms:
     """Represents a Duplicate Node and Matched Attributes"""
 
-    node: NodeNode
-    attribute_acms: list[dict]
+    duplicate_node: NodeNode
+    duplicate_node_attribute_acms: list[dict]
+    current_node_attribute_acms: list[dict]
+
+    @property
+    def all_acms(self) -> list[dict]:
+        return self.duplicate_node_attribute_acms + self.current_node_attribute_acms
 
 
 class ResolutionSensemaker(Sensemaker):
@@ -150,20 +155,20 @@ class ResolutionSensemaker(Sensemaker):
 
         for duplicate in duplicates:
             # Ignore the node we're currently looking at
-            if duplicate.node.id == current_node_id:
+            if duplicate.duplicate_node.id == current_node_id:
                 continue
 
-            all_acms = [duplicate.node.acm] + duplicate.attribute_acms
+            all_acms = [duplicate.duplicate_node.acm] + duplicate.all_acms
             rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in all_acms])
 
-            dup = DupFinding(start_node_id=current_node_id, end_node_id=duplicate.node.id, acm=rolled_up_acm)
+            dup = DupFinding(start_node_id=current_node_id, end_node_id=duplicate.duplicate_node.id, acm=rolled_up_acm)
 
             rel: CreateRelationshipInput = CreateRelationshipInput(
                 name=SETTINGS.resolution_relationship_name,
                 tags=[SETTINGS.resolution_sensemaker_tag],
                 labels=[SETTINGS.sm_inferenced_label, SETTINGS.res_sm_label, self.version_string],
                 startNodeId=current_node_id,
-                endNodeId=duplicate.node.id,
+                endNodeId=duplicate.duplicate_node.id,
                 confidence=Confidence.UNKNOWN,
                 sourceId=attribute.sourceId,
                 acm=rolled_up_acm,
@@ -174,7 +179,7 @@ class ResolutionSensemaker(Sensemaker):
             dup.atoms_type = AtomsType.RELATIONSHIP
             dups.append(dup)
 
-            LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, duplicate.node.id)
+            LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, duplicate.duplicate_node.id)
 
         return dups
 
@@ -284,8 +289,14 @@ class ResolutionSensemaker(Sensemaker):
                 duplicates = []
 
                 for node in nodes_response.data:
-                    attribute_acms = self._get_attribute_acms(node.id, duplicate_attribute_checks)
-                    duplicates.append(DupNodeAndAttributeAcms(node, attribute_acms + current_node_attribute_acms))
+                    duplicate_node_attribute_acms = self._get_attribute_acms(node.id, duplicate_attribute_checks)
+                    duplicates.append(
+                        DupNodeAndAttributeAcms(
+                            duplicate_node=node,
+                            duplicate_node_attribute_acms=duplicate_node_attribute_acms,
+                            current_node_attribute_acms=current_node_attribute_acms,
+                        )
+                    )
 
                 return duplicates
         return []

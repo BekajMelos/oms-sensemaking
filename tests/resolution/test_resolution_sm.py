@@ -25,7 +25,9 @@ def test_node():
 
 @pytest.fixture
 def test_node_dup(test_node):
-    return DupNodeAndAttributeAcms(node=test_node, attribute_acms=[DEFAULT_ACM])
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
+    )
 
 
 @pytest.fixture
@@ -41,7 +43,9 @@ def test_node_a():
 
 @pytest.fixture
 def test_node_a_dup(test_node_a, ts_acm):
-    return DupNodeAndAttributeAcms(node=test_node_a, attribute_acms=[ts_acm])
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_a, duplicate_node_attribute_acms=[ts_acm], current_node_attribute_acms=[]
+    )
 
 
 @pytest.fixture
@@ -57,7 +61,9 @@ def test_node_b():
 
 @pytest.fixture
 def test_node_b_dup(test_node_b):
-    return DupNodeAndAttributeAcms(node=test_node_b, attribute_acms=[DEFAULT_ACM])
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_b, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
+    )
 
 
 @pytest.fixture
@@ -73,7 +79,9 @@ def test_node_aircraft_a():
 
 @pytest.fixture
 def test_node_aircraft_a_dup(test_node_aircraft_a):
-    return DupNodeAndAttributeAcms(node=test_node_aircraft_a, attribute_acms=[DEFAULT_ACM])
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_aircraft_a, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
+    )
 
 
 @pytest.fixture
@@ -89,7 +97,9 @@ def test_node_aircraft_b():
 
 @pytest.fixture
 def test_node_aircraft_b_dup(test_node_aircraft_b):
-    return DupNodeAndAttributeAcms(node=test_node_aircraft_b, attribute_acms=[DEFAULT_ACM])
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_aircraft_b, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
+    )
 
 
 @pytest.fixture
@@ -282,16 +292,16 @@ def test_create_duplicate_findings_creates_dups_and_relationships(
         dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
         mock_acm_rollup.assert_has_calls(
             [
-                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_a_dup.attribute_acms]),
-                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_b_dup.attribute_acms]),
+                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_a_dup.all_acms]),
+                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_b_dup.all_acms]),
             ]
         )
 
     # Assertions
     assert len(dups) == 2
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_a_dup.node.id
-    assert dups[1].end_node_id == test_node_b_dup.node.id
+    assert dups[0].end_node_id == test_node_a_dup.duplicate_node.id
+    assert dups[1].end_node_id == test_node_b_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 2
@@ -348,9 +358,15 @@ def test_find_duplicates_returns_first_nonempty_group(
     assert len(duplicates) == 2
 
     # node a attribute + current attribute (test_attribute_b)
-    dup1 = DupNodeAndAttributeAcms(node=test_node_a, attribute_acms=[ts_acm, DEFAULT_ACM])
+    dup1 = DupNodeAndAttributeAcms(
+        duplicate_node=test_node_a, duplicate_node_attribute_acms=[ts_acm], current_node_attribute_acms=[DEFAULT_ACM]
+    )
     # node b attribute + current attribute (test_attribute_b)
-    dup2 = DupNodeAndAttributeAcms(node=test_node_b, attribute_acms=[DEFAULT_ACM, DEFAULT_ACM])
+    dup2 = DupNodeAndAttributeAcms(
+        duplicate_node=test_node_b,
+        duplicate_node_attribute_acms=[DEFAULT_ACM],
+        current_node_attribute_acms=[DEFAULT_ACM],
+    )
 
     assert dup1 in duplicates
     assert dup2 in duplicates
@@ -462,13 +478,13 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
             test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
         )
         mock_acm_rollup.assert_called_with(
-            [{"ACM": acm} for acm in [test_node_aircraft_a.acm] + test_node_aircraft_b_dup.attribute_acms]
+            [{"ACM": acm} for acm in [test_node_aircraft_a.acm] + test_node_aircraft_b_dup.all_acms]
         )
 
     # Assertions
     assert len(dups) == 1
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_aircraft_b_dup.node.id
+    assert dups[0].end_node_id == test_node_aircraft_b_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 1
@@ -491,13 +507,13 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_att
             test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
         )
         mock_acm_rollup.assert_called_with(
-            [{"ACM": acm} for acm in [test_node_aircraft_b.acm] + test_node_aircraft_a_dup.attribute_acms]
+            [{"ACM": acm} for acm in [test_node_aircraft_b.acm] + test_node_aircraft_a_dup.all_acms]
         )
 
     # Assertions
     assert len(dups) == 1
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_aircraft_a_dup.node.id
+    assert dups[0].end_node_id == test_node_aircraft_a_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 1
