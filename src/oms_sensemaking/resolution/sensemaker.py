@@ -10,8 +10,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateRelationshipInput,
     NodeAttributeQuery,
     NodeAttributeSubQuery,
+    NodeNode,
     NodeQuery,
-    NodesNodes,
     RelationshipNodeQuery,
     RelationshipQuery,
     StringQuery,
@@ -53,7 +53,7 @@ class DupFinding(FindingBase):
 class DupNodeAndAttributeAcms:
     """Represents a Duplicate Node and Matched Attributes"""
 
-    node: NodesNodes
+    node: NodeNode
     attribute_acms: list[dict]
 
 
@@ -293,12 +293,11 @@ class ResolutionSensemaker(Sensemaker):
     def _get_attribute_acms(self, node_id, duplicate_attribute_checks) -> list[dict]:
         """Get required attributes from ATOMS and return their acms
 
-
         :param node_id: node id to retrieve acms from
         :param duplicate_attribute_checks: list of tuples of attribute iris and values we're using for this match
         :return: List of acms
         """
-        attribute_acms = []
+        duplicate_node_attribute_acms = []
 
         attributes = self.oms_crud_tool.get_node_attribute_by_iri(
             node_id, [check[0] for check in duplicate_attribute_checks]
@@ -307,5 +306,5 @@ class ResolutionSensemaker(Sensemaker):
         for attribute in attributes:
             attribute_check = (attribute.attributeIri, attribute.attributeValue)
             if attribute_check in duplicate_attribute_checks:
-                attribute_acms.append(attribute.acm)
-        return attribute_acms
+                duplicate_node_attribute_acms.append(attribute.acm)
+        return duplicate_node_attribute_acms
