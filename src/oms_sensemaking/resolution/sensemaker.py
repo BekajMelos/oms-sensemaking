@@ -284,18 +284,28 @@ class ResolutionSensemaker(Sensemaker):
                 duplicates = []
 
                 for node in nodes_response.data:
-                    attribute_acms = []
-
-                    attributes = self.oms_crud_tool.get_node_attribute_by_iri(
-                        node.id, [check[0] for check in duplicate_attribute_checks]
-                    )
-                    # We only want the acms for the relevant attributes
-                    for attribute in attributes:
-                        attribute_check = (attribute.attributeIri, attribute.attributeValue)
-                        if attribute_check in duplicate_attribute_checks:
-                            attribute_acms.append(attribute.acm)
-
+                    attribute_acms = self._get_attribute_acms(node.id, duplicate_attribute_checks)
                     duplicates.append(DupNodeAndAttributeAcms(node, attribute_acms + current_node_attribute_acms))
 
                 return duplicates
         return []
+
+    def _get_attribute_acms(self, node_id, duplicate_attribute_checks) -> list[dict]:
+        """Get required attributes from ATOMS and return their acms
+
+
+        :param node_id: node id to retrieve acms from
+        :param duplicate_attribute_checks: list of tuples of attribute iris and values we're using for this match
+        :return: List of acms
+        """
+        attribute_acms = []
+
+        attributes = self.oms_crud_tool.get_node_attribute_by_iri(
+            node_id, [check[0] for check in duplicate_attribute_checks]
+        )
+        # We only want the acms for the relevant attributes
+        for attribute in attributes:
+            attribute_check = (attribute.attributeIri, attribute.attributeValue)
+            if attribute_check in duplicate_attribute_checks:
+                attribute_acms.append(attribute.acm)
+        return attribute_acms
