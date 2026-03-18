@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Using all attributes to determine the acm of a resolution relationship
 
 ### Changed
 
