@@ -24,6 +24,7 @@ from oms_sdk.generated.generated_graphql_client import (
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
+from oms_sensemaking.clients.aac_client import HasAcm
 from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -204,8 +205,9 @@ class IncursionSensemaker(Sensemaker):
 
         # Update start/end times and add observation to incursion activity
         existing_incursion_observations.append(observation)
+        classified_objects: list[HasAcm] = existing_incursion_observations + [existing_incursion_activity]
         rolled_up_acm = aac_client.get_acm_rollup(
-            [{"ACM": observation.acm} for observation in existing_incursion_observations]
+            [{"ACM": classified_object.acm} for classified_object in classified_objects]
         )
 
         incursion_finding = Incursion(

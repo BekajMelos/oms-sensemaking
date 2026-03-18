@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - In/Out Garrison Sensemaker now does classification rollup correctly
+- Fix Existing Incursions excluding their current classification when doing classification rollup
 
 ## [0.19.10] - 2026-03-16
 

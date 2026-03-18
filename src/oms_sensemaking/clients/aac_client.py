@@ -4,7 +4,7 @@ import dataclasses
 import json
 import logging
 import ssl
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Protocol, TypeAlias, Union
 
 import hishel
 import httpcore
@@ -17,6 +17,12 @@ from oms_sensemaking.config import SETTINGS
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 HTTPX_TIMEOUT = 30
+
+Acm: TypeAlias = dict[str, Any]
+
+
+class HasAcm(Protocol):
+    acm: Acm
 
 
 @dataclasses.dataclass(frozen=True)
