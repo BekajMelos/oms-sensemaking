@@ -40,8 +40,8 @@ def test_node_a():
 
 
 @pytest.fixture
-def test_node_a_dup(test_node_a):
-    return DupNodeAndAttributeAcms(node=test_node_a, attribute_acms=[DEFAULT_ACM])
+def test_node_a_dup(test_node_a, ts_acm):
+    return DupNodeAndAttributeAcms(node=test_node_a, attribute_acms=[ts_acm])
 
 
 @pytest.fixture
@@ -105,7 +105,7 @@ def test_attribute(test_node):
 
 
 @pytest.fixture
-def test_attribute_a(test_node_a):
+def test_attribute_a1(test_node_a):
     return AttributeAttribute.model_construct(
         id=uuid4(),
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
@@ -113,6 +113,18 @@ def test_attribute_a(test_node_a):
         nodeId=test_node_a.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_a2(test_node_a, ts_acm):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
+        attributeValue="ABCD1234",
+        nodeId=test_node_a.id,
+        sourceId=uuid4(),
+        acm=ts_acm,
     )
 
 
@@ -260,14 +272,20 @@ def test_is_valid_true_case(duplicate_object_iris, test_attribute, mock_crud_too
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships(
-    duplicate_object_iris, mock_crud_tool, test_node_dup, test_node_a_dup, test_node_b_dup, test_attribute
+    duplicate_object_iris, mock_crud_tool, test_node_dup, test_node_a_dup, test_node_b_dup, test_node, test_attribute
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
         dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
+        mock_acm_rollup.assert_has_calls(
+            [
+                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_a_dup.attribute_acms]),
+                mock.call([{"ACM": acm} for acm in [test_node.acm] + test_node_b_dup.attribute_acms]),
+            ]
+        )
 
     # Assertions
     assert len(dups) == 2
@@ -294,14 +312,14 @@ def test_has_already_ran_false(duplicate_object_iris, mock_crud_tool):
 
 
 def test_find_duplicates_returns_empty_when_no_group_matches(
-    duplicate_object_iris, mock_crud_tool, test_attribute_a, test_attribute_b
+    duplicate_object_iris, mock_crud_tool, test_attribute_a1, test_attribute_b
 ):
     # Always return empty for every call
     mock_crud_tool.get_nodes.return_value = mock.MagicMock(data=[])
 
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
-    result = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
+    result = sensemaker.find_duplicates([[test_attribute_a1], [test_attribute_b]])
 
     assert result == []
     assert mock_crud_tool.get_nodes.call_count == 2  # tried both groups
@@ -313,18 +331,29 @@ def test_find_duplicates_returns_first_nonempty_group(
     test_node,
     test_node_a,
     test_node_b,
-    test_attribute_a,
+    test_attribute_a1,
+    test_attribute_a2,
     test_attribute_b,
     test_node_a_dup,
     test_node_b_dup,
+    ts_acm,
 ):
     # Return empty for first group, non-empty for second
     mock_crud_tool.get_nodes.side_effect = [mock.MagicMock(data=[]), mock.MagicMock(data=[test_node_a, test_node_b])]
+    mock_crud_tool.get_node_attribute_by_iri.side_effect = [[test_attribute_a2], [test_attribute_b]]
 
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
-    duplicates = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
+    duplicates = sensemaker.find_duplicates([[test_attribute_a2], [test_attribute_b]])
 
-    assert duplicates == [test_node_a_dup, test_node_b_dup]
+    assert len(duplicates) == 2
+
+    # node a attribute + current attribute (test_attribute_b)
+    dup1 = DupNodeAndAttributeAcms(node=test_node_a, attribute_acms=[ts_acm, DEFAULT_ACM])
+    # node b attribute + current attribute (test_attribute_b)
+    dup2 = DupNodeAndAttributeAcms(node=test_node_b, attribute_acms=[DEFAULT_ACM, DEFAULT_ACM])
+
+    assert dup1 in duplicates
+    assert dup2 in duplicates
 
 
 def test_gather_criteria_returns_empty_when_invalid(duplicate_object_iris, mock_crud_tool, test_attribute):
@@ -417,15 +446,23 @@ def test_process_data_skips_criteria_without_triggering_attr(
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
-    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a_dup, test_node_aircraft_b_dup, test_attribute_aircraft_a
+    duplicate_object_iris,
+    mock_crud_tool,
+    test_node_aircraft_a_dup,
+    test_node_aircraft_b_dup,
+    test_attribute_aircraft_a,
+    test_node_aircraft_a,
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
         dups = sensemaker.create_duplicate_findings(
             test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
+        mock_acm_rollup.assert_called_with(
+            [{"ACM": acm} for acm in [test_node_aircraft_a.acm] + test_node_aircraft_b_dup.attribute_acms]
         )
 
     # Assertions
@@ -438,15 +475,23 @@ def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_attr(
-    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a_dup, test_node_aircraft_b_dup, test_attribute_aircraft_d
+    duplicate_object_iris,
+    mock_crud_tool,
+    test_node_aircraft_a_dup,
+    test_node_aircraft_b_dup,
+    test_attribute_aircraft_d,
+    test_node_aircraft_b,
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
         dups = sensemaker.create_duplicate_findings(
             test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
+        mock_acm_rollup.assert_called_with(
+            [{"ACM": acm} for acm in [test_node_aircraft_b.acm] + test_node_aircraft_a_dup.attribute_acms]
         )
 
     # Assertions
