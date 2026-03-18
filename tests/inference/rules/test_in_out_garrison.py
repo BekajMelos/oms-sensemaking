@@ -394,7 +394,9 @@ def test_no_geo_attr_no_op(mocker, observational_node, garrison_object, mock_cru
 
 
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_new_in_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_crud_tool,
     observational_node,
@@ -410,7 +412,10 @@ def test_new_in_garrison(
             geo_attribute1.geometry["coordinates"][0],
         ],
         activities=[],
+        garrison_data_acms=["acm"] * 4,
     )
+
+    mock_aac_client.get_acm_rollup.return_value = "acm"
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     result = garr_sm.process_data(obs=observational_node)
@@ -421,7 +426,9 @@ def test_new_in_garrison(
 
 
 @patch("oms_sensemaking.inference.rules.in_out_garrison.GetGarrisonDataAllAtOnce.get_all_garrison_data")
+@patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client")
 def test_new_out_garrison(
+    mock_aac_client,
     mock_get_garrison_data,
     mock_crud_tool,
     observational_node2,
@@ -437,7 +444,10 @@ def test_new_out_garrison(
             geo_attribute1.geometry["coordinates"][0],
         ],
         activities=[],
+        garrison_data_acms=["acm"] * 4,
     )
+
+    mock_aac_client.get_acm_rollup.return_value = "acm"
 
     garr_sm = InOrOutOfGarrison(mock_crud_tool)
     result = garr_sm.process_data(obs=observational_node2)
@@ -493,6 +503,7 @@ def test_update_in_garrison(
         activities=[
             SimpleNamespace(
                 id=in_garrison_activity1.id,
+                acm="acm",
                 name=in_garrison_activity1.name,
                 state=in_garrison_activity1.state,
                 nodeId=in_garrison_activity1.nodeId,
@@ -503,6 +514,7 @@ def test_update_in_garrison(
             ),
             SimpleNamespace(
                 id=in_garrison_activity2.id,
+                acm="acm",
                 name=in_garrison_activity2.name,
                 state=in_garrison_activity2.state,
                 nodeId=in_garrison_activity2.nodeId,
@@ -512,6 +524,7 @@ def test_update_in_garrison(
                 observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
             ),
         ],
+        garrison_data_acms=["acm"] * 4,
     )
 
     mock_aac_client.get_acm_rollup.return_value = "acm"
@@ -561,6 +574,7 @@ def test_update_out_garrison(
         activities=[
             SimpleNamespace(
                 id=out_garrison_activity1.id,
+                acm="acm",
                 name=out_garrison_activity1.name,
                 state=out_garrison_activity1.state,
                 nodeId=out_garrison_activity1.nodeId,
@@ -570,6 +584,7 @@ def test_update_out_garrison(
                 observations=SimpleNamespace(data=MagicMock(spec=list[ObservationObservation])),
             )
         ],
+        garrison_data_acms=["acm"] * 4,
     )
 
     mock_aac_client.get_acm_rollup.return_value = "acm"
