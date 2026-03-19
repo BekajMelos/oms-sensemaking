@@ -136,3 +136,6 @@ load-out-of-garrison:
 
 generate-test-tracks:
 	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)
+
+track-performance:
+	python -m scripts.track_performance
