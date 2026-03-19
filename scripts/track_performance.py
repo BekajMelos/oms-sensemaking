@@ -47,12 +47,7 @@ def get_queue_depths() -> Dict[str, int]:
 
 
 def get_prometheus_counters() -> Dict[str, float]:
-    """
-    Returns:
-        {
-            "queue_name": counter_value
-        }
-    """
+    """Fetch prometheus counters."""
     query = "events_processed_total"
 
     resp = requests.get(PROMETHEUS_URL, params={"query": query})
@@ -75,11 +70,19 @@ def get_prometheus_counters() -> Dict[str, float]:
     return result
 
 
-def ensure_container_stopped(container_name: str):
-    result = subprocess.check_output(["docker", "inspect", "-f", "{{.State.Running}}", container_name]).decode().strip()
+def is_container_running(container_name: str) -> bool:
+    output = subprocess.check_output(["docker", "inspect", container_name])
+    data = json.loads(output)
+    return data[0]["State"]["Running"]
 
-    if result == "true":
-        raise RuntimeError(f"Container {container_name} is already running")
+
+def ensure_container_stopped(container_name: str):
+    if is_container_running(container_name):
+        print(
+            "\nThe atoms-sensemaking service is running.\n"
+            "Please pause the service, load the queues by ingesting data, and run the script again.\n"
+        )
+        exit(1)
 
 
 def get_container_name() -> str:
