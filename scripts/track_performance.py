@@ -207,18 +207,22 @@ def compute_metrics(start, end, queue_completion_times):
 def write_results(results):
     import os
 
-    os.makedirs("track_performance", exist_ok=True)
-
+    data = []
     if os.path.exists(OUTPUT_FILE):
-        with open(OUTPUT_FILE, "r") as f:
-            data = json.load(f)
-    else:
-        data = []
+        try:
+            with open(OUTPUT_FILE, "r") as f:
+                content = f.read().strip()
+                if content:
+                    data = json.loads(content)
+        except json.JSONDecodeError:
+            print(f"Overwriting corrupted {OUTPUT_FILE}")
 
     data.append(results)
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(data, f, indent=2)
+
+    print(f"Results written to '{OUTPUT_FILE}'")
 
 
 def main():
@@ -228,8 +232,6 @@ def main():
     end = capture_end_state()
     results = compute_metrics(start, end, queue_completion_times)
     write_results(results)
-
-    print(f"Results written to '{OUTPUT_FILE}'")
 
 
 if __name__ == "__main__":
