@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file.
 - New script to generate sample tracks for EKF tuning
 - Compliant fields are recorded and are now part of the Object Standards grade output
 - Violations are now recorded and have two types: MISSING and INVALID
+
 ### Changed
+- Refactor and break out larger files
 
 ### Fixed
 - Although the custom garrison query was working, it was slightly configured incorrectly in how it retrieved activities. The query now heavily filters based off the current node.

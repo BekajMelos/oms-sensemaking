@@ -15,8 +15,8 @@ from oms_sensemaking.models.geo import (
     CommonSenseFilter,
     Point,
     Track,
-    TrackWeaverBase,
 )
+from oms_sensemaking.models.track_weavers import TrackWeaverBase
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 

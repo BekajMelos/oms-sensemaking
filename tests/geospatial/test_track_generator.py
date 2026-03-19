@@ -15,7 +15,8 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.exceptions import TrackLengthError
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.geospatial.track_generator import GeoCSFTrackPointHelpers, TrackGenerator
-from oms_sensemaking.models.geo import CommonSenseFilter, NaiveTrackWeaver, Point, Track
+from oms_sensemaking.models.geo import CommonSenseFilter, Point, Track
+from oms_sensemaking.models.track_weavers import NaiveTrackWeaver
 
 
 @pytest.fixture
@@ -69,7 +70,7 @@ def track_points(source) -> list[Point]:
     return points
 
 
-@mock.patch("oms_sensemaking.models.geo.aac_client")
+@mock.patch("oms_sensemaking.models.track_weavers.aac_client")
 def test_generate_track_too_short(mock_aac_client: AacClient, mock_oms_crud_tool, track_points: list[Point]):
     track_generator = TrackGenerator(OntologyClient(OmsCrudTool()))
 
