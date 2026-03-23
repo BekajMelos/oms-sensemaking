@@ -80,7 +80,7 @@ def ensure_container_stopped(container_name: str):
     if is_container_running(container_name):
         print(
             "\nThe atoms-sensemaking service is running.\n"
-            "Please pause the service, load the queues by ingesting data, and run the script again.\n"
+            "Please stop the service, load the queues by ingesting data, and run the script again.\n"
         )
         exit(1)
 
