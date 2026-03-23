@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
 
 ### Changed
+- Refactor and break out larger files
 
 ### Fixed
 - Although the custom garrison query was working, it was slightly configured incorrectly in how it retrieved activities. The query now heavily filters based off the current node.
