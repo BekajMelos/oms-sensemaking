@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - Updates from `grimlock-support` through 0.19.8
 
 ### Changed
-- Migrate to using atoms-local-dev enviroment.
+- Migrate to using atoms-local-dev environment.
 - Updated all old references to 'Object Minimums' to the new name 'Object Standards'
 - Updated ATOMS dependency to Starscream 3.1.6 and sdk to 14.0.0
 
@@ -82,7 +82,7 @@ All notable changes to this project will be documented in this file.
 - Cleaned up unused inference.py, base_rule.py, and unit tests that relies on those files
 
 ### Fixed
-- ActivityQuery `name`'s StrinQuery built with `in_`
+- ActivityQuery `name`'s StringQuery built with `in_`
 - Fixed datetime and class-based `config` warnings when running `make test`
 
 ## [0.23.0] - 2026-01-26
@@ -114,7 +114,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Base structure for the Object Minimums Sensemaker
-- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Minimums Sensemaker
 
 ### Changed
 - Updated ATOMS dependency to Starscream 3.1.1
@@ -196,7 +196,7 @@ All notable changes to this project will be documented in this file.
 - Added `INCURSION` activity state.
 - Added new configuration toggle for http profile.
 - Base structure for the Object Minimums Sensemaker
-- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Mininmums Sensemaker
+- Added base configuration file containing 'Person' and 'Military Unit' data for future Object Minimums Sensemaker
 - Added Object Minimums Sensemaker processing
 - Added ObjectMinimumGrade and ObjectMinimumRubric classes
 - Added Alembic error logging in `prestart.sh` and exception coverage in `env.py`.
@@ -294,11 +294,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Fixed `make nuke` target so that it now purges all volumes assosiated with oms-sensemaking.
-- Corrected the Jenkins build job for the Sensemaking image which occasionaly created incorrect versions
+- Fixed `make nuke` target so that it now purges all volumes associated with oms-sensemaking.
+- Corrected the Jenkins build job for the Sensemaking image which occasionally created incorrect versions
 - Allow test coverage portion of the Jenkins pipeline to run and post results to SonarQube in AIDE
 - Fixed MilSymbol Sensemaker bug where an invalid character part of a symbol Id code would be processed and cause errors in the service
-- Fixed issue with the open telemetry unit tests not work propererly when the services weren't running
+- Fixed issue with the open telemetry unit tests not work properly when the services weren't running
 
 ### Removed
 
@@ -322,7 +322,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Implemented IP logging to meet V-222470 standards
-- Added more unit tests to the code base to acheive a code coverage of at least 80%
+- Added more unit tests to the code base to achieve a code coverage of at least 80%
 
 ### Changed
 - Integrate custom query in InOrOutOfGarrison to reduce complexity.
@@ -367,7 +367,7 @@ Removed the NLP feature from the code base to comply with STIG V-222518
 ### Changed
 
 ### Fixed
-- Had to change structure of how area of interest files are read due to helm chart conflit
+- Had to change structure of how area of interest files are read due to helm chart conflict
 
 ### Removed
 
@@ -463,7 +463,7 @@ the "incurring" node.
 - Limit queue messages being actively processed
 
 ### Changed
-- Updated Garrison rule to use the Facility's goemetry to determine whether new points are part of existing or new Garrison Activity
+- Updated Garrison rule to use the Facility's geometry to determine whether new points are part of existing or new Garrison Activity
 
 ## [0.7.3] - 2025-06-24
 
@@ -500,7 +500,7 @@ the "incurring" node.
 - Fixed the Resolution sensemaker's inability to process multiple attributes used for identifying duplicates
 - Handling connection errors with RabbitMQ
 - Made Mil Symbol logic user uppercase values to make config lookups case insensitive
-- Removed unneccesary Add Has Name Attribute rule from Inference Sensemaker
+- Removed unnecessary Add Has Name Attribute rule from Inference Sensemaker
 
 ## [0.6.1] - 2025-05-21
 
