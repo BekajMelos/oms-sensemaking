@@ -31,9 +31,6 @@
 | `DB_HOST`                     | `postgis`                         | The database hostname                                                                                         | No             |
 | `DB_USER`                     | `appuser`                         | The regular (i.e. non-admin) username.                                                                        | Yes            |
 | `DB_PASSWORD`                 | `xxxxxx`                          | The password for the regular db user.                                                                         | Yes            |
-| `POSTGRES_USER`               | `postgres`                        | The PostgreSQL/PostGIS admin user                                                                             | Yes            |
-| `POSTGRES_PASSWORD`           | `xxxxxxx`                         | The password for the PostgreSQL admin user                                                                    | Yes            |
-| `POSTGRES_PORT`               | `5432`                            | The port for the PostgreSQL service. When set, this will expose the port to the host (needed for unit tests). | Yes            |
 | `PGADMIN_DEFAULT_EMAIL`       | `dev@blackcape.io`                | [pgAdmin] The login for the default pgAdmin user.                                                             | Yes            |
 | `PGADMIN_DEFAULT_PASSWORD`    | `xxxxxx`                          | [pgAdmin] The password for the default pgAdmin user.                                                          | Yes            |
 | `PGADMIN_CONFIG_LOGIN_BANNER` | `'<h4>Development Database</h4>'` | [pgAdmin] A login banner for pgAdmin                                                                          | Yes            |
