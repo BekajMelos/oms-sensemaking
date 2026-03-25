@@ -1,4 +1,9 @@
-from oms_sensemaking.models.geo import ExtendedKalmanTrackWeaver, NaiveTrackWeaver, TimeBinTrackWeaver, TrackWeaverBase
+from oms_sensemaking.models.track_weavers import (
+    ExtendedKalmanTrackWeaver,
+    NaiveTrackWeaver,
+    TimeBinTrackWeaver,
+    TrackWeaverBase,
+)
 
 
 class TrackWeaverFactory:

@@ -277,7 +277,7 @@ def test_geo_controller_with_provider_config(
     mock_geo_controller.oms_crud_tool.get_source.assert_called_with(source_id=str(source_irrelevant_provider.id))
 
 
-@mock.patch("oms_sensemaking.models.geo.aac_client")
+@mock.patch("oms_sensemaking.models.track_weavers.aac_client")
 def test_track_too_short1(
     mock_aac_client1: AacClient,
     mock_geo_controller: GeospatialSensemakerController,
