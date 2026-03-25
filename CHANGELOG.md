@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Violations are now recorded and have two types: MISSING and INVALID
 
 ### Changed
+- Cleanup of .env.template
 - Refactor and break out larger files
 
 ### Fixed
