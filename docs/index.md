@@ -17,12 +17,6 @@
 1. Create a minimal .env file
 
         # .env --- Local configuration.
-        #
-        # ----------------------------------------
-        # Sensemaker Database
-        # ----------------------------------------
-        POSTGRES_USER=postgres
-        POSTGRES_PASSWORD=password
 
         # ----------------------------------------
         # ATOMS SDK Settings
