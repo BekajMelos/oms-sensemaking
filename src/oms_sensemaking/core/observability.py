@@ -4,7 +4,7 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, Protocol
 
 from fastapi import Request, Response
 from opentelemetry import trace
@@ -42,6 +42,80 @@ class BaseTelemetryManager(ABC):
     def get_current_trace_id(self) -> Optional[str]:
         """Get the current trace ID for exemplars."""
         pass
+
+
+class MetricsPublisherProtocol(Protocol):
+    """Class API that all metrics publishers must implement."""
+
+    def record_request(self, method: str, path: str, status_code: int, duration: float) -> None:
+        """Record request metrics."""
+        ...
+
+    def record_queue_processing_time(self, queue_name: str, processing_time_seconds: float) -> None:
+        """Record queue processing time."""
+        ...
+
+    def record_event_processed(self, queue_name: str) -> None:
+        """Record a successful event."""
+        ...
+
+    def record_event_failed(self, queue_name: str) -> None:
+        """Record a failed event."""
+        ...
+
+    def record_processing_completion(self, queue_name: str, start_time: float, success: bool = True) -> None:
+        """Record completion timing and success/failure."""
+        ...
+
+
+class MetricsPublisher(ABC):
+    """Abstract base class with generic behavior shared by metrics publishers."""
+
+    def __init__(self, app_name: str):
+        self.app_name = app_name
+
+    @abstractmethod
+    def record_request(self, method: str, path: str, status_code: int, duration: float) -> None:
+        """Record request metrics in backend-specific storage."""
+        pass
+
+    @abstractmethod
+    def record_queue_processing_time(self, queue_name: str, processing_time_seconds: float) -> None:
+        """Record queue processing time in backend-specific storage."""
+        pass
+
+    @abstractmethod
+    def record_event_processed(self, queue_name: str) -> None:
+        """Record successful event count in backend-specific storage."""
+        pass
+
+    @abstractmethod
+    def record_event_failed(self, queue_name: str) -> None:
+        """Record failed event count in backend-specific storage."""
+        pass
+
+    def record_processing_completion(self, queue_name: str, start_time: float, success: bool = True) -> None:
+        """Generic completion recording used by all publisher implementations."""
+        processing_time = time.time() - start_time
+        self.record_queue_processing_time(queue_name, processing_time)
+
+        if success:
+            self.record_event_processed(queue_name)
+        else:
+            self.record_event_failed(queue_name)
+
+    def record_processing_success(self, queue_name: str, start_time: float) -> None:
+        """Generic helper for successful completion."""
+        self.record_processing_completion(queue_name, start_time, success=True)
+
+    def record_processing_failure(self, queue_name: str, start_time: float) -> None:
+        """Generic helper for failed completion."""
+        self.record_processing_completion(queue_name, start_time, success=False)
+
+    def _get_trace_exemplar(self) -> Optional[dict]:
+        """Generic helper for trace exemplar construction."""
+        trace_id = get_current_trace_id()
+        return {"TraceID": trace_id} if trace_id else None
 
 
 class NoOpTelemetryManager(BaseTelemetryManager):
@@ -174,6 +248,36 @@ EVENTS_FAILED = Counter(
 )
 
 
+class PrometheusMetricsPublisher(MetricsPublisher):
+    """Prometheus-backed implementation of metrics publishing."""
+
+    def record_request(self, method: str, path: str, status_code: int, duration: float) -> None:
+        exemplar = self._get_trace_exemplar()
+
+        REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name=self.app_name).observe(
+            duration, exemplar=exemplar
+        )
+        REQUESTS_TOTAL.labels(method=method, path=path, status_code=status_code, app_name=self.app_name).inc()
+
+    def record_queue_processing_time(self, queue_name: str, processing_time_seconds: float) -> None:
+        exemplar = self._get_trace_exemplar()
+        QUEUE_PROCESSING_TIME.labels(queue_name=queue_name, app_name=self.app_name).observe(
+            processing_time_seconds, exemplar=exemplar
+        )
+        LOGGER.debug(f"Queue processing time recorded: {queue_name} = {processing_time_seconds:.4f}s")
+
+    def record_event_processed(self, queue_name: str) -> None:
+        EVENTS_PROCESSED.labels(queue_name=queue_name, app_name=self.app_name).inc()
+        LOGGER.debug(f"Event processed counter incremented for queue: {queue_name}")
+
+    def record_event_failed(self, queue_name: str) -> None:
+        EVENTS_FAILED.labels(queue_name=queue_name, app_name=self.app_name).inc()
+        LOGGER.debug(f"Event failed counter incremented for queue: {queue_name}")
+
+
+metrics_publisher: MetricsPublisherProtocol = PrometheusMetricsPublisher(SETTINGS.otel_service_name)
+
+
 def initialize_observability():
     """Initialize OpenTelemetry tracing and Prometheus metrics."""
     telemetry_manager.initialize()
@@ -192,19 +296,7 @@ def get_current_trace_id() -> Optional[str]:
 def record_request_metrics(method: str, path: str, status_code: int, duration: float):
     """Record request metrics with trace exemplars."""
     try:
-        trace_id = get_current_trace_id()
-        exemplar = {"TraceID": trace_id} if trace_id else None
-
-        # Record duration with exemplar
-        REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name=SETTINGS.otel_service_name).observe(
-            duration, exemplar=exemplar
-        )
-
-        # Record total requests
-        REQUESTS_TOTAL.labels(
-            method=method, path=path, status_code=status_code, app_name=SETTINGS.otel_service_name
-        ).inc()
-
+        metrics_publisher.record_request(method, path, status_code, duration)
     except Exception as e:
         LOGGER.error(f"Failed to record request metrics: {e}")
 
@@ -212,14 +304,7 @@ def record_request_metrics(method: str, path: str, status_code: int, duration: f
 def record_queue_processing_time(queue_name: str, processing_time_seconds: float):
     """Record queue processing time with trace exemplars."""
     try:
-        trace_id = get_current_trace_id()
-        exemplar = {"TraceID": trace_id} if trace_id else None
-
-        QUEUE_PROCESSING_TIME.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).observe(
-            processing_time_seconds, exemplar=exemplar
-        )
-        LOGGER.debug(f"Queue processing time recorded: {queue_name} = {processing_time_seconds:.4f}s")
-
+        metrics_publisher.record_queue_processing_time(queue_name, processing_time_seconds)
     except Exception as e:
         LOGGER.error(f"Failed to record queue processing time: {e}")
 
@@ -227,9 +312,7 @@ def record_queue_processing_time(queue_name: str, processing_time_seconds: float
 def record_event_processed(queue_name: str):
     """Record event processed counter."""
     try:
-        EVENTS_PROCESSED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
-        LOGGER.debug(f"Event processed counter incremented for queue: {queue_name}")
-
+        metrics_publisher.record_event_processed(queue_name)
     except Exception as e:
         LOGGER.error(f"Failed to record event processed: {e}")
 
@@ -237,9 +320,7 @@ def record_event_processed(queue_name: str):
 def record_event_failed(queue_name: str):
     """Record event failed counter."""
     try:
-        EVENTS_FAILED.labels(queue_name=queue_name, app_name=SETTINGS.otel_service_name).inc()
-        LOGGER.debug(f"Event failed counter incremented for queue: {queue_name}")
-
+        metrics_publisher.record_event_failed(queue_name)
     except Exception as e:
         LOGGER.error(f"Failed to record event failed: {e}")
 
@@ -247,29 +328,25 @@ def record_event_failed(queue_name: str):
 def record_processing_completion(queue_name: str, start_time: float, success: bool = True):
     """Record processing completion with timing and success/failure."""
     try:
-        processing_time = time.time() - start_time
-
-        # Always record processing time for any completed event
-        record_queue_processing_time(queue_name, processing_time)
-
-        # Record success/failure separately
-        if success:
-            record_event_processed(queue_name)
-        else:
-            record_event_failed(queue_name)
-
+        metrics_publisher.record_processing_completion(queue_name, start_time, success)
     except Exception as e:
         LOGGER.error(f"Failed to record processing completion: {e}")
 
 
 def record_processing_success(queue_name: str, start_time: float):
     """Record successful processing completion."""
-    record_processing_completion(queue_name, start_time, success=True)
+    try:
+        metrics_publisher.record_processing_success(queue_name, start_time)
+    except Exception as e:
+        LOGGER.error(f"Failed to record processing success: {e}")
 
 
 def record_processing_failure(queue_name: str, start_time: float):
     """Record failed processing completion."""
-    record_processing_completion(queue_name, start_time, success=False)
+    try:
+        metrics_publisher.record_processing_failure(queue_name, start_time)
+    except Exception as e:
+        LOGGER.error(f"Failed to record processing failure: {e}")
 
 
 def metrics_endpoint(request: Request) -> Response:
