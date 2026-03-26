@@ -72,7 +72,7 @@ class ObjectStandardsQueueFilter(EventFilter):
 
     def passes_filter(self, audit_log_event: AuditLogEvent) -> bool:
         handled_object_types = [ObjectType.ATTRIBUTE.value, ObjectType.RELATIONSHIP.value]
-        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value, Action.DELETE.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.DELETE.value]
         criteria = self.obj_standards_data.criteria
         return (
             audit_log_event.objectType in handled_object_types
