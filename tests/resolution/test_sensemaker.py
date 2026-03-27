@@ -9,7 +9,7 @@ from oms_sdk.generated.generated_graphql_client.enums import ObjectTier
 
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.resolution.sensemaker import DupFinding, ResolutionSensemaker
+from oms_sensemaking.resolution.sensemaker import DupFinding, DupNodeAndAttributeAcms, ResolutionSensemaker
 
 
 @pytest.fixture
@@ -20,6 +20,13 @@ def test_node():
         name="test_node",
         tier=ObjectTier.PRIMARY,
         classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
+    )
+
+
+@pytest.fixture
+def test_node_dup(test_node):
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
     )
 
 
@@ -35,6 +42,13 @@ def test_node_a():
 
 
 @pytest.fixture
+def test_node_a_dup(test_node_a, ts_acm):
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_a, duplicate_node_attribute_acms=[ts_acm], current_node_attribute_acms=[]
+    )
+
+
+@pytest.fixture
 def test_node_b():
     return NodeNode.model_construct(
         id=uuid4(),
@@ -42,6 +56,13 @@ def test_node_b():
         name="test_nodeB",
         tier=ObjectTier.PRIMARY,
         classIri="https://foundry.ai.mil/ontology/4901-001/Facility",
+    )
+
+
+@pytest.fixture
+def test_node_b_dup(test_node_b):
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_b, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
     )
 
 
@@ -57,6 +78,13 @@ def test_node_aircraft_a():
 
 
 @pytest.fixture
+def test_node_aircraft_a_dup(test_node_aircraft_a):
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_aircraft_a, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
+    )
+
+
+@pytest.fixture
 def test_node_aircraft_b():
     return NodeNode.model_construct(
         id=uuid4(),
@@ -64,6 +92,13 @@ def test_node_aircraft_b():
         name="test_nodeD",
         tier=ObjectTier.PRIMARY,
         classIri="http://www.ontologyrepository.com/CommonCoreOntologies/Aircraft",
+    )
+
+
+@pytest.fixture
+def test_node_aircraft_b_dup(test_node_aircraft_b):
+    return DupNodeAndAttributeAcms(
+        duplicate_node=test_node_aircraft_b, duplicate_node_attribute_acms=[DEFAULT_ACM], current_node_attribute_acms=[]
     )
 
 
@@ -80,7 +115,7 @@ def test_attribute(test_node):
 
 
 @pytest.fixture
-def test_attribute_a(test_node_a):
+def test_attribute_a1(test_node_a):
     return AttributeAttribute.model_construct(
         id=uuid4(),
         attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
@@ -88,6 +123,18 @@ def test_attribute_a(test_node_a):
         nodeId=test_node_a.id,
         sourceId=uuid4(),
         acm=DEFAULT_ACM,
+    )
+
+
+@pytest.fixture
+def test_attribute_a2(test_node_a, ts_acm):
+    return AttributeAttribute.model_construct(
+        id=uuid4(),
+        attributeIri="https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber",
+        attributeValue="ABCD1234",
+        nodeId=test_node_a.id,
+        sourceId=uuid4(),
+        acm=ts_acm,
     )
 
 
@@ -235,19 +282,26 @@ def test_is_valid_true_case(duplicate_object_iris, test_attribute, mock_crud_too
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships(
-    duplicate_object_iris, mock_crud_tool, test_node, test_node_a, test_node_b, test_attribute
+    duplicate_object_iris, mock_crud_tool, test_node_dup, test_node_a_dup, test_node_b_dup, test_node, test_attribute
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(test_attribute, [test_node, test_node_a, test_node_b])
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
+        dups = sensemaker.create_duplicate_findings(test_attribute, [test_node_dup, test_node_a_dup, test_node_b_dup])
+        mock_acm_rollup.assert_has_calls(
+            [
+                mock.call([{"ACM": acm} for acm in test_node_a_dup.all_acms]),
+                mock.call([{"ACM": acm} for acm in test_node_b_dup.all_acms]),
+            ]
+        )
 
     # Assertions
     assert len(dups) == 2
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_a.id
-    assert dups[1].end_node_id == test_node_b.id
+    assert dups[0].end_node_id == test_node_a_dup.duplicate_node.id
+    assert dups[1].end_node_id == test_node_b_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 2
@@ -268,29 +322,54 @@ def test_has_already_ran_false(duplicate_object_iris, mock_crud_tool):
 
 
 def test_find_duplicates_returns_empty_when_no_group_matches(
-    duplicate_object_iris, mock_crud_tool, test_attribute_a, test_attribute_b
+    duplicate_object_iris, mock_crud_tool, test_attribute_a1, test_attribute_b
 ):
     # Always return empty for every call
     mock_crud_tool.get_nodes.return_value = mock.MagicMock(data=[])
 
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
-    result = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
+    result = sensemaker.find_duplicates([[test_attribute_a1], [test_attribute_b]])
 
     assert result == []
     assert mock_crud_tool.get_nodes.call_count == 2  # tried both groups
 
 
 def test_find_duplicates_returns_first_nonempty_group(
-    duplicate_object_iris, mock_crud_tool, test_node, test_node_a, test_node_b, test_attribute_a, test_attribute_b
+    duplicate_object_iris,
+    mock_crud_tool,
+    test_node,
+    test_node_a,
+    test_node_b,
+    test_attribute_a1,
+    test_attribute_a2,
+    test_attribute_b,
+    test_node_a_dup,
+    test_node_b_dup,
+    ts_acm,
 ):
     # Return empty for first group, non-empty for second
     mock_crud_tool.get_nodes.side_effect = [mock.MagicMock(data=[]), mock.MagicMock(data=[test_node_a, test_node_b])]
+    mock_crud_tool.get_node_attribute_by_iri.side_effect = [[test_attribute_a2], [test_attribute_b]]
 
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
-    duplicates = sensemaker.find_duplicates([[test_attribute_a], [test_attribute_b]])
+    duplicates = sensemaker.find_duplicates([[test_attribute_a2], [test_attribute_b]])
 
-    assert duplicates == [test_node_a, test_node_b]
+    assert len(duplicates) == 2
+
+    # node a attribute + current attribute (test_attribute_b)
+    dup1 = DupNodeAndAttributeAcms(
+        duplicate_node=test_node_a, duplicate_node_attribute_acms=[ts_acm], current_node_attribute_acms=[DEFAULT_ACM]
+    )
+    # node b attribute + current attribute (test_attribute_b)
+    dup2 = DupNodeAndAttributeAcms(
+        duplicate_node=test_node_b,
+        duplicate_node_attribute_acms=[DEFAULT_ACM],
+        current_node_attribute_acms=[DEFAULT_ACM],
+    )
+
+    assert dup1 in duplicates
+    assert dup2 in duplicates
 
 
 def test_gather_criteria_returns_empty_when_invalid(duplicate_object_iris, mock_crud_tool, test_attribute):
@@ -348,7 +427,8 @@ def test_process_data_matches_using_alternate_criteria_set(
     mock_crud_tool.get_node_attribute_by_iri.return_value = []
 
     sensemaker = ResolutionSensemaker(facility_dual_criteria_config, mock_crud_tool)
-    findings = sensemaker.process_data(triggering_attr)
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup"):
+        findings = sensemaker.process_data(triggering_attr)
 
     assert len(findings) == 1
     assert findings[0].start_node_id == test_node_a.id
@@ -382,36 +462,54 @@ def test_process_data_skips_criteria_without_triggering_attr(
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships_aircraft(
-    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a, test_node_aircraft_b, test_attribute_aircraft_a
+    duplicate_object_iris,
+    mock_crud_tool,
+    test_node_aircraft_a_dup,
+    test_node_aircraft_b_dup,
+    test_attribute_aircraft_a,
+    test_node_aircraft_a,
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(test_attribute_aircraft_a, [test_node_aircraft_a, test_node_aircraft_b])
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
+        dups = sensemaker.create_duplicate_findings(
+            test_attribute_aircraft_a, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
+        mock_acm_rollup.assert_called_with([{"ACM": acm} for acm in test_node_aircraft_b_dup.all_acms])
 
     # Assertions
     assert len(dups) == 1
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_aircraft_b.id
+    assert dups[0].end_node_id == test_node_aircraft_b_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 1
 
 
 def test_create_duplicate_findings_creates_dups_and_relationships_aircraft_2_attr(
-    duplicate_object_iris, mock_crud_tool, test_node_aircraft_a, test_node_aircraft_b, test_attribute_aircraft_d
+    duplicate_object_iris,
+    mock_crud_tool,
+    test_node_aircraft_a_dup,
+    test_node_aircraft_b_dup,
+    test_attribute_aircraft_d,
+    test_node_aircraft_b,
 ):
     # Setup
     sensemaker = ResolutionSensemaker(duplicate_object_iris, mock_crud_tool)
 
     # Call method
-    dups = sensemaker.create_duplicate_findings(test_attribute_aircraft_d, [test_node_aircraft_a, test_node_aircraft_b])
+    with mock.patch("oms_sensemaking.clients.instances.aac_client.get_acm_rollup") as mock_acm_rollup:
+        dups = sensemaker.create_duplicate_findings(
+            test_attribute_aircraft_d, [test_node_aircraft_a_dup, test_node_aircraft_b_dup]
+        )
+        mock_acm_rollup.assert_called_with([{"ACM": acm} for acm in test_node_aircraft_a_dup.all_acms])
 
     # Assertions
     assert len(dups) == 1
     assert all(isinstance(d, DupFinding) for d in dups)
-    assert dups[0].end_node_id == test_node_aircraft_a.id
+    assert dups[0].end_node_id == test_node_aircraft_a_dup.duplicate_node.id
 
     # Check if relationships were created
     assert mock_crud_tool.create_relationship.call_count == 1

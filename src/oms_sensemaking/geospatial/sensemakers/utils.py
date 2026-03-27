@@ -29,7 +29,7 @@ def extract_coordinate_track(track: Track, start_time: datetime, end_time: datet
     Return points within provided time bounds.
 
     :param track: Track to extract points from
-    :param start_time: earliest point timestamp
+    :param start_time: the earliest point timestamp
     :param end_time: latest point timestamp
     :return: List of valid points
     """
