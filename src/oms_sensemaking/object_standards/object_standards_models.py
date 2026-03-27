@@ -91,7 +91,7 @@ class ObjectStandardsGrade:
 
 
 class ObjectStandardsRubric:
-    def __init__(self):
+    def __init__(self) -> None:
         self.required_attrs: list[str] = []
         self.required_rels: list[str] = []
 

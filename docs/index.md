@@ -22,7 +22,7 @@
         # ATOMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=3.1.6
+        OMSB_VERSION=3.1.7
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 
