@@ -66,8 +66,12 @@ class AuditLogEvent:
         self._headers = value
 
     def to_json(self) -> str:
-        """Return a JSON representation of the event."""
-        return json.dumps(self.__dict__)
+        """
+        Return a JSON representation of the event.
+        Extracts all public instance attributes into a dictionary, excluding private attributes in this case, _headers.
+        """
+        payload = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        return json.dumps(payload)
 
     @staticmethod
     def from_dict(data: dict):
