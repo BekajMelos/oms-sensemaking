@@ -203,7 +203,7 @@ class LoiterSensemaker(Sensemaker):
 
         One Activity is created with nodeId (track), observationIds (points in
         the loiter window), startTime, and endTime.
-        :param track: Track containing the loiter.
+        :param track: Track containing the Loiter.
         :param loiter: Loiter to publish
         :return: None
         """

@@ -29,7 +29,7 @@ pipeline {
         DOCKER_PROD_IMAGE = 'aio4/dev/services/oms/oms-sensemaking'
 
         IMAGE_NAME="dpaas/ubi8-ccp"
-        IMAGE_VERSION="8.10-1766090767"
+        IMAGE_VERSION="8.10-1772639305"
 
         APP_VERSION = "${env.TAG_NAME ? env.TAG_NAME : '0.0.0'}"
 
@@ -170,7 +170,8 @@ pipeline {
                         -Dsonar.projectVersion=${APP_VERSION} \
                         -Dsonar.sources=src \
                         -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
-                        -Dsonar.python.coverage.reportPaths=coverage.xml
+                        -Dsonar.python.coverage.reportPaths=coverage.xml \
+                        -Dsonar.python.version=3.12
                 '''
             }
             post {

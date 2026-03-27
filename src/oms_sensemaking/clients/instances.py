@@ -1,11 +1,13 @@
 """Clients to external services."""
 
 import logging
+import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.pool import QueuePool
 
 from oms_sensemaking.clients.aac_client import AacClient
 from oms_sensemaking.clients.base_client import BaseClient
@@ -26,7 +28,9 @@ db_engine = create_engine(
     connect_args={"sslmode": "require" if SETTINGS.db_ssl else "prefer", "options": "-c timezone=utc"},
 )
 
-SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=db_engine))  # noqa: N806
+session_maker = sessionmaker(autocommit=False, autoflush=True, bind=db_engine)
+
+SessionLocal = scoped_session(session_maker)  # noqa: N806
 
 
 @contextmanager
@@ -84,3 +88,34 @@ def ping_db_host_wait() -> bool:
     except Exception as ex:
         LOGGER.warning("DB host readiness check encountered an issue: %s", ex)
         return False
+
+
+def db_metrics() -> dict:
+    """Simple database check for pool stats"""
+    try:
+        with db_session() as db:
+            engine = db.get_bind()
+            if not isinstance(engine, Engine):
+                return {"error": "DB bind is not an Engine"}
+            my_pool = engine.pool
+            if isinstance(my_pool, QueuePool):
+                current_overflow = my_pool.overflow()
+                pool_status = my_pool.status()
+            else:
+                current_overflow = 0
+                pool_status = "Non-QueuePool: overflow not applicable"
+        LOGGER.info("DB metrics check successful")
+        pool_status_dict = parse_pool_status(pool_status)
+        return {"current_overflow": current_overflow, "pool_status": pool_status_dict}
+    except Exception as ex:
+        LOGGER.warning("DB metrics check failed: %s", ex)
+        return {"error": "DB metrics check failed"}
+
+
+def parse_pool_status(status_str: str) -> dict:
+    # This regex finds "Label: Number" (including negative numbers)
+    pattern = r"([^:]+):\s*(-?\d+)"
+    matches = re.findall(pattern, status_str)
+
+    # Convert matches to a dict and cast values to integers
+    return {key.strip(): int(val) for key, val in matches}
