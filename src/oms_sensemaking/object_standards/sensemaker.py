@@ -121,15 +121,7 @@ class ObjectStandards(Sensemaker):
                 node_relationships = retrieved_node_data["relationships"]
 
                 grade = self.obj_standards_rubric.grade(node_attributes, node_relationships)
-                classified_objects: list[HasAcm]
-                if node_attributes and node_relationships:
-                    classified_objects = [node] + node_attributes + node_relationships
-                elif node_attributes and not node_relationships:
-                    classified_objects = [node] + node_attributes
-                elif node_relationships and not node_attributes:
-                    classified_objects = [node] + node_relationships
-                else:
-                    classified_objects = [node]
+                classified_objects: list[HasAcm] = [node] + node_attributes + node_relationships
                 rolled_up_acm = aac_client.get_acm_rollup(
                     [{"ACM": classified_object.acm} for classified_object in classified_objects]
                 )

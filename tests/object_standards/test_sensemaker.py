@@ -151,7 +151,7 @@ def test_process_data_attribute_passed_in(sensemaker):
     assert result == []
 
 
-@patch("oms_sensemaking.object_standards.sensemaker.aac_client")
+@patch("oms_sensemaking.object_standards.sensemaker.aac_client.get_acm_rollup")
 def test_process_data_rel_passed_in(mock_aac_client, sensemaker):
     rel_of_node = MagicMock(spec=RelationshipRelationship)
     rel_of_node.startNodeId = str(uuid4())
@@ -189,7 +189,7 @@ def test_process_data_rel_passed_in(mock_aac_client, sensemaker):
         "attributes": mock_attributes,
         "relationships": mock_relationships,
     }
-    mock_aac_client.get_acm_rollup.return_value = DEFAULT_ACM
+    mock_aac_client.return_value = DEFAULT_ACM
 
     mock_grade = MagicMock()
     sensemaker.obj_standards_rubric.grade = MagicMock(return_value=mock_grade)
