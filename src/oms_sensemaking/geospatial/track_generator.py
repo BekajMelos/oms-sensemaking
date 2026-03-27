@@ -30,7 +30,7 @@ class TrackGenerator:
         track_uuid: UUID,
         track_weaver: TrackWeaverBase,
         common_sense_filters: list[CommonSenseFilter],
-        track_node_buffer: dict[UUID, list[Point]],
+        points: list[Point],
         oms_crud_tool: OmsCrudTool,
     ) -> list[Track]:
         """Generate Track objects. Splits the full track into max_track_time_length_seconds time intervals.
@@ -39,14 +39,12 @@ class TrackGenerator:
         :param track_uuid: UUID of the track
         :param track_weaver: Algorithm used to determine track points
         :param common_sense_filters: Common sense filters to apply
-        :param track_node_buffer: mapping of nodes to their points
+        :param points: list of points for the track
         :param oms_crud_tool: OMS crud tool
         :return: List of created Track objects
         """
 
         tracks = []
-
-        points = track_node_buffer[track_uuid]
         points.sort(key=attrgetter("detection_time"))
 
         # Get the IRI hierarchy for the node
