@@ -2,18 +2,22 @@
 
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from itertools import chain
+from uuid import UUID
 
-from oms_sdk.generated.generated_graphql_client.enums import Action
+from oms_sdk.generated.generated_graphql_client import Action, AttributeAttribute, RelationshipRelationship
 
 from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import (
     AuditLogEvent,
+    AuditLogEventConsumer,
     EventFilter,
     ObjectType,
 )
+from oms_sensemaking.geospatial.controllers import BufferedSensemakerController
 from oms_sensemaking.object_standards.sensemaker import (
     ObjectStandards,
     ObjectStandardsDataRetriever,
@@ -39,12 +43,20 @@ class ObjStandardsDataProvider:
         return data
 
 
-class ObjectStandardsSensemakerController(SensemakerController):
+class ObjectStandardsSensemakerController(BufferedSensemakerController):
     """
-    Resolution sensemaker controller.
+    Object Standards sensemaker controller.
 
-    This class manages a collection of resolution sensemakers.
+    This class manages a collection of object standards sensemakers.
     """
+
+    def __init__(
+        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, flush_timer_seconds: int
+    ) -> None:
+        """Create a new instance of ObjectStandardsSensemakerController."""
+        super().__init__(event_consumer, err_logger, flush_timer_seconds)
+        if self.buffer.callback_func is None:
+            self.buffer.callback_func = self.process_buffer
 
     def start(self) -> None:
         """Start the controller."""
@@ -63,6 +75,68 @@ class ObjectStandardsSensemakerController(SensemakerController):
                 ),
             )
         super().start()
+
+    def handle_event(self, event: AuditLogEvent) -> bool:
+        """
+        Handle inbound ATOMS event.
+
+        This function is intended as the entrypoint for controlling the flow of
+        data to the sensemakers.
+
+        :param event: The event to process.
+        :return: Boolean of success or failure
+        """
+        LOGGER.debug("Received AuditLogEvent(objectId=%s)", event.objectId)
+
+        try:
+            # extract info from ATOMS via API calls
+            oms_obj = self.get_oms_data(event)
+        except Exception as e:
+            message = f"Error retrieving object from omsb. {event.objectType}: {event.objectId}"
+            self.err_logger.log_error(event, message, __name__, e, None)
+            return False
+
+        if not oms_obj:
+            LOGGER.warning("Could not find %s with id: %s", event.objectType, event.objectId)
+            return False
+
+        if isinstance(oms_obj, AttributeAttribute):
+            self.buffer.add(oms_obj.nodeId, oms_obj)
+        elif isinstance(oms_obj, RelationshipRelationship):
+            self.buffer.add(oms_obj.startNodeId, oms_obj)
+        else:
+            message = f"Invalid object type {event.objectType} for object {event.objectId}"
+            LOGGER.error(message)
+
+        return True
+
+    def process_buffer(self, object_list_id: UUID, object_list: list) -> bool:
+        """
+        Execute the sensemaker on the last received object. The sensemaker will
+        request for all other attributes, so no need to pass in every object in the list
+
+        :param object_list_id: track ID
+        :param object_list: list of points that make up the track
+        """
+        last_obj = object_list[-1]
+
+        try:
+            with ThreadPoolExecutor() as sync_executor:
+                futures = []
+                for sensemaker in self._registry.values():
+                    future = sync_executor.submit(sensemaker.execute, last_obj)
+                    futures.append(future)
+
+                # make sure errors are caught
+                for future in as_completed(futures):
+                    _ = future.result()
+
+                sync_executor.shutdown(wait=True)
+
+        except Exception as e:
+            LOGGER.exception(f"Error encountered while processing object {last_obj}: {e}")
+
+        return True
 
 
 class ObjectStandardsQueueFilter(EventFilter):
