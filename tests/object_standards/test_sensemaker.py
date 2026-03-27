@@ -2,9 +2,11 @@ from unittest.mock import MagicMock, call, patch
 from uuid import uuid4
 
 import pytest
+from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     NodesNodes,
+    ObjectStandardsObjectStandards,
     RelationshipRelationship,
 )
 
@@ -149,7 +151,8 @@ def test_process_data_attribute_passed_in(sensemaker):
     assert result == []
 
 
-def test_process_data_rel_passed_in(sensemaker):
+@patch("oms_sensemaking.object_standards.sensemaker.aac_client")
+def test_process_data_rel_passed_in(mock_aac_client, sensemaker):
     rel_of_node = MagicMock(spec=RelationshipRelationship)
     rel_of_node.startNodeId = str(uuid4())
     rel_of_node.endNodeId = str(uuid4())
@@ -157,10 +160,16 @@ def test_process_data_rel_passed_in(sensemaker):
     mock_nodes = MagicMock(spec=NodesNodes)
     mock_node = MagicMock()
     mock_node.classIri = "http://example.org/ClassIRI"
+    mock_node.acm = DEFAULT_ACM
     mock_node2 = MagicMock()
     mock_node2.classIri = "http://example.org/ClassIRI"
+    mock_node2.acm = DEFAULT_ACM
     mock_nodes.data = [mock_node, mock_node2]
     sensemaker.oms_crud_tool.get_nodes.return_value = mock_nodes
+
+    mock_obj_stds = MagicMock(spec=ObjectStandardsObjectStandards)
+    mock_obj_stds.data = []
+    sensemaker.oms_crud_tool.get_object_standards.return_value = mock_obj_stds
 
     required_attributes = ["iri1", "iri2"]
     required_relationships = ["relIri1", "relIri2"]
@@ -169,13 +178,18 @@ def test_process_data_rel_passed_in(sensemaker):
         return_value=RequiredIris(attribute_iris=required_attributes, relationship_iris=required_relationships)
     )
 
-    mock_attributes = [{"attribute": "value"}]
-    mock_relationships = [{"relationship": "value"}]
+    mock_attr = MagicMock(spec=AttributeAttribute)
+    mock_attr.acm = DEFAULT_ACM
+    mock_rel = MagicMock(spec=RelationshipRelationship)
+    mock_rel.acm = DEFAULT_ACM
+    mock_attributes = [mock_attr]
+    mock_relationships = [mock_rel]
 
     sensemaker.obj_standards_retriever.retrieve_data_for_grading.return_value = {
         "attributes": mock_attributes,
         "relationships": mock_relationships,
     }
+    mock_aac_client.get_acm_rollup.return_value = DEFAULT_ACM
 
     mock_grade = MagicMock()
     sensemaker.obj_standards_rubric.grade = MagicMock(return_value=mock_grade)

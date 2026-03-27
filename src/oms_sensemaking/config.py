@@ -248,6 +248,10 @@ class MilSymbolSettings(BaseModel):
     )
 
 class ObjectStandardsSettings(BaseModel):
+    tags: list[str] = Field(
+        [CommonVars.base_atoms_sensemaking_tag, "Object Standards"],
+        description="Object Standards tags"
+    )
     enable_object_standards_sensemaker: bool = Field(
         True,
         description="Toggle the object standards sensemaker on/off"

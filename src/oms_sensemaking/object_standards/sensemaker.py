@@ -1,20 +1,32 @@
 """Object Standards Sensemakers."""
 
 import logging
+from datetime import datetime, timezone
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    CreateObjectStandardsInput,
     NodeNode,
     NodeQuery,
+    ObjectStandardsObjectStandardsData,
+    ObjectStandardsQuery,
     RelationshipRelationship,
+    UpdateObjectStandardsInput,
+    UuidQueryByList,
 )
 
+from oms_sensemaking.clients.aac_client import HasAcm
+from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.object_standards.object_standards_data_retriever import ObjectStandardsDataRetriever
-from oms_sensemaking.object_standards.object_standards_models import ObjectStandardsRubric, RequiredIris
+from oms_sensemaking.object_standards.object_standards_models import (
+    ObjectStandardsGrade,
+    ObjectStandardsRubric,
+    RequiredIris,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,18 +78,6 @@ class ObjectStandards(Sensemaker):
             # attribute has only one node it is associated with, relationships
             # have a start node and end node. hard to tell what exactly is the node
             # we care about, so let's just care for both
-
-            """
-            what I want to do here in the future is to check if it is attr and rel
-            and call a custom class/function to retr data all at once with a custom query
-
-            get node(s)
-            get node(s) attrs and rels
-            send the data through helper functions
-
-            this will allow us to eliminate the .retrieve_data_for_grading()
-            or instead move it up/modify it to grab all data all at once
-            """
             if isinstance(node_characteristic, AttributeAttribute):
                 node_ids = [node_characteristic.nodeId]
             elif isinstance(node_characteristic, RelationshipRelationship):
@@ -91,6 +91,10 @@ class ObjectStandards(Sensemaker):
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
+                object_standard_query = ObjectStandardsQuery(
+                    nodeIds=UuidQueryByList(in_=[node.id]),
+                )
+                existing_object_standards = self.oms_crud_tool.get_object_standards(object_standard_query).data
                 required_iris = self._get_required_iris(node)
 
                 # The case where there is nothing to grade.
@@ -111,29 +115,72 @@ class ObjectStandards(Sensemaker):
                 retrieved_node_data = self.obj_standards_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
-                grade = self.obj_standards_rubric.grade(
-                    retrieved_node_data["attributes"], retrieved_node_data["relationships"]
+
+                # Extract the actual attribute and relationship objects for grading
+                node_attributes = retrieved_node_data["attributes"]
+                node_relationships = retrieved_node_data["relationships"]
+
+                grade = self.obj_standards_rubric.grade(node_attributes, node_relationships)
+                classified_objects: list[HasAcm]
+                if node_attributes and node_relationships:
+                    classified_objects = [node] + node_attributes + node_relationships
+                elif node_attributes and not node_relationships:
+                    classified_objects = [node] + node_attributes
+                elif node_relationships and not node_attributes:
+                    classified_objects = [node] + node_relationships
+                else:
+                    classified_objects = [node]
+                rolled_up_acm = aac_client.get_acm_rollup(
+                    [{"ACM": classified_object.acm} for classified_object in classified_objects]
                 )
-                # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
-                LOGGER.info("Object Standards grade for object %s: %s", node.id, grade)
-                violation_summary = "; ".join(str(v) for v in grade.violations) if grade.violations else "none"
-                LOGGER.info(
-                    "Object Standards violations for object %s: %s",
-                    node.id,
-                    violation_summary,
-                )
-                compliant_summary = (
-                    ", ".join(str(f) for f in grade.compliant_fields) if grade.compliant_fields else "none"
-                )
-                LOGGER.info(
-                    "Object Standards compliant fields for object %s: %s",
-                    node.id,
-                    compliant_summary,
-                )
+                self.publish_results_to_atoms(node, existing_object_standards, rolled_up_acm, grade)
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))
 
         return []
+
+    def generate_summary_string(self, float_score, ratio_score, violations_length, compliant_obj_length):
+        summary = (
+            f"This object has an object standards score of {float_score} ({ratio_score}). "
+            f"This object has {violations_length} violations and {compliant_obj_length} compliant objects"
+        )
+        return summary
+
+    def publish_results_to_atoms(
+        self,
+        node: NodeNode,
+        existing: list[ObjectStandardsObjectStandardsData],
+        rolled_up_acm: dict,
+        grade: ObjectStandardsGrade,
+    ):
+        summary = self.generate_summary_string(
+            grade.float_score, grade.ratio, len(grade.violations), len(grade.compliant_fields)
+        )
+        if existing:
+            update_object_standards_input = UpdateObjectStandardsInput(
+                id=existing[0].id,
+                acm=rolled_up_acm,
+                summary=summary,
+                score=grade.float_score,
+                violations=grade.violations,
+                compliantObjects=grade.compliant_fields,
+                timestamp=datetime.now(tz=timezone.utc),
+                standardsVersion=self.version_string,
+            )
+            self.oms_crud_tool.update_object_standards(update_object_standards_input)
+        else:
+            object_standards_input = CreateObjectStandardsInput(
+                acm=rolled_up_acm,
+                tags=SETTINGS.object_standards_settings.tags,
+                nodeId=node.id,
+                summary=summary,
+                score=grade.float_score,
+                violations=grade.violations,
+                compliantObjects=grade.compliant_fields,
+                timestamp=datetime.now(tz=timezone.utc),
+                standardsVersion=self.version_string,
+            )
+            self.oms_crud_tool.create_object_standards(object_standards_input)
 
     def _get_rubric_requirements(self, class_iri: str) -> RequiredIris | None:
         """Return RequiredIris if class has a rubric with at least one requirement."""
