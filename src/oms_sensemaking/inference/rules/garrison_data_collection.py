@@ -5,6 +5,8 @@ from typing import List, Optional
 
 from oms_sdk.generated.generated_graphql_client import (
     InOutGarrisonAllDataNodeActivitiesData,
+    InOutGarrisonAllDataNodeRelationshipsData,
+    InOutGarrisonAllDataNodeRelationshipsDataEndNode,
     ObservationObservation,
     StringQuery,
 )
@@ -38,10 +40,12 @@ class GetGarrisonDataAllAtOnce(GetGarrisonData):
     def get_all_garrison_data(self, obs: ObservationObservation) -> Optional[GarrisonData]:
         observed_node = self._execute_query(obs)
 
-        relationship_data = (
+        relationship_data: InOutGarrisonAllDataNodeRelationshipsData = (
             observed_node.relationships.data[0] if observed_node and observed_node.relationships.data else None
         )
-        facility_node = relationship_data.endNode if relationship_data else None
+        facility_node: InOutGarrisonAllDataNodeRelationshipsDataEndNode = (
+            relationship_data.endNode if relationship_data else None
+        )
         facility_location_attribute_data = (
             facility_node.attributes.data[0]
             if facility_node and hasattr(facility_node, "attributes") and facility_node.attributes.data

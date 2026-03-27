@@ -307,7 +307,7 @@ class RabbitMQListener(BaseRabbitMQListener):
             except Exception:
                 LOGGER.exception("%s Failed to schedule nack after submission failure", self._name)
 
-    def _process_message(self, ch, method, properties, body):
+    def _process_message(self, ch, method, properties, body) -> None:
         object_id = None
         start_time = time()  # Record when we start processing
 

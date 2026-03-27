@@ -112,7 +112,7 @@ class AuditLogErrorClient:
         with db_session() as db:
             LOGGER.debug(f"Deleting with query: {query}")
             results = db.execute(query)
-            deleted_count = results.rowcount
+            deleted_count = results.rowcount  # type: ignore[attr-defined]
             db.commit()
 
         LOGGER.info(f"Deleted {deleted_count}")
