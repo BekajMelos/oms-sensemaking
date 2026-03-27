@@ -262,7 +262,8 @@ class ObjectStandardsSettings(BaseModel):
         5,
         description="Max number of class hierarchy levels to check when looking for a rubric (class + ancestors)",
     )
-
+    buffer_expire_sec: int = Field(
+        30, description="Delay in seconds to wait before processing Atoms Objects for Object Standards checks")
 
 class IncursionSettings(BaseModel):
     activity_state: str = Field(
@@ -419,7 +420,8 @@ class Settings(BaseSettings):
     geo_sensemaker_config_file_path: str = Field("data/geo_sensemaker_config.json",
                                                  description="Path to the Geospatial Sensemaker Config")
     srid: int = Field(4326, description="Spatial Reference Identifier for storing/handling Points")
-    cache_entry_expire_sec: int = Field(30, description="How long to wait for new points before creating a new Track")
+    geo_buffer_expire_sec: int = Field(
+        30, description="How long to wait for new points before creating a new Track")
     poll_period_seconds: int = Field(10, description="How often to poll for new incoming Attributes")
     geo_sensemaker_event_tag: str = Field("geosensemaker",
         description="Tag for OMSB objects from the geospatial sensemakers")

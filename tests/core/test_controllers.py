@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.controllers import BufferedSensemakerController, SensemakerController
 
 
 @pytest.fixture
@@ -21,6 +21,13 @@ def mock_err_logger():
 @pytest.fixture
 def controller(mock_event_consumer, mock_err_logger):
     return SensemakerController(mock_event_consumer, mock_err_logger)
+
+
+@pytest.fixture
+def buffer_controller(mock_event_consumer, mock_err_logger):
+    buffered_ctrlr = BufferedSensemakerController(mock_event_consumer, mock_err_logger, 1)
+    buffered_ctrlr.buffer = MagicMock()
+    return buffered_ctrlr
 
 
 def test_init_sets_stopped(controller, mock_event_consumer):
@@ -122,3 +129,13 @@ def test_handle_event_error_during_execution(controller, mock_err_logger):
 
     assert result is True  # returns True even if execution fails
     mock_err_logger.log_error.assert_called_once()
+
+
+def test_start_and_stop_buffer(buffer_controller):
+    buffer_controller.start()
+    assert buffer_controller.is_running is True
+    buffer_controller.buffer.start.assert_called_once()
+
+    buffer_controller.stop()
+    assert buffer_controller.is_running is False
+    buffer_controller.buffer.stop.assert_called_once()

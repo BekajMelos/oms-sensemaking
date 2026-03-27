@@ -314,7 +314,6 @@ def test_execute(mock_source, db, build_helper):
     )
 
     assert len(findings) == 6
-    print(findings)
     new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case2)
 

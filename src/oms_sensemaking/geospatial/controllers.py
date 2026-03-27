@@ -2,11 +2,9 @@
 
 import json
 import logging
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta, timezone
-from threading import Event, Timer
-from uuid import UUID, uuid4
+from typing import Any
+from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
@@ -14,7 +12,7 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
-from oms_sensemaking.core.controllers import SensemakerController
+from oms_sensemaking.core.controllers import BufferedSensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 from oms_sensemaking.core.exceptions import TrackLengthError
@@ -33,7 +31,7 @@ from oms_sensemaking.models.track_weavers import TrackWeaverBase
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-class GeospatialSensemakerController(SensemakerController):
+class GeospatialSensemakerController(BufferedSensemakerController):
     """
     Geospatial sensemaker controller.
 
@@ -41,17 +39,16 @@ class GeospatialSensemakerController(SensemakerController):
     """
 
     def __init__(
-        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, ontology_service: OntologyService
+        self,
+        event_consumer: AuditLogEventConsumer,
+        err_logger: BaseErrorLogger,
+        ontology_service: OntologyService,
+        flush_timer_seconds: int,
     ) -> None:
         """Create a new instance of GeospatialSensemakerController."""
-        super().__init__(event_consumer, err_logger)
-
-        # initialize buffer
-        self.track_times: dict[UUID, datetime | None] = {}
-        self.autoflush_enabled: Event = Event()
-        self.buffer_autoflush: Timer = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-        self.node_track_mapping: dict[UUID, UUID] = defaultdict(uuid4)
-        self.track_node_buffer: dict[UUID, list[Point]] = defaultdict(list)
+        super().__init__(event_consumer, err_logger, flush_timer_seconds)
+        if self.buffer.callback_func is None:
+            self.buffer.callback_func = self.process_buffer
 
         # track weaver to call on completed Tracks before publishing
         self.track_weaver: TrackWeaverBase = TrackWeaverFactory().make_track_weaver(SETTINGS.track_weaver_algorithm)
@@ -83,35 +80,18 @@ class GeospatialSensemakerController(SensemakerController):
         if SETTINGS.similar_tracks:
             self.register("similar_tracks", SimilarTracksSensemaker())
 
-        self.autoflush_enabled.set()
-        self.buffer_autoflush.start()
         super().start()
 
-    def stop(self):
-        """
-        Stop the controller.
-
-        This method handles stopping the buffer autoflush in addition to
-        stopping the controller itself.
-        """
-        LOGGER.debug("Stopping track buffer autoflush.")
-        self.autoflush_enabled.clear()
-
-        if self.buffer_autoflush.is_alive():
-            self.buffer_autoflush.cancel()
-            self.buffer_autoflush.join()
-
-        super().stop()
-
-    def _ensure_uuid(self, id) -> UUID:
+    def _ensure_uuid(self, id_: Any) -> UUID:
         """
         Function used to ensure that ids used
         in operations are of type UUID
+
+        :param id_: Input to cast to UUID
         """
-        if type(id) is UUID:
-            return id
-        else:
-            return UUID(id)
+        if isinstance(id_, UUID):
+            return id_
+        return UUID(id_)
 
     def handle_event(self, event: AuditLogEvent) -> bool:
         """
@@ -130,10 +110,6 @@ class GeospatialSensemakerController(SensemakerController):
         # Skip generated tracks
         if self.is_generated_track(oms_obs):
             return True
-
-        # Ensure node has associated track ID
-        with self.lock:
-            track_uuid = self.node_track_mapping.setdefault(oms_obs.nodeId, uuid4())
 
         # Retrieve node version
         node = self.oms_crud_tool.get_node(oms_obs.nodeId)
@@ -183,45 +159,18 @@ class GeospatialSensemakerController(SensemakerController):
                 if not is_new:
                     LOGGER.debug("Processing existing point: observation_id=%s", point.observation_id)
 
-                with self.lock:
-                    self.track_times[track_uuid] = datetime.now(tz=timezone.utc)
-                    self.track_node_buffer[track_uuid].append(point)
-                    success = True
+                self.buffer.add(oms_obs.nodeId, point)
+                success = True
+
         return success
 
-    def flush_buffer(self) -> None:
-        """Check the buffer cache for data that can be flushed from it."""
-        LOGGER.debug("Checking for expired tracks in the buffer cache.")
-        now: datetime = datetime.now(tz=timezone.utc)
-        expire_threshold = timedelta(seconds=SETTINGS.cache_entry_expire_sec)
-        expired_tracks = []
-
-        with self.lock:
-            # Identify expired tracks in thread-safe snapshot
-            self.track_times = {key: val for key, val in self.track_times.items() if val is not None}
-            expired_tracks = [
-                track_uuid
-                for track_uuid, last_updated_at in self.track_times.items()
-                if last_updated_at is not None and last_updated_at + expire_threshold < now
-            ]
-
-        if expired_tracks:
-            LOGGER.info("Flushing %d expired tracks.", len(expired_tracks))
-
-        for track_uuid in expired_tracks:
-            # Process expired tracks
-            self._process_track(track_uuid)
-
-        if self.autoflush_enabled:
-            self.buffer_autoflush = Timer(SETTINGS.cache_entry_expire_sec, self.flush_buffer)
-            self.buffer_autoflush.start()
-
-    def _process_track(self, track_uuid: UUID) -> bool:
+    def process_buffer(self, track_uuid: UUID, track_points: list[Point]) -> bool:
         """
         Generate and process a completed track once its buffer has expired.
         Safely clean in-memory buffers.
 
         :param track_uuid: track ID
+        :param track_points: list of points that make up the track
         """
         LOGGER.debug("Processing track %s", track_uuid)
 
@@ -232,13 +181,11 @@ class GeospatialSensemakerController(SensemakerController):
                     track_uuid,
                     self.track_weaver,
                     self.common_sense_filters,
-                    self.track_node_buffer,
+                    track_points,
                     self.oms_crud_tool,
                 )
             except TrackLengthError:
                 LOGGER.warning("Track %s doesn't have enough points; removing from buffer.", track_uuid)
-                with self.lock:
-                    self.track_times[track_uuid] = None
                 return False
 
             futures = []
@@ -253,14 +200,6 @@ class GeospatialSensemakerController(SensemakerController):
                     _ = future.result()
         except Exception:
             LOGGER.exception("Unexpected error processing track %s", track_uuid)
-        finally:
-            with self.lock:
-                # Thread-safe cleanup of expired track data
-                self.track_times[track_uuid] = None
-                self.track_node_buffer.pop(track_uuid, None)
-                keys_to_delete = [k for k, v in self.node_track_mapping.items() if v == track_uuid]
-                for k in keys_to_delete:
-                    del self.node_track_mapping[k]
 
         return True
 

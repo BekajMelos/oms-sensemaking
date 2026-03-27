@@ -84,9 +84,7 @@ def test_generate_track_too_short(mock_aac_client: AacClient, mock_oms_crud_tool
 
     # call flush buffer. Should raise exception
     with pytest.raises(TrackLengthError):
-        track_generator.generate_track(
-            track_uuid, NaiveTrackWeaver(), [], {track_uuid: track_points}, mock_oms_crud_tool
-        )
+        track_generator.generate_track(track_uuid, NaiveTrackWeaver(), [], track_points, mock_oms_crud_tool)
 
 
 def test_bin_points_for_track_groups_by_time_interval(oms_node):
@@ -133,7 +131,7 @@ def test_generate_track_empty_buffer_raises(mock_oms_crud_tool):
     track_uuid = uuid4()
 
     with pytest.raises(TrackLengthError):
-        gen.generate_track(track_uuid, NaiveTrackWeaver(), [], {track_uuid: []}, mock_oms_crud_tool)
+        gen.generate_track(track_uuid, NaiveTrackWeaver(), [], [], mock_oms_crud_tool)
 
 
 class DummyFilter(CommonSenseFilter):

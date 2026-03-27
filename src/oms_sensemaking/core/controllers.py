@@ -1,11 +1,18 @@
 """Sensemaker Controllers."""
 
 import logging
+from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock, Thread
 
-from oms_sdk.generated.generated_graphql_client import AttributeAttribute, NodeNode, ObservationObservation
+from oms_sdk.generated.generated_graphql_client import (
+    AttributeAttribute,
+    NodeNode,
+    ObservationObservation,
+    RelationshipRelationship,
+)
 
+from oms_sensemaking.core.buffer import Buffer
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
 from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer
 from oms_sensemaking.core.oms_crud import OmsCrudTool
@@ -115,7 +122,9 @@ class SensemakerController:
         """Indicate if the controller is running."""
         return not self.stopped.is_set()
 
-    def get_oms_data(self, event: AuditLogEvent) -> None | AttributeAttribute | NodeNode | ObservationObservation:
+    def get_oms_data(
+        self, event: AuditLogEvent
+    ) -> None | AttributeAttribute | NodeNode | ObservationObservation | RelationshipRelationship:
         """
         Given an ATOMS data object's ID, get the object we'll pass to the sensemaker
 
@@ -171,6 +180,37 @@ class SensemakerController:
             )
 
         return True
+
+
+class BufferedSensemakerController(SensemakerController):
+    """SensemakerController that buffers incoming AuditEvents to be processed on a timer"""
+
+    def __init__(
+        self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger, flush_timer_seconds: int
+    ) -> None:
+        super().__init__(event_consumer, err_logger)
+        self.name = f"{self.__class__.__name__} Buffer"
+        self.buffer = Buffer(self.name, flush_timer_seconds)
+
+    def start(self) -> None:
+        """Start the buffer."""
+        LOGGER.debug(f"Starting the {self.name} autoflush.")
+        self.buffer.start()
+        super().start()
+
+    def stop(self) -> None:
+        """
+        Stop the controller.
+
+        This method handles stopping the buffer autoflush in addition to
+        stopping the controller itself.
+        """
+        LOGGER.debug(f"Stopping the {self.name} autoflush.")
+        self.buffer.stop()
+        super().stop()
+
+    @abstractmethod
+    def process_buffer(self, list_id, object_list): ...
 
 
 def run_controller(controller: SensemakerController) -> None:

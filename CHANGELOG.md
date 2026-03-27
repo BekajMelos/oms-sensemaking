@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Compliant fields are recorded and are now part of the Object Standards grade output
 - Violations are now recorded and have two types: MISSING and INVALID
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
+- Extracted Buffer class from the GeospatialController and created BufferedSensemakerController for Geospatial and ObjectStandards
 - Updates from `grimlock-support` through 0.19.11
 
 ### Changed

@@ -474,7 +474,6 @@ def test_potential_duplicate_with_known_node(
 
     assert len(cotravels) == 1
     cotravel = cotravels[0]
-    print("mock: ", mock_oms_client)
     assert cotravel.cotravel_type == CotravelType.cotravel
 
 
