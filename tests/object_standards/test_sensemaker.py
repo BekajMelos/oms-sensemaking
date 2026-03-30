@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, call, patch
 from uuid import uuid4
 
@@ -5,13 +6,22 @@ import pytest
 from oms_sdk import DEFAULT_ACM
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    CompliantObjectInput,
+    CreateObjectStandardsInput,
     NodesNodes,
+    NodesNodesData,
     ObjectStandardsObjectStandards,
+    ObjectStandardsObjectStandardsData,
+    ObjectStandardsViolationInput,
+    ObjectType,
     RelationshipRelationship,
+    UpdateObjectStandardsInput,
+    ViolationType,
 )
 
+from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
-from oms_sensemaking.object_standards.object_standards_models import RequiredIris
+from oms_sensemaking.object_standards.object_standards_models import ObjectStandardsGrade, RequiredIris
 from src.oms_sensemaking.object_standards.sensemaker import (
     ObjectStandards,
     ObjectStandardsDataRetriever,
@@ -309,6 +319,94 @@ def test_generate_summary_string(sensemaker):
     len_compliant_fields = 1
     summary = sensemaker.generate_summary_string(float_score, ratio_score, len_violations, len_compliant_fields)
     assert summary == (
-        "This object has an object standards score of 0.5 (1/2). "
+        "This object has an Object Standards score of 0.5 (1/2). "
         "This object has 1 violation(s) and 1 compliant object(s)."
     )
+
+
+def test_publish_results_to_atoms_update(sensemaker):
+    fixed = datetime(2025, 5, 17, 14, 30, tzinfo=timezone.utc)
+    with patch("oms_sensemaking.object_standards.sensemaker.datetime.datetime") as mock_datetime:
+        mock_datetime.now.return_value = fixed
+        existing_obj_standard = MagicMock(spec=ObjectStandardsObjectStandardsData)
+        existing_obj_standard.id = uuid4()
+
+        mock_node = MagicMock(spec=NodesNodesData)
+        mock_node.id = uuid4()
+
+        rolled_up_acm = DEFAULT_ACM
+
+        violation = ObjectStandardsViolationInput(
+            objectType=ObjectType.ATTRIBUTE, iri="attr_iri", violationType=ViolationType.MISSING, description="str"
+        )
+
+        compliant_object = CompliantObjectInput(id=uuid4(), objectType=ObjectType.ATTRIBUTE)
+
+        grade = MagicMock(spec=ObjectStandardsGrade)
+        grade.float_score = 0.5
+        grade.ratio = "1/2"
+        grade.violations = [violation]
+        grade.compliant_fields = [compliant_object]
+
+        summary = (
+            "This object has an Object Standards score of 0.5 (1/2). "
+            "This object has 1 violation(s) and 1 compliant object(s)."
+        )
+
+        sensemaker.publish_results_to_atoms(mock_node, [existing_obj_standard], rolled_up_acm, grade)
+
+        sensemaker.oms_crud_tool.update_object_standards.assert_called_with(
+            UpdateObjectStandardsInput(
+                id=existing_obj_standard.id,
+                acm=rolled_up_acm,
+                summary=summary,
+                score=grade.float_score,
+                violations=grade.violations,
+                compliantObjects=grade.compliant_fields,
+                timestamp=fixed,
+            )
+        )
+
+
+def test_publish_results_to_atoms_create(sensemaker):
+    fixed = datetime(2025, 5, 17, 14, 30, tzinfo=timezone.utc)
+    with patch("oms_sensemaking.object_standards.sensemaker.datetime.datetime") as mock_datetime:
+        mock_datetime.now.return_value = fixed
+
+        mock_node = MagicMock(spec=NodesNodesData)
+        mock_node.id = uuid4()
+
+        rolled_up_acm = DEFAULT_ACM
+
+        violation = ObjectStandardsViolationInput(
+            objectType=ObjectType.ATTRIBUTE, iri="attr_iri", violationType=ViolationType.MISSING, description="str"
+        )
+
+        compliant_object = CompliantObjectInput(id=uuid4(), objectType=ObjectType.ATTRIBUTE)
+
+        grade = MagicMock(spec=ObjectStandardsGrade)
+        grade.float_score = 0.5
+        grade.ratio = "1/2"
+        grade.violations = [violation]
+        grade.compliant_fields = [compliant_object]
+
+        summary = (
+            "This object has an Object Standards score of 0.5 (1/2). "
+            "This object has 1 violation(s) and 1 compliant object(s)."
+        )
+
+        sensemaker.publish_results_to_atoms(mock_node, [], rolled_up_acm, grade)
+
+        sensemaker.oms_crud_tool.create_object_standards.assert_called_with(
+            CreateObjectStandardsInput(
+                acm=rolled_up_acm,
+                tags=SETTINGS.object_standards_settings.tags,
+                nodeId=mock_node.id,
+                summary=summary,
+                score=grade.float_score,
+                violations=grade.violations,
+                compliantObjects=grade.compliant_fields,
+                timestamp=fixed,
+                standardsVersion=SETTINGS.object_standards_settings.playbook_version,
+            )
+        )

@@ -1,7 +1,7 @@
 """Object Standards Sensemakers."""
 
+import datetime
 import logging
-from datetime import datetime, timezone
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
@@ -13,6 +13,7 @@ from oms_sdk.generated.generated_graphql_client import (
     ObjectStandardsQuery,
     RelationshipRelationship,
     RelationshipsRelationshipsData,
+    StringQuery,
     UpdateObjectStandardsInput,
     UuidQueryByList,
 )
@@ -95,6 +96,7 @@ class ObjectStandards(Sensemaker):
             for node in nodes.data:
                 object_standard_query = ObjectStandardsQuery(
                     nodeIds=UuidQueryByList(in_=[node.id]),
+                    standardsVersion=StringQuery(equals=SETTINGS.object_standards_settings.playbook_version),
                 )
                 existing_object_standards = self.oms_crud_tool.get_object_standards(object_standard_query).data
                 required_iris = self._get_required_iris(node)
@@ -129,10 +131,10 @@ class ObjectStandards(Sensemaker):
 
     def generate_summary_string(self, float_score, ratio_score, violations_length, compliant_obj_length):
         """
-        Generate a basic summary of a node's object standards status with its 'grade' fields
+        Generate a basic summary of a node's Object Standards status with its 'grade' fields
         """
         summary = (
-            f"This object has an object standards score of {float_score} ({ratio_score}). "
+            f"This object has an Object Standards score of {float_score} ({ratio_score}). "
             f"This object has {violations_length} violation(s) and {compliant_obj_length} compliant object(s)."
         )
         return summary
@@ -146,7 +148,7 @@ class ObjectStandards(Sensemaker):
         classified_objects: list[HasAcm] = [node]
         if attributes:
             classified_objects = classified_objects + attributes
-        elif relationships:
+        if relationships:
             classified_objects = classified_objects + relationships
         rolled_up_acm = aac_client.get_acm_rollup(
             [{"ACM": classified_object.acm} for classified_object in classified_objects]
@@ -163,17 +165,19 @@ class ObjectStandards(Sensemaker):
         summary = self.generate_summary_string(
             grade.float_score, grade.ratio, len(grade.violations), len(grade.compliant_fields)
         )
+        object_standard_calculation_time = datetime.datetime.now(tz=datetime.timezone.utc)
         if existing:
+            existing_object_standard = existing[0]
             update_object_standards_input = UpdateObjectStandardsInput(
-                id=existing[0].id,
+                id=existing_object_standard.id,
                 acm=rolled_up_acm,
                 summary=summary,
                 score=grade.float_score,
                 violations=grade.violations,
                 compliantObjects=grade.compliant_fields,
-                timestamp=datetime.now(tz=timezone.utc),
-                standardsVersion=self.version_string,
+                timestamp=object_standard_calculation_time,
             )
+            LOGGER.info(f"Updating Object Standards results for node: {node.id}")
             self.oms_crud_tool.update_object_standards(update_object_standards_input)
         else:
             object_standards_input = CreateObjectStandardsInput(
@@ -184,9 +188,10 @@ class ObjectStandards(Sensemaker):
                 score=grade.float_score,
                 violations=grade.violations,
                 compliantObjects=grade.compliant_fields,
-                timestamp=datetime.now(tz=timezone.utc),
-                standardsVersion=self.version_string,
+                timestamp=object_standard_calculation_time,
+                standardsVersion=SETTINGS.object_standards_settings.playbook_version,
             )
+            LOGGER.info(f"Publishing Object Standards results for node: {node.id}")
             self.oms_crud_tool.create_object_standards(object_standards_input)
 
     def _get_rubric_requirements(self, class_iri: str) -> RequiredIris | None:

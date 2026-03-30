@@ -248,6 +248,10 @@ class MilSymbolSettings(BaseModel):
     )
 
 class ObjectStandardsSettings(BaseModel):
+    playbook_version: str = Field(
+        "OBI Playbook v3.0.2",
+        description="The version of the playbook that the object standards .json file is based off"
+    )
     tags: list[str] = Field(
         [CommonVars.base_atoms_sensemaking_tag, "Object Standards"],
         description="Object Standards tags"
