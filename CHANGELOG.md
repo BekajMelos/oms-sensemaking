@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-
+- Removed Object Standard's update event in the filter
 ### Fixed
 
 ## [0.27.0] - 2026-03-30
@@ -19,7 +19,6 @@ All notable changes to this project will be documented in this file.
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
 - Extracted Buffer class from the GeospatialController and created BufferedSensemakerController for Geospatial and ObjectStandards
 - Updates from `grimlock-support` through 0.19.11
-- Removed Object Standard's update event in the filter
 
 ### Changed
 - Cleanup of .env.template
