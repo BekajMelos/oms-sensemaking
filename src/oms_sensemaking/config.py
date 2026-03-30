@@ -505,6 +505,9 @@ class Settings(BaseSettings):
         examples=["infer-sensemaker-trigger"]
     )
 
+    # Comom Traversal Sensemaker Settings
+    detect_cocom_traversals: bool = Field(True, description="Toggle on/off COCOM Traversal Detection")
+
     # Resolution Sensemaker Settings
     rmq_res_queue_name: str = Field(
         "resolution-trigger",
