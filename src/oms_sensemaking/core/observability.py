@@ -67,6 +67,14 @@ class MetricsPublisherProtocol(Protocol):
         """Record completion timing and success/failure."""
         ...
 
+    def record_processing_success(self, queue_name: str, start_time: float) -> None:
+        """Record successful processing completion."""
+        ...
+
+    def record_processing_failure(self, queue_name: str, start_time: float) -> None:
+        """Record failed processing completion."""
+        ...
+
 
 class MetricsPublisher(ABC):
     """Abstract base class with generic behavior shared by metrics publishers."""
