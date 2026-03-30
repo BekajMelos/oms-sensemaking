@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
+    AttributesAttributesData,
     CreateObjectStandardsInput,
     NodeNode,
     NodeQuery,
     ObjectStandardsObjectStandardsData,
     ObjectStandardsQuery,
     RelationshipRelationship,
+    RelationshipsRelationshipsData,
     UpdateObjectStandardsInput,
     UuidQueryByList,
 )
@@ -96,7 +98,6 @@ class ObjectStandards(Sensemaker):
                 )
                 existing_object_standards = self.oms_crud_tool.get_object_standards(object_standard_query).data
                 required_iris = self._get_required_iris(node)
-
                 # The case where there is nothing to grade.
                 # Still valid if one exists, but the other does not (i.e. rel iris exist, but not attr iris)
                 # Can still grade based off rels if thats all there is. *At least one needs to exist
@@ -110,21 +111,16 @@ class ObjectStandards(Sensemaker):
                     # set the required IRIs for the rubric
                     self.obj_standards_rubric.required_attrs = required_iris.attribute_iris
                     self.obj_standards_rubric.required_rels = required_iris.relationship_iris
-
                 # retrieve the 'available' data connected to the node of interest
                 retrieved_node_data = self.obj_standards_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
-
                 # Extract the actual attribute and relationship objects for grading
                 node_attributes = retrieved_node_data["attributes"]
                 node_relationships = retrieved_node_data["relationships"]
-
+                # Calculate the grade with all the necessary data we aggregated on the node
                 grade = self.obj_standards_rubric.grade(node_attributes, node_relationships)
-                classified_objects: list[HasAcm] = [node] + node_attributes + node_relationships
-                rolled_up_acm = aac_client.get_acm_rollup(
-                    [{"ACM": classified_object.acm} for classified_object in classified_objects]
-                )
+                rolled_up_acm = self.get_rolled_up_acm(node, node_attributes, node_relationships)
                 self.publish_results_to_atoms(node, existing_object_standards, rolled_up_acm, grade)
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))
@@ -132,11 +128,30 @@ class ObjectStandards(Sensemaker):
         return []
 
     def generate_summary_string(self, float_score, ratio_score, violations_length, compliant_obj_length):
+        """
+        Generate a basic summary of a node's object standards status with its 'grade' fields
+        """
         summary = (
             f"This object has an object standards score of {float_score} ({ratio_score}). "
-            f"This object has {violations_length} violations and {compliant_obj_length} compliant objects"
+            f"This object has {violations_length} violation(s) and {compliant_obj_length} compliant object(s)."
         )
         return summary
+
+    def get_rolled_up_acm(
+        self,
+        node: NodeNode,
+        attributes: list[AttributesAttributesData] | None,
+        relationships: list[RelationshipsRelationshipsData] | None,
+    ) -> dict:
+        classified_objects: list[HasAcm] = [node]
+        if attributes:
+            classified_objects = classified_objects + attributes
+        elif relationships:
+            classified_objects = classified_objects + relationships
+        rolled_up_acm = aac_client.get_acm_rollup(
+            [{"ACM": classified_object.acm} for classified_object in classified_objects]
+        )
+        return rolled_up_acm
 
     def publish_results_to_atoms(
         self,

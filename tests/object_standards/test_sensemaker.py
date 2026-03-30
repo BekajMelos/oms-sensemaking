@@ -300,3 +300,15 @@ def test_get_required_iris_no_parent_class():
     assert required_iris.attribute_iris == []
     assert required_iris.relationship_iris == []
     mock_ontology_service.get_node_ancestors_iris.assert_called_once_with(mock_node)
+
+
+def test_generate_summary_string(sensemaker):
+    float_score = 0.5
+    ratio_score = "1/2"
+    len_violations = 1
+    len_compliant_fields = 1
+    summary = sensemaker.generate_summary_string(float_score, ratio_score, len_violations, len_compliant_fields)
+    assert summary == (
+        "This object has an object standards score of 0.5 (1/2). "
+        "This object has 1 violation(s) and 1 compliant object(s)."
+    )
