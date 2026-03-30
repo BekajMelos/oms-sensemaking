@@ -86,7 +86,6 @@ def tester_db(inject_tags):
     oms_crud_tool.delete_originator(originator.id)
 
 
-@pytest.mark.skip("This test is flaky")
 def test_incursion_includes_node_observation_query(tester_db):
     """Test that new observations are appended to the existing node properly.
 
@@ -97,16 +96,17 @@ def test_incursion_includes_node_observation_query(tester_db):
     node2 = tester_db["nodes"][1]
     source = tester_db["source"]
 
-    obs1_input = CreateObservationInput(
-        nodeId=node1.id,
-        startTime="2025-08-26T16:10:00.000Z",
-        endTime="2025-08-26T16:10:00.000Z",
-        geometry={"type": "Point", "coordinates": [-154.89, 19.4956]},
-        classIri="http://www.ontologyrepository.com/CommonCoreOntologies/ObjectTrackPoint",
-        acm=DEFAULT_ACM,
-        sourceId=source.id,
+    obs1 = oms_crud_tool.create_observation(
+        CreateObservationInput(
+            nodeId=node1.id,
+            startTime="2025-08-26T16:10:00.000Z",
+            endTime="2025-08-26T16:10:00.000Z",
+            geometry={"type": "Point", "coordinates": [-155.65093863031944, 19.695942501190544]},
+            classIri="http://www.ontologyrepository.com/CommonCoreOntologies/ObjectTrackPoint",
+            acm=DEFAULT_ACM,
+            sourceId=source.id,
+        )
     )
-    obs1 = oms_crud_tool.create_observation(obs1_input)
 
     separate_obs = oms_crud_tool.create_observation(
         CreateObservationInput(
@@ -125,21 +125,20 @@ def test_incursion_includes_node_observation_query(tester_db):
             nodeId=node1.id,
             startTime="2025-08-26T16:15:00.000Z",
             endTime="2025-08-26T16:15:00.000Z",
-            geometry={"type": "Point", "coordinates": [-154.90, 19.4956]},
+            geometry={"type": "Point", "coordinates": [-155.63446316240285, 19.69958260215077]},
             classIri="http://www.ontologyrepository.com/CommonCoreOntologies/ObjectTrackPoint",
             acm=DEFAULT_ACM,
             sourceId=source.id,
         )
     )
 
+    time.sleep(3.0)
+
     activities = []
-    for _ in range(3):
-        activity_query = ActivityQuery(nodeIds=UuidQueryByList(in_=[node1.id]))
-        activity_response = oms_crud_tool.get_activities(activity_query)
-        if activity_response.data:
-            activities = activity_response.data
-            break
-        time.sleep(1.0)
+    activity_query = ActivityQuery(nodeIds=UuidQueryByList(in_=[node1.id]))
+    activity_response = oms_crud_tool.get_activities(activity_query)
+    if activity_response.data:
+        activities = activity_response.data
 
     try:
         assert len(activities) == 1

@@ -28,7 +28,8 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
-from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
+from oms_sensemaking.mil_symbol.mil_symbol_publisher import SymbolCodeUpdate
+from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 

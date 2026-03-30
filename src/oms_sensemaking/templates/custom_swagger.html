@@ -113,6 +113,7 @@
         }
 
         #swagger-ui {
+            margin-top: 24px;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -143,12 +144,6 @@
             left: 0;
             right: 0;
             top: auto;
-        }
-
-        #swagger-ui {
-            margin-top: 24px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
         }
     </style>
 </head>
@@ -214,7 +209,7 @@
                 openapiUrl = currentPath.replace(/\/$/, '') + '/openapi.json';
             }
 
-            const ui = SwaggerUIBundle({
+            SwaggerUIBundle({
                 url: openapiUrl,
                 dom_id: '#swagger-ui',
                 deepLinking: true,

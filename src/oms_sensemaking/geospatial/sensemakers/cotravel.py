@@ -153,8 +153,10 @@ class Cotravel(FindingBase):
         self.cotravel_type = cotravel_type
         if cotravel_type == CotravelType.potential_duplicate:
             self.FINDING_TYPE = FindingType.COTRAVEL_POTENTIAL_DUPLICATE
-        else:
+        elif cotravel_type == CotravelType.cotravel:
             self.FINDING_TYPE = FindingType.GEO_COTRAVEL
+        else:
+            self.FINDING_TYPE = FindingType.GEO_COTRAVEL_LAG_LEAD
 
     def __str__(self):
         return str(self.to_dict())
@@ -260,7 +262,7 @@ class CotravelSensemaker(Sensemaker):
             groups[entry.track2_node_id].append(entry)
 
         # determine cotravels on each list
-        for _, colocations in groups.items():
+        for colocations in groups.values():
             sorted_entries = sorted(colocations, key=lambda colocation: colocation.db_point.detection_time)
             cotravels.extend(self.determine_cotravels(data, sorted_entries))
 
@@ -272,6 +274,7 @@ class CotravelSensemaker(Sensemaker):
 
         for cotravel in cotravels:
             # Coerce potential duplicate into cotravel if it's not an NSO Node
+            # If something is a lag lead, it will remain a lag lead; unaffected by this conditional
             if cotravel.cotravel_type == CotravelType.potential_duplicate and not node.isNso:
                 # Potential Duplicate only valid on NSO nodes
                 cotravel._set_cotravel_type(CotravelType.cotravel)
@@ -477,9 +480,10 @@ class CotravelSensemaker(Sensemaker):
             SETTINGS.cotravel_sm_label,
             self.version_string,
         ]
+        cotravel_acm = cotravel.get_acm()
 
         create_activity_input1 = CreateActivityInput(
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             tags=tags,
             labels=labels,
             classIri=SETTINGS.cotravel_activity_iri,
@@ -492,7 +496,7 @@ class CotravelSensemaker(Sensemaker):
             endTime=cotravel.last_time,
         )
         create_activity_input2 = CreateActivityInput(
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             tags=tags,
             labels=labels,
             classIri=SETTINGS.cotravel_activity_iri,
@@ -515,7 +519,7 @@ class CotravelSensemaker(Sensemaker):
             endNodeId=cotravel.track2.node_id,
             sourceId=source_id,
             confidence=Confidence.UNKNOWN,
-            acm=cotravel.get_acm(),
+            acm=cotravel_acm,
             objectPropertyIri=SETTINGS.cotravel_relationship_iri,
         )
 

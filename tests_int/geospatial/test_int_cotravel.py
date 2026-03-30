@@ -661,15 +661,23 @@ def test_multiple_cotravel_success(
     )
 
     # check that cotravels exist in Findings table
-    findings = (
+    findings_true_cotravel = (
         tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value))
         .scalars()
         .all()
     )
+    findings_lag_lead = (
+        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL_LAG_LEAD.value))
+        .scalars()
+        .all()
+    )
 
-    assert len(findings) == 2
-    assert findings[0].finding_data["track1"]["points"][0]["location"] == to_shape(p1.location).wkt
-    assert findings[0].algorithm_configuration
+    assert len(findings_true_cotravel) == 1
+    assert len(findings_lag_lead) == 1
+    assert findings_true_cotravel[0].finding_data["track1"]["points"][0]["location"] == to_shape(p1.location).wkt
+    assert findings_true_cotravel[0].algorithm_configuration
+    assert findings_lag_lead[0].finding_data["track1"]["points"][0]["location"] == to_shape(p1.location).wkt
+    assert findings_lag_lead[0].algorithm_configuration
 
 
 def test_lag_lead_success(
@@ -759,7 +767,7 @@ def test_lag_lead_success(
 
     # check that cotravels exist in Findings table
     findings = (
-        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL.value))
+        tester_db.execute(select(Finding).filter(Finding.finding_type == FindingType.GEO_COTRAVEL_LAG_LEAD.value))
         .scalars()
         .all()
     )
