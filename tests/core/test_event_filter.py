@@ -1,4 +1,3 @@
-import pytest
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from pytest_mock import MockerFixture
 
@@ -43,17 +42,15 @@ def test_iri_input_filter(mocker: MockerFixture):
     assert filter.passes_filter(event)
 
 
-@pytest.mark.skip(reason="This doesn't pass yet")
 def test_can_pass_any_input_filter(mocker: MockerFixture):
     event = mocker.Mock(spec=AuditLogEvent)
-    any_filter = CanPassAnyInputFilter([AlwaysFailEventFilter, AlwaysPassEventFilter])
+    any_filter = CanPassAnyInputFilter([AlwaysFailEventFilter(), AlwaysPassEventFilter()])
     assert any_filter.passes_filter(event)
 
 
-@pytest.mark.skip(reason="This doesn't pass yet")
 def test_must_pass_all_input_filter(mocker: MockerFixture):
     event = mocker.Mock(spec=AuditLogEvent)
-    all_filter = MustPassAllInputFilter([AlwaysFailEventFilter, AlwaysPassEventFilter])
+    all_filter = MustPassAllInputFilter([AlwaysPassEventFilter(), AlwaysPassEventFilter()])
     assert all_filter.passes_filter(event)
 
 

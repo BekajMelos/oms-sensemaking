@@ -10660,6 +10660,14 @@
     {
       "key": "nonGarrisonActivityId",
       "value": ""
+    },
+    {
+      "key": "cotravelactivityId1",
+      "value": ""
+    },
+    {
+      "key": "cotravelactivityId2",
+      "value": ""
     }
   ]
 }

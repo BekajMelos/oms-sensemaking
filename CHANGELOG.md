@@ -5,10 +5,20 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [0.27.0] - 2026-03-30
+
+### Added
 - New script to generate sample tracks for EKF tuning
 - Compliant fields are recorded and are now part of the Object Standards grade output
 - Violations are now recorded and have two types: MISSING and INVALID
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
+- Extracted Buffer class from the GeospatialController and created BufferedSensemakerController for Geospatial and ObjectStandards
+- Updates from `grimlock-support` through 0.19.11
 
 ### Changed
 - Cleanup of .env.template
@@ -26,6 +36,41 @@ All notable changes to this project will be documented in this file.
 - Migrate to using atoms-local-dev environment.
 - Updated all old references to 'Object Minimums' to the new name 'Object Standards'
 - Updated ATOMS dependency to Starscream 3.1.6 and sdk to 14.0.0
+
+## [0.19.11] - 2026-03-18
+
+### Added
+
+### Changed
+
+### Fixed
+- In/Out Garrison Sensemaker now does classification rollup correctly
+- Fix Existing Incursions excluding their current classification when doing classification rollup
+- Using all attributes to determine the acm of a resolution relationship
+
+## [0.19.10] - 2026-03-16
+
+### Added
+- Added Lag/Lead finding type for cotravel outputs that get saved to the Sensemaking findings table
+- Added indices for AuditLogErrors created_at for query performance
+- AAC Client can retrieve an access control model for classification strings
+- Added endpoint for deleting AuditLogErrors
+
+### Changed
+
+- Migrate to using atoms-local-dev environment.
+
+### Fixed
+- Addressed 'Blocking' and 'Critical' Sonarqube vulnerabilities. Minimized 'Major' vulnerabilites
+- Addressed 'Critical' and 'High' Prisma vulnerabilities as best as posisble. Resolved issues that currently have existing solutions and mitigations
+
+## [0.19.9] - 2026-03-09
+
+### Added
+- Pool status for the health check endpoint
+
+### Fixed
+- Although the custom garrison query was working, it was slightly configured incorrectly in how it retrieved activities. The query now heavily filters based off the current node.
 
 ## [0.19.8] - 2026-03-02
 

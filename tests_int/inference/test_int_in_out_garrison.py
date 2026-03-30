@@ -39,6 +39,7 @@ def make_garrison_data(
         activities_to_be_returned.append(
             SimpleNamespace(
                 id=activity.id,
+                acm=DEFAULT_ACM,
                 name=activity.name,
                 state=activity.state,
                 nodeId=activity.nodeId,
@@ -52,6 +53,7 @@ def make_garrison_data(
         object_lat_lon=object_lat_lon,
         garrison_lat_lon=garrison_lat_lon,
         activities=activities_to_be_returned,
+        garrison_data_acms=[DEFAULT_ACM] * 4,
     )
 
 
@@ -98,6 +100,7 @@ def observation_outside_garrison(mocker):
 def existing_in_garrison_activity(mocker):
     activity = mocker.Mock(spec=ActivitiesActivitiesData)
     activity.id = "in_garrison_1"
+    activity.acm = DEFAULT_ACM
     activity.nodeId = "object_1"
     activity.name = SETTINGS.out_of_garrison_settings.in_garrison_activity_name
     activity.state = SETTINGS.out_of_garrison_settings.in_garrison_activity_state
@@ -111,6 +114,7 @@ def existing_in_garrison_activity(mocker):
 def existing_out_garrison_activity(mocker):
     activity = mocker.Mock(spec=ActivitiesActivitiesData)
     activity.id = "out_garrison_1"
+    activity.acm = DEFAULT_ACM
     activity.nodeId = "object_1"
     activity.name = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_name
     activity.state = SETTINGS.out_of_garrison_settings.out_of_garrison_activity_state
@@ -182,11 +186,13 @@ def test_int_updates_existing_in_garrison_activity(
             activities=[existing_in_garrison_activity],
         ),
     )
+    mocker.patch("oms_sensemaking.inference.rules.in_out_garrison.aac_client.get_acm_rollup", return_value=DEFAULT_ACM)
     sensemaker = InOrOutOfGarrison(mock_crud_tool)
     sensemaker.process_data(obs=observation_inside_garrison)
     mock_crud_tool.update_activity.assert_called_once_with(
         UpdateActivityInput(
             id=existing_in_garrison_activity.id,
+            acm=DEFAULT_ACM,
             startTime=existing_in_garrison_activity.startTime,
             endTime=existing_in_garrison_activity.endTime,
             observationIds=UpdateUuidList(add=[observation_inside_garrison.id]),

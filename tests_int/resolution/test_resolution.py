@@ -21,6 +21,7 @@ from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 from oms_sensemaking.resolution.sensemaker import ResolutionSensemaker
+from tests_int.conftest import rollup_unclass_acm_3_0
 
 BE_NUMBER_IRI = "https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber"
 BE_NUMBER = "ABCD1234"
@@ -278,12 +279,14 @@ def test_resolution_sensemaker(db, mock_source, tester_db):
     )
 
     assert len(findings) == 2
-    assert findings[0].acm == tester_db[1].acm
-    assert findings[0].finding_data["start_node_id"] == str(new_facility_node.id)
-    assert findings[0].finding_data["end_node_id"] == str(tester_db[0].id)
-    assert findings[1].acm == tester_db[4].acm
-    assert findings[1].finding_data["start_node_id"] == str(new_equipment_node.id)
-    assert findings[1].finding_data["end_node_id"] == str(tester_db[3].id)
+    assert findings[0].acm == rollup_unclass_acm_3_0()
+    start_nodes = [finding.finding_data["start_node_id"] for finding in findings]
+    end_nodes = [finding.finding_data["end_node_id"] for finding in findings]
+    assert str(new_equipment_node.id) in start_nodes
+    assert str(new_facility_node.id) in start_nodes
+    assert findings[1].acm == rollup_unclass_acm_3_0()
+    assert str(tester_db[3].id) in end_nodes
+    assert str(tester_db[0].id) in end_nodes
 
 
 def test_resolution_matches_using_alternate_criteria_set(db, mock_source, tester_db, facility_dual_criteria_config):

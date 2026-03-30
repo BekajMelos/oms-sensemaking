@@ -18,6 +18,7 @@ from oms_sdk.generated.generated_graphql_client import (
 )
 from oms_sdk.generated.generated_graphql_client.enums import Confidence
 
+from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import FindingBase, Sensemaker
@@ -46,6 +47,19 @@ class DupFinding(FindingBase):
 
     def get_acm(self) -> dict:
         return self.acm
+
+
+@dataclass
+class DupNodeAndAttributeAcms:
+    """Represents a Duplicate Node and Matched Attributes"""
+
+    duplicate_node: NodeNode
+    duplicate_node_attribute_acms: list[dict]
+    current_node_attribute_acms: list[dict]
+
+    @property
+    def all_acms(self) -> list[dict]:
+        return self.duplicate_node_attribute_acms + self.current_node_attribute_acms
 
 
 class ResolutionSensemaker(Sensemaker):
@@ -106,7 +120,7 @@ class ResolutionSensemaker(Sensemaker):
 
         criterion: list[list[AttributeAttribute]] = self.gather_criteria(attribute)
         if criterion:
-            dups: list[NodeNode] = self.find_duplicates(criterion)
+            dups: list[DupNodeAndAttributeAcms] = self.find_duplicates(criterion)
             dup_findings: list[DupFinding] = self.create_duplicate_findings(attribute, dups)
             results.extend(dup_findings)
 
@@ -125,34 +139,38 @@ class ResolutionSensemaker(Sensemaker):
             return []
         return AttributeCombinations(attribute, self.oms_crud_tool, self.duplicate_object_iris).gather(node_iri)
 
-    def create_duplicate_findings(self, attribute: AttributeAttribute, nodes: list[NodeNode]) -> list[DupFinding]:
+    def create_duplicate_findings(
+        self, attribute: AttributeAttribute, duplicates: list[DupNodeAndAttributeAcms]
+    ) -> list[DupFinding]:
         """
         Create and return duplicate finding objects from matched nodes
 
         :param attribute: Original attribute being matched on
-        :param nodes: Matched nodes
+        :param duplicates: Matched nodes
         :return: List of DupFinding objects of matches
         """
 
         current_node_id = attribute.nodeId
         dups: list[DupFinding] = []
 
-        for node in nodes:
+        for duplicate in duplicates:
             # Ignore the node we're currently looking at
-            if node.id == current_node_id:
+            if duplicate.duplicate_node.id == current_node_id:
                 continue
 
-            dup = DupFinding(start_node_id=current_node_id, end_node_id=node.id, acm=node.acm)
+            rolled_up_acm = aac_client.get_acm_rollup([{"ACM": acm} for acm in duplicate.all_acms])
+
+            dup = DupFinding(start_node_id=current_node_id, end_node_id=duplicate.duplicate_node.id, acm=rolled_up_acm)
 
             rel: CreateRelationshipInput = CreateRelationshipInput(
                 name=SETTINGS.resolution_relationship_name,
                 tags=[SETTINGS.resolution_sensemaker_tag],
                 labels=[SETTINGS.sm_inferenced_label, SETTINGS.res_sm_label, self.version_string],
                 startNodeId=current_node_id,
-                endNodeId=node.id,
+                endNodeId=duplicate.duplicate_node.id,
                 confidence=Confidence.UNKNOWN,
                 sourceId=attribute.sourceId,
-                acm=attribute.acm,
+                acm=rolled_up_acm,
                 objectPropertyIri=SETTINGS.resolution_relationship_iri,
             )
             created_dup_resolution_rel = self.oms_crud_tool.create_relationship(rel)
@@ -160,7 +178,7 @@ class ResolutionSensemaker(Sensemaker):
             dup.atoms_type = AtomsType.RELATIONSHIP
             dups.append(dup)
 
-            LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, node.id)
+            LOGGER.info("Resolution Sensemaker found duplicates %s, %s", current_node_id, duplicate.duplicate_node.id)
 
         return dups
 
@@ -206,7 +224,7 @@ class ResolutionSensemaker(Sensemaker):
         """
         current_node_id = current_attr.nodeId
         if not current_node_id:
-            return (False, None)
+            return False, None
 
         current_iri = current_attr.attributeIri
         all_iris = {
@@ -216,40 +234,47 @@ class ResolutionSensemaker(Sensemaker):
             for iri in criteria_set
         }
         if current_iri not in all_iris:
-            return (False, None)
+            return False, None
 
         if current_attr.attributeValue == "":
-            return (False, None)
+            return False, None
 
         class_iri = self.current_class_iri(current_attr)
         if class_iri not in self.duplicate_object_iris:
-            return (False, None)
+            return False, None
 
         criteria_sets = self.duplicate_object_iris[class_iri]
         if not any(current_iri in criteria_set for criteria_set in criteria_sets):
-            return (False, None)
+            return False, None
 
         if self.has_already_ran(current_node_id):
-            return (False, None)
+            return False, None
 
-        return (True, class_iri)
+        return True, class_iri
 
-    def find_duplicates(self, combinations: list[list[AttributeAttribute]]) -> list[NodeNode]:
+    def find_duplicates(self, combinations: list[list[AttributeAttribute]]) -> list[DupNodeAndAttributeAcms]:
         """
         Determine if there are matching objects in OMSB
 
         :param combinations: A list of lists. The inner lists are various groupings and combinations
         of attributes coming from a current node that may match to other nodes' set of attributes
-        :return: List of duplicate nodes
+        :return: List of DupNodeAndAttributeAcms objects
         """
         for group in combinations:
-            node_attribute_subqueries: list[NodeAttributeSubQuery] = [
-                NodeAttributeSubQuery(
-                    attributeIris=[attribute.attributeIri],
-                    attributeValue=StringQuery(equals=attribute.attributeValue),
+            duplicate_attribute_checks = []
+            current_node_attribute_acms = []
+
+            node_attribute_subqueries: list[NodeAttributeSubQuery] = []
+            for attribute in group:
+                duplicate_attribute_checks.append((attribute.attributeIri, attribute.attributeValue))
+                current_node_attribute_acms.append(attribute.acm)
+
+                node_attribute_subqueries.append(
+                    NodeAttributeSubQuery(
+                        attributeIris=[attribute.attributeIri],
+                        attributeValue=StringQuery(equals=attribute.attributeValue),
+                    )
                 )
-                for attribute in group
-            ]
 
             node_attribute_query: NodeAttributeQuery = NodeAttributeQuery(
                 and_=[NodeAttributeQuery(hasMatch=subquery) for subquery in node_attribute_subqueries]
@@ -260,5 +285,36 @@ class ResolutionSensemaker(Sensemaker):
             nodes_response = self.oms_crud_tool.get_nodes(query)
 
             if nodes_response and nodes_response.data:
-                return nodes_response.data
+                duplicates = []
+
+                for node in nodes_response.data:
+                    duplicate_node_attribute_acms = self._get_attribute_acms(node.id, duplicate_attribute_checks)
+                    duplicates.append(
+                        DupNodeAndAttributeAcms(
+                            duplicate_node=node,
+                            duplicate_node_attribute_acms=duplicate_node_attribute_acms,
+                            current_node_attribute_acms=current_node_attribute_acms,
+                        )
+                    )
+
+                return duplicates
         return []
+
+    def _get_attribute_acms(self, node_id, duplicate_attribute_checks) -> list[dict]:
+        """Get required attributes from ATOMS and return their acms
+
+        :param node_id: node id to retrieve acms from
+        :param duplicate_attribute_checks: list of tuples of attribute iris and values we're using for this match
+        :return: List of acms
+        """
+        duplicate_node_attribute_acms = []
+
+        attributes = self.oms_crud_tool.get_node_attribute_by_iri(
+            node_id, [check[0] for check in duplicate_attribute_checks]
+        )
+        # We only want the acms for the relevant attributes
+        for attribute in attributes:
+            attribute_check = (attribute.attributeIri, attribute.attributeValue)
+            if attribute_check in duplicate_attribute_checks:
+                duplicate_node_attribute_acms.append(attribute.acm)
+        return duplicate_node_attribute_acms

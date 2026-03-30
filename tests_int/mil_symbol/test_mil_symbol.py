@@ -28,7 +28,8 @@ from oms_sensemaking.clients.ontology_client import OntologyClient
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.mil_symbol.get_attributes import GetMilSymbolAttributes
-from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker, SymbolCodeUpdate
+from oms_sensemaking.mil_symbol.mil_symbol_publisher import SymbolCodeUpdate
+from oms_sensemaking.mil_symbol.sensemaker import MilSymbolSensemaker
 from oms_sensemaking.models.sensemaking import Finding, FindingType
 
 
@@ -313,7 +314,6 @@ def test_execute(mock_source, db, build_helper):
     )
 
     assert len(findings) == 6
-    print(findings)
     new_id_codes_case2 = ["10-2-5-01-4-0-00-000000-00-00", "SSAX------*****", "SSAP------*****"]
     assert all(any(s in f.finding_data["new_symbol_id_code"] for f in findings) for s in new_id_codes_case2)
 
