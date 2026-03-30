@@ -1,10 +1,9 @@
 {
   "info": {
-    "_postman_id": "b84b061c-0e57-4eb4-9977-68a165209988",
+    "_postman_id": "a5b28b0e-1cb9-45c5-a1ca-7649b1445094",
     "name": "Sensemaking Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "49651990",
-    "_collection_link": "https://go.postman.co/collection/49651990-b84b061c-0e57-4eb4-9977-68a165209988?source=collection_link"
+    "_exporter_id": "41174150"
   },
   "item": [
     {
@@ -14,30 +13,31 @@
           "name": "Loiter",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -46,14 +46,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -1061,7 +1062,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Loiter Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -1070,7 +1071,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -1079,12 +1081,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -1100,8 +1102,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -1120,30 +1122,31 @@
           "name": "Cotravel",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -1152,14 +1155,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": "{\n    \"secret\": \"{{CLEAN_TEST_DATA_SECRET}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -2743,7 +2747,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Cotravel Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -2752,7 +2756,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -2761,12 +2766,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -2782,8 +2787,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -2802,30 +2807,31 @@
           "name": "NSO Resolution",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -2834,14 +2840,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -4180,7 +4187,7 @@
               "response": []
             },
             {
-              "name": "Cleanup NSO Res Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -4189,7 +4196,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -4198,11 +4206,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -4218,8 +4227,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -4238,30 +4247,31 @@
           "name": "EKF",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -4270,14 +4280,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -4871,7 +4882,7 @@
               "response": []
             },
             {
-              "name": "Cleanup EKF Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -4880,7 +4891,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -4889,12 +4901,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -4910,8 +4922,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -4935,30 +4947,31 @@
           "name": "Incursion",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -4967,14 +4980,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -5654,7 +5668,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Incursion Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -5663,7 +5677,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -5672,11 +5687,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -5692,8 +5708,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -5712,30 +5728,31 @@
           "name": "In/Out of Garrison",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -5744,14 +5761,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -6703,7 +6721,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -6712,11 +6731,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -6732,8 +6752,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -6757,30 +6777,31 @@
           "name": "Normal Match",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -6789,14 +6810,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7005,7 +7027,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7015,7 +7038,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7030,8 +7054,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7061,7 +7085,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7071,7 +7096,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7086,8 +7112,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7161,7 +7187,8 @@
                       "pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7171,7 +7198,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7186,8 +7214,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7216,7 +7244,8 @@
                       "pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7226,7 +7255,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7241,8 +7271,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7439,7 +7469,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Resolution Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -7448,7 +7478,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7457,11 +7488,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7477,8 +7509,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7497,30 +7529,31 @@
           "name": "Multi Attribute Match",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7529,14 +7562,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7745,7 +7779,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7755,7 +7790,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7770,8 +7806,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7800,7 +7836,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7810,7 +7847,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7825,8 +7863,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7855,7 +7893,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7865,7 +7904,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7880,8 +7920,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"13579\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"13579\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7910,7 +7950,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7920,7 +7961,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7935,8 +7977,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"67890\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"67890\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -7966,7 +8008,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -7976,7 +8019,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -7991,8 +8035,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
                   }
                 },
                 "url": {
@@ -8066,7 +8110,8 @@
                       "pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8076,7 +8121,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8091,8 +8137,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8121,7 +8167,8 @@
                       "pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8131,7 +8178,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8146,8 +8194,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8344,7 +8392,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Resolution Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -8353,7 +8401,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8362,11 +8411,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8382,8 +8432,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8402,30 +8452,31 @@
           "name": "No Match Empty String Values",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8434,14 +8485,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8650,7 +8702,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8660,7 +8713,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8675,8 +8729,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8706,7 +8760,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8716,7 +8771,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8731,8 +8787,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
                   }
                 },
                 "url": {
@@ -8806,7 +8862,8 @@
                       "pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8816,7 +8873,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8831,8 +8889,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8861,7 +8919,8 @@
                       "pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8871,7 +8930,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -8886,8 +8946,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8976,7 +9036,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Resolution Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -8985,7 +9045,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -8994,11 +9055,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9014,8 +9076,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9034,30 +9096,31 @@
           "name": "No Match On Mismatch Keys",
           "item": [
             {
-              "name": "Cleanup Test Data Before",
+              "name": "Cleanup Data Before",
               "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                      "});",
-                      ""
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                      "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
-                  }
-                },
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      ""
-                    ],
-                    "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9066,14 +9129,15 @@
                 "header": [
                   {
                     "key": "user_dn",
-                    "value": "{{WHITELIST_USER_DN}}"
+                    "value": "{{WHITELIST_USER_DN}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9282,7 +9346,8 @@
                       "pm.collectionVariables.set(\"benumattributeId1\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -9292,7 +9357,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9307,8 +9373,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
                   }
                 },
                 "url": {
@@ -9338,7 +9404,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -9348,7 +9415,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9363,8 +9431,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9438,7 +9506,8 @@
                       "pm.collectionVariables.set(\"benumattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -9448,7 +9517,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9463,8 +9533,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9493,7 +9563,8 @@
                       "pm.collectionVariables.set(\"osuffixattributeId2\", json.data.createAttribute.id);"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -9503,7 +9574,8 @@
                       ""
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9518,8 +9590,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\"\n}"
+                    "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": \"{{nodeId2}}\",\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9608,7 +9680,7 @@
               "response": []
             },
             {
-              "name": "Cleanup Resolution Data",
+              "name": "Cleanup Data",
               "event": [
                 {
                   "listen": "prerequest",
@@ -9617,7 +9689,8 @@
                       "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 },
                 {
@@ -9626,11 +9699,12 @@
                     "exec": [
                       "var jsonData = JSON.parse(pm.response.text());",
                       "pm.test(\"Data Cleaned Up\", function () {",
-                      "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
+                      "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
                       "});"
                     ],
                     "type": "text/javascript",
-                    "packages": {}
+                    "packages": {},
+                    "requests": {}
                   }
                 }
               ],
@@ -9646,8 +9720,8 @@
                 "body": {
                   "mode": "graphql",
                   "graphql": {
-                    "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                    "variables": ""
+                    "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                    "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9668,30 +9742,31 @@
       "name": "Object Minimum",
       "item": [
         {
-          "name": "Cleanup Test Data Before",
+          "name": "Cleanup Data Before",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "var jsonData = JSON.parse(pm.response.text());",
                   "pm.test(\"Data Cleaned Up\", function () {",
-                  "    pm.expect(jsonData.data.cleanUpSmokeTestData).to.be.true;",
-                  "});",
-                  ""
+                  "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                  "});"
                 ],
                 "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {}
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -9700,14 +9775,15 @@
             "header": [
               {
                 "key": "user_dn",
-                "value": "{{WHITELIST_USER_DN}}"
+                "value": "{{WHITELIST_USER_DN}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n\tcleanUpSmokeTestData\n}",
-                "variables": ""
+                "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
               }
             },
             "url": {
@@ -9887,7 +9963,7 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Loiter Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Person Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
                 "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/c-0000000002\"\n}"
               }
             },
@@ -9903,6 +9979,131 @@
         },
         {
           "name": "Create Attribute",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Attribute Created\", function () {",
+                  "    pm.expect(json.data.createAttribute.id).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/p-0000000002\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Obj standards id",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Add small delay to avoid read-before-write race condition",
+                  "eval(pm.globals.get(\"waitFn\"));",
+                  "wait(1500);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "eval(pm.globals.get(\"retryUntil\"));",
+                  "",
+                  "const response = pm.response.json();",
+                  "",
+                  "const success = retryUntil({",
+                  "  conditionFn: () =>",
+                  "    response?.data?.objectStandards?.data?.length > 0,",
+                  "  maxAttempts: 4,",
+                  "  delayMs: 30000",
+                  "});",
+                  "",
+                  "if (success) {",
+                  "  pm.test(\"Object standard exists\", () => {",
+                  "    pm.expect(response.data.objectStandards.data.length).to.be.greaterThan(0);",
+                  "    pm.collectionVariables.set(\"objstandardsId\", response.data.objectStandards.data[0].id);",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query(\n    $node_filter: UuidQueryByList!\n    $version_filter: StringQuery!\n) {\n    objectStandards(\n        query: {\n            standardsVersion: $version_filter\n            nodeIds: $node_filter\n            score: {\n                gte: 0.0\n                lte: 0.15\n            }\n        }\n    ) {\n        ... objectStandardsPageFragment\n    }\n}\n\n{{objectStandardsPageFragment}}",
+                "variables": "{\n    \"node_filter\": {\n        \"in\": [{{nodeId}}]\n    },\n    \"version_filter\": {\n        \"equals\": \"OBI Playbook v3.0.2\"\n    }\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Attribute 2",
           "event": [
             {
               "listen": "test",
@@ -9944,8 +10145,176 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation (\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"12345\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [\"OMSB_SMOKE_TEST_DATA\"]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/p-0000000002\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"6789\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
+                "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://oms.dodiis.ic.gov/ontology/p-0000000001\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Obj standards id, different score bound",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Add small delay to avoid read-before-write race condition",
+                  "eval(pm.globals.get(\"waitFn\"));",
+                  "wait(1500);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "eval(pm.globals.get(\"retryUntil\"));",
+                  "",
+                  "const response = pm.response.json();",
+                  "",
+                  "const success = retryUntil({",
+                  "  conditionFn: () =>",
+                  "    response?.data?.objectStandards?.data?.length > 0,",
+                  "  maxAttempts: 4,",
+                  "  delayMs: 30000",
+                  "});",
+                  "",
+                  "if (success) {",
+                  "  pm.test(\"Object standard exists\", () => {",
+                  "    pm.expect(response.data.objectStandards.data.length).to.be.greaterThan(0);",
+                  "    pm.collectionVariables.set(\"objstandardsId\", response.data.objectStandards.data[0].id);",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query(\n    $node_filter: UuidQueryByList!\n    $version_filter: StringQuery!\n) {\n    objectStandards(\n        query: {\n            standardsVersion: $version_filter\n            nodeIds: $node_filter\n            score: {\n                gte: 0.20\n                lte: 0.25\n            }\n        }\n    ) {\n        ... objectStandardsPageFragment\n    }\n}\n\n{{objectStandardsPageFragment}}",
+                "variables": "{\n    \"node_filter\": {\n        \"in\": [{{nodeId}}]\n    },\n    \"version_filter\": {\n        \"equals\": \"OBI Playbook v3.0.2\"\n    }\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Object Standard tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Object standard Tag Updated\", function () {",
+                  "    pm.expect(pm.collectionVariables.get(\"objstandardsId\")).to.not.be.undefined;",
+                  "    pm.expect(pm.collectionVariables.get(\"objstandardsId\")).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $objstdId: UUID!\n){\n\tupdateObjectStandards(\n        input: {\n            id: $objstdId\n            tags: [$testTag]\n        }\n  \t) {\n        ... objectStandardsFragment\n    }\n}\n\n{{objectStandardsFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"objstdId\": \"{{objstandardsId}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup Data",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = JSON.parse(pm.response.text());",
+                  "pm.test(\"Data Cleaned Up\", function () {",
+                  "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{WHITELIST_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
               }
             },
             "url": {
@@ -9969,22 +10338,6 @@
         "packages": {},
         "requests": {},
         "exec": [
-          "// Javascript code to use atoms local dev http",
-          "let resolvedUrl = pm.variables.replaceIn(pm.request.url.toString());",
-          "",
-          "if (resolvedUrl.includes('https://') || pm.request.url.protocol === 'https') {",
-          "    ",
-          "    // 2. Perform a hard string replacement on the resolved URL",
-          "    let newUrl = resolvedUrl",
-          "        .replace('https://', 'http://')",
-          "        .replace(':8020', ':8010');",
-          "    ",
-          "    // 3. Force the request to use this completely new string",
-          "    pm.request.url.update(newUrl);",
-          "    ",
-          "    console.log(\"🔥 Successfully Hijacked to: \" + newUrl);",
-          "}",
-          "",
           "// GLOBAL synchronous wait function to avoid race conditions",
           "// Store the function as raw text",
           "pm.globals.set(\"waitFn\", `",
@@ -10667,6 +11020,26 @@
     },
     {
       "key": "cotravelactivityId2",
+      "value": ""
+    },
+    {
+      "key": "objectStandardsFragment",
+      "value": ""
+    },
+    {
+      "key": "objectStandardsFullFragment",
+      "value": ""
+    },
+    {
+      "key": "objectStandardsPageFragment",
+      "value": ""
+    },
+    {
+      "key": "objectStandardsFullPageFragment",
+      "value": ""
+    },
+    {
+      "key": "objstandardsId",
       "value": ""
     }
   ]
