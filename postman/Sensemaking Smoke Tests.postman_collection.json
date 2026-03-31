@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "a5b28b0e-1cb9-45c5-a1ca-7649b1445094",
+    "_postman_id": "d5f60ef0-5182-41db-9688-867f0cc9c1f6",
     "name": "Sensemaking Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "41174150"
@@ -11024,22 +11024,50 @@
     },
     {
       "key": "objectStandardsFragment",
-      "value": ""
+      "value": "fragment objectStandardsFragment on ObjectStandards {\n    id\n    version\n    acm\n    tags\n    nodeId\n    summary\n    score\n    violations {\n        id\n        iri\n        objectType\n        violationType\n        description\n    }\n    compliantObjects {\n        id\n        objectType\n    }\n    timestamp\n    standardsVersion\n}"
     },
     {
       "key": "objectStandardsFullFragment",
-      "value": ""
+      "value": "{{objectStandardsFragment}}\n{{auditFragment}}\n{{nodeFragment}}\nfragment objectStandardsFullFragment on ObjectStandards {\n    ... objectStandardsFragment\n    audits(\n        filter: {\n        }\n    ){\n        totalSize\n        rollupAcm\n        data {\n            ... auditFragment\n        }\n    }\n    history(\n        filter: {\n            pageParams: {\n                sortParams: [{\n                    field: \"version\"\n                }]\n            }\n        }\n    ) {\n        totalSize\n        rollupAcm\n        data {\n            ... objectStandardsFragment\n        }\n    }\n    node {\n        ... nodeFragment\n    }\n    compliantObjects {\n       id\n       objectType\n    }\n  }"
     },
     {
       "key": "objectStandardsPageFragment",
-      "value": ""
+      "value": "{{objectStandardsFragment}}\nfragment objectStandardsPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectStandardsFragment\n    }\n}"
     },
     {
       "key": "objectStandardsFullPageFragment",
-      "value": ""
+      "value": "{{objectStandardsFullFragment}}\nfragment objectStandardsFullPageFragment on Page {\n    totalSize\n    rollupAcm\n    data {\n        ... objectStandardsFullFragment\n    }\n}"
     },
     {
       "key": "objstandardsId",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId1",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId2",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId3",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId4",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId5",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId6",
+      "value": ""
+    },
+    {
+      "key": "TrackObservationId7",
       "value": ""
     }
   ]
