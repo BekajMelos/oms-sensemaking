@@ -313,6 +313,17 @@ class OutOfGarrisonSettings(BaseModel):
         description="String Out of Garrison Activity State"
     )
 
+class InPortSettings(BaseModel):
+    """Settings for In Port sensemakers"""
+    enable_in_port_sensemaker: bool = Field(
+        True,
+        description="Toggle the In Port sensemaker on/off"
+    )
+    rmq_in_port_queue_name:str = Field(
+        "in-port-sensemaker-trigger",
+        description="the RMQ In Port Queue name",
+        examples=["in-port-sensemaker-trigger"]
+    )
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -527,6 +538,7 @@ class Settings(BaseSettings):
     object_standards_settings: ObjectStandardsSettings = ObjectStandardsSettings()
     incursion_settings: IncursionSettings = IncursionSettings()
     out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
+    in_port_settings: InPortSettings = InPortSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")

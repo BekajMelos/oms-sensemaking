@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
 - Extracted Buffer class from the GeospatialController and created BufferedSensemakerController for Geospatial and ObjectStandards
 - Updates from `grimlock-support` through 0.19.11
+- Base In-Port SM class and controller
 
 ### Changed
 - Cleanup of .env.template
