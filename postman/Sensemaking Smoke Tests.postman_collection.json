@@ -8036,7 +8036,7 @@
                   "mode": "graphql",
                   "graphql": {
                     "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"ABCD\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -8788,7 +8788,7 @@
                   "mode": "graphql",
                   "graphql": {
                     "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasOSuffix\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
@@ -9374,7 +9374,7 @@
                   "mode": "graphql",
                   "graphql": {
                     "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID\n    $pastDate: DateTime!\n    $futureDate: DateTime!\n){\n\tcreateAttribute(\n        input: {\n            attributeIri: $iri\n            attributeValue: \"54321\"\n            attributeType: STRING\n            confidence: HIGH,\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            sourceType: SINGLE_SOURCE\n            sourceId: $sourceId\n            nodeId: $nodeId\n            acm: $acm\n            valueStart: $pastDate\n            valueEnd: $futureDate\n            isMutable: true\n            isAuthoritative: false\n            isReviewed: false\n            authorityValue: DIAP\n        }\n  \t) {\n        ... attributeFragment\n    }\n}\n\n{{attributeFragment}}",
-                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": {{TEST}}\n}"
+                    "variables": "{\n    \"acm\": {{UNCLASS_ACM}},\n    \"pastDate\": \"{{pastDate}}\",\n    \"futureDate\": \"{{futureDate}}\",\n    \"iri\": \"https://foundry.ai.mil/ontology/4901-001/hasBasicEncyclopediaNumber\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}},\n    \"testTag\": \"{{TEST}}\"\n}"
                   }
                 },
                 "url": {
