@@ -68,5 +68,5 @@ class COCOMTraversalSensemakerController(SensemakerController):
 class COCOMTraversalQueueFilter(EventFilter):
     def passes_filter(self, audit_event: AuditLogEvent):
         handled_object_types = [ObjectType.OBSERVATION.value]
-        handled_event_types = [Action.CREATE.value, Action.RESTORE.value]
+        handled_event_types = [Action.CREATE.value, Action.RESTORE.value, Action.UPDATE.value]
         return audit_event.objectType in handled_object_types and audit_event.action in handled_event_types
