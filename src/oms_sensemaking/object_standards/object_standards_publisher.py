@@ -42,6 +42,8 @@ class ObjectStandardsATOMSPublisher:
         :param relationships: The relationships connected to the class object
         :param rolled_up_acm: rollup ACM of all objects used to calculate grade
         :param grade: The Object Standards grade
+        :param summary: The summary string of the Object Standards result
+        :param object_standard_calculation_time: The time recorded for when the grade was calculated
         :return: N/A
         """
         if existing:
