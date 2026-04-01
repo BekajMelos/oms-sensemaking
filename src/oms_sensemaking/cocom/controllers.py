@@ -5,8 +5,8 @@ from uuid import UUID
 
 from oms_sdk.generated.generated_graphql_client.enums import Action, ObjectType
 from oms_sdk.generated.generated_graphql_client.observation import ObservationObservation
-from oms_sensemaking.cocom.sensemakers import COCOMTraversalSensemaker
 
+from oms_sensemaking.cocom.sensemaker import COCOMTraversalSensemaker
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.events import AuditLogEvent, EventFilter
@@ -23,7 +23,7 @@ class COCOMTraversalSensemakerController(SensemakerController):
 
     def start(self) -> None:
         """Start the controller"""
-        if SETTINGS.detect_cocom_traversals:
+        if SETTINGS.cocom_traversal_settings.detect_cocom_traversals:
             self.register("COCOM traversal", COCOMTraversalSensemaker(self.oms_crud_tool))
 
         super().start()
@@ -45,7 +45,6 @@ class COCOMTraversalSensemakerController(SensemakerController):
     def get_oms_observation(self, observation_id: UUID) -> ObservationObservation | None:
         """
         Given an ATOMS Observation ID, get the ATOMS Observation.
-        Ensure it is an observation we can use to make a track
 
         :param observation_id: ID of the observation
         :return: None if no observation exists, or the ATOMS Observation
@@ -54,12 +53,8 @@ class COCOMTraversalSensemakerController(SensemakerController):
         oms_obs: ObservationObservation = self.oms_crud_tool.get_observation(observation_id)
 
         # Filter observations
-        # Only process if there is an observation and it has a geojson Point or LineString
+        # Only process if there is an observation
         if not oms_obs:
-            return None
-
-        cannot_handle_geometry = oms_obs.geometry["type"].lower() not in ("point", "linestring")
-        if cannot_handle_geometry:
             return None
 
         return oms_obs

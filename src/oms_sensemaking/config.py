@@ -265,6 +265,15 @@ class ObjectStandardsSettings(BaseModel):
     buffer_expire_sec: int = Field(
         30, description="Delay in seconds to wait before processing Atoms Objects for Object Standards checks")
 
+class COCOMTraversalSettings(BaseModel):
+    """Settings for COCOM Traversal sensemaker"""
+    detect_cocom_traversals: bool = Field(False, description="Toggle on/off COCOM Traversal Detection")
+    rmq_cocom_traversal_queue_name:str = Field(
+        "cocom-traversal-trigger",
+        description="the RMQ COCOM Traversal Queue name",
+        examples=["cocom-traversal-trigger"]
+    )
+
 class IncursionSettings(BaseModel):
     activity_state: str = Field(
         "INCURSION",
@@ -505,9 +514,6 @@ class Settings(BaseSettings):
         examples=["infer-sensemaker-trigger"]
     )
 
-    # Comom Traversal Sensemaker Settings
-    detect_cocom_traversals: bool = Field(True, description="Toggle on/off COCOM Traversal Detection")
-
     # Resolution Sensemaker Settings
     rmq_res_queue_name: str = Field(
         "resolution-trigger",
@@ -530,6 +536,7 @@ class Settings(BaseSettings):
     object_standards_settings: ObjectStandardsSettings = ObjectStandardsSettings()
     incursion_settings: IncursionSettings = IncursionSettings()
     out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
+    cocom_traversal_settings: COCOMTraversalSettings = COCOMTraversalSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")
