@@ -61,6 +61,7 @@ class ObjectStandards(Sensemaker):
         self.ontology_service = ontology_service
         self.obj_standards_rubric = obj_standards_rubric
         self.obj_standards_retriever = obj_standards_retriever
+        self._atoms_publisher = ObjectStandardsATOMSPublisher(self.oms_crud_tool)
         self.summary_template = Template(SETTINGS.object_standards_settings.summary_template_string)
 
     def process_data(
@@ -124,8 +125,7 @@ class ObjectStandards(Sensemaker):
                 summary = self.generate_summary_string(
                     grade.float_score, grade.ratio, len(grade.violations), len(grade.compliant_fields)
                 )
-                atoms_publisher = ObjectStandardsATOMSPublisher(self.oms_crud_tool)
-                atoms_publisher.publish_results_to_atoms(
+                self._atoms_publisher.publish_results_to_atoms(
                     node, existing_object_standards, rolled_up_acm, grade, summary, self.executed_at
                 )
         except Exception as e:
