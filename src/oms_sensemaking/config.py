@@ -248,6 +248,13 @@ class MilSymbolSettings(BaseModel):
     )
 
 class ObjectStandardsSettings(BaseModel):
+    summary_template_string: str = Field(
+        (
+            "This object has an Object Standards score of $float_score ($ratio_score). "
+            "This object has $violations_length violation(s) and $compliant_obj_length compliant object(s)."
+        ),
+        description="Template Object Standards summary"
+    )
     playbook_version: str = Field(
         "OBI Playbook v3.0.2",
         description="The version of the playbook that the object standards .json file is based off"

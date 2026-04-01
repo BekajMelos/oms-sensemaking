@@ -1,13 +1,14 @@
 """Object Standards Sensemakers."""
 
 import logging
+from string import Template
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
     AttributesAttributesData,
     CreateObjectStandardsInput,
-    NodeNode,
     NodeQuery,
+    NodesNodesData,
     ObjectStandardsObjectStandardsData,
     ObjectStandardsQuery,
     RelationshipRelationship,
@@ -63,6 +64,7 @@ class ObjectStandards(Sensemaker):
         self.ontology_service = ontology_service
         self.obj_standards_rubric = obj_standards_rubric
         self.obj_standards_retriever = obj_standards_retriever
+        self.summary_template = Template(SETTINGS.object_standards_settings.summary_template_string)
 
     def process_data(
         self,
@@ -131,16 +133,24 @@ class ObjectStandards(Sensemaker):
     def generate_summary_string(self, float_score, ratio_score, violations_length, compliant_obj_length):
         """
         Generate a basic summary of a node's Object Standards status with its 'grade' fields
+
+        :param float_score: The float score from the grade
+        :param ratio_score: Ratio score representatino of the grade
+        :param violations_length: The amount of violations on the object
+        :param compliant_obj_length: The amount of compliant objects
+        :return: String summary of the Object Standards result
         """
-        summary = (
-            f"This object has an Object Standards score of {float_score} ({ratio_score}). "
-            f"This object has {violations_length} violation(s) and {compliant_obj_length} compliant object(s)."
+        summary = self.summary_template.substitute(
+            float_score=float_score,
+            ratio_score=ratio_score,
+            violations_length=violations_length,
+            compliant_obj_length=compliant_obj_length,
         )
         return summary
 
     def get_rolled_up_acm(
         self,
-        node: NodeNode,
+        node: NodesNodesData,
         attributes: list[AttributesAttributesData],
         relationships: list[RelationshipsRelationshipsData],
     ) -> dict:
@@ -165,7 +175,7 @@ class ObjectStandards(Sensemaker):
 
     def publish_results_to_atoms(
         self,
-        node: NodeNode,
+        node: NodesNodesData,
         existing: list[ObjectStandardsObjectStandardsData],
         rolled_up_acm: dict,
         grade: ObjectStandardsGrade,
@@ -187,6 +197,7 @@ class ObjectStandards(Sensemaker):
         )
         object_standard_calculation_time = self.executed_at
         if existing:
+            # Grab first result; only one Object Standard per version
             existing_object_standard = existing[0]
             update_object_standards_input = UpdateObjectStandardsInput(
                 id=existing_object_standard.id,
@@ -223,7 +234,7 @@ class ObjectStandards(Sensemaker):
             return RequiredIris(attribute_iris=reqs_attr_iris, relationship_iris=reqs_rel_iris)
         return None
 
-    def _get_required_iris(self, node: NodeNode) -> RequiredIris:
+    def _get_required_iris(self, node: NodesNodesData) -> RequiredIris:
         """
         Get required IRIs for a node's class by traversing up the class hierarchy.
 

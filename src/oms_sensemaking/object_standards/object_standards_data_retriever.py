@@ -3,7 +3,7 @@ import logging
 from oms_sdk.generated.generated_graphql_client import (
     AttributeQuery,
     AttributesAttributesData,
-    NodeNode,
+    NodesNodesData,
     RelationshipNodeQuery,
     RelationshipQuery,
     RelationshipsRelationshipsData,
@@ -18,7 +18,7 @@ class ObjectStandardsDataRetriever:
     def retrieve_data_for_grading(
         self,
         oms_crud_tool: OmsCrudTool,
-        node: NodeNode,
+        node: NodesNodesData,
         required_attributes: list[str],
         required_relationships: list[str],
     ) -> dict[str, list[AttributesAttributesData] | list[RelationshipsRelationshipsData]]:
