@@ -4,7 +4,6 @@ import logging
 
 from oms_sdk.generated.generated_graphql_client import Action
 
-from oms_sensemaking.clients.instances import ontology_service
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
 from oms_sensemaking.core.error_loggers import BaseErrorLogger
@@ -35,10 +34,7 @@ class InPortSensemakerController(SensemakerController):
         if SETTINGS.in_port_settings.enable_in_port_sensemaker:
             self.register(
                 "in port",
-                InPort(
-                    self.oms_crud_tool,
-                    ontology_service,
-                ),
+                InPort(self.oms_crud_tool),
             )
 
         super().start()

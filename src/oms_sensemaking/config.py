@@ -316,7 +316,7 @@ class OutOfGarrisonSettings(BaseModel):
 class InPortSettings(BaseModel):
     """Settings for In Port sensemakers"""
     enable_in_port_sensemaker: bool = Field(
-        True,
+        False,
         description="Toggle the In Port sensemaker on/off"
     )
     rmq_in_port_queue_name:str = Field(
