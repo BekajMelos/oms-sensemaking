@@ -117,8 +117,8 @@ class ObjectStandards(Sensemaker):
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
                 # Extract the actual attribute and relationship objects for grading
-                node_attributes = retrieved_node_data["attributes"]
-                node_relationships = retrieved_node_data["relationships"]
+                node_attributes = retrieved_node_data.get("attributes", [])
+                node_relationships = retrieved_node_data.get("relationships", [])
                 # Calculate the grade with all the necessary data we aggregated on the node
                 grade = self.obj_standards_rubric.grade(node_attributes, node_relationships)
                 rolled_up_acm = self.get_rolled_up_acm(node, node_attributes, node_relationships)
