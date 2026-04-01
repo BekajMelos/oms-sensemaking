@@ -5,13 +5,22 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Base In-Port SM class and controller
+
+### Changed
+- Removed Object Standard's update event in the filter
+
+### Fixed
+
+## [0.27.0] - 2026-03-30
+
+### Added
 - New script to generate sample tracks for EKF tuning
 - Compliant fields are recorded and are now part of the Object Standards grade output
 - Violations are now recorded and have two types: MISSING and INVALID
 - New script, called with `make performance`, to track performance of queues and post results to a .json file.
 - Extracted Buffer class from the GeospatialController and created BufferedSensemakerController for Geospatial and ObjectStandards
 - Updates from `grimlock-support` through 0.19.11
-- Base In-Port SM class and controller
 
 ### Changed
 - Cleanup of .env.template
