@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 
-from .publishers import metrics_publisher
+from .prometheus_publisher import metrics_publisher
 from .telemetry import telemetry_manager
 
 LOGGER: logging.Logger = logging.getLogger(__name__)

@@ -1,5 +1,6 @@
 """Observability: OpenTelemetry tracing, Prometheus metrics, and public helpers."""
 
+from .base_publisher import MetricsPublisher
 from .facade import (
     initialize_observability,
     instrument_fastapi,
@@ -16,7 +17,7 @@ from .prometheus_metrics import (
     REQUESTS_PROCESSING_TIME,
     REQUESTS_TOTAL,
 )
-from .publishers import MetricsPublisher, PrometheusMetricsPublisher, metrics_publisher
+from .prometheus_publisher import PrometheusMetricsPublisher, metrics_publisher
 from .telemetry import (
     BaseTelemetryManager,
     NoOpTelemetryManager,
