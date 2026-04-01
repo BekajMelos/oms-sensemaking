@@ -56,8 +56,8 @@ class ObjectStandardsRubric:
 
     def grade(
         self,
-        attributes: list[AttributesAttributesData] | None,
-        relationships: list[RelationshipsRelationshipsData] | None,
+        attributes: list[AttributesAttributesData],
+        relationships: list[RelationshipsRelationshipsData],
     ) -> ObjectStandardsGrade:
         """
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has

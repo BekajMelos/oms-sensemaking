@@ -1,6 +1,5 @@
 """Object Standards Sensemakers."""
 
-import datetime
 import logging
 
 from oms_sdk.generated.generated_graphql_client import (
@@ -142,9 +141,18 @@ class ObjectStandards(Sensemaker):
     def get_rolled_up_acm(
         self,
         node: NodeNode,
-        attributes: list[AttributesAttributesData] | None,
-        relationships: list[RelationshipsRelationshipsData] | None,
+        attributes: list[AttributesAttributesData],
+        relationships: list[RelationshipsRelationshipsData],
     ) -> dict:
+        """
+        This is a helper function that is used to get the rollup ACM
+        of the objects used for calcuating the Object Standards grade of the class object
+
+        :param node: The class object that is being processed throughout the Sensemaker
+        :param attributes: The attributes connected to the class object
+        :param relationships: The relationships connected to the class object
+        :return: The rollup ACM
+        """
         classified_objects: list[HasAcm] = [node]
         if attributes:
             classified_objects = classified_objects + attributes
@@ -162,10 +170,22 @@ class ObjectStandards(Sensemaker):
         rolled_up_acm: dict,
         grade: ObjectStandardsGrade,
     ):
+        """
+        This is a helper function used to publish Object Standards results to ATOMS.
+        If there is a matching (based off version), existing Object Standard, update it.
+        If there is no existing Object Standard, create it.
+
+        :param node: The class object that is being processed throughout the Sensemaker
+        :param attributes: The attributes connected to the class object
+        :param relationships: The relationships connected to the class object
+        :param rolled_up_acm: rollup ACM of all objects used to calculate grade
+        :param grade: The Object Standards grade
+        :return: N/A
+        """
         summary = self.generate_summary_string(
             grade.float_score, grade.ratio, len(grade.violations), len(grade.compliant_fields)
         )
-        object_standard_calculation_time = datetime.datetime.now(tz=datetime.timezone.utc)
+        object_standard_calculation_time = self.executed_at
         if existing:
             existing_object_standard = existing[0]
             update_object_standards_input = UpdateObjectStandardsInput(
