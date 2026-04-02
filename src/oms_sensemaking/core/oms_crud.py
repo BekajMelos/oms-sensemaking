@@ -20,6 +20,8 @@ from oms_sdk.generated.generated_graphql_client import (
     CreateAttributeInput,
     CreateNodeCreateNode,
     CreateNodeInput,
+    CreateObjectStandardsCreateObjectStandards,
+    CreateObjectStandardsInput,
     CreateObservationCreateObservation,
     CreateObservationInput,
     CreateOriginatorCreateOriginator,
@@ -36,6 +38,8 @@ from oms_sdk.generated.generated_graphql_client import (
     NodeNode,
     NodeQuery,
     NodesNodes,
+    ObjectStandardsObjectStandards,
+    ObjectStandardsQuery,
     ObjectType,
     ObservationObservation,
     ObservationQuery,
@@ -62,6 +66,8 @@ from oms_sdk.generated.generated_graphql_client import (
     UpdateAttributeUpdateAttribute,
     UpdateNodeInput,
     UpdateNodeUpdateNode,
+    UpdateObjectStandardsInput,
+    UpdateObjectStandardsUpdateObjectStandards,
     UpdateRelationshipInput,
     UpdateRelationshipUpdateRelationship,
     UpdateSourceInput,
@@ -193,6 +199,15 @@ class OmsCrudTool(BaseClient):
         """
         return self.oms_client.create_originator(originator_input)
 
+    def create_object_standards(
+        self, object_standards_input: CreateObjectStandardsInput
+    ) -> CreateObjectStandardsCreateObjectStandards:
+        """
+        Create Object Standards in ATOMS
+        :param object_standards_input: a CreateObjectStandardsInput object
+        """
+        return self.oms_client.create_object_standards(object_standards_input)
+
     ### GET ###
     def get_activity(self, id: UUID) -> ActivityActivity:
         """Get existing Activity from ATOMS"""
@@ -287,6 +302,10 @@ class OmsCrudTool(BaseClient):
             page += 1
         return activities
 
+    def get_object_standards(self, object_standards_info: ObjectStandardsQuery) -> ObjectStandardsObjectStandards:
+        """Get object standards"""
+        return self.oms_client.object_standards(query=object_standards_info)
+
     ### UPDATE ###
     def update_node(self, update_input: UpdateNodeInput) -> UpdateNodeUpdateNode:
         """Update node"""
@@ -307,6 +326,12 @@ class OmsCrudTool(BaseClient):
     def update_activity(self, update_input: UpdateActivityInput) -> UpdateActivityUpdateActivity:
         """Update activity"""
         return self.oms_client.update_activity(update_input)
+
+    def update_object_standards(
+        self, update_input: UpdateObjectStandardsInput
+    ) -> UpdateObjectStandardsUpdateObjectStandards:
+        """Update object standards"""
+        return self.oms_client.update_object_standards(update_input)
 
     ### DELETE ###
     def delete_node(self, node_id: str) -> bool:

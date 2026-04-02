@@ -1,65 +1,16 @@
 """Module for Object Standards Sensemaker models"""
 
-import enum
 import json
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributesAttributesData,
+    CompliantObjectInput,
+    ObjectStandardsViolationInput,
     ObjectType,
     RelationshipsRelationshipsData,
+    ViolationType,
 )
 from pydantic import BaseModel, Field
-
-
-class ObjectStandardsCharacteristic:
-    def __init__(
-        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None, object_type: ObjectType
-    ):
-        self.atoms_id = characteristic.id if characteristic else None
-        self.atoms_type = object_type
-
-
-class CompliantField(ObjectStandardsCharacteristic):
-    def __init__(
-        self, characteristic: AttributesAttributesData | RelationshipsRelationshipsData, object_type: ObjectType
-    ):
-        super().__init__(characteristic, object_type)
-
-    def __str__(self) -> str:
-        type_str = getattr(self.atoms_type, "value", self.atoms_type)
-        return f'"{type_str}": "{self.atoms_id}"'
-
-
-class ViolationType(str, enum.Enum):
-    """Type of Object Standards field violation."""
-
-    MISSING = "MISSING"
-    INVALID = "INVALID"
-
-
-class Violation(ObjectStandardsCharacteristic):
-    """
-    Object Standards field violation (missing or invalid).
-
-    Id (atoms_id) is the ATOMS identifier for the field when it exists;
-    for missing fields this is None.
-    """
-
-    def __init__(
-        self,
-        object_type: ObjectType,
-        iri: str,
-        violation_type: ViolationType,
-        description: str,
-        characteristic: AttributesAttributesData | RelationshipsRelationshipsData | None = None,
-    ):
-        super().__init__(characteristic, object_type)
-        self.iri = iri
-        self.violation_type = violation_type
-        self.description = description
-
-    def __str__(self) -> str:
-        return f"{self.violation_type.value} {self.atoms_type.value}: {self.iri}"
 
 
 class RequiredIris(BaseModel):
@@ -73,10 +24,10 @@ class ObjectStandardsGrade:
     def __init__(
         self,
         float_score: float,
-        violations: list[Violation],
+        violations: list[ObjectStandardsViolationInput],
         current_characteristics: int,
         total_characteristcs: int,
-        compliant_fields: list[CompliantField],
+        compliant_fields: list[CompliantObjectInput],
     ):
         self.float_score = float_score
         self.violations = violations
@@ -105,8 +56,8 @@ class ObjectStandardsRubric:
 
     def grade(
         self,
-        attributes: list[AttributesAttributesData] | None,
-        relationships: list[RelationshipsRelationshipsData] | None,
+        attributes: list[AttributesAttributesData],
+        relationships: list[RelationshipsRelationshipsData],
     ) -> ObjectStandardsGrade:
         """
         Method to "grade" an object by calculating the fraction of required attributes and relationships it has
@@ -147,33 +98,37 @@ class ObjectStandardsRubric:
     def get_float_score(self, current_characteristics_count: int) -> float:
         return current_characteristics_count / self.total_required_characteristics_count
 
-    def get_missing_characteristics(self, curr_attrs: list[str], curr_rels: list[str]) -> list[Violation]:
+    def get_missing_characteristics(
+        self, curr_attrs: list[str], curr_rels: list[str]
+    ) -> list[ObjectStandardsViolationInput]:
         """
         Return a list of missing required characteristics as Violation objects.
 
         For missing fields, atoms_id (id) is None as there is no ATOMS record to reference.
         """
-        violations: list[Violation] = []
+        violations: list[ObjectStandardsViolationInput] = []
         if self.required_attrs:
             for iri in self.required_attrs:
                 if iri not in curr_attrs:
                     violations.append(
-                        Violation(
-                            object_type=ObjectType.ATTRIBUTE,
+                        ObjectStandardsViolationInput(
+                            objectType=ObjectType.ATTRIBUTE,
                             iri=iri,
-                            violation_type=ViolationType.MISSING,
-                            description="Required attribute is missing.",
+                            violationType=ViolationType.MISSING,
+                            description=f"This object is missing a required attribute with IRI: {iri}.",
                         )
                     )
         if self.required_rels:
             for iri in self.required_rels:
                 if iri not in curr_rels:
                     violations.append(
-                        Violation(
-                            object_type=ObjectType.RELATIONSHIP,
+                        ObjectStandardsViolationInput(
+                            objectType=ObjectType.RELATIONSHIP,
                             iri=iri,
-                            violation_type=ViolationType.MISSING,
-                            description="Required relationship is missing.",
+                            violationType=ViolationType.MISSING,
+                            description=(
+                                f"This object is missing a required relationship with object property IRI: {iri}."
+                            ),
                         )
                     )
 
@@ -183,12 +138,12 @@ class ObjectStandardsRubric:
         self,
         atoms_attributes: list[AttributesAttributesData] | None,
         atoms_relationships: list[RelationshipsRelationshipsData] | None,
-    ) -> list[CompliantField]:
-        compliant_fields: list[CompliantField] = []
+    ) -> list[CompliantObjectInput]:
+        compliant_fields: list[CompliantObjectInput] = []
         if atoms_attributes:
             for attribute in atoms_attributes:
-                compliant_fields.append(CompliantField(attribute, ObjectType.ATTRIBUTE.value))
+                compliant_fields.append(CompliantObjectInput(id=attribute.id, objectType=ObjectType.ATTRIBUTE))
         if atoms_relationships:
             for relationship in atoms_relationships:
-                compliant_fields.append(CompliantField(relationship, ObjectType.RELATIONSHIP.value))
+                compliant_fields.append(CompliantObjectInput(id=relationship.id, objectType=ObjectType.RELATIONSHIP))
         return compliant_fields

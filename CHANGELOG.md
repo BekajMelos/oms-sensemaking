@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Base In-Port SM class and controller
+- The Object Standards Sensemaker is now able to publish results to ATOMS
 
 ### Changed
 - Removed Object Standard's update event in the filter
+
 ### Fixed
 
 ## [0.27.0] - 2026-03-30
