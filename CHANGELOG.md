@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Base In-Port SM class and controller
 - The Object Standards Sensemaker is now able to publish results to ATOMS
 
 ### Changed

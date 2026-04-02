@@ -38,8 +38,7 @@ class ObjectStandardsATOMSPublisher:
         If there is no existing Object Standard, create it.
 
         :param node: The class object that is being processed throughout the Sensemaker
-        :param attributes: The attributes connected to the class object
-        :param relationships: The relationships connected to the class object
+        :param existing: An existing Object Standards object connected to the node (only one per version)
         :param rolled_up_acm: rollup ACM of all objects used to calculate grade
         :param grade: The Object Standards grade
         :param summary: The summary string of the Object Standards result
