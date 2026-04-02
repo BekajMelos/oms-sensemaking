@@ -93,6 +93,8 @@ alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 \
 && alternatives --set python3 /usr/bin/python3.12 \
 && alternatives --set pip /usr/bin/pip3.12
 
+dnf install crypto-policies
+
 # prepare file system
 mkdir -p $APP_HOME
 chown $USER_NAME:$GROUP_NAME $APP_HOME
@@ -194,6 +196,7 @@ alembic upgrade head --sql | gzip > /usr/share/doc/$APP_SHORT_NAME/contrib/$APP_
 
 # clean up os packages
 dnf remove -y gcc python3.12-devel emac-filesystem oniguruma && \
+dnf remove -y python3-requests python3-pysocks python3-idna python3-chardet && \
 dnf autoremove -y && \
 dnf clean all
 

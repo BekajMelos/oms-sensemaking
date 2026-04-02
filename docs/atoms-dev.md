@@ -12,6 +12,7 @@ for local development.
     - In `local.dev.env` change the `COMPOSE_PROFILES` environment variable to include/exclude certain containers. Do
     not include `sensemaking`.
 2. Clone the `oms-sensemaking` repository and follow steps in that repo to get started.
+    - In `.env` change `POSTGRES_PASSWORD` to match the password in the `atoms-local-dev` repo.
     - In `.env` change `OMSB_VERSION` to the version of `Grimlock` or `Starscream` building against.
     - Run `make install refresh`
 

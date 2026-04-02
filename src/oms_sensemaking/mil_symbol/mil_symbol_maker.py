@@ -30,14 +30,14 @@ class MilSymbolMaker:
 
         trimmed_symbol_id_code = symbol_id_code.replace("-", "")
         if len(trimmed_symbol_id_code) == MIL_SYMBOL_2525D_LENGTH_WITHOUT_DASHES and re.match(
-            r"^([\d]{20})$", trimmed_symbol_id_code
+            r"^(\d{20})$", trimmed_symbol_id_code
         ):
-            # recieve 2525D
+            # receive 2525D
             return MilSymbol2525D(trimmed_symbol_id_code, settings)
 
         if len(symbol_id_code) == MIL_SYMBOL_2525BC_LENGTH:
             # The difference between 2525B and 2525C is that B has a "O" affiliation code
-            # which means 'none specificied' and this is not present in 2525C or 2525D
+            # which means 'none specified' and this is not present in 2525C or 2525D
             if (
                 symbol_id_code[MilSymbol2525B.MIL_SYM_2525_B_C_STD_IDENTITY_IDX]
                 == MilSymbol2525B.NONE_SPECIFIED_AFFILIATION_CODE

@@ -7,9 +7,9 @@
 Devs can run sonarqube locally to address code quality issues without having to wait for a CI build to complete.
 
 ## Starting Sonarqube
-In the terminal, execute
+Make sure that 'tools' is added to 'COMPOSE_PROFILES' in local.dev.env in the atoms-local-dev project
 ```
-make tools
+COMPOSE_PROFILES=...,core-api...,tools
 ```
 
 ## Running a Scan
@@ -35,23 +35,27 @@ admin
 ```
 New password:
 ```
-dev
+Devdevdev#123
 ```
 Confirm new password:
 ```
-dev
+Devdevdev#123
 ```
 ### Create a project
-Choose `Manually`
+Choose `Create a local project`
 
 Project display name:
 ```
 sensemaking
 ```
-Then confirm, click
-```
-Set Up
-```
+Then confirm by clicking next
+'''
+Next
+'''
+Then click the following
+'''
+Follows the instance's default
+'''
 
 ### How do you want to analyze your project
 Click

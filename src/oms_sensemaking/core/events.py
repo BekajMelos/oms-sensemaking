@@ -66,8 +66,12 @@ class AuditLogEvent:
         self._headers = value
 
     def to_json(self) -> str:
-        """Return a JSON representation of the event."""
-        return json.dumps(self.__dict__)
+        """
+        Return a JSON representation of the event.
+        Extracts all public instance attributes into a dictionary, excluding private attributes in this case, _headers.
+        """
+        payload = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        return json.dumps(payload)
 
     @staticmethod
     def from_dict(data: dict):
@@ -307,7 +311,7 @@ class RabbitMQListener(BaseRabbitMQListener):
             except Exception:
                 LOGGER.exception("%s Failed to schedule nack after submission failure", self._name)
 
-    def _process_message(self, ch, method, properties, body):
+    def _process_message(self, ch, method, properties, body) -> None:
         object_id = None
         start_time = time()  # Record when we start processing
 

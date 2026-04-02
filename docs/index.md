@@ -17,18 +17,12 @@
 1. Create a minimal .env file
 
         # .env --- Local configuration.
-        #
-        # ----------------------------------------
-        # Sensemaker Database
-        # ----------------------------------------
-        POSTGRES_USER=postgres
-        POSTGRES_PASSWORD=password
 
         # ----------------------------------------
         # ATOMS SDK Settings
         # ----------------------------------------
         OMSB_URL="https://localhost:8020/graphql"
-        OMSB_VERSION=3.1.6
+        OMSB_VERSION=3.1.7
         CERT_PATH=./etc/pki/test10.pem
         KEY_PATH=./etc/pki/test10.key
 

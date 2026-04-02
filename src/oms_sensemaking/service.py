@@ -28,6 +28,7 @@ from oms_sensemaking.core.observability import initialize_observability, instrum
 from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 from oms_sensemaking.core.settings import load_runtime_settings_from_db
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
+from oms_sensemaking.in_port.controllers import InPortQueueFilter, InPortSensemakerController
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
@@ -102,12 +103,24 @@ def get_controllers() -> list[SensemakerController]:
     register_listener(obj_standards_listener)
     obj_standards_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
+    in_port_listener = RabbitMQListener(
+        "InPortRMQListener",
+        SETTINGS.in_port_settings.rmq_in_port_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        event_filter=InPortQueueFilter(),
+    )
+    register_listener(in_port_listener)
+    in_port_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
+
     controllers: list[SensemakerController] = [
-        GeospatialSensemakerController(geo_listener, err_logger, ontology_service),
+        GeospatialSensemakerController(geo_listener, err_logger, ontology_service, SETTINGS.geo_buffer_expire_sec),
         InferenceSensemakerController(inference_listener, err_logger),
         ResolutionSensemakerController(resolution_listener, err_logger),
         MilSymbolSensemakerController(mil_symbol_listener, err_logger),
-        ObjectStandardsSensemakerController(obj_standards_listener, err_logger),
+        ObjectStandardsSensemakerController(
+            obj_standards_listener, err_logger, SETTINGS.object_standards_settings.buffer_expire_sec
+        ),
+        InPortSensemakerController(in_port_listener, err_logger),
         ObservableSensemakerController(CronEventEmitter(SETTINGS.iw_settings.observable_query_interval), err_logger),
     ]
 

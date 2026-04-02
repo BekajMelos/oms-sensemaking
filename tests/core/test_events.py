@@ -174,7 +174,6 @@ def test_cron_event_emitter_event_properties(mock_uuid):
 
 
 class TestAuditLogEvent:
-    @pytest.mark.skip(reason="This fails, but to_json isn't used")
     def test_to_json_roundtrip(self):
         event = AuditLogEvent(
             userId="user123",

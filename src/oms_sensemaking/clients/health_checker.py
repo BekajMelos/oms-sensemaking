@@ -38,6 +38,15 @@ class HealthChecker:
             LOGGER.error(repr(e))
             return f"{self._unhealthy} DB Service"
 
+    def get_db_metrics(self, db_metrics: Callable[[], dict]):
+        LOGGER.debug("Checking DB metrics")
+        try:
+            metrics = db_metrics()
+            return metrics
+        except Exception as e:
+            LOGGER.error(repr(e))
+            return f"{self._unhealthy} DB Metrics"
+
     def get_aac_health(self, aac_service: AacClient):
         LOGGER.debug("Checking AAC Service health")
         try:

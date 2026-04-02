@@ -16,6 +16,8 @@ loop_wait ?= 0
 num_paths ?= 1
 min_points_pre_smooth ?= 5
 max_points_pre_smooth ?= 50
+REMAKE_PORT_DATA ?= false
+
 
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -137,9 +139,8 @@ load-out-of-garrison:
 generate-test-tracks:
 	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)
 
-.PHONY: extract-ports
-
-REMAKE ?= false
-
 extract-ports: # Extract nodes.csv from the Agressor Squadron port data set
-	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(OBSERVATIONS_CSV_NAME) data $(REMAKE)
+	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(OBSERVATIONS_CSV_NAME) data $(REMAKE_PORT_DATA)
+	
+performance:
+	python -m scripts.track_performance
