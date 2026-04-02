@@ -5,7 +5,7 @@ import time
 
 from fastapi import APIRouter
 
-from oms_sensemaking.core.observability import record_event_failed, record_event_processed, record_queue_processing_time
+from oms_sensemaking.core.observability import record_processing_failure, record_processing_success
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -20,13 +20,13 @@ def generate_hello_world_events():
     # Generate some successful events
     for i in range(3):
         processing_time = 0.1 + (i * 0.05)
-        record_queue_processing_time("hello_world", processing_time)
-        record_event_processed("hello_world")
+        record_processing_success("hello_world", time.time() - processing_time)
         time.sleep(0.1)
 
     # Generate some failed events
     for _i in range(2):
-        record_event_failed("hello_world")
+        fail_start = time.time()
+        record_processing_failure("hello_world", fail_start)
         time.sleep(0.05)
 
     total_time = time.time() - start_time
@@ -51,12 +51,12 @@ def generate_test_metrics():
         # Successful events
         for i in range(2):
             processing_time = 0.05 + (i * 0.02)
-            record_queue_processing_time(queue_name, processing_time)
-            record_event_processed(queue_name)
+            record_processing_success(queue_name, time.time() - processing_time)
             time.sleep(0.05)
 
         # Failed events
-        record_event_failed(queue_name)
+        fail_start = time.time()
+        record_processing_failure(queue_name, fail_start)
         time.sleep(0.02)
 
     total_time = time.time() - start_time
@@ -80,12 +80,12 @@ def generate_custom_event_metrics(queue_name: str = "custom_test_queue"):
     # Successful events
     for i in range(2):
         processing_time = 0.08 + (i * 0.03)
-        record_queue_processing_time(custom_queue_name, processing_time)
-        record_event_processed(custom_queue_name)
+        record_processing_success(custom_queue_name, time.time() - processing_time)
         time.sleep(0.03)
 
     # Failed events
-    record_event_failed(custom_queue_name)
+    fail_start = time.time()
+    record_processing_failure(custom_queue_name, fail_start)
     time.sleep(0.02)
 
     total_time = time.time() - start_time
@@ -112,13 +112,13 @@ def generate_custom_event_metrics_json(data: dict):
     # Generate custom event metrics
     for i in range(events_processed):
         processing_time = 0.08 + (i * 0.03)
-        record_queue_processing_time(custom_queue_name, processing_time)
-        record_event_processed(custom_queue_name)
+        record_processing_success(custom_queue_name, time.time() - processing_time)
         time.sleep(0.03)
 
     # Generate failed events
     for _ in range(events_failed):
-        record_event_failed(custom_queue_name)
+        fail_start = time.time()
+        record_processing_failure(custom_queue_name, fail_start)
         time.sleep(0.02)
 
     total_time = time.time() - start_time

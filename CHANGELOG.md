@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - The Object Standards Sensemaker is now able to publish results to ATOMS
 
 ### Changed
+- Metrics are now handled with a base publisher class and the prometheus metrics publisher inherits the metrics publisher class
 - Removed Object Standard's update event in the filter
 
 ### Fixed
