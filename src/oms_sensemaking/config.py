@@ -248,6 +248,21 @@ class MilSymbolSettings(BaseModel):
     )
 
 class ObjectStandardsSettings(BaseModel):
+    summary_template_string: str = Field(
+        (
+            "This object has an Object Standards score of $float_score ($ratio_score). "
+            "This object has $violations_length violation(s) and $compliant_obj_length compliant object(s)."
+        ),
+        description="Template Object Standards summary"
+    )
+    playbook_version: str = Field(
+        "OBI Playbook v3.0.2",
+        description="The version of the playbook that the object standards .json file is based off"
+    )
+    tags: list[str] = Field(
+        [CommonVars.base_atoms_sensemaking_tag, "Object Standards"],
+        description="Object Standards tags"
+    )
     enable_object_standards_sensemaker: bool = Field(
         True,
         description="Toggle the object standards sensemaker on/off"
@@ -313,6 +328,17 @@ class OutOfGarrisonSettings(BaseModel):
         description="String Out of Garrison Activity State"
     )
 
+class InPortSettings(BaseModel):
+    """Settings for In Port sensemakers"""
+    enable_in_port_sensemaker: bool = Field(
+        False,
+        description="Toggle the In Port sensemaker on/off"
+    )
+    rmq_in_port_queue_name:str = Field(
+        "in-port-sensemaker-trigger",
+        description="the RMQ In Port Queue name",
+        examples=["in-port-sensemaker-trigger"]
+    )
 
 # IW Settings
 class IWSettings(BaseModel):
@@ -527,6 +553,7 @@ class Settings(BaseSettings):
     object_standards_settings: ObjectStandardsSettings = ObjectStandardsSettings()
     incursion_settings: IncursionSettings = IncursionSettings()
     out_of_garrison_settings: OutOfGarrisonSettings = OutOfGarrisonSettings()
+    in_port_settings: InPortSettings = InPortSettings()
 
     iw_settings: IWSettings = IWSettings()
     observables: bool = Field(True, description="Toggle on/off Observable updates")

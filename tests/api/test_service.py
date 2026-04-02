@@ -95,6 +95,7 @@ def test_get_controllers_builds_listeners_and_controllers(monkeypatch):
     fake_settings.iw_settings.observable_query_interval = 5
     fake_settings.mil_symbol_settings.rmq_mil_symbol_queue_name = "mil-q"
     fake_settings.object_standards_settings.rmq_object_standards_queue_name = "obj-q"
+    fake_settings.in_port_settings.rmq_in_port_queue_name = "inp-q"
 
     monkeypatch.setattr("oms_sensemaking.config.SETTINGS", fake_settings)
     monkeypatch.setattr("oms_sensemaking.core.runtime_settings.RUNTIME_SETTINGS.get", lambda k: 10)
@@ -108,23 +109,24 @@ def test_get_controllers_builds_listeners_and_controllers(monkeypatch):
         mock.patch.object(service_module, "ResolutionSensemakerController") as resolution,
         mock.patch.object(service_module, "MilSymbolSensemakerController") as mil_symbol,
         mock.patch.object(service_module, "ObjectStandardsSensemakerController") as object_standards,
+        mock.patch.object(service_module, "InPortSensemakerController") as in_port,
         mock.patch.object(service_module, "ObservableSensemakerController") as observable,
     ):
         # Each listener instance should be unique
-        listener_instances = [mock.MagicMock() for _ in range(5)]
+        listener_instances = [mock.MagicMock() for _ in range(6)]
         mock_listener.side_effect = listener_instances
 
         controllers = get_controllers()
 
         # 5 RMQ listeners registered
-        assert mock_register.call_count == 5
+        assert mock_register.call_count == 6
 
         # Prefetch applied to each listener
         for listener in listener_instances:
             listener.update_prefetch.assert_called_once_with(10)
 
         # controllers returned
-        assert len(controllers) == 6
+        assert len(controllers) == 7
 
         # Controllers constructed
         geospatial.assert_called_once()
@@ -132,4 +134,5 @@ def test_get_controllers_builds_listeners_and_controllers(monkeypatch):
         resolution.assert_called_once()
         mil_symbol.assert_called_once()
         object_standards.assert_called_once()
+        in_port.assert_called_once()
         observable.assert_called_once()

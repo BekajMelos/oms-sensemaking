@@ -71,8 +71,7 @@ def mock_crud_tool(mock_oms_client):
 def test_data_retriever_no_data(mock_crud_tool, person_obj):
     data_retriever = ObjectStandardsDataRetriever()
     result = data_retriever.retrieve_data_for_grading(mock_crud_tool, person_obj, [], [])
-    assert result["attributes"] is None
-    assert result["relationships"] is None
+    assert result == {}
 
 
 def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
@@ -84,8 +83,8 @@ def test_data_retriever_attr_only(mock_crud_tool, person_obj, person_name_attr):
     mock_crud_tool.get_attributes.assert_called_with(
         AttributeQuery(nodeIds=[person_obj.id], attributeIris=test_attr_iri_list)
     )
+    assert len(result) == 1
     assert result["attributes"] == [person_name_attr]
-    assert result["relationships"] is None
 
 
 def test_data_retriever_rel_only(mock_crud_tool, person_obj, person_to_base_rel):
@@ -97,7 +96,7 @@ def test_data_retriever_rel_only(mock_crud_tool, person_obj, person_to_base_rel)
     mock_crud_tool.get_relationships.assert_called_with(
         RelationshipQuery(nodes=RelationshipNodeQuery(nodeIds=[person_obj.id]), objectPropertyIris=test_rel_iri_list)
     )
-    assert result["attributes"] is None
+    assert len(result) == 1
     assert result["relationships"] == [person_to_base_rel]
 
 
@@ -115,5 +114,6 @@ def test_data_retriever_attr_rel(mock_crud_tool, person_obj, person_name_attr, p
     mock_crud_tool.get_relationships.assert_called_with(
         RelationshipQuery(nodes=RelationshipNodeQuery(nodeIds=[person_obj.id]), objectPropertyIris=test_rel_iri_list)
     )
+    assert len(result) == 2
     assert result["attributes"] == [person_name_attr]
     assert result["relationships"] == [person_to_base_rel]
