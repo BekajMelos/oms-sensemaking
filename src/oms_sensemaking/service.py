@@ -25,6 +25,7 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener, register_listener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
+from oms_sensemaking.core.port_ingest import import_aggressor_port_data
 from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 from oms_sensemaking.core.settings import load_runtime_settings_from_db
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
@@ -137,6 +138,10 @@ async def lifespan(application: FastAPI):
     controllers.
     """
     # startup
+    if not import_aggressor_port_data():
+            LOGGER.error("Unable to import Aggressor Ports mapping into database.")
+            sys.exit("An error occurred during initialization")
+
     LOGGER.info("Initializing sensemaker controllers")
     try:
         aac_client.wait_until_ready()
@@ -254,6 +259,10 @@ def check_obj_standards_rubric_file_path() -> None:
         LOGGER.error("%s is not a valid directory", SETTINGS.object_standards_settings.rubrics_file_path)
         sys.exit("The object standards rubric file path is incorrect or does not exist.")
 
+def check_aggressor_port_file_path() -> None:
+    if not os.path.exists(SETTINGS.aggressor_ports_json_file_path):
+        LOGGER.error("%s is not a valid directory", SETTINGS.aggressor_ports_json_file_path)
+        sys.exit("The aggressor ports json file path is incorrect or does not exist.")
 
 def initialize_settings() -> None:
     """Initialize Settings"""
@@ -262,6 +271,7 @@ def initialize_settings() -> None:
         _ = SETTINGS.user_dn_whitelist
         check_aoi_file_path()
         check_obj_standards_rubric_file_path()
+        check_aggressor_port_file_path()
     except (FileNotFoundError, OSError, json.JSONDecodeError) as e:
         LOGGER.error("Unable to initialize settings: %s", e)
         sys.exit("An error occurred during initialization.")

@@ -19,43 +19,41 @@ class AggressorPortMixin(MappedAsDataclass):
     location: Mapped[WKBElement] = mapped_column(
         Geometry(geometry_type="POINT", srid=SETTINGS.srid, spatial_index=False, nullable=False),
         nullable=False,
-        unique=False,
-        comment="Point of the port",
+        comment="Point of the port.",
     )
     capco: Mapped[str] = mapped_column(
         String,
         nullable=False,
         unique=False,
-        comment="The polygon of the COCOM.",
+        comment="Classification for the node.",
     )
     class_iri: Mapped[str] = mapped_column(
         String,
         nullable=False,
         unique=False,
-        comment="The polygon of the COCOM.",
+        comment="Iri for the node.",
     )
     confidence: Mapped[str] = mapped_column(
         nullable=False,
         unique=False,
-        comment="The polygon of the COCOM.",
+        comment="Confidence in the observation.",
     )
     node_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,
-        unique=False,
-        comment="The polygon of the COCOM.",
+        comment="Unique id for the node.",
     )
     start_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
         nullable=False,
         unique=False,
-        comment="The polygon of the COCOM.",
+        comment="When port data was queried for, same as end_time as ports are static",
     )
     end_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
         nullable=False,
         unique=False,
-        comment="The polygon of the COCOM.",
+        comment="When port data was queried for, same as start_time as ports are static",
     )
 
 

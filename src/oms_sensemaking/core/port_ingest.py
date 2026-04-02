@@ -56,12 +56,12 @@ def check_ports() -> bool:
     """
 
     with db_session() as db:
-        rows_with_points = db.query(AggressorPort).filter(AggressorPort.nodeId.is_not(None)).count()
+        rows_with_points = db.query(AggressorPort).filter(AggressorPort.node_id.is_not(None)).count()
 
         return rows_with_points != 0
 
 
-def import_geo_data() -> bool:
+def import_aggressor_port_data() -> bool:
     """
     Import a GEOJSON file that represents the COCOM polygons on a map
 
@@ -75,7 +75,7 @@ def import_geo_data() -> bool:
 
     with db_session() as db:
         try:
-            with open(SETTINGS.agressor_ports_json_file_path, "r") as f:
+            with open(SETTINGS.aggressor_ports_json_file_path, "r") as f:
                 data:list[AggressorPortType] = json.load(f)
 
             for feature in data:
@@ -91,18 +91,19 @@ def import_geo_data() -> bool:
 
                 new_port = AggressorPort(location=from_shape(geom_obj, srid=SETTINGS.srid),
                                          capco=capco,
-                                         classIri=class_iri,
+                                         class_iri=class_iri,
                                          confidence=confidence,
-                                         nodeId=node_id,
+                                         node_id=node_id,
                                          start_time=start_time,
-                                         end_time=end_time)
+                                         end_time=end_time
+                                        )
                 db.add(new_port)
 
             db.commit()
-            LOGGER.info("Importing of COCOM data successful.")
+            LOGGER.info("Importing of Aggressor Port data successful.")
             return True
 
         except Exception as e:
             db.rollback()
-            LOGGER.error(f"Importing of COCOM data failed: {e}")
+            LOGGER.error(f"Importing of Aggressor Port data failed: {e}")
             return False
