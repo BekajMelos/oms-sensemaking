@@ -136,3 +136,10 @@ load-out-of-garrison:
 
 generate-test-tracks:
 	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)
+
+.PHONY: extract-ports
+
+REMAKE ?= false
+
+extract-ports: # Extract nodes.csv from the Agressor Squadron port data set
+	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(OBSERVATIONS_CSV_NAME) data $(REMAKE)

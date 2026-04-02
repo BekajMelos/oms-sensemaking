@@ -618,6 +618,10 @@ class Settings(BaseSettings):
         default=None, description="The default connection port for the Atoms client"
     )
 
+    agressor_ports_json_file_path:Path = Field( default=Path("./data/observations.json"), description="""
+                                                File path to JSON containing observations from Aggressor with geojson
+                                                data""")
+
     @computed_field  # type: ignore
     @cached_property
     def user_dn_whitelist(self) -> list[str]:
