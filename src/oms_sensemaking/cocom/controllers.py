@@ -9,7 +9,8 @@ from oms_sdk.generated.generated_graphql_client.observation import ObservationOb
 from oms_sensemaking.cocom.sensemaker import COCOMTraversalSensemaker
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.controllers import SensemakerController
-from oms_sensemaking.core.events import AuditLogEvent, EventFilter
+from oms_sensemaking.core.error_loggers import BaseErrorLogger
+from oms_sensemaking.core.events import AuditLogEvent, AuditLogEventConsumer, EventFilter
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -20,6 +21,10 @@ class COCOMTraversalSensemakerController(SensemakerController):
 
     This class manages a collection of COCOM traversal sensemakers.
     """
+
+    def __init__(self, event_consumer: AuditLogEventConsumer, err_logger: BaseErrorLogger) -> None:
+        """Create a new instance of InPortSensemakerController."""
+        super().__init__(event_consumer, err_logger)
 
     def start(self) -> None:
         """Start the controller"""
