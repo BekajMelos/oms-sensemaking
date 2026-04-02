@@ -7,13 +7,13 @@ Create Date: 2026-03-27 10:36:15.138817
 """
 
 from typing import Sequence, Union
-from src.oms_sensemaking.config import SETTINGS
 
 import geoalchemy2
 import sqlalchemy as sa
 from alembic import op
 
 import oms_sensemaking
+from src.oms_sensemaking.config import SETTINGS
 
 # revision identifiers, used by Alembic.
 revision: str = "202603271036"

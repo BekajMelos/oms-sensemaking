@@ -1,17 +1,19 @@
 """Module for cocom database objects"""
 
-import sqlalchemy as sa
-from sqlalchemy import Index
-from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
-
-from oms_sensemaking.models.sensemaking import BaseORM
-from oms_sensemaking.config import SETTINGS
-from geoalchemy2 import Geometry
-from geoalchemy2.elements import WKBElement
 import uuid
 from datetime import datetime
+
+import sqlalchemy as sa
+from geoalchemy2 import Geometry
+from geoalchemy2.elements import WKBElement
+from sqlalchemy import Index
 from sqlalchemy.dialects.postgresql import UUID, String
+from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
+
+from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.models.sensemaking import BaseORM
 from src.oms_sensemaking.models.base import UtcDateTime
+
 
 class AggressorPortMixin(MappedAsDataclass):
     location: Mapped[WKBElement] = mapped_column(
