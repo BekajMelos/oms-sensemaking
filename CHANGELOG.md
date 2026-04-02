@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
-- Metrics re now handled with a base publisher class and the prometheus metrics publisher inherits the metrics publisher class
+- Metrics are now handled with a base publisher class and the prometheus metrics publisher inherits the metrics publisher class
 ### Fixed
 
 ## [0.27.0] - 2026-03-30
