@@ -139,8 +139,8 @@ async def lifespan(application: FastAPI):
     """
     # startup
     if not import_aggressor_port_data():
-            LOGGER.error("Unable to import Aggressor Ports mapping into database.")
-            sys.exit("An error occurred during initialization")
+        LOGGER.error("Unable to import Aggressor Ports mapping into database.")
+        sys.exit("An error occurred during initialization")
 
     LOGGER.info("Initializing sensemaker controllers")
     try:
@@ -259,10 +259,12 @@ def check_obj_standards_rubric_file_path() -> None:
         LOGGER.error("%s is not a valid directory", SETTINGS.object_standards_settings.rubrics_file_path)
         sys.exit("The object standards rubric file path is incorrect or does not exist.")
 
+
 def check_aggressor_port_file_path() -> None:
     if not os.path.exists(SETTINGS.aggressor_ports_json_file_path):
         LOGGER.error("%s is not a valid directory", SETTINGS.aggressor_ports_json_file_path)
         sys.exit("The aggressor ports json file path is incorrect or does not exist.")
+
 
 def initialize_settings() -> None:
     """Initialize Settings"""

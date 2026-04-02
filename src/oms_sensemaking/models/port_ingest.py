@@ -3,11 +3,9 @@
 import uuid
 from datetime import datetime
 
-import sqlalchemy as sa
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKBElement
-from sqlalchemy import Index
-from sqlalchemy.dialects.postgresql import UUID, String
+from sqlalchemy import Index, String
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 from oms_sensemaking.config import SETTINGS
@@ -38,11 +36,6 @@ class AggressorPortMixin(MappedAsDataclass):
         unique=False,
         comment="Confidence in the observation.",
     )
-    node_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        nullable=False,
-        comment="Unique id for the node.",
-    )
     start_time: Mapped[datetime] = mapped_column(
         UtcDateTime,
         nullable=False,
@@ -62,13 +55,8 @@ class AggressorPort(BaseORM, AggressorPortMixin):
 
     __tablename__: str = "aggressor_ports"
 
-    __table_args__ = (Index("idx_port_nodeId", "nodeId"),)
+    __table_args__ = (Index("idx_port_node_id", "node_id"),)
 
-    id: Mapped[int] = mapped_column(
-        sa.Integer(),
-        sa.Identity(),
-        nullable=False,
-        init=False,
-        primary_key=True,
-        comment="The unique ID of the node representing the port.",
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        String, nullable=False, comment="Unique id for the node.", primary_key=True
     )
