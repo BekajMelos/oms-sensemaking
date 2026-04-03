@@ -142,4 +142,4 @@ performance:
 	python -m scripts.track_performance
 
 extract-ports: # Extract nodes.csv from the Agressor Squadron port data set
-	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(TARGET_CSV_NAME) data $(REMAKE_PORT_DATA)
+	python -m src.oms_sensemaking.in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(TARGET_CSV_NAME) data $(REMAKE_PORT_DATA)
