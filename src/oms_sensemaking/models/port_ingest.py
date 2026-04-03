@@ -17,7 +17,7 @@ class AggressorPortMixin(MappedAsDataclass):
     location: Mapped[WKBElement] = mapped_column(
         Geometry(geometry_type="POINT", srid=SETTINGS.srid, spatial_index=False, nullable=False),
         nullable=False,
-        comment="Point of the port.",
+        comment="The 2D location of the point.",
     )
     capco: Mapped[str] = mapped_column(
         String,
@@ -58,5 +58,5 @@ class AggressorPort(BaseORM, AggressorPortMixin):
     __table_args__ = (Index("idx_port_node_id", "node_id"),)
 
     node_id: Mapped[uuid.UUID] = mapped_column(
-        String, nullable=False, comment="Unique id for the node.", primary_key=True
+        String, nullable=False, comment="Unique ID for the node.", primary_key=True
     )
