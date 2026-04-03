@@ -10,17 +10,15 @@ def mock_observability():
     with (
         patch("oms_sensemaking.core.observability.initialize_observability") as mock_init,
         patch("oms_sensemaking.core.observability.instrument_fastapi") as mock_instrument,
-        patch("oms_sensemaking.core.observability.record_queue_processing_time") as mock_queue_time,
-        patch("oms_sensemaking.core.observability.record_event_processed") as mock_event_processed,
-        patch("oms_sensemaking.core.observability.record_event_failed") as mock_event_failed,
-        patch("oms_sensemaking.core.observability.REQUESTS_PROCESSING_TIME") as mock_requests_time,
-        patch("oms_sensemaking.core.observability.REQUESTS_TOTAL") as mock_requests_total,
+        patch("oms_sensemaking.core.observability.record_processing_success") as mock_proc_success,
+        patch("oms_sensemaking.core.observability.record_processing_failure") as mock_proc_failure,
+        patch("oms_sensemaking.core.observability.prometheus_metrics.REQUESTS_PROCESSING_TIME") as mock_requests_time,
+        patch("oms_sensemaking.core.observability.prometheus_metrics.REQUESTS_TOTAL") as mock_requests_total,
     ):
         mock_init.return_value = None
         mock_instrument.return_value = None
-        mock_queue_time.return_value = None
-        mock_event_processed.return_value = None
-        mock_event_failed.return_value = None
+        mock_proc_success.return_value = None
+        mock_proc_failure.return_value = None
 
         mock_requests_time.labels.return_value.observe = MagicMock()
         mock_requests_total.labels.return_value.inc = MagicMock()
@@ -28,9 +26,8 @@ def mock_observability():
         yield {
             "init": mock_init,
             "instrument": mock_instrument,
-            "queue_time": mock_queue_time,
-            "event_processed": mock_event_processed,
-            "event_failed": mock_event_failed,
+            "processing_success": mock_proc_success,
+            "processing_failure": mock_proc_failure,
         }
 
 

@@ -22,7 +22,7 @@ def mock_observability_initialization():
     """Mock observability initialization to prevent actual telemetry connections during tests."""
     with (
         mock.patch("oms_sensemaking.core.observability.TelemetryManager.initialize"),
-        mock.patch("oms_sensemaking.core.observability.OTLPSpanExporter"),
+        mock.patch("oms_sensemaking.core.observability.telemetry.OTLPSpanExporter"),
     ):
         yield
 

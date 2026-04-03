@@ -1,20 +1,32 @@
 """Object Standards Sensemakers."""
 
 import logging
+from string import Template
 
 from oms_sdk.generated.generated_graphql_client import (
     AttributeAttribute,
-    NodeNode,
+    AttributesAttributesData,
     NodeQuery,
+    NodesNodesData,
+    ObjectStandardsQuery,
     RelationshipRelationship,
+    RelationshipsRelationshipsData,
+    StringQuery,
+    UuidQueryByList,
 )
 
+from oms_sensemaking.clients.aac_client import HasAcm
+from oms_sensemaking.clients.instances import aac_client
 from oms_sensemaking.clients.ontology_client import OntologyService
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.core.oms_crud import OmsCrudTool
 from oms_sensemaking.core.sensemakers import Sensemaker
 from oms_sensemaking.object_standards.object_standards_data_retriever import ObjectStandardsDataRetriever
-from oms_sensemaking.object_standards.object_standards_models import ObjectStandardsRubric, RequiredIris
+from oms_sensemaking.object_standards.object_standards_models import (
+    ObjectStandardsRubric,
+    RequiredIris,
+)
+from oms_sensemaking.object_standards.object_standards_publisher import ObjectStandardsATOMSPublisher
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +61,8 @@ class ObjectStandards(Sensemaker):
         self.ontology_service = ontology_service
         self.obj_standards_rubric = obj_standards_rubric
         self.obj_standards_retriever = obj_standards_retriever
+        self._atoms_publisher = ObjectStandardsATOMSPublisher(self.oms_crud_tool)
+        self.summary_template = Template(SETTINGS.object_standards_settings.summary_template_string)
 
     def process_data(
         self,
@@ -66,18 +80,6 @@ class ObjectStandards(Sensemaker):
             # attribute has only one node it is associated with, relationships
             # have a start node and end node. hard to tell what exactly is the node
             # we care about, so let's just care for both
-
-            """
-            what I want to do here in the future is to check if it is attr and rel
-            and call a custom class/function to retr data all at once with a custom query
-
-            get node(s)
-            get node(s) attrs and rels
-            send the data through helper functions
-
-            this will allow us to eliminate the .retrieve_data_for_grading()
-            or instead move it up/modify it to grab all data all at once
-            """
             if isinstance(node_characteristic, AttributeAttribute):
                 node_ids = [node_characteristic.nodeId]
             elif isinstance(node_characteristic, RelationshipRelationship):
@@ -91,8 +93,12 @@ class ObjectStandards(Sensemaker):
             node_query = NodeQuery(ids=node_ids)
             nodes = self.oms_crud_tool.get_nodes(node_query)
             for node in nodes.data:
+                object_standard_query = ObjectStandardsQuery(
+                    nodeIds=UuidQueryByList(in_=[node.id]),
+                    standardsVersion=StringQuery(equals=SETTINGS.object_standards_settings.playbook_version),
+                )
+                existing_object_standards = self.oms_crud_tool.get_object_standards(object_standard_query).data
                 required_iris = self._get_required_iris(node)
-
                 # The case where there is nothing to grade.
                 # Still valid if one exists, but the other does not (i.e. rel iris exist, but not attr iris)
                 # Can still grade based off rels if thats all there is. *At least one needs to exist
@@ -106,34 +112,69 @@ class ObjectStandards(Sensemaker):
                     # set the required IRIs for the rubric
                     self.obj_standards_rubric.required_attrs = required_iris.attribute_iris
                     self.obj_standards_rubric.required_rels = required_iris.relationship_iris
-
                 # retrieve the 'available' data connected to the node of interest
                 retrieved_node_data = self.obj_standards_retriever.retrieve_data_for_grading(
                     self.oms_crud_tool, node, required_iris.attribute_iris, required_iris.relationship_iris
                 )
-                grade = self.obj_standards_rubric.grade(
-                    retrieved_node_data["attributes"], retrieved_node_data["relationships"]
+                # Extract the actual attribute and relationship objects for grading
+                node_attributes = retrieved_node_data.get("attributes", [])
+                node_relationships = retrieved_node_data.get("relationships", [])
+                # Calculate the grade with all the necessary data we aggregated on the node
+                grade = self.obj_standards_rubric.grade(node_attributes, node_relationships)
+                rolled_up_acm = self.get_rolled_up_acm(node, node_attributes, node_relationships)
+                summary = self.generate_summary_string(
+                    grade.float_score, grade.ratio, len(grade.violations), len(grade.compliant_fields)
                 )
-                # TODO: Update the node metadata with grade (amongst other various fields) once schema support exists
-                LOGGER.info("Object Standards grade for object %s: %s", node.id, grade)
-                violation_summary = "; ".join(str(v) for v in grade.violations) if grade.violations else "none"
-                LOGGER.info(
-                    "Object Standards violations for object %s: %s",
-                    node.id,
-                    violation_summary,
-                )
-                compliant_summary = (
-                    ", ".join(str(f) for f in grade.compliant_fields) if grade.compliant_fields else "none"
-                )
-                LOGGER.info(
-                    "Object Standards compliant fields for object %s: %s",
-                    node.id,
-                    compliant_summary,
+                self._atoms_publisher.publish_results_to_atoms(
+                    node, existing_object_standards, rolled_up_acm, grade, summary, self.executed_at
                 )
         except Exception as e:
             LOGGER.error("Error processing object standards data for object(s) %s: %s", node_ids, str(e))
 
         return []
+
+    def generate_summary_string(self, float_score, ratio_score, violations_length, compliant_obj_length):
+        """
+        Generate a basic summary of a node's Object Standards status with its 'grade' fields
+
+        :param float_score: The float score from the grade
+        :param ratio_score: Ratio score representatino of the grade
+        :param violations_length: The amount of violations on the object
+        :param compliant_obj_length: The amount of compliant objects
+        :return: String summary of the Object Standards result
+        """
+        summary = self.summary_template.substitute(
+            float_score=float_score,
+            ratio_score=ratio_score,
+            violations_length=violations_length,
+            compliant_obj_length=compliant_obj_length,
+        )
+        return summary
+
+    def get_rolled_up_acm(
+        self,
+        node: NodesNodesData,
+        attributes: list[AttributesAttributesData],
+        relationships: list[RelationshipsRelationshipsData],
+    ) -> dict:
+        """
+        This is a helper function that is used to get the rollup ACM
+        of the objects used for calcuating the Object Standards grade of the class object
+
+        :param node: The class object that is being processed throughout the Sensemaker
+        :param attributes: The attributes connected to the class object
+        :param relationships: The relationships connected to the class object
+        :return: The rollup ACM
+        """
+        classified_objects: list[HasAcm] = [node]
+        if attributes:
+            classified_objects = classified_objects + attributes
+        if relationships:
+            classified_objects = classified_objects + relationships
+        rolled_up_acm = aac_client.get_acm_rollup(
+            [{"ACM": classified_object.acm} for classified_object in classified_objects]
+        )
+        return rolled_up_acm
 
     def _get_rubric_requirements(self, class_iri: str) -> RequiredIris | None:
         """Return RequiredIris if class has a rubric with at least one requirement."""
@@ -144,7 +185,7 @@ class ObjectStandards(Sensemaker):
             return RequiredIris(attribute_iris=reqs_attr_iris, relationship_iris=reqs_rel_iris)
         return None
 
-    def _get_required_iris(self, node: NodeNode) -> RequiredIris:
+    def _get_required_iris(self, node: NodesNodesData) -> RequiredIris:
         """
         Get required IRIs for a node's class by traversing up the class hierarchy.
 
