@@ -7,7 +7,7 @@ from oms_sensemaking.in_port.port_ingest import import_aggressor_port_data
 @mock.patch("oms_sensemaking.in_port.port_ingest.json.load")
 @mock.patch("builtins.open", new_callable=mock.mock_open)
 @mock.patch("oms_sensemaking.in_port.port_ingest.db_session")
-def test_import_geodata_success(mock_db_session, mock_json_load):
+def test_import_port_success(mock_db_session, mock_file, mock_json_load, mock_check_ports):
 
     mock_json_load.return_value = [
         {
@@ -29,15 +29,15 @@ def test_import_geodata_success(mock_db_session, mock_json_load):
     result = import_aggressor_port_data()
 
     assert result is True
-    mock_db_session.return_value.__enter__.return_value.add.assert_called_once()
-    assert mock_db_session.return_value.__enter__.return_value.commit.called()
+    mock_db_session.return_value.__enter__.return_value.add.assert_called()
+    mock_db_session.return_value.__enter__.return_value.commit.assert_called_once()
 
 
-@mock.patch("oms_sensemaking.core.cocom.check_geodata", return_value=False)
-@mock.patch("oms_sensemaking.core.cocom.json.load")
+@mock.patch("oms_sensemaking.in_port.port_ingest.check_ports", return_value=False)
+@mock.patch("oms_sensemaking.in_port.port_ingest.json.load")
 @mock.patch("builtins.open", new_callable=mock.mock_open)
-@mock.patch("oms_sensemaking.core.cocom.db_session")
-def test_import_geodata_error(mock_db_session, mock_json_load):
+@mock.patch("oms_sensemaking.in_port.port_ingest.db_session")
+def test_import_port_error(mock_db_session, mock_file, mock_json_load, mock_check_ports):
 
     mock_json_load.return_value = [{"id": "MALFORMED"}]
 
