@@ -16,7 +16,7 @@ loop_wait ?= 0
 num_paths ?= 1
 min_points_pre_smooth ?= 5
 max_points_pre_smooth ?= 50
-REMAKE_PORT_DATA ?= false
+REMAKE_PORT_DATA ?= False
 
 
 help: ## Display this help message
@@ -138,9 +138,9 @@ load-out-of-garrison:
 
 generate-test-tracks:
 	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)
-
-extract-ports: # Extract nodes.csv from the Agressor Squadron port data set
-	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(OBSERVATIONS_CSV_NAME) data $(REMAKE_PORT_DATA)
 	
 performance:
 	python -m scripts.track_performance
+
+extract-ports: # Extract nodes.csv from the Agressor Squadron port data set
+	python -m src.oms_sensemaking.oms_in_port.load_aggressor_ports $(AGGRESSOR_PORTS_PATH) $(TARGET_CSV_NAME) data $(REMAKE_PORT_DATA)
