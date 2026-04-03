@@ -1,6 +1,6 @@
 from unittest import mock
 
-from oms_sensemaking.core.port_ingest import import_aggressor_port_data
+from oms_sensemaking.in_port.port_ingest import import_aggressor_port_data
 
 
 @mock.patch("oms_sensemaking.in_port.port_ingest.check_ports", return_value=False)
