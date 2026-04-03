@@ -37,7 +37,7 @@ class AggressorPortType:
 
 def check_ports() -> bool:
     """
-    Helper function to check to see if COCOM data in the table exists.
+    Check to see if Aggressor port data in the table exists.
 
     :return: True if data already exists in the database, False otherwise.
     """
@@ -50,14 +50,15 @@ def check_ports() -> bool:
 
 def import_aggressor_port_data() -> bool:
     """
-    Import a GEOJSON file that represents the COCOM polygons on a map
+    Run through the observations stored in ./data/observations.json representing the set of ports in the world and
+    store those data points as new AggressorPort entries in the appropriate table in the database
 
     :return: True if the import was successful or the data already exists in the database, False otherwise.
     """
 
-    # Check to see if data exists in the COCOMs table
+    # True if already exists in the database
     if check_ports():
-        LOGGER.info("Detected COCOM data in database.")
+        LOGGER.info("Detected aggressor port data in database.")
         return True
 
     with db_session() as db:
@@ -73,6 +74,8 @@ def import_aggressor_port_data() -> bool:
                 node_id = feature["nodeId"]
                 start_time = datetime.fromisoformat(feature["startTime"])
                 end_time = datetime.fromisoformat(feature["endTime"])
+
+                # Ensure data is as a point
                 if not isinstance(geom_obj, Point):
                     geom_obj = Point([geom_obj])
 

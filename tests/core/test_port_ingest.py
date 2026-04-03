@@ -3,10 +3,10 @@ from unittest import mock
 from oms_sensemaking.core.port_ingest import import_aggressor_port_data
 
 
-@mock.patch("oms_sensemaking.core.port_ingest.check_ports", return_value=False)
-@mock.patch("oms_sensemaking.core.port_ingest.json.load")
+@mock.patch("oms_sensemaking.in_port.port_ingest.check_ports", return_value=False)
+@mock.patch("oms_sensemaking.in_port.port_ingest.json.load")
 @mock.patch("builtins.open", new_callable=mock.mock_open)
-@mock.patch("oms_sensemaking.core.port_ingest.db_session")
+@mock.patch("oms_sensemaking.in_port.port_ingest.db_session")
 def test_import_geodata_success(mock_db_session, mock_json_load):
 
     mock_json_load.return_value = [

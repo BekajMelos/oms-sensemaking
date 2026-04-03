@@ -25,11 +25,11 @@ from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
 from oms_sensemaking.core.events import CronEventEmitter, RabbitMQListener, register_listener
 from oms_sensemaking.core.middleware import MetricsMiddleware
 from oms_sensemaking.core.observability import initialize_observability, instrument_fastapi, metrics_endpoint
-from oms_sensemaking.core.port_ingest import import_aggressor_port_data
 from oms_sensemaking.core.runtime_settings import RUNTIME_SETTINGS
 from oms_sensemaking.core.settings import load_runtime_settings_from_db
 from oms_sensemaking.geospatial.controllers import GeoQueueFilter, GeospatialSensemakerController
 from oms_sensemaking.in_port.controllers import InPortQueueFilter, InPortSensemakerController
+from oms_sensemaking.in_port.port_ingest import import_aggressor_port_data
 from oms_sensemaking.inference.controllers import InferenceQueueFilter, InferenceSensemakerController
 from oms_sensemaking.iw.controllers import ObservableSensemakerController
 from oms_sensemaking.mil_symbol.controllers import MilSymbolQueueFilter, MilSymbolSensemakerController
