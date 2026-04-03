@@ -9,8 +9,8 @@ from sqlalchemy import Index, String
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 from oms_sensemaking.config import SETTINGS
+from oms_sensemaking.models.base import UtcDateTime
 from oms_sensemaking.models.sensemaking import BaseORM
-from src.oms_sensemaking.models.base import UtcDateTime
 
 
 class AggressorPortMixin(MappedAsDataclass):
