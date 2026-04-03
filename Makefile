@@ -18,7 +18,6 @@ min_points_pre_smooth ?= 5
 max_points_pre_smooth ?= 50
 REMAKE_PORT_DATA ?= False
 
-
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -138,7 +137,7 @@ load-out-of-garrison:
 
 generate-test-tracks:
 	python -m scripts.gen_test_tracks --num_paths $(num_paths) --min_points_pre_smooth $(min_points_pre_smooth) --max_points_pre_smooth $(max_points_pre_smooth)
-	
+
 performance:
 	python -m scripts.track_performance
 
