@@ -53,10 +53,10 @@ class AggressorPortMixin(MappedAsDataclass):
 class AggressorPort(BaseORM, AggressorPortMixin):
     """Model for Storing AGGRESSOR port mapping data"""
 
-    __tablename__: str = "aggressor_ports"
-
-    __table_args__ = (Index("idx_port_node_id", "node_id"),)
-
     node_id: Mapped[uuid.UUID] = mapped_column(
         String, nullable=False, comment="Unique ID for the node.", primary_key=True
     )
+
+    __tablename__: str = "aggressor_ports"
+
+    __table_args__ = (Index("idx_port_node_id", "node_id"),)

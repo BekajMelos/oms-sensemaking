@@ -1,38 +1,15 @@
 import json
 import logging
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Union
 
 from geoalchemy2.shape import from_shape
-from shapely.geometry import Point, shape
+from shapely.geometry import shape
 
 from oms_sensemaking.clients.instances import db_session
 from oms_sensemaking.config import SETTINGS
 from oms_sensemaking.models.port_ingest import AggressorPort
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Geometry:
-    type: str
-    geometry: Dict[str, Union[str, List[float]]]
-
-
-class AggressorPortType:
-    id: str
-    capco: str
-    tags: str
-    labels: str
-    class_iri: str
-    display_value: str
-    confidence: str
-    source_id: str
-    node_id: str
-    geometry: Geometry
-    start_time: str
-    end_time: str
 
 
 def check_ports() -> bool:
@@ -64,7 +41,7 @@ def import_aggressor_port_data() -> bool:
     with db_session() as db:
         try:
             with open(SETTINGS.aggressor_ports_json_file_path, "r") as f:
-                data: list[AggressorPortType] = json.load(f)
+                data = json.load(f)
 
             for feature in data:
                 geom_obj = shape(json.loads(feature["geometry"]))
@@ -74,11 +51,6 @@ def import_aggressor_port_data() -> bool:
                 node_id = feature["nodeId"]
                 start_time = datetime.fromisoformat(feature["startTime"])
                 end_time = datetime.fromisoformat(feature["endTime"])
-
-                # Ensure data is as a point
-                if not isinstance(geom_obj, Point):
-                    geom_obj = Point([geom_obj])
-
                 new_port = AggressorPort(
                     location=from_shape(geom_obj, srid=SETTINGS.srid),
                     capco=capco,
