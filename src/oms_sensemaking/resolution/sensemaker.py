@@ -107,7 +107,7 @@ class ResolutionSensemaker(Sensemaker):
 
     def process_data(self, attribute: AttributeAttribute, config: dict | None = None) -> list[DupFinding]:
         """
-        Determine if a created Node is the same as an existing note and suggest that they are merged
+        Determine if a created Node is the same as an existing node and suggest that they are merged
 
         :param attribute: The attribute to analyze.
         :return: list[DupFinding] List of duplicates found

@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Base In-Port SM class and controller
 - The Object Standards Sensemaker is now able to publish results to ATOMS
+- Base COCOM Traversal SM class and controller
 
 ### Changed
 - Metrics are now handled with a base publisher class and the prometheus metrics publisher inherits the metrics publisher class
