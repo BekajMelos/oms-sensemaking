@@ -29,7 +29,7 @@ class COCOMTraversalSensemaker(Sensemaker):
         self.name = self.__class__.__name__
         self.oms_crud_tool = oms_crud_tool
 
-    def process_data(self, data: Any, config: Any) -> Any:
+    def process_data(self, data: Any, config: Any | None = None) -> Any:
         """
         Determine if a Node has crossed a COCOM boundary line
 

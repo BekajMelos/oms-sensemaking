@@ -282,7 +282,7 @@ class ObjectStandardsSettings(BaseModel):
 
 class COCOMTraversalSettings(BaseModel):
     """Settings for COCOM Traversal sensemaker"""
-    detect_cocom_traversals: bool = Field(False, description="Toggle on/off COCOM Traversal Detection")
+    detect_cocom_traversals: bool = Field(True, description="Toggle on/off COCOM Traversal Detection")
     rmq_cocom_traversal_queue_name: str = Field(
         "cocom-traversal-trigger",
         description="The RMQ COCOM Traversal Queue name",
