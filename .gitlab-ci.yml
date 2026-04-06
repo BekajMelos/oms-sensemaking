@@ -1,0 +1,85 @@
+default:
+  image: docker.artifactory.code.dodiis.mil/docker:29
+  tags:
+    - atoms
+
+workflow:
+  rules:
+    # Only when tagged
+    - if: $CI_COMMIT_TAG
+      when: always
+    - when: never
+
+stages:
+  - get-ca
+  - build
+
+.boolean_options: &boolean_options
+  value: "false"
+  options:
+    - "true"
+    - "false"
+
+variables:
+  DOCKER_URL: docker.artifactory.code.dodiis.mil
+  PIP_INDEX_URL: https://artifactory.code.dodiis.mil/artifactory/api/pypi/pypi/simple
+  DOCKER_PROD_IMAGE: aio4/dev/services/oms/oms-sensemaking
+  AF_USER: "" # Set in the CI/CD variables
+  AF_PASS: "" # Set in the CI/CD variables
+  IMAGE_NAME: "dpaas/ubi8-ccp"
+  IMAGE_VERSION: "8.10-1772639305"
+
+retrieve-ca:
+  stage: get-ca
+  script:
+  - |
+    container_id=$(docker run -itd docker.artifactory.code.dodiis.mil/dpaas/ubi8-ccp:8.10-1766090767)
+    docker exec $container_id update-ca-trust
+    docker cp $container_id:/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ./tls-ca-bundle.pem
+    docker rm -f $container_id
+  artifacts:
+    paths:
+      - ./tls-ca-bundle.pem
+      
+
+build-image:
+  stage: build
+  variables:
+    SERVICE_ACCOUNT_USR: $AF_USER
+    SERVICE_ACCOUNT_PSW: $AF_PASS
+    DOCKERFILE: Dockerfile
+  before_script:
+    - !reference [.snippets, create_netrc]
+    - !reference [.snippets, docker_login]
+    - !reference [.snippets, set_build_env]
+  script:
+  - echo "VERSION=${CI_COMMIT_TAG}"
+  - echo "CURRENT_TIMESTAMP=${CURRENT_TIMESTAMP}"
+  - echo "CURRENT_REVISION=${CURRENT_REVISION}"
+  - |
+    docker build \
+      --no-cache \
+      -t ${DOCKER_URL}/${DOCKER_PROD_IMAGE}:${CI_COMMIT_TAG} \
+      -t ${DOCKER_URL}/${DOCKER_PROD_IMAGE}:latest \
+      --build-arg NAMESPACE=${DOCKER_URL} \
+      --build-arg IMAGE_NAME=${IMAGE_NAME} \
+      --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
+      --build-arg APP_VERSION=${CI_COMMIT_TAG} \
+      --build-arg APP_DATE=${CURRENT_TIMESTAMP} \
+      --build-arg VCS_REF=${CURRENT_REVISION} \
+      --build-arg PIP_INDEX_URL=${PIP_INDEX_URL} \
+      --secret id=mynetrc,src=${HOME}/.netrc \
+      --secret id=cacert,src=./tls-ca-bundle.pem \
+      .
+    docker push --all-tags ${DOCKER_URL}/${DOCKER_PROD_IMAGE}
+
+.snippets:
+  docker_login:
+    - docker login -u $AF_USER -p $AF_PASS $DOCKER_URL
+  set_build_env:
+    - CURRENT_TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+    - CURRENT_REVISION=$(git rev-parse HEAD)
+  create_netrc:
+    - echo "machine artifactory.code.dodiis.mil" > ${HOME}/.netrc
+    - echo "login ${AF_USER}" >> ${HOME}/.netrc
+    - echo "password ${AF_PASS}" >> ${HOME}/.netrc
