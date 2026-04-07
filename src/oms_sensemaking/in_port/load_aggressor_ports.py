@@ -1,7 +1,6 @@
 import csv
 import io
 import json
-import os
 import sys
 import zipfile
 from pathlib import Path
@@ -14,7 +13,7 @@ def extract_nodes(zip_path: Path, target_file: str, save_to: Path, remake: bool)
             if target_file + ".csv" not in csv_list.namelist():
                 print(f"Error: {target_file} not found in {zip_path}, incorrect filename or not in the zip file.")
                 sys.exit(1)
-            elif os.path.isfile(save_to / (target_file + ".json")) and not remake:
+            elif (save_to / (target_file + ".json")).is_file() and not remake:
                 print(f"Error: {target_file} already extracted.")
                 sys.exit(1)
             else:
