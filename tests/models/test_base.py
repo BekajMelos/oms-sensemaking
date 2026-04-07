@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import Dialect, create_engine
 from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
 
-from oms_sensemaking.models.base import BaseORM, UtcDateTime
+from src.oms_sensemaking.models.base import BaseORM, UtcDateTime
 
 
 class User(BaseORM):

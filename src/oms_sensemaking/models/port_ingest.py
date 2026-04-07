@@ -32,6 +32,7 @@ class AggressorPortMixin(MappedAsDataclass):
         comment="Iri for the node.",
     )
     confidence: Mapped[str] = mapped_column(
+        String,
         nullable=False,
         unique=False,
         comment="Confidence in the observation.",
