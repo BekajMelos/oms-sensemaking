@@ -19,6 +19,7 @@ from oms_sensemaking import __description__, __title__, __version__
 from oms_sensemaking.api.middleware.request_logger import RequestLogger
 from oms_sensemaking.api.routers import aac, about, audit_log_error, health, rdf, settings, test
 from oms_sensemaking.clients.instances import aac_client, oms_crud_tool, ontology_service, ping_db, ping_db_host_wait
+from oms_sensemaking.cocom.controllers import COCOMTraversalQueueFilter, COCOMTraversalSensemakerController
 from oms_sensemaking.config import SETTINGS, LogConfig, Settings
 from oms_sensemaking.core.controllers import SensemakerController, run_controller
 from oms_sensemaking.core.error_loggers import ErrorLogger, RethrowErrorLogger
@@ -86,6 +87,15 @@ def get_controllers() -> list[SensemakerController]:
     register_listener(resolution_listener)
     resolution_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
 
+    cocom_traversal_listener = RabbitMQListener(
+        "COCOMTraversalRMQListener",
+        SETTINGS.cocom_traversal_settings.rmq_cocom_traversal_queue_name,
+        workers=SETTINGS.queue_worker_threads,
+        event_filter=COCOMTraversalQueueFilter(),
+    )
+    register_listener(cocom_traversal_listener)
+    cocom_traversal_listener.update_prefetch(RUNTIME_SETTINGS.get("rabbitmq_prefetch_count"))
+
     mil_symbol_listener = RabbitMQListener(
         "MilSymbolRMQListener",
         SETTINGS.mil_symbol_settings.rmq_mil_symbol_queue_name,
@@ -118,6 +128,7 @@ def get_controllers() -> list[SensemakerController]:
         InferenceSensemakerController(inference_listener, err_logger),
         ResolutionSensemakerController(resolution_listener, err_logger),
         MilSymbolSensemakerController(mil_symbol_listener, err_logger),
+        COCOMTraversalSensemakerController(cocom_traversal_listener, err_logger),
         ObjectStandardsSensemakerController(
             obj_standards_listener, err_logger, SETTINGS.object_standards_settings.buffer_expire_sec
         ),
