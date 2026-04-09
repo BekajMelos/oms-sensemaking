@@ -9989,7 +9989,11 @@
                   "    pm.expect(json.data.createObservation.id).to.exist;",
                   "});",
                   "// Set the attribute ID",
-                  "pm.collectionVariables.set(\"cocomobservationId1\", json.data.createObservation.id);"
+                  "pm.collectionVariables.set(\"cocomobservationId1\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -10020,7 +10024,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7452,\n                    36.5764\n                ]\n            }\n            startTime: \"2026-04-06T15:00:32.000Z\"\n            endTime: \"2026-04-06T15:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
               }
             },
             "url": {
@@ -10046,7 +10050,11 @@
                   "    pm.expect(json.data.createObservation.id).to.exist;",
                   "});",
                   "// Set the attribute ID",
-                  "pm.collectionVariables.set(\"cocomobservationId2\", json.data.createObservation.id);"
+                  "pm.collectionVariables.set(\"cocomobservationId2\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -10077,7 +10085,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7293,\n                    36.2820\n                ]\n            }\n            startTime: \"2026-04-06T15:05:32.000Z\"\n            endTime: \"2026-04-06T15:05:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
               }
             },
             "url": {
@@ -10103,7 +10111,11 @@
                   "    pm.expect(json.data.createObservation.id).to.exist;",
                   "});",
                   "// Set the attribute ID",
-                  "pm.collectionVariables.set(\"cocomobservationId3\", json.data.createObservation.id);"
+                  "pm.collectionVariables.set(\"cocomobservationId3\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -10134,7 +10146,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.5912,\n                    35.4611\n                ]\n            }\n            startTime: \"2026-04-06T15:10:32.000Z\"\n            endTime: \"2026-04-06T15:10:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
               }
             },
             "url": {
@@ -10160,7 +10172,11 @@
                   "    pm.expect(json.data.createObservation.id).to.exist;",
                   "});",
                   "// Set the attribute ID",
-                  "pm.collectionVariables.set(\"cocomobservationId4\", json.data.createObservation.id);"
+                  "pm.collectionVariables.set(\"cocomobservationId4\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -10191,7 +10207,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.5595,\n                    35.0712\n                ]\n            }\n            startTime: \"2026-04-06T15:15:32.000Z\"\n            endTime: \"2026-04-06T15:15:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
               }
             },
             "url": {
@@ -10217,7 +10233,11 @@
                   "    pm.expect(json.data.createObservation.id).to.exist;",
                   "});",
                   "// Set the attribute ID",
-                  "pm.collectionVariables.set(\"cocomobservationId5\", json.data.createObservation.id);"
+                  "pm.collectionVariables.set(\"cocomobservationId5\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -10248,7 +10268,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7452,\n                    36.5764\n                ]\n            }\n            startTime: \"2026-04-06T15:20:32.000Z\"\n            endTime: \"2026-04-06T15:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
-                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{GEO_LOCATION_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
               }
             },
             "url": {
@@ -10321,8 +10341,8 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "query (\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            className: {\n                contains:\"Object Track\"\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
-                "variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    }\n}"
+                "query": "query (\n    $iri: String!\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            classIris: {\n                in: [$iri]\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+                "variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    },\n    \"iri\": \"{{OBJECT_TRACK_IRI}}\"\n}"
               }
             },
             "url": {
