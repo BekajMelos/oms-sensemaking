@@ -1,9 +1,9 @@
 {
   "info": {
-    "_postman_id": "d5f60ef0-5182-41db-9688-867f0cc9c1f6",
+    "_postman_id": "57dbe143-4a64-4d16-a15f-8d55386bb3de",
     "name": "Sensemaking Smoke Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "41174150"
+    "_exporter_id": "33407642"
   },
   "item": [
     {
@@ -5457,7 +5457,7 @@
               "response": []
             },
             {
-              "name": "Get Track Observation Ids",
+              "name": "Get Incursion Track Observation Ids",
               "event": [
                 {
                   "listen": "prerequest",
@@ -5531,7 +5531,7 @@
               "response": []
             },
             {
-              "name": "Update Track Observation Tag 1 Copy",
+              "name": "Update Incursion Track Observation Tag 1",
               "event": [
                 {
                   "listen": "test",
@@ -9739,6 +9739,724 @@
       ]
     },
     {
+      "name": "COCOM Traversal",
+      "item": [
+        {
+          "name": "Cleanup Data Before",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = JSON.parse(pm.response.text());",
+                  "pm.test(\"Data Cleaned Up\", function () {",
+                  "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{WHITELIST_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Originator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Originator created\", function () {",
+                  "    pm.expect(json.data.createOriginator.id).to.exist;",
+                  "});",
+                  "// Set the originator ID",
+                  "pm.collectionVariables.set(\"originatorId\", json.data.createOriginator.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n){\n\tcreateOriginator(\n        input: {\n            name: \"sm_test_originator\"\n            description: \"description\"\n            tags: [$testTag]\n            acm: $acm\n        }\n  \t) {\n        ... originatorFragment\n    }\n}\n\n{{originatorFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Provider created\", function () {",
+                  "    pm.expect(json.data.createProvider.id).to.exist;",
+                  "});",
+                  "// Set the provider ID",
+                  "pm.collectionVariables.set(\"providerId\", json.data.createProvider.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $originatorId: UUID!\n){\n\tcreateProvider(\n        input: {\n            name: \"sm_test_provider\"\n            description: \"description\"\n            tags: [$testTag]\n            url: \"provider.url\"\n            defaultAcm: $acm\n            originatorId: $originatorId\n            acm: $acm\n        }\n  \t) {\n        ... providerFragment\n    }\n}\n\n{{providerFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"originatorId\": \"{{originatorId}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Source",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Source created\", function () {",
+                  "    pm.expect(json.data.createSource.id).to.exist;",
+                  "});",
+                  "// Set the source ID",
+                  "pm.collectionVariables.set(\"sourceId\", json.data.createSource.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $providerId: UUID!\n    $currentdate: DateTime!\n){\n\tcreateSource(\n        input: {\n            name:\"sm_test_source\",\n            description: \"description\"\n            providerId: $providerId,\n            dateOfReport: $currentdate,\n            dateOfInformation: $currentdate,\n            identifier: \"external1\"\n            uri: \"external.1.uri\"\n            dataAcm: $acm\n            primaryTopic: \"primary\",\n            secondaryTopic:\"secondary\",\n            tags: [$testTag],\n            acm: $acm\n        }\n  \t) {\n        ... sourceFragment\n    }\n}\n\n{{sourceFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"providerId\": \"{{providerId}}\",\n    \"currentdate\": \"{{currentdate}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Node",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Node created\", function () {",
+                  "    pm.expect(json.data.createNode.id).to.exist;",
+                  "});",
+                  "// Set the node ID",
+                  "pm.collectionVariables.set(\"nodeId\", json.data.createNode.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n){\n\tcreateNode(\n        input: {\n            name: \"Incursion Node\"\n            classIri: $iri\n            tier: PRIMARY\n            isNso: false\n            allegiance: \"USA\"\n            tags: [$testTag]\n            labels: []\n            domain: GROUND\n            acm: $acm\n            ifcCodes: [\"100\", \"200\"]\n            symbolIdCode: \"10030100001200000900\"\n        }\n  \t) {\n        ... nodeFragment\n    }\n}\n\n{{nodeFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{AIRCRAFT_IRI}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create EUCOM Observation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Observation 1 Created\", function () {",
+                  "    pm.expect(json.data.createObservation.id).to.exist;",
+                  "});",
+                  "// Set the attribute ID",
+                  "pm.collectionVariables.set(\"cocomobservationId1\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7452,\n                    36.5764\n                ]\n            }\n            startTime: \"2026-04-06T15:00:32.000Z\"\n            endTime: \"2026-04-06T15:00:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create EUCOM Observation 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Observation 1 Created\", function () {",
+                  "    pm.expect(json.data.createObservation.id).to.exist;",
+                  "});",
+                  "// Set the attribute ID",
+                  "pm.collectionVariables.set(\"cocomobservationId2\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7293,\n                    36.2820\n                ]\n            }\n            startTime: \"2026-04-06T15:05:32.000Z\"\n            endTime: \"2026-04-06T15:05:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create AFRICOM Observation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Observation 2 Created\", function () {",
+                  "    pm.expect(json.data.createObservation.id).to.exist;",
+                  "});",
+                  "// Set the attribute ID",
+                  "pm.collectionVariables.set(\"cocomobservationId3\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.5912,\n                    35.4611\n                ]\n            }\n            startTime: \"2026-04-06T15:10:32.000Z\"\n            endTime: \"2026-04-06T15:10:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create AFRICOM Observation 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Observation 3 Created\", function () {",
+                  "    pm.expect(json.data.createObservation.id).to.exist;",
+                  "});",
+                  "// Set the attribute ID",
+                  "pm.collectionVariables.set(\"cocomobservationId4\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.5595,\n                    35.0712\n                ]\n            }\n            startTime: \"2026-04-06T15:15:32.000Z\"\n            endTime: \"2026-04-06T15:15:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create EUCOM Observation 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Get the JSON response",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Observation 1 Created\", function () {",
+                  "    pm.expect(json.data.createObservation.id).to.exist;",
+                  "});",
+                  "// Set the attribute ID",
+                  "pm.collectionVariables.set(\"cocomobservationId5\", json.data.createObservation.id);",
+                  "",
+                  "setTimeout(() => {",
+                  "    console.log(\"Waiting 1s for AOR to update\");",
+                  "  }, 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n    $acm: ACM!\n    $iri: String!\n    $sourceId: UUID!\n    $nodeId: UUID!\n){\n\tcreateObservation(\n        input: {\n            acm: $acm\n            tags: [$testTag]\n            labels: [\"SM_ENRICHED\"]\n            classIri: $iri\n            displayValue: \"display value\"\n            confidence: HIGH\n            sourceId: $sourceId\n            nodeId: $nodeId\n            geometry: {\n                type: \"Point\",\n                coordinates: [\n                    -5.7452,\n                    36.5764\n                ]\n            }\n            startTime: \"2026-04-06T15:20:32.000Z\"\n            endTime: \"2026-04-06T15:20:32.000Z\"\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"acm\": {{UNCLASS_ACM}},\n    \"iri\": \"{{OBJECT_TRACK_POINT_IRI}}\",\n    \"sourceId\": \"{{sourceId}}\",\n    \"nodeId\": {{nodeId}}\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get COCOM Track Observation Ids",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "eval(pm.globals.get(\"retryUntil\"));",
+                  "",
+                  "const response = pm.response.json();",
+                  "",
+                  "const success = retryUntil({",
+                  "    conditionFn: () =>",
+                  "        response?.data?.observations?.data?.length > 0 &&",
+                  "        response?.data?.observations?.totalSize > 0,",
+                  "    maxAttempts: 6,",
+                  "    delayMs: 30000",
+                  "});",
+                  "",
+                  "if (success) {",
+                  "    pm.test(\"Response contains valid data\", function () {",
+                  "        pm.expect(response.data.observations.data.length).to.be.greaterThan(0);",
+                  "        pm.expect(response.data.observations.totalSize).to.be.greaterThan(0);",
+                  "    });",
+                  "",
+                  "    // Store observation ID for later requests",
+                  "    pm.collectionVariables.set(",
+                  "        \"cocomtraversaltrackobs\",",
+                  "        response.data.observations.data[0].id",
+                  "    );",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query (\n    $iri: String!\n    $nodeIds: UuidQueryByList\n){\n    observations(\n        query: {\n            nodeIds: $nodeIds\n            classIris: {\n                in: [$iri]\n            }\n        }\n    ) {\n        ... observationFullPageFragment\n    }\n}\n\n{{observationFullPageFragment}}",
+                "variables": "{\n    \"nodeIds\": {\n        \"in\": [{{nodeId}}]\n    },\n    \"iri\": \"{{OBJECT_TRACK_IRI}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update COCOM Track Observation Tag 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"COCOM Traversal Track Obs Tag Updated\", function () {",
+                  "    pm.expect(pm.collectionVariables.get(\"cocomtraversaltrackobs\")).to.not.be.undefined;",
+                  "    pm.expect(pm.collectionVariables.get(\"cocomtraversaltrackobs\")).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{TS_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $observationId: UUID!\n    $testTag: String!\n){\n\tupdateObservation(\n        input: {\n            id: $observationId\n            tags: [$testTag]\n        }\n  \t) {\n        ... observationFragment\n    }\n}\n\n{{observationFragment}}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\",\n    \"observationId\": \"{{cocomtraversaltrackobs}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup Data",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "setTimeout(function(){}, pm.variables.get(\"ASYNC_DELAY\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = JSON.parse(pm.response.text());",
+                  "pm.test(\"Data Cleaned Up\", function () {",
+                  "    pm.expect(jsonData.data.purgeTaggedData).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "user_dn",
+                "value": "{{WHITELIST_USER_DN}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation (\n    $testTag: String!\n) {\n\tpurgeTaggedData(\n        input: {\n            tag: $testTag\n        }\n    )\n}",
+                "variables": "{\n    \"testTag\": \"{{TEST}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "https://{{GRAPHQL_ENDPOINT}}",
+              "protocol": "https",
+              "host": [
+                "{{GRAPHQL_ENDPOINT}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Object Minimum",
       "item": [
         {
@@ -11068,6 +11786,30 @@
     },
     {
       "key": "TrackObservationId7",
+      "value": ""
+    },
+    {
+      "key": "cocomtraversaltrackobs",
+      "value": ""
+    },
+    {
+      "key": "cocomobservationId1",
+      "value": ""
+    },
+    {
+      "key": "cocomobservationId2",
+      "value": ""
+    },
+    {
+      "key": "cocomobservationId3",
+      "value": ""
+    },
+    {
+      "key": "cocomobservationId4",
+      "value": ""
+    },
+    {
+      "key": "cocomobservationId5",
       "value": ""
     }
   ]
